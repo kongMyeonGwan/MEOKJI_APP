@@ -27,6 +27,7 @@ export default function Header() {
           ) : (
             <>
               <NavLink to="/community">커뮤니티</NavLink>
+              <NavLink to="/register">회원가입</NavLink>
               <NavLink to="/login">로그인</NavLink>
             </>
           )}
