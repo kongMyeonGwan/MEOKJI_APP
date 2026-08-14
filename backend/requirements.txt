@@ -1,0 +1,25 @@
+# 뭐먹지? Backend 의존성
+# 설치: pip install -r requirements.txt
+
+# --- Web ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.34.0
+
+# --- 설정 / 검증 ---
+pydantic[email]>=2.10.0
+pydantic-settings>=2.7.0
+
+# --- DB ---
+sqlalchemy>=2.0.36
+oracledb>=2.5.0
+
+# --- 인증 (STEP 5~6에서 사용) ---
+bcrypt>=4.2.0
+pyjwt>=2.10.0
+
+# --- 외부 API 호출 (STEP 10~17에서 사용) ---
+httpx>=0.28.0
+anthropic>=0.40.0
+
+# --- 테스트 ---
+pytest>=8.3.0
