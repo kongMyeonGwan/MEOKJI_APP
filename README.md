@@ -68,14 +68,23 @@ npm run dev
 
 확인: http://localhost:5173
 
-### 4. DB 스키마 (최초 1회, 또는 스키마 변경 시)
+### 4. DB 스키마
 
-DBeaver에서 `MEOKJI_APP` 계정으로 접속 후:
+**팀 공용 서버(10.1.54.120)를 쓰는 경우** — 계정이 이미 있으므로 스키마만 실행
 
-| 순서 | 파일 | 비고 |
-|:--:|---|---|
-| 1 | `db/00_drop_all.sql` | 기존 테이블이 있을 때만 |
-| 2 | `db/01_schema.sql` | 7개 테이블 생성 |
+| 순서 | 파일 | 실행 계정 | 비고 |
+|:--:|---|---|---|
+| 1 | `db/00_drop_all.sql` | meokji_app | 기존 테이블이 있을 때만 |
+| 2 | `db/01_schema.sql` | meokji_app | 7개 테이블 생성 |
+
+**개인 PC에 Oracle을 새로 설치한 경우** — 계정부터 만들어야 함
+
+| 순서 | 파일 | 실행 계정 | 비고 |
+|:--:|---|---|---|
+| 1 | `db/00_create_user_local.sql` | **SYS AS SYSDBA** | 파일 안의 비밀번호 자리를 먼저 수정 |
+| 2 | `db/01_schema.sql` | meokji_app | 7개 테이블 생성 |
+
+그리고 `backend/.env`의 `DB_HOST`를 `localhost`로 바꾼다.
 
 **DBeaver 접속 설정 주의**
 

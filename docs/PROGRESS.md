@@ -195,7 +195,7 @@ DDL 파일은 이미 빈 줄을 제거해뒀다.
 | 방법 | 비고 |
 |---|---|
 | VPN | 사내망에 붙을 수 있으면 그대로 사용 |
-| 로컬 Oracle XE 설치 | `.env`의 `DB_HOST=localhost`로 변경 후 `01_schema.sql` 실행 |
+| 로컬 Oracle XE 설치 | `db/00_create_user_local.sql`(SYS로 실행) → `01_schema.sql` → `.env`의 `DB_HOST=localhost` |
 | 프론트엔드만 작업 | DB 없이 가능. `/api/health`가 503이어도 화면은 뜬다 |
 
 `DB_HOST` 한 줄만 바꾸면 되도록 설계해뒀다.
