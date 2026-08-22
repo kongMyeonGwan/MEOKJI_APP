@@ -1,0 +1,69 @@
+.recipe-page {
+  display: grid;
+  gap: 20px;
+}
+
+.recipe-page__back {
+  margin: 0;
+  font-size: 14px;
+}
+
+.recipe-page__back a:hover { color: var(--color-accent); }
+
+.recipe-page__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recipe-page__name {
+  margin: 0;
+  font-size: 22px;
+}
+
+.recipe-page__sub {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
+.recipe-page__cost {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+/* 최고가는 참고값이라 톤을 낮춘다 */
+.recipe-page__cost-max {
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.recipe-page__confirm { text-align: center; }
+
+.recipe-page__done {
+  margin: 0 0 14px;
+  font-weight: 600;
+  color: var(--color-ok);
+}
+
+.recipe-page__actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1023px) {
+  .recipe-page { gap: 14px; }
+  .recipe-page__head { flex-direction: column; gap: 6px; }
+  .recipe-page__name { font-size: 20px; }
+
+  /* 확정 버튼은 앱에서 누르기 쉽도록 폭을 꽉 채운다 */
+  .recipe-page__confirm .btn { width: 100%; }
+  .recipe-page__actions { flex-direction: column; }
+}

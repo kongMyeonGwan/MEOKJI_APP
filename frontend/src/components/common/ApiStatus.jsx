@@ -40,7 +40,7 @@ export default function ApiStatus() {
             {dbOk ? '연결됨' : '연결 실패'}
           </span>
           {!dbOk && (
-            <span className="muted"> — db/00_create_role_and_db.sql, 01_schema.sql 실행이 필요합니다</span>
+            <span className="muted"> — 백엔드 .env의 DB 설정과 db/01_schema.sql 실행 여부를 확인하세요</span>
           )}
         </li>
       </ul>

@@ -1,0 +1,36 @@
+/* 가격과 판매처를 위아래로 쌓아 열 너비를 아낀다 */
+.price-table td.num {
+  display: table-cell;
+  line-height: 1.35;
+}
+
+.price-table__best {
+  display: block;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+a.price-table__best:hover { text-decoration: underline; }
+
+.price-table__worst {
+  display: block;
+  color: var(--color-muted);
+}
+
+.price-table__shop {
+  display: block;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.price-table__total td {
+  border-bottom: none;
+  border-top: 2px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.price-table__note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}

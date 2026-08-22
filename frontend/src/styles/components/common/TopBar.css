@@ -1,0 +1,206 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  padding: 14px 28px;
+  padding-top: calc(14px + var(--safe-top));
+
+  background: var(--color-bg);
+}
+
+/* 사이드바에 로고가 있으므로 웹 모드에서는 숨긴다 */
+.topbar__logo { display: none; }
+
+.topbar__search {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 520px;
+
+  padding: 0 6px 0 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.topbar__search:focus-within {
+  border-color: var(--color-accent);
+}
+
+.topbar__search input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+.topbar__search input:focus { outline: none; }
+
+/* 검색창의 돋보기 버튼은 브라우저 기본 검색 지우기 아이콘과 겹치지 않게 오른쪽 끝 */
+.topbar__search button {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.topbar__search button:hover { color: var(--color-accent); }
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: auto;
+}
+
+.topbar__bell {
+  display: flex;
+  position: relative;
+  padding: 6px;
+  border: none;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.topbar__bell:hover { color: var(--color-text); }
+
+.topbar__dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.topbar__profile { position: relative; }
+
+.topbar__profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.topbar__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.topbar__name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.topbar__caret {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1;
+}
+
+/* 드롭다운 */
+.topbar__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  border: none;
+  background: none;
+  cursor: default;
+}
+
+.topbar__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 26;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  padding: 6px;
+
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+}
+
+.topbar__menu a,
+.topbar__menu button {
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.topbar__menu a:hover,
+.topbar__menu button:hover { background: var(--color-bg); }
+
+/* ===== 앱 모드 ===== */
+@media (max-width: 1023px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 16px;
+    padding-top: calc(10px + var(--safe-top));
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+
+  .topbar__logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-accent);
+  }
+
+  /* 검색창은 아래 줄 전체를 쓴다 */
+  .topbar__search {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+    padding-left: 14px;
+  }
+
+  .topbar__search input { padding: 9px 0; }
+
+  .topbar__actions { gap: 8px; }
+
+  /* 좁은 화면에서 닉네임까지 넣으면 줄이 넘친다 */
+  .topbar__name { display: none; }
+}

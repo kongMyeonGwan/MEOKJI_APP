@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#e8481c"/>
+  <!-- 밥그릇 -->
+  <path d="M112 248h288c0 84-64 144-144 144s-144-60-144-144z" fill="#faf9f7"/>
+  <ellipse cx="256" cy="248" rx="144" ry="26" fill="#ffffff"/>
+  <!-- 김 -->
+  <path d="M212 196c0-22 22-26 22-46s-14-24-14-24" stroke="#faf9f7" stroke-width="14"
+        stroke-linecap="round" fill="none" opacity="0.85"/>
+  <path d="M262 190c0-24 24-28 24-50s-16-26-16-26" stroke="#faf9f7" stroke-width="14"
+        stroke-linecap="round" fill="none" opacity="0.85"/>
+  <path d="M312 196c0-22 22-26 22-46s-14-24-14-24" stroke="#faf9f7" stroke-width="14"
+        stroke-linecap="round" fill="none" opacity="0.85"/>
+</svg>

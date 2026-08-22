@@ -1,0 +1,53 @@
+/* 기본은 숨김. 앱 모드에서만 나타난다 */
+.bottom-nav { display: none; }
+
+@media (max-width: 1023px) {
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+
+    display: flex;
+    align-items: stretch;
+
+    height: calc(var(--bottom-nav-height) + var(--safe-bottom));
+    /* 홈 인디케이터(아이폰 하단 바) 영역만큼 안쪽으로 밀어준다 */
+    padding-bottom: var(--safe-bottom);
+
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .bottom-nav__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+
+    min-width: 0;
+    color: var(--color-muted);
+    font-size: 11px;
+
+    transition: transform 0.1s ease;
+  }
+
+  .bottom-nav__item:active { transform: scale(0.94); }
+
+  .bottom-nav__item.is-active {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .bottom-nav__label {
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+}

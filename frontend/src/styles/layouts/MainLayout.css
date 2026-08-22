@@ -1,0 +1,30 @@
+.shell {
+  display: flex;
+  /* 내용이 짧아도 화면 전체를 채운다.
+     dvh는 모바일 주소창이 접힐 때 높이가 튀는 문제를 해결한다 */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.shell__body {
+  flex: 1;
+  min-width: 0;   /* 자식의 표/긴 글자가 넘쳐도 레이아웃이 밀리지 않게 */
+  display: flex;
+  flex-direction: column;
+}
+
+.shell__main {
+  flex: 1;
+  padding: 8px 28px 48px;
+}
+
+@media (max-width: 1023px) {
+  .shell__main {
+    padding: 16px 16px 0;
+    /*
+     * 하단 탭이 fixed라 문서 흐름에서 빠져 있다.
+     * 그만큼 본문 아래에 여백을 주지 않으면 마지막 요소가 탭에 가린다.
+     */
+    padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + 24px);
+  }
+}
