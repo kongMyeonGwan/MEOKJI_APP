@@ -1,6 +1,6 @@
 # 진행 상황 및 작업 기록
 
-최종 갱신: 2026-08-14
+최종 갱신: 2026-08-23
 
 ---
 
@@ -9,23 +9,23 @@
 | STEP | 내용 | 상태 |
 |:--:|---|:--:|
 | 1 | 전체 설계 (7테이블 ERD, API 목록, Flow) | ✅ |
-| 2 | Oracle DDL 확정 | ⚠️ **재실행 필요** |
+| 2 | Oracle DDL 확정 | ✅ |
 | 3 | FastAPI 기본 구조 · DB 연결 · CORS · Health Check | ✅ |
 | 4 | React 기본 구조 · Router · Header · Layout | ✅ |
-| 5 | 회원가입 | 🔶 코드 완료, DDL 재실행 후 재검증 필요 |
-| 6 | JWT 로그인 · 로그아웃 · Protected API | ⬜ |
-| 7 | 로그인 실패 20회 → 계정 Lock | ⬜ |
-| 8 | Email OTP · 비밀번호 재설정 | ⬜ |
-| 9 | Ban CRUD (DISLIKE / ALLERGY) | ⬜ |
-| 10 | AI API 연동 · Structured Output | ⬜ |
+| 5 | 회원가입 | ✅ |
+| 6 | JWT 로그인 · 로그아웃 · Protected API | ✅ |
+| 7 | 로그인 실패 20회 → 계정 Lock | ✅ |
+| 8 | Email OTP · 비밀번호 재설정 | ✅ |
+| 9 | Ban CRUD (DISLIKE / ALLERGY) | ✅ |
+| 10 | AI API 연동 · Structured Output | ⬜ **← 다음 작업** |
 | 11 | 직접 음식 검색 → Recipe 생성 | ⬜ |
 | 12 | Weather API | ⬜ |
 | 13 | 날씨 + AI 음식 추천 | ⬜ |
 | 14 | Ban을 추천/레시피에 연결 | ⬜ |
 | 15 | 레시피 확정 → meal_histories INSERT | ⬜ |
 | 16 | History 조회 | ⬜ |
-| 17 | Shopping API 실제 연동 | ⬜ |
-| 18 | 재료별 최저가 계산 | ⬜ |
+| 17 | Shopping API 실제 연동 (네이버 · 쿠팡 · 알리) | ⬜ |
+| 18 | 재료별 **최저가/최고가** 계산 | ⬜ |
 | 19 | Mock Shopping Provider | ⬜ |
 | 20~23 | 게시판 · 수정삭제 · 좋아요 · 댓글 | ⬜ |
 | 24~25 | UI 개선 · 통합 테스트 | ⬜ |
@@ -34,40 +34,79 @@
 
 ## 🚨 다음에 할 일 (우선순위 순)
 
-### 1. DDL 재실행 (필수, 다른 작업의 선행조건)
+### 1. STEP 10 — AI API 연동 · Structured Output
 
-날짜/시간 정책을 UTC로 바꿨는데 DB는 아직 구 스키마다.
+- 추천 결과를 자유 텍스트로 받으면 파싱이 계속 깨진다. **Structured Output**으로
+  스키마를 고정해서 받을 것
+- `services/ban_service.list_bans()`로 Ban 목록을 읽어 프롬프트에 넣는다.
+  `ALLERGY`는 "반드시 제외", `DISLIKE`는 "가능하면 피하고 대체재료 제시"로
+  강도를 구분한다 (프론트 MyPage 문구와 이미 맞춰져 있다)
+- AI 호출은 느리다. `api/client.js`의 timeout이 30초로 잡혀 있는 것도 이 때문이다
+- 키는 `.env`로 빼고 `.env.example`에 항목만 적을 것
 
-```
-DBeaver → MEOKJI_APP 접속
-1. db/00_drop_all.sql   Ctrl+A → Alt+X
-2. db/01_schema.sql     Ctrl+A → Alt+X
-```
+---
 
-확인:
+## 추가 확정된 요구사항 (2026-08-17)
+
+프론트 화면은 하드코딩 데이터로 이미 만들어뒀다. 백엔드에서 채울 부분만 적는다.
+
+### 1. 좋아요 받은 레시피 — 기간 검색 (대시보드)
+
+- 기본값: **오늘 포함 최근 30일**
+- 사용자가 시작일~종료일을 직접 고르면 그 기간에 좋아요를 받은 목록만 표시
+- 프론트: `components/common/DateRangeFilter.jsx`, 화면은 `HomePage`
+
+**서버에서 할 일**
 ```sql
-SELECT column_name, data_type, data_default FROM user_tab_columns
-WHERE table_name='USERS' AND column_name='CREATED_AT';
--- 기대: TIMESTAMP(6) / SYS_EXTRACT_UTC(SYSTIMESTAMP)
+-- post_likes.created_at 기준. 양 끝 포함
+WHERE pl.created_at >= :start AND pl.created_at < :end + 1
 ```
+- `created_at`은 **UTC로 저장**돼 있다. 화면에서 고른 날짜는 KST 기준이므로
+  경계에서 9시간이 어긋난다. 서버에서 KST -> UTC 변환 후 비교할 것
+- 정렬은 좋아요 수 내림차순. 기간이 넓으면 페이징 필요
 
-### 2. STEP 5 재검증
+### 2. 예산 안에서 레시피 추천
 
-DDL 재실행 후 회원가입을 다시 돌려 `created_at`이 UTC로 저장되는지 확인.
+- 사용자가 금액(예: 8000원)을 입력하면 **그 금액 이내로 만들 수 있는 레시피만** 추천
+- 프론트: `components/recommendation/BudgetFilter.jsx`
 
-```bash
-curl -X POST http://localhost:8000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d "{\"email\":\"a@b.com\",\"password\":\"myPassword123!\",\"nickname\":\"테스터\"}"
+**서버에서 할 일**
+- AI 프롬프트에 예산 상한을 넣어 **생성 단계에서** 제한한다.
+  생성 후 걸러내면 후보가 0건이 되는 경우가 잦다
+- 예산을 못 맞추면 "가장 가까운 금액" 대안을 함께 내려줄 것
+
+### 3. 최저가 / 최고가 비교
+
+- 재료 하나당 **네이버쇼핑 · 쿠팡 · 알리익스프레스** 세 곳의 가격을 모은다
+- 가장 싼 곳과 가장 비싼 곳을 나란히 보여주고, 합계도 구간으로 표시
+- 프론트: `components/price/PriceTable.jsx` (`getPriceSummary()`로 합계 계산)
+
+**응답 형태** — 프론트가 이 모양을 기대한다
+```json
+[
+  { "name": "돼지고기 앞다리살 200g",
+    "offers": [
+      { "shop": "쿠팡", "price": 3980, "link": "..." },
+      { "shop": "네이버쇼핑", "price": 4350, "link": "..." }
+    ] }
+]
 ```
+- `.env`의 `PRICE_PROVIDERS`에 켜둔 몰만 조회한다 (쉼표 구분)
+- 알리는 해외배송이라 배송비·기간 차이가 크다. 화면에 주의 문구를 넣어뒀다
+- 세 곳을 순차 호출하면 느리다. `httpx.AsyncClient`로 **병렬 호출**할 것
 
-### 3. STEP 6 — JWT 로그인
+---
 
-- `core/security.py`에 `create_access_token()` / `decode_token()` 추가
-- `core/deps.py`에 `get_current_user()` / `get_optional_user()` 의존성
-- `POST /api/auth/login`
-- 프론트 `AuthContext` + `ProtectedRoute` + Header 로그인 상태 전환
-- `api/client.js`의 `setAuthToken()`은 이미 준비돼 있음
+## 나중에 보완할 것 (MVP에는 없어도 되지만 기억해둘 것)
+
+지금 일부러 넣지 않은 것들이다. 급하지 않지만 실제 서비스로 간다면 필요하다.
+
+| 항목 | 내용 |
+|---|---|
+| 인증번호 재발송 제한 | 지금은 누르는 만큼 계속 발송된다. "1분에 1회" 같은 제한 필요 |
+| 발신 전용 계정 | 개인 Gmail은 스팸 처리 위험 + 하루 500통 제한. 도메인 메일이나 SES/SendGrid로 교체 |
+| 자동 테스트 | `pytest`가 설치만 되어 있고 테스트가 하나도 없다. 인증 흐름부터 묶는 것이 좋다 |
+| 로그인 시도 시간차 | 없는 이메일은 `verify_password`를 건너뛰어 응답이 빠르다. 응답 시간으로 계정 유무가 샌다 |
 
 ---
 
@@ -102,13 +141,184 @@ curl -X POST http://localhost:8000/api/auth/register \
 - `pages/RegisterPage.jsx` + CSS — 폼, 클라이언트 검증, 필드별 에러 표시
 - `api/auth.js` · `utils/apiError.js`
 
+**검증 결과** (2026-08-17, 로컬 Oracle 21c XE)
+- `POST /api/auth/register` → 201, 한글 닉네임 정상 저장
+- `created_at` 이 UTC로 저장됨 (KST 01:41 요청 → DB 16:41). `UtcTimestamp` 정상 동작
+- `password_hash` = `$2b$12$...` 60자. 평문 아님
+
+### STEP 6 — JWT 로그인
+
+**Backend**
+- `core/security.py` — `create_access_token()` / `decode_token()`
+- `core/deps.py` (신규) — `get_current_user()` / `get_optional_user()`
+- `schemas/auth.py` — `LoginRequest` · `TokenResponse`
+- `services/auth_service.py` — `login_user()`
+- `POST /api/auth/login` → 200 / 401 / 423
+- `GET /api/auth/me` → 200 / 401
+
+**Frontend**
+- `contexts/AuthContext.jsx` (신규) — 토큰 보관 · 새로고침 복원 · 자동 로그아웃
+- `components/common/ProtectedRoute.jsx` (신규)
+- `pages/LoginPage.jsx` + CSS
+- `Header.jsx` — 로그인 상태에 따라 메뉴 전환
+- `api/client.js` — 401 발생 시 로그아웃시키는 콜백 훅 추가
+
+**검증 결과** (2026-08-17, HTTP 직접 호출)
+
+| 케이스 | 결과 |
+|---|---|
+| 올바른 비밀번호 | 200 + 토큰 (`exp - iat = 1800`초) |
+| 토큰으로 `/me` | 200 |
+| 비밀번호 틀림 | 401 |
+| 없는 이메일 | 401 (**문구 동일**) |
+| 토큰 없음 / 위조 | 401 |
+
+### STEP 7 — 계정 잠금
+
+- `services/auth_service.py`의 `login_user()`만 수정. 프론트는 수정 없음
+  (서버가 문자열 detail로 내려주고 `utils/apiError.js`가 그대로 화면에 넘긴다)
+- 실패 시 `login_fail_count += 1` → 20회 도달 시 `is_locked=1` · `locked_at` 기록
+- 성공 시 카운터 0으로 리셋 (실패가 없었으면 UPDATE를 보내지 않는다)
+- 이미 잠긴 계정은 비밀번호 검증 전에 423으로 끊는다. 안 그러면 잠긴 뒤에도
+  카운트가 계속 올라간다
+
+**검증 결과** (2026-08-17)
+
+| 케이스 | 결과 |
+|---|---|
+| 1~19회차 | 401 + `(남은 시도 N회)` |
+| 20회차 | 423, `is_locked=1` · `locked_at` 기록 |
+| 잠긴 뒤 올바른 비밀번호 | 423, 카운트 증가 없음 |
+| 2회 실패 후 성공 | `login_fail_count` 2 → 0 |
+
+### STEP 8 — Email OTP 비밀번호 재설정
+
+**Backend**
+- `models/verification_code.py` (신규)
+- `integrations/email/` (신규) — `base.py`(Protocol) · `mock.py` · `__init__.py`(팩토리)
+- `core/security.py` — `generate_otp_code()` · `hash_otp_code()` · `verify_otp_code()`
+- `services/password_reset_service.py` (신규)
+- `POST /api/auth/password-reset/send` · `/verify` · `/change`
+
+**Frontend**
+- `pages/PasswordResetPage.jsx` + CSS (신규) — 3단계를 한 화면에서 전환
+- `LoginPage.jsx` 에 "비밀번호를 잊으셨나요?" 링크
+
+**검증 결과** (2026-08-17)
+
+| 케이스 | 결과 |
+|---|---|
+| 없는 이메일로 send | 200 (가입 여부 노출 안 함) |
+| 틀린 코드 | 400 + `(남은 시도 N회)`, `attempt_count` 증가 |
+| 맞는 코드 | 200, `used_at` 기록 |
+| 같은 코드로 재검증 | 400 (일회성 유지) |
+| change 성공 | 200, 코드 행 삭제됨 |
+| 같은 코드로 재변경 | 400 |
+| 잠긴 계정 → 재설정 후 로그인 | **200** (`is_locked` 0, `locked_at` NULL) |
+| 5회 틀림 | 429 (재발급 안내) |
+
+**실제 SMTP 발송** (2026-08-17 추가)
+
+Mock만으로는 부족해서 실제 발송까지 붙였다.
+
+- `integrations/email/smtp.py` (신규) — 표준 `smtplib`. 포트로 STARTTLS(587) / SSL(465) 자동 판별
+- `integrations/email/__init__.py` — `smtp` 분기 추가
+- `scripts/check_email.py` (신규) — 전체 흐름을 돌리지 않고 SMTP 접속만 점검
+- `.env.example` — 항목별 설명 주석
+
+발신 계정은 Gmail 하나(`EMAIL_PROVIDER=smtp`). 받는 사람은 DB의 `user.email`이라
+회원이 어느 메일 서비스를 쓰든 그 주소로 간다.
+
+| 확인 | 결과 |
+|---|---|
+| Gmail → Gmail | 발송 성공 |
+| Gmail → 네이버 | 발송 성공 (타 서비스 수신 확인) |
+
+**Gmail 설정 시 주의**
+- Google 계정 비밀번호로는 SMTP 로그인이 안 된다. 2단계 인증을 켜고
+  https://myaccount.google.com/apppasswords 에서 앱 비밀번호 16자리를 발급받아야 한다
+- `.env`는 서버가 시작할 때 한 번만 읽는다. `--reload`는 코드만 감지하므로
+  `.env`를 고쳤으면 **서버를 재시작**해야 한다
+- 개인 Gmail에서 자동 발송한 메일이라 수신측 스팸함으로 갈 수 있다
+
+### STEP 9 — Ban CRUD
+
+**Backend**
+- `models/user_ban.py` (신규) — `user_bans` 매핑
+- `schemas/ban.py` (신규) — `BanCreateRequest` · `BanResponse`
+- `services/ban_service.py` (신규) — `list_bans()` · `create_ban()` · `delete_ban()`
+- `routers/bans.py` (신규) — 세 엔드포인트 전부 `get_current_user` 필요
+- `main.py` — 라우터 등록
+
+| 메서드 | 경로 | 응답 |
+|---|---|---|
+| GET | `/api/bans` | 200 (등록 순) |
+| POST | `/api/bans` | 201 / 409(중복) / 422(검증) |
+| DELETE | `/api/bans/{id}` | 204 / 404 |
+
+**Frontend**
+- `api/bans.js` (신규)
+- `pages/MyPage.jsx` — `MOCK_BANS` 제거하고 실제 API 연결.
+  로딩 · 추가 중 · 삭제 중 상태를 각각 표시한다
+
+**검증 결과** (2026-08-23, 로컬 Oracle 21c XE · 25건 전부 통과)
+
+| 케이스 | 결과 |
+|---|---|
+| 토큰 없음 / 위조 토큰 | 401 |
+| 추가 · 목록 · 삭제 | 201 / 200 / 204 |
+| `ban_type` 생략 | `DISLIKE`로 저장 |
+| 같은 재료 재등록 | 409 |
+| `' 오이 '`로 재등록 | 409 (strip 후 비교되므로 뚫리지 않음) |
+| 빈 문자열 · 공백만 · 101자 · `ban_type='HATE'` | 422 |
+| 한글 100자 | 201 (`VARCHAR2(100 CHAR)` 정상) |
+| 남의 Ban 조회 / 삭제 | 목록에 안 보임 / 404 |
+| 다른 사용자가 같은 이름 등록 | 201 (uq는 user_id와 묶여 있다) |
+| 삭제한 id 재삭제 · 없는 id | 404 |
+| `DELETE /api/bans/0` | 422 (`Path(ge=1)`) |
+| 사용자 삭제 | `user_bans` 행도 CASCADE 삭제 |
+| `created_at` | UTC 저장 (KST 04:47 → DB 19:47) |
+
 ---
 
 ## 설계 결정 기록
 
+### 왜 CSS를 styles/ 아래로 몰았나 (2026-08-23)
+JSX와 CSS가 한 폴더에 섞여 있어 `pages/`를 열면 파일 수가 두 배로 보였다.
+`src/styles/` 아래에 **소스 폴더 구조를 그대로 미러링**해서 옮겼다.
+
+```
+src/pages/LoginPage.jsx           -> import '../styles/pages/LoginPage.css'
+src/components/common/TopBar.jsx  -> import '../../styles/components/common/TopBar.css'
+```
+
+`src/styles/index.css`는 전역이라 그대로 뒀다.
+CSS 파일을 새로 만들 때도 이 규칙을 따를 것. 클래스명 규칙(BEM 풍의
+`.mypage__ban-name`)은 바뀐 게 없다.
+
+### 왜 Ban 추가는 사전 조회 없이 IntegrityError만 잡나
+회원가입(`register_user`)은 이메일/닉네임 **두 개**의 UNIQUE가 있어서, 어느 쪽이
+중복인지 알려주려고 사전 `SELECT`를 한 번 한다. Ban은 `uq_user_bans` 하나뿐이라
+`IntegrityError`가 곧 "재료명 중복"이다. 사전 조회를 넣어봐야
+SELECT-INSERT 사이의 경합은 못 막으면서 쿼리만 늘어난다.
+
+### 왜 남의 Ban을 지우려 하면 403이 아니라 404인가
+403은 "권한은 없지만 그 리소스는 존재한다"는 뜻이 된다. id를 1씩 올려가며
+403/404를 세면 남의 Ban이 몇 개인지 알 수 있다. 없는 id와 남의 id를 같은 404로
+묶어서 그 차이를 없앴다.
+
+### 왜 재료명을 스키마에서 `strip()` 하나
+`'오이'`와 `'오이 '`는 다른 문자열이라 `uq_user_bans`가 중복으로 보지 않는다.
+DB에 닿기 전에 잘라내야 UNIQUE 제약이 의도대로 동작한다. 회원가입 닉네임과 같은 이유다.
+
 ### 왜 PostgreSQL에서 Oracle로 바꿨나
 프로젝트 방침 변경. 전환 시점에 SQLAlchemy 모델을 하나도 안 만든 상태여서
 비용이 거의 없었다. 영향 파일은 5개뿐이었고 프론트엔드는 수정 0건.
+
+### 왜 change 단계에서 코드 행을 지우나
+`used_at`이 찍힌 코드는 `verify`를 다시 통과하지 못하지만, `change`는
+"`used_at`이 있는가"를 조건으로 삼기 때문에 같은 코드로 몇 번이든 호출할 수 있다.
+비밀번호를 바꾼 뒤 행을 삭제해서 그 구멍을 막는다.
 
 ### 왜 `verification_codes.used_at` 컬럼을 뒀나
 `verify-code`와 `change`가 별도 엔드포인트라, 인증 성공 사실을 어딘가 남겨야
@@ -124,6 +334,17 @@ dialect가 지원하지 않는다** (`visit_JSON` 미구현 → `CompileError`).
 ### 왜 passlib 대신 bcrypt를 직접 쓰나
 passlib 1.7.4는 2020년 이후 릴리스가 없어 bcrypt 5.x와 호환되지 않는다.
 `AttributeError: module 'bcrypt' has no attribute '__about__'`.
+
+### 왜 로그인 실패 시 남은 횟수를 알려주나
+사용성을 위해 그렇게 정했다 (2026-08-17).
+
+단, 이건 트레이드오프다. `(남은 시도 N회)` 문구는 **존재하는 계정에만** 붙으므로,
+없는 이메일과 응답을 비교하면 가입 여부를 알아낼 수 있다.
+"없는 이메일과 틀린 비밀번호를 구분하지 않는다"는 로그인 정책이 이 부분에서는
+사실상 무력해진다.
+
+계정 열거를 막는 쪽으로 바꾸려면 `login_user()`의 401 메시지를
+`_INVALID_CREDENTIALS` 상수로 되돌리면 된다. 그 한 줄이 전부다.
 
 ### 왜 좋아요/댓글 수를 컬럼으로 안 두나
 MVP에서는 `COUNT()` 집계로 충분하다. 비정규화 컬럼은 동기화 버그 위험이
@@ -176,6 +397,40 @@ DDL 파일은 이미 빈 줄을 제거해뒀다.
 
 ### 8. bcrypt는 72바이트가 상한이다
 한글 비밀번호는 24자가 최대. `schemas/auth.py`에서 바이트 기준으로 검증한다.
+
+### 9. 리스너가 설치 시점의 IP에 고정된다 (개인 PC 설치 시)
+XE를 설치하면 `listener.ora`에 그 순간의 IP가 박힌다.
+```
+(ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.219.101)(PORT = 1521))
+```
+이러면 `localhost` 접속이 거부된다 — `DPY-6005` / `WinError 10061`.
+서비스는 Running이고 DBeaver가 IP로 붙으면 되기 때문에 원인을 찾기 어렵다.
+
+**대응**: `<ORACLE_HOME>/network/admin/listener.ora`에서 `HOST`를 `0.0.0.0`으로
+바꾸고 `OracleOraDB21Home1TNSListener` 서비스를 재시작한다.
+IP를 직접 적으면 다른 네트워크(집↔학원)로 이동할 때마다 다시 깨진다.
+
+확인: `Get-NetTCPConnection -State Listen -LocalPort 1521` 이 `0.0.0.0`을 보여야 한다.
+
+---
+
+## ⚠️ Windows 개발환경 함정
+
+### 1. pip가 requirements.txt를 cp949로 읽는다
+한글 Windows에서 pip는 BOM이 없으면 **OS 기본 인코딩(cp949)** 으로
+requirements.txt를 읽는다. 파일에 한글 주석이 있으면 설치가 통째로 실패한다.
+```
+UnicodeDecodeError: 'cp949' codec can't decode byte 0x80 in position 10
+```
+**대응**: `requirements.txt`를 **UTF-8 with BOM**으로 저장한다. pip는 BOM을
+먼저 검사하므로 pip 버전·OS 로케일과 무관하게 동작한다. (2026-08-17 적용 완료)
+
+### 2. 기본 python이 3.11 미만일 수 있다
+이 프로젝트는 Python 3.11+ 가 필요하다. `python --version`이 3.9 등이면
+venv 생성 시 버전을 명시한다.
+```
+py -3.11 -m venv .venv
+```
 
 ---
 

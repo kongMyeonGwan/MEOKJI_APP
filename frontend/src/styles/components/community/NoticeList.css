@@ -1,0 +1,115 @@
+.notice-list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.notice {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* 고정 공지는 배경을 아주 옅게 깔아 일반 공지와 구분한다 */
+.notice--pinned { background: var(--color-accent-weak); }
+
+.notice__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 4px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notice__head:hover .notice__title { color: var(--color-accent); }
+
+.notice__badges {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.notice__pin {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.notice__cat {
+  background: var(--color-surface);
+}
+
+.notice__cat--warn {
+  border-color: var(--color-warn);
+  background: #fdf4e5;
+  color: var(--color-warn);
+  font-weight: 600;
+}
+
+/* 제목이 길면 한 줄로 자른다. 남는 공간을 전부 차지한다 */
+.notice__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice__meta {
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notice__caret {
+  flex-shrink: 0;
+  width: 16px;
+  color: var(--color-muted);
+  text-align: center;
+  transition: transform 0.15s ease;
+}
+
+.notice__caret.is-open { transform: rotate(180deg); }
+
+.notice__body {
+  padding: 0 4px 16px 4px;
+}
+
+/* 목업 데이터의 \n 을 그대로 줄바꿈으로 보여준다 */
+.notice__content {
+  margin: 0;
+  white-space: pre-line;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.notice__writer {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+/* 좁은 화면에서는 날짜/조회수를 제목 아래로 내린다.
+   한 줄에 다 넣으면 제목이 두세 글자만 남는다 */
+@media (max-width: 640px) {
+  .notice__head {
+    flex-wrap: wrap;
+    gap: 6px 8px;
+  }
+
+  .notice__title {
+    flex-basis: 100%;
+    order: 3;
+    white-space: normal;
+  }
+
+  .notice__caret {
+    order: 2;
+    margin-left: auto;
+  }
+}
