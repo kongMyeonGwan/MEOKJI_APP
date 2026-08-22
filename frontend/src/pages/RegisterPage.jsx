@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { register } from '../api/auth'
 import { parseApiError } from '../utils/apiError'
 import ErrorMessage from '../components/common/ErrorMessage'
-import './RegisterPage.css'
+import '../styles/pages/RegisterPage.css'
 
 const INITIAL = { email: '', password: '', passwordConfirm: '', nickname: '' }
 
