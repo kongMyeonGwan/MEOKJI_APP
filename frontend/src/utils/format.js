@@ -11,6 +11,21 @@ export function formatPrice(value) {
   return `${value.toLocaleString('ko-KR')}원`
 }
 
+/**
+ * 7200 -> "7천원대", 15400 -> "1만5천원대"
+ *
+ * 히어로의 해시태그처럼 "대충 이 정도 가격"만 말하면 되는 자리에 쓴다.
+ * 정확한 금액은 바로 위 줄에 이미 적혀 있어서, 여기까지 원 단위로 적으면
+ * 같은 숫자를 두 번 읽게 된다.
+ */
+export function priceBand(value) {
+  if (!value) return null
+  const man = Math.floor(value / 10000)
+  const chun = Math.floor((value % 10000) / 1000)
+  if (!man) return `${chun}천원대`
+  return chun ? `${man}만${chun}천원대` : `${man}만원대`
+}
+
 /** "2026-08-16T09:20:00Z" -> "2026.08.16" */
 export function formatDate(isoString) {
   if (!isoString) return '-'

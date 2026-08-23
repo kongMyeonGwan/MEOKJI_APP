@@ -1,0 +1,84 @@
+.finder { padding: 16px 18px; }
+
+.finder__search {
+  display: flex;
+  gap: 8px;
+}
+
+.finder__search input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+}
+
+.finder__search input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.finder__search input::-webkit-search-cancel-button { display: none; }
+
+.finder__submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+
+/* ===== 예시 검색어 ===== */
+.finder__chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* 칩처럼 생겼지만 누를 수 없는 라벨이다. 배경 없이 글자만 둬서 구분한다 */
+.finder__chips-label {
+  padding-right: 2px;
+  font-size: 13px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.finder__more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-left: auto;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.finder__more:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* 펼친 상태에서는 화살표가 반대를 가리켜야 접힌다는 게 읽힌다 */
+.finder__more .is-up {
+  display: block;
+  transform: rotate(180deg);
+}
+
+@media (max-width: 520px) {
+  /* 버튼에 글자까지 넣으면 입력칸이 두 단어 폭만 남는다 */
+  .finder__submit-label { display: none; }
+  .finder__submit { padding: 12px 14px; }
+}

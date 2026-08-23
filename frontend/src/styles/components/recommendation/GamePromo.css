@@ -1,0 +1,151 @@
+/*
+ * 메뉴 게임 배너.
+ *
+ * 카드가 아니라 살구색 판이다. 위아래가 전부 흰 카드라
+ * 여기까지 흰색이면 그냥 다음 섹션으로 읽히고 넘어간다.
+ *
+ * [문구][게임 3개][시작 버튼] 세 덩어리. 가운데만 늘어난다.
+ */
+.gpromo {
+  display: grid;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  background: var(--color-soft);
+}
+
+.gpromo__icon { font-size: 22px; }
+
+.gpromo__question {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.gpromo__title {
+  margin: 6px 0 0;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.5px;
+}
+
+.gpromo__desc {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: var(--color-muted);
+}
+
+/* ===== 게임 3장 ===== */
+.gpromo__games {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gpromo__game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  padding: 16px 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.gpromo__game:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.gpromo__game-emoji { font-size: 30px; line-height: 1.2; }
+
+.gpromo__game-text {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  margin-top: 8px;
+}
+
+.gpromo__game-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/*
+ * mocks의 설명이 \n 으로 두 줄이다. 그 줄바꿈을 살리되,
+ * 카드 폭이 좁아 한 줄이 또 접히면 세 줄 네 줄로 들쭉날쭉해진다.
+ * 글자를 조금 줄이고 자간을 좁혀 의도한 두 줄로 떨어지게 맞췄다.
+ */
+.gpromo__game-desc {
+  white-space: pre-line;
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: -0.3px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+/* ===== 시작 버튼 ===== */
+.gpromo__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.gpromo__robot { font-size: 30px; }
+
+/* ===== 좁아질 때 ===== */
+/*
+ * 1440px에서 이미 접는다. 대시보드는 오른쪽에 인기 레시피(330px)를 끼고 있어서
+ * 화면이 1400px이어도 이 배너에 오는 폭은 700px대다. 그 폭을 셋으로 나누면
+ * 게임 카드 하나가 80px이라 설명이 글자 두세 개씩 끊긴다.
+ */
+@media (max-width: 1439px) {
+  .gpromo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .gpromo__cta {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .gpromo__cta .btn { flex: 1; max-width: 320px; }
+}
+
+@media (max-width: 560px) {
+  .gpromo { padding: 18px 16px; }
+
+  /* 가로 3열로는 글자가 두 자씩 잘린다. 한 줄에 하나씩 눕힌다 */
+  .gpromo__games { grid-template-columns: 1fr; }
+
+  .gpromo__game {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+  }
+
+  .gpromo__game-text { margin-top: 0; }
+
+  .gpromo__game-desc {
+    /* 눕히면 폭이 넉넉해서 굳이 두 줄로 끊을 필요가 없다 */
+    white-space: normal;
+    margin-top: 2px;
+  }
+
+  .gpromo__game-emoji { font-size: 26px; }
+}

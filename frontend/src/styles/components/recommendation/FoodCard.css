@@ -7,6 +7,34 @@
   background: var(--color-surface);
 }
 
+/* 하트를 얹기 위한 기준. 그림 자체는 링크라 하트를 그 안에 두면
+   찜하려다 레시피가 열린다 */
+.food-card__media { position: relative; }
+
+.food-card__like {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+
+  border: none;
+  border-radius: 50%;
+  /* 사진 위에 얹히므로 흰 원을 깔아야 어떤 그림에서도 하트가 보인다 */
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.food-card__like:hover { color: var(--color-heart); }
+
+.food-card__like.is-on { color: var(--color-heart); }
+
 .food-card__body {
   display: flex;
   flex-direction: column;

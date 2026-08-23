@@ -1,42 +1,61 @@
 .topbar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 
   position: sticky;
   top: 0;
   z-index: 20;
 
-  padding: 14px 28px;
-  padding-top: calc(14px + var(--safe-top));
+  min-height: var(--topbar-height);
+  padding: 12px 24px;
+  padding-top: calc(12px + var(--safe-top));
 
   background: var(--color-bg);
+}
+
+/* ☰ — 웹 모드에서는 사이드바 접기, 앱 모드에서는 서랍 열기 */
+.topbar__menu-btn {
+  display: flex;
+  flex-shrink: 0;
+  padding: 7px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.topbar__menu-btn:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 /* 사이드바에 로고가 있으므로 웹 모드에서는 숨긴다 */
 .topbar__logo { display: none; }
 
+/* ===== 검색 ===== */
 .topbar__search {
   display: flex;
   align-items: center;
   flex: 1;
-  max-width: 520px;
+  min-width: 0;
+  max-width: 620px;
 
-  padding: 0 6px 0 18px;
+  padding-right: 6px;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: var(--color-surface);
 }
 
-.topbar__search:focus-within {
-  border-color: var(--color-accent);
-}
+.topbar__search:focus-within { border-color: var(--color-accent); }
 
 .topbar__search input {
   flex: 1;
   min-width: 0;
-  padding: 12px 0;
+  padding: 11px 6px 11px 20px;
   border: none;
+  border-radius: 999px;
   background: none;
   font: inherit;
   font-size: 14px;
@@ -45,78 +64,132 @@
 
 .topbar__search input:focus { outline: none; }
 
-/* 검색창의 돋보기 버튼은 브라우저 기본 검색 지우기 아이콘과 겹치지 않게 오른쪽 끝 */
-.topbar__search button {
+/* 브라우저가 넣어주는 x 버튼. 우리 돋보기 버튼과 나란히 두면 지저분하다 */
+.topbar__search input::-webkit-search-cancel-button { display: none; }
+
+.topbar__search-btn {
   display: flex;
-  align-items: center;
-  padding: 8px 10px;
+  flex-shrink: 0;
+  padding: 7px;
   border: none;
+  border-radius: 50%;
   background: none;
   color: var(--color-muted);
   cursor: pointer;
 }
 
-.topbar__search button:hover { color: var(--color-accent); }
+.topbar__search-btn:hover { color: var(--color-accent); }
 
+/* ===== AI 검색 도우미 ===== */
+.topbar__ai { position: relative; flex-shrink: 0; }
+
+.topbar__ai-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 10px 16px;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  background: var(--color-accent-weak);
+
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.topbar__ai-btn.is-open,
+.topbar__ai-btn:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* ===== 우측 아이콘 ===== */
 .topbar__actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   margin-left: auto;
 }
 
-.topbar__bell {
+.topbar__icon-btn {
   display: flex;
   position: relative;
-  padding: 6px;
+  padding: 7px;
   border: none;
+  border-radius: 50%;
   background: none;
   color: var(--color-muted);
   cursor: pointer;
 }
 
-.topbar__bell:hover { color: var(--color-text); }
-
-.topbar__dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-accent);
+.topbar__icon-btn:hover {
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
+/* 아이콘 오른쪽 위에 걸치는 숫자 배지 */
+.topbar__count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 2px solid var(--color-bg);
+  height: 19px;
+}
+
+.topbar__bell-wrap { position: relative; }
+
+/* ===== 프로필 ===== */
 .topbar__profile { position: relative; }
 
 .topbar__profile-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px;
+  gap: 9px;
+  padding: 4px 6px 4px 4px;
   border: none;
+  border-radius: 999px;
   background: none;
   font: inherit;
   color: inherit;
   cursor: pointer;
 }
 
+.topbar__profile-btn:hover { background: var(--color-surface); }
+
 .topbar__avatar {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--color-accent-weak);
   color: var(--color-accent);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
+.topbar__who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
 .topbar__name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.topbar__level {
+  font-size: 11.5px;
+  color: var(--color-muted);
   white-space: nowrap;
 }
 
@@ -126,7 +199,7 @@
   line-height: 1;
 }
 
-/* 드롭다운 */
+/* ===== 열리는 패널 ===== */
 .topbar__backdrop {
   position: fixed;
   inset: 0;
@@ -136,21 +209,116 @@
   cursor: default;
 }
 
-.topbar__menu {
+.topbar__panel {
   position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   z-index: 26;
 
-  display: flex;
-  flex-direction: column;
-  min-width: 150px;
-  padding: 6px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
 
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px var(--color-shadow);
+}
+
+/* AI 도우미는 왼쪽에서, 알림·프로필은 오른쪽에서 펼친다.
+   각 버튼이 붙어 있는 쪽으로 열려야 화면 밖으로 나가지 않는다 */
+.topbar__panel--ai { left: 0; }
+.topbar__panel--bell,
+.topbar__menu { right: 0; }
+
+.topbar__panel-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.topbar__panel-foot {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.topbar__panel-foot a {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.topbar__ai-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topbar__ai-list button {
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.topbar__ai-list button:hover {
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+}
+
+/* 알림 */
+.topbar__notis {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.topbar__notis li {
+  display: flex;
+  gap: 10px;
+  padding: 11px 8px;
+  border-radius: 8px;
+}
+
+.topbar__notis li + li { border-top: 1px solid var(--color-border); }
+
+/* 안 읽은 알림만 살짝 칠한다 */
+.topbar__notis li.is-unread { background: var(--color-accent-weak); }
+
+.topbar__noti-icon { font-size: 16px; line-height: 1.4; }
+
+.topbar__noti-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.topbar__noti-body strong { font-size: 13px; }
+
+.topbar__noti-date { font-size: 11px; }
+
+/* 프로필 메뉴 */
+.topbar__menu {
+  display: flex;
+  flex-direction: column;
+  width: auto;
+  min-width: 170px;
+  padding: 6px;
 }
 
 .topbar__menu a,
@@ -172,9 +340,9 @@
 /* ===== 앱 모드 ===== */
 @media (max-width: 1023px) {
   .topbar {
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 10px 16px;
+    gap: 8px;
+    min-height: 0;
+    padding: 10px 14px;
     padding-top: calc(10px + var(--safe-top));
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface);
@@ -183,24 +351,33 @@
   .topbar__logo {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 18px;
+    gap: 7px;
+    flex-shrink: 0;
+    font-size: 16px;
     font-weight: 800;
-    color: var(--color-accent);
   }
 
-  /* 검색창은 아래 줄 전체를 쓴다 */
-  .topbar__search {
-    order: 3;
-    flex-basis: 100%;
-    max-width: none;
-    padding-left: 14px;
-  }
+  .topbar__logo svg { color: var(--color-accent); }
 
-  .topbar__search input { padding: 9px 0; }
+  .topbar__search { background: var(--color-bg); }
 
-  .topbar__actions { gap: 8px; }
+  /* 좁은 화면에서는 라벨을 접고 ✨만 남긴다 */
+  .topbar__ai-label { display: none; }
+  .topbar__ai-btn { padding: 10px 12px; }
 
-  /* 좁은 화면에서 닉네임까지 넣으면 줄이 넘친다 */
-  .topbar__name { display: none; }
+  .topbar__count { border-color: var(--color-surface); }
+
+  .topbar__actions { gap: 4px; }
+  .topbar__who { display: none; }
+  .topbar__caret { display: none; }
+}
+
+/* 검색창까지 한 줄에 다 넣으면 어느 것도 못 쓸 만큼 좁아진다.
+   이 폭부터는 로고를 접고 검색창에 자리를 준다 */
+@media (max-width: 720px) {
+  .topbar__logo-text { display: none; }
+}
+
+@media (max-width: 520px) {
+  .topbar__logo { display: none; }
 }

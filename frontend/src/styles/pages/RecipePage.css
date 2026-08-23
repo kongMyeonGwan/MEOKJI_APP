@@ -58,6 +58,18 @@
   flex-wrap: wrap;
 }
 
+/* 찜 버튼. 하트가 켜지면 글자까지 같이 붉어져야 눌린 게 보인다 */
+.recipe-page__like {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recipe-page__like[aria-pressed='true'] {
+  border-color: var(--color-heart);
+  color: var(--color-heart);
+}
+
 @media (max-width: 1023px) {
   .recipe-page { gap: 14px; }
   .recipe-page__head { flex-direction: column; gap: 6px; }

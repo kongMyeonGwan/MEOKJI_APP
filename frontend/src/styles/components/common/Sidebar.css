@@ -1,78 +1,286 @@
-/* 앱 모드에서는 하단 탭이 대신하므로 숨긴다 */
-.sidebar { display: none; }
+/*
+ * 좌측 사이드바.
+ *
+ *   웹 모드(1024px~)  : 화면 왼쪽에 고정. 상단바의 ☰ 로 접었다 펼 수 있다
+ *   앱 모드(~1023px)  : 평소엔 숨어 있고 ☰ 를 누르면 서랍으로 덮으며 열린다
+ *
+ * 두 모드가 같은 마크업을 쓴다. 여는 조건만 .shell.is-nav-open 하나로 갈린다.
+ * 서랍용 사이드바를 따로 만들면 메뉴를 추가할 때마다 두 곳을 고쳐야 한다.
+ */
+.sidebar {
+  display: none;
+  flex-direction: column;
 
+  width: var(--sidebar-width);
+  padding: 20px 14px;
+
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+
+  /* 메뉴 + 레벨 카드가 낮은 화면에서 넘칠 수 있다 */
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  margin-bottom: 22px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+/* 마크만 브랜드색으로 칠하고 글자는 본문색으로 둔다.
+   글자까지 주황이면 바로 아래 활성 메뉴(주황 배경)와 겹쳐 시끄러워진다 */
+.sidebar__logo svg {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sidebar__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__item:hover { background: var(--color-bg); }
+
+/* 활성 메뉴는 주황색으로 꽉 채운다 */
+.sidebar__item.is-active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.sidebar__item.is-active:hover { background: var(--color-accent); }
+
+/* 아이콘이 currentColor를 쓰므로 활성/비활성 색이 글자와 자동으로 맞는다 */
+.sidebar__icon {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+
+.sidebar__item.is-active .sidebar__icon { color: inherit; }
+
+/* NEW 배지. 활성 상태(주황 배경)에서는 반대로 흰 배지가 된다 */
+.sidebar__badge {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.sidebar__item.is-active .sidebar__badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.sidebar__divider {
+  height: 1px;
+  margin: 12px 8px;
+  border: none;
+  background: var(--color-border);
+}
+
+/* ===== 하단 (레벨 카드 + 유틸 버튼) ===== */
+.sidebar__foot {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.level {
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.level__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.level__icon { font-size: 20px; line-height: 1; }
+
+.level__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.level__sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.level__bar {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.level__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  /* 왼쪽에서 오른쪽으로 밝아져서 "차오르는 중"으로 읽힌다 */
+  background: linear-gradient(90deg, var(--color-accent), #f6a23c);
+}
+
+.level__exp {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+/* 세 칸 고정. 숫자 자리라 폭이 흔들리면 지저분해 보인다 */
+.level__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.level__stats dt {
+  font-size: 10.5px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.level__stats dd {
+  margin: 3px 0 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.level__more { margin-top: 12px; }
+
+/* Guest용 축약형 */
+.level--guest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.level__guest-text {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.level__guest-text a {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.level__guest-text a:hover { text-decoration: underline; }
+
+/* 테마 · 알림 스위치 */
+.sidebar__utils {
+  display: flex;
+  justify-content: space-around;
+  gap: 4px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.sidebar__util {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.sidebar__util:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* 켜진 스위치(현재 테마 · 알림 수신 중) */
+.sidebar__util.is-on {
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+}
+
+/* ===== 웹 모드 ===== */
 @media (min-width: 1024px) {
-  .sidebar {
+  .shell.is-nav-open .sidebar {
     display: flex;
-    flex-direction: column;
-
     position: sticky;
     top: 0;
     flex-shrink: 0;
-
-    width: var(--sidebar-width);
     height: 100vh;
     height: 100dvh;
-    padding: 22px 16px;
-
-    background: var(--color-surface);
-    border-right: 1px solid var(--color-border);
   }
+}
 
-  .sidebar__logo {
+/* ===== 앱 모드 — 서랍 ===== */
+@media (max-width: 1023px) {
+  .shell.is-nav-open .sidebar {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    margin-bottom: 28px;
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--color-accent);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 60;
+
+    width: min(280px, 84vw);
+    padding-top: calc(20px + var(--safe-top));
+    box-shadow: 0 0 32px var(--color-shadow);
   }
 
-  .sidebar__logo svg { flex-shrink: 0; }
-
-  .sidebar__nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .sidebar__item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    padding: 12px 14px;
-    border-radius: var(--radius-sm);
-
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--color-text);
-  }
-
-  .sidebar__item:hover { background: var(--color-bg); }
-
-  /* 활성 메뉴는 주황색으로 꽉 채운다 */
-  .sidebar__item.is-active {
-    background: var(--color-accent);
-    color: #fff;
-  }
-
-  .sidebar__item.is-active:hover { background: var(--color-accent); }
-
-  /* 아이콘이 currentColor를 쓰므로 활성/비활성 색이 글자와 자동으로 맞는다 */
-  .sidebar__icon {
-    flex-shrink: 0;
-    color: var(--color-muted);
-  }
-
-  .sidebar__item.is-active .sidebar__icon { color: inherit; }
-
-  .sidebar__divider {
-    height: 1px;
-    margin: 14px 8px;
+  /* 서랍 밖을 눌러 닫는 층 */
+  .nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
     border: none;
-    background: var(--color-border);
+    background: rgba(0, 0, 0, 0.4);
   }
+}
+
+@media (min-width: 1024px) {
+  .nav-backdrop { display: none; }
 }

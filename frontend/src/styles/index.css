@@ -24,6 +24,18 @@
   --color-warn: #c9821a;
   --color-error: #c0392b;
 
+  --color-shadow: rgba(34, 31, 28, 0.08);
+
+  /* 히어로 배경 — 오늘 날씨에 따라 갈린다(WeatherPick).
+     컴포넌트에 색을 직접 적으면 다크 모드에서 그 자리만 밝게 남는다 */
+  /* 사진이 없을 때 일러스트가 앉는 자리 (FoodThumb) */
+  --thumb-bg: linear-gradient(150deg, #fdf1e9 0%, #f8e2d2 100%);
+
+  --tint-clear: #fff3e2;
+  --tint-clouds: #f1f2f4;
+  --tint-rain: #e9eef3;
+  --tint-snow: #eaf1f8;
+
   --radius: 14px;
   --radius-sm: 10px;
 
@@ -32,6 +44,48 @@
   --bottom-nav-height: 58px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
+
+  color-scheme: light;
+}
+
+/*
+ * 다크 모드.
+ *
+ * <html data-theme="dark"> 하나로 갈린다(contexts/PrefsContext.jsx).
+ * 컴포넌트 CSS는 전부 var()만 쓰므로 여기 값만 바꾸면 화면 전체가 따라온다.
+ * 새 화면을 만들 때 다크 모드를 따로 손볼 일이 없게 하려는 구조라,
+ * 컴포넌트 쪽에 색상 리터럴(#fff 등)을 새로 적지 않는 게 중요하다.
+ *
+ * 회색을 그대로 어둡게 하지 않고 갈색기를 섞었다. 브랜드색이 주황이라
+ * 중성 회색 위에 얹으면 주황만 붕 떠 보인다.
+ */
+[data-theme='dark'] {
+  --color-bg: #141210;
+  --color-surface: #1e1b18;
+  --color-soft: #2c2019;
+  --color-border: #332e28;
+  --color-text: #f3eee7;
+  --color-muted: #a89e93;
+
+  --color-accent: #ff6236;
+  --color-accent-weak: #38201a;
+  --color-heart: #ff6b6b;
+
+  --color-ok: #4cae7d;
+  --color-warn: #e0a33f;
+  --color-error: #e57366;
+
+  --color-shadow: rgba(0, 0, 0, 0.45);
+
+  /* 일러스트가 밝은 색이라 배경까지 밝으면 카드에서 그 칸만 떠 보인다 */
+  --thumb-bg: linear-gradient(150deg, #2e241c 0%, #3b2c22 100%);
+
+  --tint-clear: #2b2119;
+  --tint-clouds: #202225;
+  --tint-rain: #1a2028;
+  --tint-snow: #1d242b;
+
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -118,6 +172,75 @@ button { font-family: inherit; }
   border-color: var(--color-warn);
   background: #fdf4e5;
   color: var(--color-warn);
+}
+
+/*
+ * 고를 수 있는 칩.
+ *
+ * 검색 추천어 · 예산 프리셋 · 기간 탭이 전부 같은 모양이라 여기 한 번만 둔다.
+ * .tag 와 비슷해 보이지만 역할이 다르다. .tag 는 읽기만 하는 라벨이고
+ * .chip 은 눌러서 상태가 바뀌는 버튼이다.
+ */
+.chip {
+  padding: 8px 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.chip.is-active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 숫자·NEW 배지 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* 별점 — "★ 4.8 (256)" */
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stars svg { color: #f5b301; }
+
+.stars__count {
+  color: var(--color-muted);
+  font-weight: 500;
 }
 
 /* 버튼 */

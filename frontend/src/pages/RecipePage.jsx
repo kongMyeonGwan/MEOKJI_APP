@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import RecipeView from '../components/recipe/RecipeView'
 import PriceTable, { getPriceSummary } from '../components/price/PriceTable'
+import Icon from '../components/common/Icon'
 import { useAuth } from '../contexts/AuthContext'
+import { useLikes } from '../contexts/LikesContext'
 import { MOCK_HISTORIES, MOCK_PRICES } from '../mocks'
 import { formatPrice } from '../utils/format'
 import '../styles/pages/RecipePage.css'
@@ -23,6 +25,7 @@ export default function RecipePage() {
 function Recipe({ foodName }) {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
+  const { has, toggle } = useLikes()
   const [saved, setSaved] = useState(false)
 
   // 하드코딩 데이터에서 이름이 맞는 것을 찾고, 없으면 첫 번째를 보여준다.
@@ -34,6 +37,11 @@ function Recipe({ foodName }) {
   // 쇼핑몰마다 값이 달라 재료비는 하나의 숫자가 아니라 구간으로 나온다.
   // 어디서 사느냐에 따라 얼마나 차이 나는지 먼저 보여준다.
   const priceRange = getPriceSummary(MOCK_PRICES)
+
+  // 찜은 로그인 없이도 된다. 이 브라우저에만 저장되는 값이고(LikesContext),
+  // "이걸로 먹을래요"와 달리 기록으로 남지 않는다
+  const name = decoded || source.food_name
+  const liked = has(name)
 
   const onConfirm = () => {
     if (!isAuthenticated) {
@@ -99,9 +107,20 @@ function Recipe({ foodName }) {
               이 레시피로 결정하면 기록에 남습니다.
               {!isAuthenticated && ' (로그인이 필요합니다)'}
             </p>
-            <button type="button" className="btn" onClick={onConfirm}>
-              이걸로 먹을래요
-            </button>
+            <div className="recipe-page__actions">
+              <button type="button" className="btn" onClick={onConfirm}>
+                이걸로 먹을래요
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost recipe-page__like"
+                onClick={() => toggle(name)}
+                aria-pressed={liked}
+              >
+                <Icon name={liked ? 'heart-fill' : 'heart'} size={17} />
+                {liked ? '찜 해제' : '찜하기'}
+              </button>
+            </div>
           </>
         )}
       </section>

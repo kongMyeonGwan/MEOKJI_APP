@@ -7,6 +7,9 @@
   max-width: 1040px;
 }
 
+/* 룰렛처럼 내용이 가운데 하나뿐인 화면. 넓으면 원이 허전하게 떠 보인다 */
+.list-page--narrow { max-width: 520px; }
+
 .list-page__desc {
   margin: -8px 0 0;
   font-size: 14px;
@@ -20,24 +23,50 @@
 
 .list-page__filter { padding: 18px; }
 
-/* 예산 입력 */
-.budget-form {
+/* 활성 카테고리 표시 (/recommend?category=) */
+.list-page__filter-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-top: -4px;
 }
 
-.budget-form__amount {
-  flex: 0 0 120px;
-  text-align: right;
+.list-page__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 6px 5px 13px;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  background: var(--color-accent-weak);
+  font-size: 13px;
   font-weight: 700;
+  color: var(--color-accent);
 }
 
-.budget-form__unit {
-  font-size: 14px;
-  color: var(--color-muted);
-  white-space: nowrap;
+.list-page__chip-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  color: inherit;
+  cursor: pointer;
 }
+
+.list-page__chip-clear:hover { background: rgba(232, 72, 28, 0.16); }
+
+/* 예산 범위 슬라이더.
+   히어로에서는 검색폼 아래에 붙어서 margin-top이 필요하지만,
+   여기서는 카드의 첫 요소라 위쪽 여백을 지운다 */
+.list-page__filter .budget { margin-top: 0; }
 
 .budget-form__presets {
   display: flex;
@@ -71,8 +100,4 @@
 
 @media (max-width: 1023px) {
   .list-page__cards { grid-template-columns: 1fr; }
-
-  .budget-form { flex-wrap: wrap; }
-  .budget-form__amount { flex: 1 1 100px; }
-  .budget-form .btn { flex-basis: 100%; }
 }

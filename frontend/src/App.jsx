@@ -1,5 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { LikesProvider } from './contexts/LikesContext'
+import { PrefsProvider } from './contexts/PrefsContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/HomePage'
@@ -8,12 +10,21 @@ import PasswordResetPage from './pages/PasswordResetPage'
 import RegisterPage from './pages/RegisterPage'
 import RecommendPage from './pages/RecommendPage'
 import BudgetPage from './pages/BudgetPage'
+import SearchPage from './pages/SearchPage'
+import FridgePage from './pages/FridgePage'
+import GamePage from './pages/GamePage'
+import WorldCupPage from './pages/WorldCupPage'
+import BalancePage from './pages/BalancePage'
+import RoulettePage from './pages/RoulettePage'
 import LikedPage from './pages/LikedPage'
+import PopularPage from './pages/PopularPage'
 import RecipePage from './pages/RecipePage'
 import CommunityPage from './pages/CommunityPage'
 import PostDetailPage from './pages/PostDetailPage'
 import PostWritePage from './pages/PostWritePage'
 import HistoryPage from './pages/HistoryPage'
+import AiHistoryPage from './pages/AiHistoryPage'
+import SettingsPage from './pages/SettingsPage'
 import MyPage from './pages/MyPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -21,43 +32,67 @@ import NotFoundPage from './pages/NotFoundPage'
  * 라우팅 정의.
  *
  * 사이드바/하단탭의 메뉴가 여기 경로와 1:1로 대응한다.
- * community 목록·상세와 좋아요 목록은 Guest도 볼 수 있어야 하므로
+ * community 목록·상세와 인기/찜 목록은 Guest도 볼 수 있어야 하므로
  * ProtectedRoute로 감싸지 않는다(STEP 20).
+ *
+ * Provider 순서
+ * -------------
+ *   PrefsProvider   테마·알림. 로그인과 무관하고 가장 바깥에서 <html>을 칠한다
+ *   AuthProvider    로그인 상태
+ *   LikesProvider   찜 목록. 지금은 브라우저에만 저장하지만 서버에 붙으면
+ *                   로그인 사용자별로 불러와야 해서 Auth 안쪽에 둔다
  */
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route index element={<HomePage />} />
+      <PrefsProvider>
+        <AuthProvider>
+          <LikesProvider>
+            <Routes>
+              <Route element={<MainLayout />}>
+                <Route index element={<HomePage />} />
 
-            {/* 인증 */}
-            <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} />
-            <Route path="password-reset" element={<PasswordResetPage />} />
+                {/* 인증 */}
+                <Route path="login" element={<LoginPage />} />
+                <Route path="register" element={<RegisterPage />} />
+                <Route path="password-reset" element={<PasswordResetPage />} />
 
-            {/* 추천 · 레시피 */}
-            <Route path="recommend" element={<RecommendPage />} />
-            <Route path="budget" element={<BudgetPage />} />
-            <Route path="recipe/:foodName" element={<RecipePage />} />
+                {/* 추천 · 레시피 */}
+                <Route path="recommend" element={<RecommendPage />} />
+                <Route path="budget" element={<BudgetPage />} />
+                <Route path="search" element={<SearchPage />} />
+                <Route path="fridge" element={<FridgePage />} />
+                <Route path="recipe/:foodName" element={<RecipePage />} />
 
-            {/* 커뮤니티 — 조회는 Guest 허용 */}
-            <Route path="liked" element={<LikedPage />} />
-            <Route path="community" element={<CommunityPage />} />
-            <Route path="community/:postId" element={<PostDetailPage />} />
+                {/* 메뉴 게임 */}
+                <Route path="game" element={<GamePage />} />
+                <Route path="game/worldcup" element={<WorldCupPage />} />
+                <Route path="game/balance" element={<BalancePage />} />
+                <Route path="roulette" element={<RoulettePage />} />
 
-            {/* 로그인 필수 */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="community/write" element={<PostWritePage />} />
-              <Route path="history" element={<HistoryPage />} />
-              <Route path="mypage" element={<MyPage />} />
-            </Route>
+                {/* 커뮤니티 — 조회는 Guest 허용 */}
+                <Route path="liked" element={<LikedPage />} />
+                <Route path="popular" element={<PopularPage />} />
+                <Route path="community" element={<CommunityPage />} />
+                <Route path="community/:postId" element={<PostDetailPage />} />
 
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-        </Routes>
-      </AuthProvider>
+                {/* 설정은 이 브라우저에 저장되는 값이라 Guest도 쓸 수 있다 */}
+                <Route path="settings" element={<SettingsPage />} />
+
+                {/* 로그인 필수 */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="community/write" element={<PostWritePage />} />
+                  <Route path="history" element={<HistoryPage />} />
+                  <Route path="ai-history" element={<AiHistoryPage />} />
+                  <Route path="mypage" element={<MyPage />} />
+                </Route>
+
+                <Route path="*" element={<NotFoundPage />} />
+              </Route>
+            </Routes>
+          </LikesProvider>
+        </AuthProvider>
+      </PrefsProvider>
     </BrowserRouter>
   )
 }

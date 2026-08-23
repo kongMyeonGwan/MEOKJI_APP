@@ -1,20 +1,21 @@
 /*
  * 대시보드 2단 구성.
  * 왼쪽은 남는 공간을 모두 쓰고, 오른쪽은 고정 폭이다.
- * 오른쪽을 비율(%)로 잡으면 넓은 화면에서 목록이 지나치게 늘어난다.
+ * 오른쪽을 비율(%)로 잡으면 넓은 화면에서 순위 목록이 지나치게 늘어난다.
  */
 .dash {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 18px;
   align-items: start;
 }
 
 .dash__left,
 .dash__right {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   min-width: 0;
+  align-content: start;
 }
 
 /*
@@ -24,49 +25,40 @@
  */
 .dash > *,
 .dash__left > *,
-.dash__right > *,
-.dash__top > * {
+.dash__right > * {
   min-width: 0;
 }
 
-/* 날씨(고정) + 히어로(가변) */
-.dash__top {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 16px;
-  align-items: stretch;
-}
+.dash__cats-title { margin-bottom: 10px; }
 
+/*
+ * 추천 카드는 넓은 화면에서도 가로로 넘겨 본다.
+ * 남는 폭을 5등분하면 카드 하나가 140px 남짓이라 설명과 태그가 다 뭉개진다.
+ * 폭을 고정하고 넘치는 만큼 스크롤시키는 편이 읽기 좋다.
+ */
 .dash__cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: 210px;
   gap: 14px;
+
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+
+  /* 카드 그림자가 잘리지 않게 좌우로 여백을 내주고 스크롤바는 숨긴다 */
+  margin: 0 -4px;
+  padding: 0 4px 6px;
+  scrollbar-width: none;
 }
 
-/* 표는 카드가 자체 여백을 갖지 않게 해서 헤더가 카드 폭에 붙게 한다 */
-.dash__table-card { padding: 14px; }
-
-.dash__food {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.dash__chevron {
-  display: inline-block;
-  padding: 0 6px;
-  color: var(--color-muted);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.dash__chevron:hover { color: var(--color-accent); }
+.dash__cards::-webkit-scrollbar { display: none; }
+.dash__cards > * { scroll-snap-align: start; }
 
 /* 안내 카드 */
 .dash__tip {
   display: flex;
   gap: 12px;
-  padding: 18px;
+  padding: 16px;
   border-radius: var(--radius);
   background: var(--color-soft);
 }
@@ -75,51 +67,38 @@
 
 .dash__tip-title {
   margin: 0 0 4px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .dash__tip-body {
   margin: 0;
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.6;
   color: var(--color-muted);
 }
 
-/* ===== 태블릿: 2단은 유지하되 카드가 좁아지므로 추천은 2열 ===== */
+/* ===== 태블릿: 한 줄로 쌓는다 ===== */
+/* 이 폭부터 오른쪽 열을 더 좁히면 순위 목록의 레시피 이름이 두 글자만 남는다 */
 @media (max-width: 1279px) {
-  .dash { grid-template-columns: minmax(0, 1fr) 320px; }
-  .dash__top { grid-template-columns: 1fr; }
-  .dash__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-/* ===== 앱 모드: 한 줄로 쌓는다 ===== */
-@media (max-width: 1023px) {
   .dash {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 20px;
   }
+}
 
+/* ===== 앱 모드 ===== */
+@media (max-width: 1023px) {
   .dash__left,
-  .dash__right { gap: 24px; }
+  .dash__right { gap: 20px; }
 
-  /* 카드를 가로로 넘겨 보게 한다. 세로로 쌓으면 스크롤이 너무 길어진다 */
   .dash__cards {
-    grid-template-columns: none;
-    grid-auto-flow: column;
     grid-auto-columns: 78%;
-    overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-
-    /* 카드 그림자가 잘리지 않도록 좌우 여백을 확보하고 스크롤바는 숨긴다 */
     margin: 0 -16px;
     padding: 0 16px 4px;
-    scrollbar-width: none;
   }
-
-  .dash__cards::-webkit-scrollbar { display: none; }
-  .dash__cards > * { scroll-snap-align: start; }
 }
 
 @media (max-width: 560px) {

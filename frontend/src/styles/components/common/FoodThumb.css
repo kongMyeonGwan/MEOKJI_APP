@@ -8,8 +8,8 @@
   /* 사진이 들어와도 같은 틀을 유지한다 */
   object-fit: cover;
 
-  /* 음식 사진 자리라는 느낌을 주는 따뜻한 배경 */
-  background: linear-gradient(150deg, #fdf1e9 0%, #f8e2d2 100%);
+  /* 음식 사진 자리라는 느낌을 주는 따뜻한 배경 (테마별 값은 index.css) */
+  background: var(--thumb-bg);
   border: 1px solid var(--color-border);
 }
 

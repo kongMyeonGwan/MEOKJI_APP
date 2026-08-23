@@ -1,0 +1,130 @@
+.budget { margin-top: 18px; }
+
+.budget__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.budget__label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.budget__value {
+  font-size: 14px;
+  color: var(--color-accent);
+}
+
+.budget__slider {
+  position: relative;
+  height: 22px;
+}
+
+/* 회색 바탕 트랙과 주황 채움. 둘 다 장식이라 클릭을 받지 않는다 */
+.budget__track,
+.budget__fill {
+  position: absolute;
+  top: 50%;
+  height: 5px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.budget__track {
+  left: 0;
+  right: 0;
+  background: var(--color-border);
+}
+
+.budget__fill { background: var(--color-accent); }
+
+/* 두 input을 완전히 겹쳐 놓는다.
+   트랙 전체가 클릭을 먹으면 아래쪽 input을 영영 못 잡으므로
+   input 자체는 통과시키고 손잡이(thumb)만 다시 켠다 */
+.budget__slider input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  background: none;
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none;
+}
+
+.budget__slider input:focus { outline: none; }
+
+.budget__slider input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.budget__slider input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+/* 키보드로 옮길 때 어느 손잡이가 잡혔는지 보이게 한다 */
+.budget__slider input:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.budget__slider input:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.budget__ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+/* ===== inline 변형 (대시보드 예산 카드) ===== */
+/* 카드 제목이 이미 "예산 설정"이라 슬라이더가 제목을 또 달 필요가 없다.
+   대신 고른 구간을 아래 가운데에 크게 둬서 값이 바로 눈에 들어오게 한다 */
+.budget--inline { margin-top: 0; }
+
+.budget--inline .budget__ends {
+  margin: 0 0 4px;
+}
+
+.budget__value--center {
+  display: block;
+  margin-top: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 손잡이 테두리는 카드 배경색이어야 트랙 위에 떠 보인다.
+   흰색으로 고정하면 다크 모드에서 흰 점 두 개가 된다 */
+.budget__slider input::-webkit-slider-thumb {
+  border-color: var(--color-surface);
+}
+
+.budget__slider input::-moz-range-thumb {
+  border-color: var(--color-surface);
+}
