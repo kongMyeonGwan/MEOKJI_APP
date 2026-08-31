@@ -74,4 +74,10 @@ class OracleJSON(TypeDecorator):
     def process_result_value(self, value, dialect):
         if value is None:
             return None
+        # 이미 파싱된 값이 그대로 올 때가 있다.
+        # Session.get() 으로 엔티티를 두 번째로 읽을 때부터 재현되며
+        # (select() 경로에서는 나지 않는다) json.loads(dict) -> TypeError 가 났다.
+        # 문자열일 때만 파싱하고, 아니면 그대로 흘려보낸다.
+        if not isinstance(value, (str, bytes, bytearray)):
+            return value
         return json.loads(value)

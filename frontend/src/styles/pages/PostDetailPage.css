@@ -122,6 +122,12 @@
   font-size: 14px;
 }
 
+/* 공유된 레시피 스냅샷. 본문과 좋아요 버튼 사이에 끼어 들어간다. */
+.post__recipe {
+  padding: 16px 0;
+  border-top: 1px solid var(--color-border);
+}
+
 @media (max-width: 1023px) {
   .post { gap: 14px; }
   .post__title { font-size: 19px; }

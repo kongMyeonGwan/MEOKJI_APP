@@ -681,10 +681,16 @@ export const MOCK_LIKED_RECIPES = [
 
 // ---------------------------------------------------------
 // 확정한 식사 기록 (STEP 15~16) — meal_histories 테이블
+//
+// shared_post_id : DB 컬럼이 아니라 서버가 계산해 내려주는 값이다.
+//   posts.meal_history_id 에 uq_posts_meal(UNIQUE)이 걸려 있어 한 기록은 한 번만
+//   공유할 수 있으므로, 이미 공유한 기록은 글쓰기 목록에서 빼고 목록에는 배지를 띄운다.
+//   NULL 이면 아직 공유하지 않은 기록.
 // ---------------------------------------------------------
 export const MOCK_HISTORIES = [
   {
     id: 3,
+    shared_post_id: 3,
     food_name: '김치찌개',
     recipe_name: '돼지고기 김치찌개',
     art: 'stew',
@@ -714,6 +720,7 @@ export const MOCK_HISTORIES = [
   },
   {
     id: 2,
+    shared_post_id: null,
     food_name: '들깨 수제비',
     recipe_name: '고소한 들깨 수제비',
     art: 'soup',
@@ -740,6 +747,7 @@ export const MOCK_HISTORIES = [
   },
   {
     id: 1,
+    shared_post_id: null,
     food_name: '닭갈비',
     recipe_name: '매콤한 닭갈비',
     art: 'stirfry',
@@ -820,10 +828,15 @@ export const MOCK_BANS = [
 
 // ---------------------------------------------------------
 // 게시판 (STEP 20~23) — posts / post_likes / comments
+//
+// meal_history_id 는 NOT NULL 이다. 모든 글은 작성자가 확정한 식사에서 출발한다.
+// 아래 목업은 남이 쓴 글이므로, 여기 적힌 id 는 그 사람의 meal_histories 를 가리킨다
+// (내 기록인 MOCK_HISTORIES 와 번호가 겹쳐 보이는 것은 목업이라 그런 것뿐이다).
 // ---------------------------------------------------------
 export const MOCK_POSTS = [
   {
     id: 3,
+    meal_history_id: 3,
     nickname: '집밥러',
     title: '눈 오는 날엔 역시 김치찌개',
     content:
@@ -838,6 +851,7 @@ export const MOCK_POSTS = [
   },
   {
     id: 2,
+    meal_history_id: 2,
     nickname: '요리초보',
     title: '수제비 반죽 실패담...',
     content:
@@ -851,6 +865,7 @@ export const MOCK_POSTS = [
   },
   {
     id: 1,
+    meal_history_id: 1,
     nickname: '닭갈비마스터',
     title: '닭갈비 양념 비율 공유합니다',
     content:

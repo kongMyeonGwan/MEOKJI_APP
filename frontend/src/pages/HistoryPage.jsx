@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import ErrorMessage from '../components/common/ErrorMessage'
+import Loading from '../components/common/Loading'
 import RecipeView from '../components/recipe/RecipeView'
-import { MOCK_HISTORIES } from '../mocks'
+import { getHistories } from '../api/histories'
+import { parseApiError } from '../utils/apiError'
 import { formatDate, formatPrice } from '../utils/format'
 import '../styles/pages/HistoryPage.css'
 
@@ -10,12 +13,56 @@ import '../styles/pages/HistoryPage.css'
  *
  * 각 행은 확정 당시의 스냅샷이다. AI가 나중에 다른 레시피를 만들어도
  * 여기 저장된 내용은 바뀌지 않는다.
+ *
+ * shared_post_id 가 있으면 이미 커뮤니티로 공유한 기록이다.
+ * posts.meal_history_id 의 UNIQUE 제약 때문에 다시 공유할 수 없어서,
+ * 배지를 띄우고 그 게시글로 바로 갈 수 있게 해둔다.
  */
 export default function HistoryPage() {
   // 펼쳐진 항목의 id. 목록에서 바로 레시피를 확인할 수 있게 한다.
   const [openId, setOpenId] = useState(null)
 
-  const histories = MOCK_HISTORIES
+  const [histories, setHistories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
+  useEffect(() => {
+    // 응답이 오기 전에 화면을 떠나면 setState가 헛돈다. 플래그로 막는다.
+    let alive = true
+
+    getHistories()
+      .then((data) => {
+        if (alive) setHistories(data)
+      })
+      .catch((err) => {
+        if (alive) setLoadError(parseApiError(err).message)
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="card">
+        <h2 className="section-title">내 History</h2>
+        <Loading message="기록을 불러오는 중..." />
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="card">
+        <h2 className="section-title">내 History</h2>
+        <ErrorMessage message={loadError} />
+      </div>
+    )
+  }
 
   if (histories.length === 0) {
     return (
@@ -73,6 +120,18 @@ export default function HistoryPage() {
                       ingredients={item.ingredients_json}
                       substitutes={item.substitutes_json}
                     />
+
+                    <p className="muted history__share">
+                      {item.shared_post_id ? (
+                        <Link to={`/community/${item.shared_post_id}`} className="history__link">
+                          커뮤니티에 공유한 글 보기 →
+                        </Link>
+                      ) : (
+                        <Link to="/community/write" className="history__link">
+                          이 기록으로 글 쓰기 →
+                        </Link>
+                      )}
+                    </p>
                   </div>
                 )}
               </li>
