@@ -9,14 +9,19 @@
  */
 
 :root {
-  --color-bg: #f6f5f3;
+  /* 배경은 회색이 아니라 크림 쪽으로 눕힌다. 음식 사진과 주황 브랜드색이
+     중성 회색 위에 앉으면 차갑게 식어 보인다 */
+  --color-bg: #faf7f2;            /* warm white — 화면 바탕 */
   --color-surface: #ffffff;
-  --color-soft: #fdf1e9;          /* 히어로 · 안내 카드의 연한 살구색 */
-  --color-border: #eae7e2;
-  --color-text: #221f1c;
-  --color-muted: #7b756d;
+  --color-soft: #fdf2e9;          /* light cream — 히어로 · 안내 카드 */
+  --color-peach: #ffeadd;         /* soft peach — 그라데이션의 짙은 쪽 */
+  --color-border: #f0eae2;
+  --color-text: #1f1c19;
+  --color-muted: #857d74;         /* 설명글 */
+  --color-subtle: #a79f96;        /* 부가 정보(light gray) */
 
-  --color-accent: #e8481c;        /* 브랜드 주황. 버튼 · 가격 · 활성 메뉴 */
+  --color-accent: #e8481c;        /* 브랜드 주황. CTA · 선택 상태에만 진하게 */
+  --color-accent-soft: #f97c3c;   /* 그라데이션의 밝은 쪽 */
   --color-accent-weak: #fdece5;   /* 강조색의 아주 연한 배경 */
   --color-heart: #e03131;
 
@@ -24,7 +29,22 @@
   --color-warn: #c9821a;
   --color-error: #c0392b;
 
-  --color-shadow: rgba(34, 31, 28, 0.08);
+  --color-shadow: rgba(60, 42, 28, 0.07);
+
+  /*
+   * 그림자는 세 단계뿐이다.
+   *   rest  평소 카드 — 있는지 모를 정도로만
+   *   lift  hover     — 살짝 떠오른 만큼만 깊어진다
+   *   pop   떠 있는 층(패널 · 드로어)
+   * 단계를 더 늘리면 카드마다 깊이가 달라져 한 서비스로 안 읽힌다.
+   */
+  --shadow-rest: 0 1px 2px rgba(60, 42, 28, 0.04), 0 4px 16px rgba(60, 42, 28, 0.05);
+  --shadow-lift: 0 2px 4px rgba(60, 42, 28, 0.05), 0 10px 28px rgba(60, 42, 28, 0.09);
+  --shadow-pop: 0 12px 36px rgba(60, 42, 28, 0.14);
+
+  /* 미세한 인터랙션 전용. 길면 굼떠 보이고 짧으면 딸깍거린다 */
+  --ease: cubic-bezier(0.2, 0.8, 0.3, 1);
+  --dur: 160ms;
 
   /* 히어로 배경 — 오늘 날씨에 따라 갈린다(WeatherPick).
      컴포넌트에 색을 직접 적으면 다크 모드에서 그 자리만 밝게 남는다 */
@@ -36,8 +56,9 @@
   --tint-rain: #e9eef3;
   --tint-snow: #eaf1f8;
 
-  --radius: 14px;
-  --radius-sm: 10px;
+  --radius: 20px;                 /* 카드 공통 */
+  --radius-sm: 12px;              /* 카드 안의 작은 요소 */
+  --radius-pill: 999px;           /* 버튼 · 칩 */
 
   --sidebar-width: 260px;
   --topbar-height: 72px;
@@ -63,11 +84,14 @@
   --color-bg: #141210;
   --color-surface: #1e1b18;
   --color-soft: #2c2019;
+  --color-peach: #35251c;
   --color-border: #332e28;
   --color-text: #f3eee7;
   --color-muted: #a89e93;
+  --color-subtle: #8b8177;
 
   --color-accent: #ff6236;
+  --color-accent-soft: #ff8b5c;
   --color-accent-weak: #38201a;
   --color-heart: #ff6b6b;
 
@@ -76,6 +100,11 @@
   --color-error: #e57366;
 
   --color-shadow: rgba(0, 0, 0, 0.45);
+
+  /* 어두운 배경에선 그림자가 안 보인다. 깊이는 그림자 대신 밝기 차로 낸다 */
+  --shadow-rest: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.32);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.34), 0 10px 28px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 12px 36px rgba(0, 0, 0, 0.55);
 
   /* 일러스트가 밝은 색이라 배경까지 밝으면 카드에서 그 칸만 떠 보인다 */
   --thumb-bg: linear-gradient(150deg, #2e241c 0%, #3b2c22 100%);
@@ -97,8 +126,11 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
-  line-height: 1.6;
+  line-height: 1.65;
+  letter-spacing: -0.2px;
 
+  /* 한글 본문은 기본 렌더링이 굵게 뭉쳐 보인다. 얇게 깎아야 여백이 산다 */
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior-y: none;
@@ -111,14 +143,37 @@ button { font-family: inherit; }
 
 /* ===== 공통 요소 ===== */
 
+/*
+ * 카드는 이 한 벌이 전부다. 화면마다 라운드·그림자를 조금씩 다르게 주면
+ * 각 카드가 따로 만든 것처럼 보인다. 테두리는 색을 가르는 용도가 아니라
+ * 흰 카드가 흰 배경 위에서 윤곽을 잃지 않을 만큼만 얇게 둔다.
+ */
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 24px;
+  box-shadow: var(--shadow-rest);
 }
 
+/* 누를 수 있는 카드만 뜬다. 안 눌리는 카드가 반응하면 눌러보게 된다 */
+.card--interactive {
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.card--interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+}
+
+.card--interactive:active { transform: translateY(-1px); }
+
 .muted { color: var(--color-muted); }
+.subtle { color: var(--color-subtle); }
+
+/* 숫자는 자릿수가 흔들리지 않게 고정폭으로 뽑는다 (가격 · 좋아요 · 온도) */
+.tnum { font-variant-numeric: tabular-nums; }
 
 /* 섹션 제목 + 우측 '더보기' */
 .section-head {
@@ -131,8 +186,9 @@ button { font-family: inherit; }
 
 .section-title {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
 }
 
 .section-more {
@@ -182,21 +238,23 @@ button { font-family: inherit; }
  * .chip 은 눌러서 상태가 바뀌는 버튼이다.
  */
 .chip {
-  padding: 8px 15px;
+  padding: 9px 16px;
   border: 1px solid var(--color-border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-surface);
   font: inherit;
   font-size: 13px;
+  font-weight: 500;
   color: var(--color-text);
   white-space: nowrap;
   cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
 }
 
-.chip:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
+/* hover에서 주황 테두리까지 켜면 고른 칩과 그냥 지나가는 칩이 구별되지 않는다.
+   지나갈 때는 배경만 아주 살짝, 고른 것만 주황으로 남긴다 */
+.chip:hover { background: var(--color-bg); }
 
 .chip.is-active {
   border-color: var(--color-accent);
@@ -204,6 +262,8 @@ button { font-family: inherit; }
   color: var(--color-accent);
   font-weight: 700;
 }
+
+.chip.is-active:hover { background: var(--color-accent-weak); }
 
 .chip-row {
   display: flex;
@@ -243,11 +303,15 @@ button { font-family: inherit; }
   font-weight: 500;
 }
 
-/* 버튼 */
+/*
+ * 버튼은 전부 pill이다. 카드 라운드가 20px이라 안에 각진 버튼이 들어가면
+ * 그 버튼만 다른 시대에서 온 것처럼 보인다.
+ * 주황은 여기(CTA)와 선택 상태에서만 진하게 쓴다.
+ */
 .btn {
-  padding: 10px 18px;
+  padding: 11px 20px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   background: var(--color-accent);
   color: #fff;
   font-size: 14px;
@@ -255,9 +319,34 @@ button { font-family: inherit; }
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
 }
 
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* 눌린 순간 제자리로 내려앉는다. 클릭이 먹었다는 신호 */
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn--outline:hover { background: var(--color-accent-weak); }
+.btn--ghost:hover {
+  background: var(--color-bg);
+  border-color: var(--color-subtle);
+}
 
 /* 테두리만 있는 보조 버튼. 디자인상 글자도 주황이다 */
 .btn--outline {
@@ -274,7 +363,7 @@ button { font-family: inherit; }
   font-weight: 500;
 }
 
-.btn--sm { padding: 7px 13px; font-size: 13px; }
+.btn--sm { padding: 8px 15px; font-size: 13px; }
 .btn--block { width: 100%; }
 
 a.btn { display: inline-block; text-align: center; }
@@ -282,18 +371,21 @@ a.btn { display: inline-block; text-align: center; }
 /* 입력 */
 .field {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
   font-size: 14px;
   font-family: inherit;
   color: inherit;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 
+/* 딱딱한 outline 대신 얇은 주황 링. 카드 라운드와 같은 결로 번진다 */
 .field:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -1px;
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-weak);
 }
 
 /* 데이터 없음 */
@@ -342,14 +434,20 @@ a.btn { display: inline-block; text-align: center; }
 .table tbody tr:last-child td { border-bottom: none; }
 .table td.num { text-align: right; }
 
-/* 가격 강조 */
-.price { color: var(--color-accent); font-weight: 700; }
+/* 가격 강조 — 숫자는 본문보다 한 단계 크고 굵게 */
+.price {
+  color: var(--color-accent);
+  font-weight: 800;
+  font-size: 1.05em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
+}
 
 /* ===== 앱 모드 ===== */
 @media (max-width: 1023px) {
-  .card { padding: 16px; }
+  .card { padding: 18px; }
 
-  .section-title { font-size: 17px; }
+  .section-title { font-size: 18px; }
 
   /* iOS는 입력칸 글자가 16px 미만이면 포커스 시 화면을 확대한다 */
   input, select, textarea { font-size: 16px !important; }

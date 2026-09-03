@@ -9,12 +9,14 @@
 .gpromo {
   display: grid;
   grid-template-columns: minmax(0, 260px) minmax(0, 1fr) auto;
-  gap: 18px;
+  gap: 20px;
   align-items: center;
 
-  padding: 20px 22px;
+  padding: 24px;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  background: var(--color-soft);
+  /* 히어로보다 연하게. 여기가 진해지면 오늘의 추천보다 게임이 먼저 눈에 든다 */
+  background: linear-gradient(120deg, var(--color-soft) 0%, var(--color-bg) 100%);
 }
 
 .gpromo__icon { font-size: 22px; }
@@ -55,20 +57,25 @@
   flex-direction: column;
   align-items: center;
   height: 100%;
-  padding: 16px 8px;
+  padding: 18px 10px;
 
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
+  box-shadow: var(--shadow-rest);
   text-align: center;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 
+/* 살짝 떠오르기만 한다. 주황 테두리까지 켜면 아래 CTA와 강조가 겹친다 */
 .gpromo__game:hover {
-  border-color: var(--color-accent);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
 }
 
-.gpromo__game-emoji { font-size: 30px; line-height: 1.2; }
+.gpromo__game:active { transform: translateY(-1px); }
+
+.gpromo__game-emoji { font-size: 38px; line-height: 1.2; }
 
 .gpromo__game-text {
   display: flex;
@@ -93,7 +100,7 @@
   font-size: 11px;
   letter-spacing: -0.3px;
   line-height: 1.5;
-  color: var(--color-muted);
+  color: var(--color-subtle);
 }
 
 /* ===== 시작 버튼 ===== */
