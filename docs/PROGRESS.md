@@ -1,6 +1,6 @@
 # 진행 상황 및 작업 기록
 
-최종 갱신: 2026-08-24
+최종 갱신: 2026-09-04
 
 ---
 
@@ -152,15 +152,107 @@ React가 뜬 뒤에 칠하면 다크 모드 사용자에게 흰 화면이 한 �
 
 ---
 
+## 스키마 v2 (2026-09-04) — 논리 삭제 · 후기 게시판 FK
+
+### 무엇이 바뀌었나
+
+| # | 변경 | 이유 |
+|:--:|---|---|
+| 1 | 6개 테이블에 `USE_YN CHAR(1)` 추가 | 삭제 · 탈퇴를 물리 삭제 대신 `'N'` 갱신으로 |
+| 2 | `UNIQUE` 제약 4개 → 함수 기반 UNIQUE 인덱스 | `'N'` 행이 자리를 차지해 재등록이 막히는 것을 방지 |
+| 3 | `POSTS` → `RECIPE_REVIEWS` | "레시피 추천" 게시판이라는 성격을 이름에 반영 |
+| 4 | `RECIPE_REVIEWS`에 `MEAL_HISTORY_ID` 합성 FK 추가 | 직접 만들어본 요리만 후기를 쓸 수 있게 DB가 강제 |
+| 5 | `POST_LIKES` → `REVIEW_LIKES`, `COMMENTS` → `REVIEW_COMMENTS` | `post_id` → `review_id` |
+| 6 | `USERS`에 `GENDER` + 주소 4개 컬럼 추가 | 대시보드 첫 화면의 날씨 조회 (STEP 12) |
+
+`VERIFICATION_CODES`에는 `USE_YN`을 붙이지 않았다. OTP는 사용자가 삭제하는
+데이터가 아니고 `used_at` / `expires_at`으로 이미 생명주기를 관리한다.
+
+### 왜 UNIQUE를 인덱스로 바꿨나
+
+논리 삭제에서 가장 먼저 터지는 곳이다. `uq_post_likes(user_id, post_id)`가
+평범한 UNIQUE면, 좋아요를 취소(`'N'`)한 뒤 다시 누르는 순간 `ORA-00001`이 난다.
+행이 그대로 남아 있기 때문이다. 같은 문제가 Ban 재등록 · 탈퇴 이메일 재가입에도 있다.
+
+```sql
+CREATE UNIQUE INDEX uq_review_likes ON review_likes (
+    CASE WHEN use_yn = 'Y' THEN user_id   END,
+    CASE WHEN use_yn = 'Y' THEN review_id END
+);
+```
+
+`'N'` 행은 모든 키 컬럼이 `NULL`이 되어 인덱스에 들어가지 않는다.
+살아있는 행끼리만 유일성을 본다.
+
+**대신 이 인덱스는 `WHERE user_id = :v` 조회에 쓰이지 않는다.** 선두가 표현식이라
+옵티마이저가 매칭하지 못한다. 그래서 조회용 일반 인덱스를 `(col, use_yn)`으로
+따로 만들었다. `idx_users_email` · `idx_user_bans_user` · `idx_review_likes_review`가 그것이다.
+
+### 왜 합성 FK인가
+
+```sql
+CONSTRAINT fk_reviews_meal FOREIGN KEY (meal_history_id, user_id)
+                           REFERENCES meal_histories (id, user_id)
+```
+
+`meal_history_id` 하나만 참조하면 "존재하는 히스토리"인 것만 보장되고,
+**남의 히스토리를 자기 후기로 공유하는 것**은 막지 못한다. 쌍으로 걸면
+글쓴이와 히스토리 주인이 다를 때 DB가 `ORA-02291`로 거부한다.
+Oracle은 PK/UNIQUE 조합만 참조 대상으로 허용하므로
+`meal_histories`에 `uq_meal_id_user UNIQUE (id, user_id)`를 함께 넣었다.
+
+### FK로 못 막는 것 — 서비스 계층의 책임
+
+`ON DELETE CASCADE`와 참조 차단은 **진짜 `DELETE`에만 작동한다.**
+`UPDATE use_yn='N'`은 DB 입장에서 그냥 값 수정이라 아무 반응도 없다. 그래서:
+
+- **회원 탈퇴** — `users`만 `'N'`으로 바꾸면 그 사람의 후기 · 댓글 · 좋아요는
+  `'Y'`로 남아 화면에 계속 보인다. 하위 테이블까지 연쇄 UPDATE 해야 한다. **(미구현)**
+- **"후기가 있으면 히스토리 삭제 금지"** — 논리 삭제는 FK가 못 막는다.
+  `'N'`으로 바꾸기 전에 살아있는 후기가 있는지 검사해야 한다. **(미구현)**
+
+### 실측으로 확인한 것 (25건 중 24건 통과, 1건은 테스트 쪽 오류)
+
+| 확인한 동작 | 결과 |
+|---|---|
+| 남의 히스토리로 후기 작성 | `ORA-02291` 거부 ✅ |
+| 같은 식사로 후기 2번 | `ORA-00001` 거부 ✅ |
+| 후기 삭제(`'N'`) 후 같은 식사로 재작성 | 성공 ✅ |
+| 좋아요 취소 후 재클릭 | 성공 ✅ |
+| Ban 해제 후 같은 재료 재등록 | 성공 ✅ |
+| 탈퇴 후 같은 이메일 재가입 | 성공 ✅ |
+| 재가입 계정이 살아있는 동안 탈퇴 계정 복구 | `ORA-00001` 거부 (정상) ✅ |
+| 후기가 달린 히스토리 `DELETE` | `ORA-02292` 거부 ✅ |
+| 후기가 달린 **회원** `DELETE` | **통과됨.** 연쇄 삭제가 `recipe_reviews`를 먼저 지워서 막히지 않는다. `DELETE FROM users`를 손으로 실행하면 그 회원의 모든 데이터가 사라진다 ⚠️ |
+
+### 적용한 코드
+
+- `db/01_schema.sql` — 새로 만드는 DB용 (단일 소스)
+- `db/02_migrate_v2.sql` — 구버전 DB용 1회성 마이그레이션
+- `models/types.py` — `USE_YN_YES` / `USE_YN_NO` 상수
+- `models/user.py` · `models/user_ban.py` — `use_yn` + 신규 컬럼
+- `services/ban_service.py` — `delete_ban`이 물리 삭제 → `use_yn='N'`, 목록 조회에 필터
+- `services/auth_service.py` · `services/password_reset_service.py` · `core/deps.py` — 사용자 조회에 `use_yn='Y'` 필터
+
+### 아직 안 한 것
+
+- 프론트엔드 `mocks/index.js`의 `MOCK_POSTS`는 아직 v1 구조(`food_name` 직접 보유)
+- `recipe_reviews` · `review_likes` · `review_comments` ORM 모델 · 라우터 (STEP 20~23)
+- 회원 탈퇴 API 자체가 없다
+
+---
+
 ## 완료된 작업 상세
 
 ### STEP 1 — 설계
 - 7테이블 확정: `users` `verification_codes` `user_bans` `meal_histories` `posts` `post_likes` `comments`
+  (2026-09-04 v2에서 뒤 3개가 `recipe_reviews` `review_likes` `review_comments`로 바뀌었다)
 - REST API 30여 개 정의
 - Guest/User 권한표 확정
 
 ### STEP 2 — Oracle DDL
-- `db/01_schema.sql` (220줄) — 테이블 7 · PK 7 · FK 8 · UNIQUE 4 · CHECK 11 · 인덱스 6
+- `db/01_schema.sql` — 테이블 7 · PK 7 · FK 8 · UNIQUE 4 · CHECK 11 · 인덱스 6
+  (v2에서 UNIQUE 4개가 함수 기반 인덱스로 바뀌고 CHECK · 인덱스가 늘었다. 아래 v2 항목 참고)
 - `db/00_drop_all.sql` — Oracle에 `DROP TABLE IF EXISTS`가 없어 PL/SQL 블록으로 작성
 
 ### STEP 3 — FastAPI 기본 구조
@@ -481,7 +573,7 @@ py -3.11 -m venv .venv
 `10.1.54.120:1521/XEPDB1`을 팀원 전체가 공유한다.
 
 - 한 명이 DDL을 실행하면 **전원에게 반영**된다. `00_drop_all.sql` 실행 전 공지할 것
-- `email`/`nickname`이 UNIQUE라 테스트 계정이 충돌한다.
+- `email`/`nickname`이 유일해야 해서 테스트 계정이 충돌한다.
   `test-{본인이름}@example.com` 식으로 구분해서 쓸 것
 - XE는 동시 세션 수에 제약이 있어 `DB_POOL_SIZE=5`로 작게 잡아뒀다
 

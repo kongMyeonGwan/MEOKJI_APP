@@ -10,6 +10,12 @@ from datetime import datetime, timezone
 from sqlalchemy import DateTime, Text, TypeDecorator
 from sqlalchemy.dialects.oracle import TIMESTAMP as OracleTIMESTAMP
 
+# USE_YN (논리 삭제) 플래그. DDL의 ck_*_use_yn CHECK 제약과 값이 일치해야 한다.
+# UI의 "삭제" / "회원 탈퇴"는 DELETE가 아니라 이 값을 'N'으로 바꾸는 것이다.
+# 조회에는 반드시 use_yn == USE_YN_YES 조건을 붙인다.
+USE_YN_YES = "Y"
+USE_YN_NO = "N"
+
 
 class UtcTimestamp(TypeDecorator):
     """항상 UTC로 저장하고, 읽을 때 tz-aware(UTC) datetime으로 돌려준다.

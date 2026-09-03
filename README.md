@@ -11,6 +11,11 @@
 - **날씨와 가격은 실제 API**에서 가져온다. AI가 추측하지 않는다
 - **DB에는 사용자가 최종 확정한 것만** 저장한다 (검색·추천 후보는 저장 안 함)
 - 테이블은 **7개**로 고정한다
+- **삭제는 물리 삭제가 아니라 `USE_YN='N'` 갱신이다.** UI의 "삭제" · "회원 탈퇴"
+  버튼은 `DELETE` 문을 실행하지 않는다. 그래서 모든 조회에 `WHERE use_yn='Y'`가
+  붙어야 하고, UNIQUE는 제약조건이 아니라 함수 기반 인덱스로 건다
+- 레시피 후기(`recipe_reviews`)는 **자기 `meal_histories`에서만** 쓸 수 있다.
+  직접 만들어본 요리만 공유한다는 규칙을 FK로 강제한다
 
 ## 기술 스택
 
@@ -77,6 +82,9 @@ npm run dev
 | 1 | `db/00_drop_all.sql` | meokji_app | 기존 테이블이 있을 때만 |
 | 2 | `db/01_schema.sql` | meokji_app | 7개 테이블 생성 |
 
+이미 구버전(v1) 테이블이 만들어져 있고 회원 데이터를 살리고 싶다면,
+위 두 개 대신 **`db/02_migrate_v2.sql`을 한 번만** 실행한다.
+
 **개인 PC에 Oracle을 새로 설치한 경우** — 계정부터 만들어야 함
 
 | 순서 | 파일 | 실행 계정 | 비고 |
@@ -103,8 +111,10 @@ npm run dev
 ```
 MEOKJI_APP/
 ├── db/                        Oracle DDL
+│   ├── 00_create_user_local.sql   로컬 Oracle 계정 생성 (SYS로 실행)
 │   ├── 00_drop_all.sql
-│   └── 01_schema.sql
+│   ├── 01_schema.sql              7개 테이블 (단일 소스)
+│   └── 02_migrate_v2.sql          v1 -> v2 마이그레이션 (1회성)
 ├── backend/
 │   ├── requirements.txt
 │   ├── .env.example

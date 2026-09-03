@@ -28,6 +28,7 @@ from app.core.security import (
     verify_otp_code,
 )
 from app.integrations.email import get_email_provider
+from app.models.types import USE_YN_YES
 from app.models.user import User
 from app.models.verification_code import PURPOSE_PASSWORD_RESET, VerificationCode
 
@@ -38,7 +39,10 @@ _INVALID_CODE = "인증번호가 올바르지 않거나 만료되었습니다."
 
 
 def _find_user(db: Session, email: str) -> User | None:
-    return db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    # 탈퇴한 회원에게는 재설정 메일을 보내지 않는다.
+    return db.execute(
+        select(User).where(User.email == email, User.use_yn == USE_YN_YES)
+    ).scalar_one_or_none()
 
 
 def _latest_code(db: Session, user_id: int) -> VerificationCode | None:

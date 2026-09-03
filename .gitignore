@@ -24,3 +24,6 @@ Thumbs.db
 
 # logs
 *.log
+
+# 실수로 하위 폴더에 다시 클론된 중첩 저장소 (자체 .git 보유)
+MEOKJI_APP/

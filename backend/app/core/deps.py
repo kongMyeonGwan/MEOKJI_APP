@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import decode_token
 from app.database.database import get_db
+from app.models.types import USE_YN_YES
 from app.models.user import User
 
 # auto_error=False : 헤더가 없을 때 FastAPI가 곧바로 403을 뱉지 않고
@@ -52,8 +53,10 @@ def _resolve_user(token: str, db: Session) -> User:
         raise _unauthorized("토큰이 유효하지 않거나 만료되었습니다.") from exc
 
     user = db.get(User, user_id)
-    if user is None:
+    if user is None or user.use_yn != USE_YN_YES:
         # 토큰 발급 후 탈퇴한 경우. 서명은 멀쩡하지만 주인이 없다.
+        # 탈퇴는 물리 삭제가 아니라 use_yn='N' 이므로 행은 남아 있다.
+        # db.get 만으로는 걸러지지 않아 값을 직접 확인해야 한다.
         raise _unauthorized("존재하지 않는 사용자입니다.")
 
     if user.is_locked:

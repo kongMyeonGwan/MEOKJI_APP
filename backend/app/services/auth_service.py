@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import hash_password, verify_password
+from app.models.types import USE_YN_YES
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest
 
@@ -17,9 +18,13 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
     """회원가입. 이메일/닉네임 중복이면 409를 던진다."""
 
     # 1차: 사전 조회. 어느 쪽이 중복인지 사용자에게 정확히 알려주기 위함.
+    # 탈퇴한 회원(use_yn='N')은 중복 판정에서 제외한다.
+    # DB의 uq_users_email / uq_users_nickname 인덱스도 'Y' 인 행만 보므로
+    # 여기서 걸러야 인덱스와 판정 기준이 같아진다.
     existing = db.execute(
         select(User.email, User.nickname).where(
-            (User.email == payload.email) | (User.nickname == payload.nickname)
+            User.use_yn == USE_YN_YES,
+            (User.email == payload.email) | (User.nickname == payload.nickname),
         )
     ).first()
 
@@ -64,11 +69,12 @@ def login_user(db: Session, payload: LoginRequest) -> User:
     도달하면 계정을 잠근다. 잠금은 비밀번호 재설정(STEP 8)으로만 풀린다.
     """
     user = db.execute(
-        select(User).where(User.email == payload.email)
+        select(User).where(User.email == payload.email, User.use_yn == USE_YN_YES)
     ).scalar_one_or_none()
 
     if user is None:
-        # 가입되지 않은 이메일. 실패 횟수를 셀 대상 자체가 없다.
+        # 가입되지 않았거나 탈퇴한 이메일. 실패 횟수를 셀 대상 자체가 없다.
+        # 탈퇴 여부를 응답으로 구분해주지 않는다.
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, _INVALID_CREDENTIALS)
 
     # 이미 잠긴 계정은 비밀번호 검증까지 가지 않는다.
