@@ -7,7 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.meal_history import MealHistory
-from app.models.post import Post
+from app.models.recipe_review import RecipeReview
+from app.models.types import USE_YN_YES
 from app.models.user import User
 from app.schemas.history import MealHistoryResponse
 
@@ -15,17 +16,24 @@ from app.schemas.history import MealHistoryResponse
 def list_histories(db: Session, user: User) -> list[MealHistoryResponse]:
     """내 기록 전체를 최신순으로 돌려준다.
 
-    posts 를 OUTER JOIN 해서 "이미 공유한 기록인지"를 함께 계산한다.
-    uq_posts_meal(UNIQUE) 덕분에 한 기록에 붙는 게시글은 최대 하나라
-    JOIN 때문에 행이 늘어날 걱정이 없다.
+    recipe_reviews 를 OUTER JOIN 해서 "이미 후기를 쓴 기록인지"를 함께 계산한다.
+    uq_reviews_meal 인덱스가 use_yn='Y' 인 행만 유일하게 잡으므로,
+    JOIN 조건에도 같은 use_yn 조건을 넣어야 행이 늘어나지 않는다.
+    (지웠다 다시 쓴 기록에는 'N' 후기가 여러 개 쌓여 있을 수 있다.)
 
-    idx_meal_user_selected(user_id, selected_at DESC)를 그대로 타는 정렬이다.
+    후기를 지우면 shared_post_id 가 다시 None 이 되어 같은 기록으로 또 쓸 수 있다.
+
+    idx_meal_user_selected(user_id, use_yn, selected_at DESC)를 그대로 타는 정렬이다.
     개수가 많아야 수백 건이라 아직 페이징하지 않는다.
     """
     rows = db.execute(
-        select(MealHistory, Post.id.label("shared_post_id"))
-        .outerjoin(Post, Post.meal_history_id == MealHistory.id)
-        .where(MealHistory.user_id == user.id)
+        select(MealHistory, RecipeReview.id.label("shared_post_id"))
+        .outerjoin(
+            RecipeReview,
+            (RecipeReview.meal_history_id == MealHistory.id)
+            & (RecipeReview.use_yn == USE_YN_YES),
+        )
+        .where(MealHistory.user_id == user.id, MealHistory.use_yn == USE_YN_YES)
         .order_by(MealHistory.selected_at.desc(), MealHistory.id.desc())
     ).all()
 

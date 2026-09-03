@@ -12,7 +12,7 @@ from sqlalchemy import ForeignKey, Identity, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.database import Base
-from app.models.types import OracleJSON, UtcTimestamp
+from app.models.types import USE_YN_YES, OracleJSON, UtcTimestamp
 
 
 class MealHistory(Base):
@@ -35,6 +35,13 @@ class MealHistory(Base):
 
     # 확정 시점의 예상 재료비(원). 계산에 실패했으면 NULL.
     estimated_cost: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    # 'N' = 삭제한 기록. 물리 삭제가 아니라 이 값을 바꾼다.
+    # 살아있는 후기가 달린 기록은 'N'으로 바꾸지 못하게 서비스 계층이 막는다
+    # (FK는 진짜 DELETE에만 작동하므로 DB가 대신 막아주지 않는다).
+    use_yn: Mapped[str] = mapped_column(
+        String(1), nullable=False, server_default=text(f"'{USE_YN_YES}'")
+    )
 
     selected_at: Mapped[datetime] = mapped_column(
         UtcTimestamp(),

@@ -152,34 +152,72 @@ React가 뜬 뒤에 칠하면 다크 모드 사용자에게 흰 화면이 한 �
 
 ---
 
-## 🚨 지금 깨져 있는 것 (2026-09-04 머지 직후)
+## v2 스키마에 맞춘 게시판 코드 수정 (2026-09-04)
 
-스키마 v2에서 테이블 3개의 이름이 바뀌었는데, 팀원이 그 전에 붙여둔
-게시판 · History API는 옛 이름을 참조한다. **import는 되지만 조회하면
-`ORA-00942: 테이블 또는 뷰가 존재하지 않습니다`가 난다.**
+머지 직후 게시판 · History API 가 `ORA-00942` 로 전부 실패했다.
+스키마 v2 에서 테이블 3개가 개명됐는데 팀원이 붙여둔 코드는 옛 이름을 참조했기 때문이다.
+아래처럼 맞췄고 **API 경로와 응답 필드명은 v1 그대로 유지**해서 프론트엔드는 손대지 않았다.
 
-| 옛 이름 | 새 이름 |
+### 모델
+
+| 삭제한 파일 | 새 파일 | 테이블 |
+|---|---|---|
+| `models/post.py` | `models/recipe_review.py` | `recipe_reviews` |
+| `models/post_like.py` | `models/review_like.py` | `review_likes` |
+| `models/comment.py` | `models/review_comment.py` | `review_comments` |
+
+- `RecipeReview` 는 `food_name` / `recipe_json` / `ingredients_json` 컬럼을 갖지 않는다.
+  `MEAL_HISTORIES` 와 JOIN 해서 읽는다
+- 합성 FK 는 `mapped_column(ForeignKey(...))` 로 표현할 수 없어
+  `__table_args__` 에 `ForeignKeyConstraint` 로 선언했다
+- 4개 모델 전부 `use_yn` 추가 (`MealHistory` 포함)
+
+### 서비스
+
+- 모든 조회에 `use_yn='Y'` 필터. 좋아요 수 · 댓글 수 COUNT 서브쿼리에도 넣었다
+- **좋아요 취소는 행 삭제가 아니라 `use_yn='N'`.** 다시 누르면 새 행을 만들지 않고
+  잠들어 있던 행을 되살린다. 새로 INSERT 해도 함수 기반 인덱스가 'N' 행을 무시해서
+  동작은 하지만, 껐다 켤 때마다 행이 쌓인다
+- `create_post` 는 레시피/재료를 복사하지 않는다. 어떤 기록인지만 저장한다
+- 중복 공유 판정 제약조건 이름을 `UQ_POSTS_MEAL` → `UQ_REVIEWS_MEAL` 로 교체
+- `list_histories` 의 OUTER JOIN 조건에 `use_yn='Y'` 를 넣었다.
+  넣지 않으면 지웠다 다시 쓴 기록에서 'N' 후기가 여러 개 잡혀 행이 늘어난다
+
+### JOIN 으로 간 이유
+
+팀원 버전은 확정 당시 값을 게시글에 복사해 두고 "Guest 가 남의 `MEAL_HISTORIES` 를
+JOIN 해서 읽는 구조를 피한다"는 이유를 달아뒀다. v2 는 JOIN 으로 간다.
+`MEAL_HISTORIES` 자체가 이미 "확정 당시 스냅샷, 이후 UPDATE 없음" 이라 값이 변할 일이
+없고, 복사본을 두면 두 값이 어긋날 여지만 생기기 때문이다.
+
+목록 JOIN 에는 `MealHistory.use_yn` 조건을 **걸지 않는다.** 후기가 보일지 말지는
+후기 자신의 `use_yn` 이 정한다. 여기서 걸러버리면 글쓴이가 기록을 정리한 순간
+남의 화면에 음식명만 사라진 게시글이 남는다.
+
+### 실측 34건 통과
+
+회원 2명 · 식사 기록 3건을 만들어 API 전 구간을 호출하고 데이터를 지웠다.
+
+| 확인 | 결과 |
 |---|---|
-| `posts` | `recipe_reviews` |
-| `post_likes` | `review_likes` |
-| `comments` | `review_comments` |
-| `posts.post_id` | `recipe_reviews.review_id` |
+| 후기 작성 → 음식명 · 레시피 · 재료가 JOIN 으로 채워짐 | 201 |
+| 남의 히스토리로 작성 | 404 |
+| 같은 기록으로 두 번 작성 | 409 |
+| 비로그인 작성 | 401 |
+| 목록 · 상세 · 키워드 검색 · Guest 조회 | 200 |
+| 좋아요 → 취소 → **재클릭** (v1 이면 ORA-00001) | 200, 행 1개 유지 |
+| 댓글 작성 · 목록의 좋아요/댓글 수 | 정상 |
+| 후기 `use_yn='N'` → 목록에서 빠지고 상세 404, 히스토리가 '미공유'로 복귀 | 정상 |
+| 그 기록으로 재작성 | 201 |
 
-고쳐야 하는 파일
+### 아직 안 된 것
 
-- `models/post.py` · `models/post_like.py` · `models/comment.py` — `__tablename__`과 컬럼
-- `models/meal_history.py` — `use_yn` 컬럼 추가
-- `services/post_service.py` (271줄) — 조회에 `use_yn='Y'` 필터, 삭제를 논리 삭제로
-- `services/history_service.py` — 같은 처리
-- `routers/posts.py` · `schemas/post.py` — 필드명
-- `frontend/src/api/posts.js` · `PostWritePage.jsx` · `PostDetailPage.jsx` · `CommunityPage.jsx`
-
-또한 v2는 `food_name` / `recipe_json` / `ingredients_json`을 `recipe_reviews`에
-두지 않고 `meal_histories`와 JOIN해서 읽는다. 팀원 버전은 값을 복사해 두는
-설계였고 "Guest가 남의 MEAL_HISTORIES를 JOIN하지 않게 한다"는 이유를 달아뒀다.
-**어느 쪽으로 갈지 팀에서 정한 뒤** 위 파일들을 고쳐야 한다.
-
-`db/02_seed.sql`(팀원 작성)도 옛 스키마 기준이라 그대로 실행되지 않는다.
+- **후기 삭제 API 가 없다.** 위 [9] 검증은 DB 에서 직접 `use_yn='N'` 으로 바꿔 확인했다
+- 회원 탈퇴 시 하위 데이터 연쇄 `'N'` UPDATE (탈퇴 API 자체가 없다)
+- 살아있는 후기가 달린 히스토리의 논리 삭제 차단 (히스토리 삭제 API 가 없다)
+- `db/02_seed.sql`(팀원 작성)은 옛 스키마 기준이라 그대로 실행되지 않는다
+- API 경로는 아직 `/api/posts` 다. 테이블만 `recipe_reviews` 로 바뀐 상태라
+  이름이 어긋나 있다. 프론트까지 함께 고칠 때 정리한다
 
 ---
 
