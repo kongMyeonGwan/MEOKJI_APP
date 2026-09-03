@@ -401,6 +401,136 @@ export const MOCK_RECOMMENDATIONS = [
     rating_count: 131,
     tags: ['시원한음식', '면', '일식'],
   },
+  {
+    food_name: '밀면',
+    art: 'noodle',
+    image_url: null,
+    category: '한식',
+    reason: '부산식 밀면. 냉면보다 면이 부드럽고 육수가 달큰해요',
+    cook_time_minutes: 25,
+    difficulty: '보통',
+    estimated_cost: 7900,
+    rating: 4.5,
+    rating_count: 203,
+    tags: ['시원한음식', '면', '여름메뉴'],
+  },
+  {
+    food_name: '회냉면',
+    art: 'noodle',
+    image_url: null,
+    category: '한식',
+    reason: '새콤한 회무침을 얹어 비벼 먹어요. 여름 별미로 꼽힙니다',
+    cook_time_minutes: 25,
+    difficulty: '보통',
+    estimated_cost: 10500,
+    rating: 4.6,
+    rating_count: 241,
+    tags: ['매콤', '면', '여름메뉴'],
+  },
+  {
+    food_name: '메밀막국수',
+    art: 'noodle',
+    image_url: null,
+    category: '한식',
+    reason: '양념장에 슥슥 비벼 김가루만 뿌려도 충분해요',
+    cook_time_minutes: 20,
+    difficulty: '쉬움',
+    estimated_cost: 6800,
+    rating: 4.5,
+    rating_count: 152,
+    tags: ['시원한음식', '면', '여름메뉴'],
+  },
+  {
+    food_name: '김치말이국수',
+    art: 'noodle',
+    image_url: null,
+    category: '한식',
+    reason: '김치국물에 소면만 말면 끝. 재료도 거의 안 듭니다',
+    cook_time_minutes: 15,
+    difficulty: '쉬움',
+    estimated_cost: 5100,
+    rating: 4.3,
+    rating_count: 77,
+    tags: ['시원한음식', '면', '간편'],
+  },
+  {
+    food_name: '초계국수',
+    art: 'soup',
+    image_url: null,
+    category: '한식',
+    reason: '닭 육수를 차게 식혀 새콤하게. 더위에 지친 날 기운이 납니다',
+    cook_time_minutes: 35,
+    difficulty: '보통',
+    estimated_cost: 9800,
+    rating: 4.6,
+    rating_count: 97,
+    tags: ['시원한음식', '면', '보양'],
+  },
+  {
+    food_name: '열무국수',
+    art: 'noodle',
+    image_url: null,
+    category: '한식',
+    reason: '열무김치 국물째 부어 먹어요. 가장 손이 덜 가는 여름 국수',
+    cook_time_minutes: 15,
+    difficulty: '쉬움',
+    estimated_cost: 4600,
+    rating: 4.2,
+    rating_count: 64,
+    tags: ['시원한음식', '면', '여름메뉴'],
+  },
+  {
+    food_name: '냉우동',
+    art: 'noodle',
+    image_url: null,
+    category: '일식',
+    reason: '쫄깃한 면을 차가운 츠유에. 12분이면 상에 올라옵니다',
+    cook_time_minutes: 12,
+    difficulty: '쉬움',
+    estimated_cost: 6400,
+    rating: 4.4,
+    rating_count: 118,
+    tags: ['시원한음식', '면', '일식'],
+  },
+  {
+    food_name: '토마토 냉파스타',
+    art: 'noodle',
+    image_url: null,
+    category: '양식',
+    reason: '면을 얼음물에 헹궈 생토마토와 버무려요. 불 앞에 오래 안 서도 돼요',
+    cook_time_minutes: 20,
+    difficulty: '보통',
+    estimated_cost: 9200,
+    rating: 4.4,
+    rating_count: 86,
+    tags: ['시원한음식', '면', '양식'],
+  },
+  {
+    food_name: '수박화채',
+    art: 'soup',
+    image_url: null,
+    category: '디저트',
+    reason: '썰어서 우유만 부으면 됩니다. 밥 대신 야식으로도 좋아요',
+    cook_time_minutes: 10,
+    difficulty: '쉬움',
+    estimated_cost: 5600,
+    rating: 4.1,
+    rating_count: 45,
+    tags: ['시원한음식', '노불', '간식'],
+  },
+  {
+    food_name: '미숫가루 셰이크',
+    art: 'soup',
+    image_url: null,
+    category: '간편식',
+    reason: '입맛 없는 아침에. 얼음이랑 갈기만 하면 한 끼가 됩니다',
+    cook_time_minutes: 5,
+    difficulty: '쉬움',
+    estimated_cost: 3400,
+    rating: 4.0,
+    rating_count: 38,
+    tags: ['시원한음식', '노불', '간편'],
+  },
 ]
 
 // ---------------------------------------------------------
@@ -413,8 +543,35 @@ export const MOCK_RECOMMENDATIONS = [
 // 그래서 이 배열은 "서버가 이미 골라준 결과"를 흉내낸 것이고,
 // 이름으로 찾아 잇는 코드도 mocks 안에만 둔다(이 파일은 연동이 끝나면 통째로 지운다).
 // 순서가 곧 추천 순위다. 첫 번째가 "오늘의 한 접시"로 크게 뜬다.
+//
+// **5개가 아니라 15개인 이유**
+// 히어로는 이 목록을 5개씩 끊어 보여주고, "다른 메뉴 추천 ↻"을 누르면
+// 다음 5개로 통째로 갈아 끼운다. 후보가 5개뿐이면 눌러도 같은 게 다시 나와서
+// 버튼이 고장 난 것처럼 보인다. 3세트가 돌아가도록 15개를 둔다.
+//
+// 서버가 붙으면 한 번에 15개를 다 내려줄지, 누를 때마다 5개씩 더 받아올지는
+// AI 호출 비용을 보고 정한다. 화면은 배열을 통째로 받는 쪽으로 짜뒀다.
 // ---------------------------------------------------------
-const WEATHER_PICK_NAMES = ['콩국수', '물냉면', '오이냉국', '비빔국수', '자루소바']
+const WEATHER_PICK_NAMES = [
+  // 1세트
+  '콩국수',
+  '밀면',
+  '물냉면',
+  '비빔국수',
+  '자루소바',
+  // 2세트
+  '메밀막국수',
+  '초계국수',
+  '냉우동',
+  '오이냉국',
+  '김치말이국수',
+  // 3세트
+  '회냉면',
+  '열무국수',
+  '토마토 냉파스타',
+  '수박화채',
+  '미숫가루 셰이크',
+]
 
 export const MOCK_WEATHER_PICKS = WEATHER_PICK_NAMES.map((name) =>
   MOCK_RECOMMENDATIONS.find((food) => food.food_name === name)
@@ -1186,6 +1343,16 @@ export const MOCK_FOOD_INGREDIENTS = {
   오이냉국: ['오이', '양파'],
   비빔국수: ['소면', '오이', '신김치', '계란'],
   자루소바: ['소면', '대파', '깻잎'],
+  밀면: ['소면', '오이', '계란', '소고기'],
+  회냉면: ['소면', '오이', '연어', '계란'],
+  메밀막국수: ['소면', '오이', '깻잎', '계란'],
+  김치말이국수: ['소면', '신김치', '오이', '계란'],
+  초계국수: ['소면', '닭고기', '오이', '계란'],
+  열무국수: ['소면', '신김치', '오이'],
+  냉우동: ['소면', '대파', '계란'],
+  '토마토 냉파스타': ['스파게티면', '토마토', '치즈', '깻잎'],
+  수박화채: ['우유', '딸기'],
+  '미숫가루 셰이크': ['우유', '바나나'],
 }
 
 // ---------------------------------------------------------
