@@ -68,6 +68,11 @@ class Settings(BaseSettings):
     WEATHER_PROVIDER: str = "mock"
     OPENWEATHER_API_KEY: str = ""
 
+    # 위치 권한을 못 받았을 때(거부·미지원) 쓰는 기본 좌표 — 종로2가(탑골공원 인근).
+    # 회원가입 지역 선택 기능이 생기기 전까지의 fallback이다.
+    DEFAULT_WEATHER_LAT: float = 37.5711
+    DEFAULT_WEATHER_LON: float = 126.9885
+
     # ===== Shopping =====
     PRICE_PROVIDERS: str = "mock"
     NAVER_CLIENT_ID: str = ""

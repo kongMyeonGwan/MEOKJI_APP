@@ -137,7 +137,7 @@ MEOKJI_APP/
 ### backend/.env
 
 ```env
-DB_HOST=10.1.54.120     # 네트워크가 바뀌면 이 줄만 수정
+DB_HOST=localhost    # 네트워크가 바뀌면 이 줄만 수정
 DB_PORT=1521
 DB_SERVICE=XEPDB1
 DB_USER=meokji_app

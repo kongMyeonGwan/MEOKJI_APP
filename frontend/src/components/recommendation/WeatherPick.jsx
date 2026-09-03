@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../common/Icon'
 import FoodThumb from '../common/FoodThumb'
+import { fetchWeather } from '../../api/weather'
 import { MOCK_WEATHER, MOCK_WEATHER_PICKS } from '../../mocks'
 import { formatMinutes, formatPrice, priceBand } from '../../utils/format'
 import '../../styles/components/recommendation/WeatherPick.css'
@@ -41,14 +42,47 @@ const CONDITION_EMOJI = {
 export default function WeatherPick() {
   // 서버가 정렬해서 내려준 순서를 그대로 쓴다. 0번이 오늘의 한 접시.
   const [index, setIndex] = useState(0)
+  // STEP 12: 날씨는 실제 API. 도착 전에는 카드를 비워둔다(아래 !weather 분기).
+  const [weather, setWeather] = useState(null)
 
-  const weather = MOCK_WEATHER
+  useEffect(() => {
+    // 화면을 떠난 뒤 응답이 와도 setState가 헛돌지 않게 막는다.
+    let alive = true
+
+    const load = (coords) => {
+      fetchWeather(coords)
+        .then((data) => {
+          if (alive) setWeather(data)
+        })
+        .catch(() => {
+          // 날씨 API가 죽었다고 카드 전체를 감추지 않고 mock으로 대체한다.
+          if (alive) setWeather(MOCK_WEATHER)
+        })
+    }
+
+    if (!navigator.geolocation) {
+      load()
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => load({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+        () => load(), // 권한 거부·실패 -> 좌표 없이 요청, 서버가 종로2가로 대답한다
+        { timeout: 5000 }
+      )
+    }
+
+    return () => {
+      alive = false
+    }
+  }, [])
+
   const picks = MOCK_WEATHER_PICKS
   const pick = picks[index]
+  // 음식 추천은 아직 mock이다(STEP 10/13에서 AI로 교체). 날씨 문구와 섞이지 않게 따로 둔다.
+  const pickLead = MOCK_WEATHER.pick_lead
 
   // 데이터가 없을 때 카드가 깨지느니 통째로 빠지는 편이 낫다.
-  // STEP 12/13에서 날씨 API나 AI 호출이 실패하면 실제로 이 상태가 된다.
-  if (!pick) return null
+  // 날씨는 도착 전, picks는 STEP 10/13에서 AI 호출이 실패하면 실제로 이 상태가 된다.
+  if (!weather || !pick) return null
 
   const nextPick = () => setIndex((i) => (i + 1) % picks.length)
 
@@ -77,15 +111,15 @@ export default function WeatherPick() {
           <span className="wpick__cond">{weather.condition_text}</span>
         </p>
 
+        {/* 구·동까지 나오면 길어져서 체감·습도와 한 줄에 못 붙는다. 줄을 따로 준다 */}
+        <p className="wpick__location muted">{weather.city}</p>
+
         <p className="wpick__meta muted">
-          <span>{weather.city}</span>
-          <span className="wpick__bar" aria-hidden="true" />
           <span>체감 {weather.feels_like}°C</span>
           <span className="wpick__bar" aria-hidden="true" />
           <span>습도 {weather.humidity}%</span>
         </p>
 
-        {/* 서버가 줄바꿈으로 두 문장을 내려준다. 그대로 두 줄로 보여준다 */}
         <p className="wpick__comment">
           {weather.comment}
           <span aria-hidden="true"> {emoji}</span>
@@ -101,7 +135,7 @@ export default function WeatherPick() {
         <div className="wpick__body">
           <span className="wpick__badge">AI가 추천했어요! ✨</span>
 
-          <p className="wpick__lead">{weather.pick_lead}</p>
+          <p className="wpick__lead">{pickLead}</p>
           <h1 className="wpick__name">{pick.food_name}</h1>
 
           <p className="wpick__meta-line">
