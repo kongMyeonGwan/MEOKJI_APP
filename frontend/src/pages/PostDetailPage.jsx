@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import Loading from '../components/common/Loading'
+import RecipeView from '../components/recipe/RecipeView'
 import { useAuth } from '../contexts/AuthContext'
-import { MOCK_COMMENTS, MOCK_POSTS } from '../mocks'
+import ErrorMessage from '../components/common/ErrorMessage'
+import { addComment, getPost, setPostLike } from '../api/posts'
+import { parseApiError } from '../utils/apiError'
 import { formatDateTime } from '../utils/format'
 import '../styles/pages/PostDetailPage.css'
 
@@ -9,6 +13,9 @@ import '../styles/pages/PostDetailPage.css'
  * 게시글 상세 + 좋아요 + 댓글 (STEP 21~23).
  *
  * 조회는 Guest도 가능하다. 좋아요와 댓글 작성은 로그인이 필요하다.
+ *
+ * 레시피/재료는 posts 테이블에 복사돼 있는 스냅샷을 그대로 보여준다.
+ * meal_histories 를 JOIN하지 않는다 — 남의 개인 기록이기 때문이다.
  */
 export default function PostDetailPage() {
   const { postId } = useParams()
@@ -19,21 +26,57 @@ export default function PostDetailPage() {
 }
 
 function PostDetail({ postId }) {
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated } = useAuth()
 
-  const post = MOCK_POSTS.find((p) => String(p.id) === postId)
+  const [post, setPost] = useState(null)
+  const [comments, setComments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
 
   const [liked, setLiked] = useState(false)
-  const [comments, setComments] = useState(
-    MOCK_COMMENTS.filter((c) => String(c.post_id) === postId)
-  )
-  const [draft, setDraft] = useState('')
+  const [likeCount, setLikeCount] = useState(0)
+  const [likeBusy, setLikeBusy] = useState(false)
 
-  if (!post) {
+  const [draft, setDraft] = useState('')
+  const [commentBusy, setCommentBusy] = useState(false)
+  const [actionError, setActionError] = useState('')
+
+  useEffect(() => {
+    let alive = true
+
+    getPost(postId)
+      .then((data) => {
+        if (!alive) return
+        setPost(data)
+        setComments(data.comments)
+        setLiked(data.liked)
+        setLikeCount(data.like_count)
+      })
+      .catch((err) => {
+        if (alive) setLoadError(parseApiError(err).message)
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [postId])
+
+  if (loading) {
+    return (
+      <div className="card">
+        <Loading message="게시글을 불러오는 중..." />
+      </div>
+    )
+  }
+
+  if (loadError || !post) {
     return (
       <div className="card">
         <p className="empty">
-          게시글을 찾을 수 없습니다.
+          {loadError || '게시글을 찾을 수 없습니다.'}
           <br />
           <Link to="/community" className="post__link">목록으로 →</Link>
         </p>
@@ -41,28 +84,48 @@ function PostDetail({ postId }) {
     )
   }
 
-  // 서버 연동 전이라 화면에서만 반영한다.
-  // 실제로는 POST/DELETE 후 다시 조회하거나 응답값으로 갱신한다.
-  const onToggleLike = () => setLiked((prev) => !prev)
+  const onToggleLike = async () => {
+    const next = !liked
 
-  const onSubmitComment = (e) => {
+    // 낙관적 갱신. 하트는 즉시 반응해야 눌린 느낌이 난다.
+    setLiked(next)
+    setLikeCount((n) => n + (next ? 1 : -1))
+    setActionError('')
+    setLikeBusy(true)
+
+    try {
+      // 서버가 세어 준 값으로 덮어쓴다. 그 사이 남이 누른 것까지 반영된다.
+      const result = await setPostLike(post.id, next)
+      setLiked(result.liked)
+      setLikeCount(result.like_count)
+    } catch (err) {
+      // 실패하면 낙관적 갱신을 되돌린다.
+      setLiked(!next)
+      setLikeCount((n) => n - (next ? 1 : -1))
+      setActionError(parseApiError(err).message)
+    } finally {
+      setLikeBusy(false)
+    }
+  }
+
+  const onSubmitComment = async (e) => {
     e.preventDefault()
     const content = draft.trim()
     if (!content) return
-    setComments((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        post_id: post.id,
-        nickname: user?.nickname ?? '나',
-        content,
-        created_at: new Date().toISOString(),
-      },
-    ])
-    setDraft('')
-  }
 
-  const likeCount = post.like_count + (liked ? 1 : 0)
+    setActionError('')
+    setCommentBusy(true)
+    try {
+      // 서버가 돌려준 행을 그대로 붙인다. 목록 정렬이 작성 순이라 맨 뒤가 맞다.
+      const created = await addComment(post.id, content)
+      setComments((prev) => [...prev, created])
+      setDraft('')
+    } catch (err) {
+      setActionError(parseApiError(err).message)
+    } finally {
+      setCommentBusy(false)
+    }
+  }
 
   return (
     <div className="post">
@@ -83,12 +146,22 @@ function PostDetail({ postId }) {
         {/* 줄바꿈을 살리기 위해 white-space: pre-wrap 을 쓴다 */}
         <div className="post__content">{post.content}</div>
 
+        {/* 확정 당시 복사해 둔 레시피 스냅샷 */}
+        {post.recipe_json && (
+          <div className="post__recipe">
+            <RecipeView
+              recipe={post.recipe_json}
+              ingredients={post.ingredients_json}
+            />
+          </div>
+        )}
+
         <div className="post__actions">
           <button
             type="button"
             className={`post__like ${liked ? 'is-on' : ''}`}
             onClick={onToggleLike}
-            disabled={!isAuthenticated}
+            disabled={!isAuthenticated || likeBusy}
             title={isAuthenticated ? '' : '로그인이 필요합니다'}
           >
             ♥ {likeCount}
@@ -99,6 +172,8 @@ function PostDetail({ postId }) {
             </span>
           )}
         </div>
+
+        <ErrorMessage message={actionError} />
       </article>
 
       <section className="card">
@@ -131,8 +206,12 @@ function PostDetail({ postId }) {
             />
             <div className="post__form-foot">
               <span className="muted">{draft.length} / 1000</span>
-              <button type="submit" className="btn btn--sm" disabled={!draft.trim()}>
-                등록
+              <button
+                type="submit"
+                className="btn btn--sm"
+                disabled={!draft.trim() || commentBusy}
+              >
+                {commentBusy ? '등록 중...' : '등록'}
               </button>
             </div>
           </form>

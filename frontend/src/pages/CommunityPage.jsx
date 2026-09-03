@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PostCard from '../components/community/PostCard'
 import NoticeList from '../components/community/NoticeList'
 import Icon from '../components/common/Icon'
+import ErrorMessage from '../components/common/ErrorMessage'
+import Loading from '../components/common/Loading'
 import { useAuth } from '../contexts/AuthContext'
-import { MOCK_NOTICES, MOCK_POSTS } from '../mocks'
+import { getPosts } from '../api/posts'
+import { parseApiError } from '../utils/apiError'
+import { MOCK_NOTICES } from '../mocks'
 import '../styles/pages/CommunityPage.css'
 
 /**
@@ -14,8 +18,8 @@ import '../styles/pages/CommunityPage.css'
  * 그래서 이 라우트는 ProtectedRoute로 감싸지 않는다.
  *
  * 탭은 두 개다.
- *   recipe  레시피 추천 — 사용자들이 쓰는 글. 검색 · 글쓰기 있음
- *   notice  공지사항     — 운영자만 쓴다. 그래서 글쓰기 버튼을 숨긴다
+ *   recipe  레시피 추천 — DB의 posts 테이블. 검색 · 글쓰기 있음
+ *   notice  공지사항     — 운영자만 쓴다. notices 테이블이 아직 없어 목업 그대로다
  */
 const TABS = [
   { key: 'recipe', label: '레시피 추천', icon: 'sparkles' },
@@ -27,18 +31,36 @@ export default function CommunityPage() {
   const [tab, setTab] = useState('recipe')
   const [keyword, setKeyword] = useState('')
 
+  const [posts, setPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
   const isRecipeTab = tab === 'recipe'
 
-  // Oracle에는 ILIKE가 없어 서버에서는 LOWER(col) LIKE LOWER(:kw)로 처리한다.
-  // 지금은 화면 확인용이라 클라이언트에서 걸러둔다.
-  const lowered = keyword.trim().toLowerCase()
-  const posts = lowered
-    ? MOCK_POSTS.filter(
-        (p) =>
-          p.title.toLowerCase().includes(lowered) ||
-          p.content.toLowerCase().includes(lowered)
-      )
-    : MOCK_POSTS
+  // 검색은 서버가 한다. Oracle에는 ILIKE가 없어 LOWER(col) LIKE LOWER(:kw)로 처리된다.
+  // keyword를 의존성에 넣어 입력이 바뀔 때마다 다시 조회한다.
+  // 타이핑마다 요청이 나가지 않도록 300ms 쉰 뒤에 보낸다.
+  useEffect(() => {
+    let alive = true
+    const timer = setTimeout(() => {
+      setLoadError('')
+      getPosts(keyword)
+        .then((data) => {
+          if (alive) setPosts(data)
+        })
+        .catch((err) => {
+          if (alive) setLoadError(parseApiError(err).message)
+        })
+        .finally(() => {
+          if (alive) setLoading(false)
+        })
+    }, 300)
+
+    return () => {
+      alive = false
+      clearTimeout(timer)
+    }
+  }, [keyword])
 
   return (
     <div className="card">
@@ -97,8 +119,14 @@ export default function CommunityPage() {
             aria-label="게시글 검색"
           />
 
-          {posts.length === 0 ? (
-            <p className="empty">검색 결과가 없습니다.</p>
+          {loadError ? (
+            <ErrorMessage message={loadError} />
+          ) : loading ? (
+            <Loading message="게시글을 불러오는 중..." />
+          ) : posts.length === 0 ? (
+            <p className="empty">
+              {keyword.trim() ? '검색 결과가 없습니다.' : '아직 게시글이 없습니다.'}
+            </p>
           ) : (
             <div className="divided community__list">
               {posts.map((post) => (

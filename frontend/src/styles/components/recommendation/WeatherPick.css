@@ -15,10 +15,17 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-  gap: 22px;
+  gap: 28px;
   align-items: center;
+  /* 아래쪽을 얕게 준 이유는 넘기기(‹ › · 점) 줄이 카드 안에 들어오기 때문이다.
+     위아래를 같게 주면 넘기기 줄 아래에만 여백이 두 겹으로 쌓인다 */
   padding: 22px 24px 14px;
-  background: linear-gradient(100deg, var(--color-soft) 0%, var(--color-surface) 46%);
+
+  /* 화면에서 가장 큰 카드다. 그림자도 한 단계 깊게 줘서 나머지 카드보다
+     한 겹 앞에 떠 있게 만든다 */
+  box-shadow: var(--shadow-lift);
+  background:
+    linear-gradient(104deg, var(--color-peach) 0%, var(--color-soft) 34%, var(--color-surface) 62%);
 }
 
 /* 5개를 통째로 새로 뽑는 버튼. 넘기기(아래 ‹ ›)와 하는 일이 달라서
@@ -49,10 +56,10 @@
   color: var(--color-accent);
 }
 
-.wpick--clear  { background: linear-gradient(100deg, var(--tint-clear) 0%, var(--color-surface) 46%); }
-.wpick--clouds { background: linear-gradient(100deg, var(--tint-clouds) 0%, var(--color-surface) 46%); }
-.wpick--rain   { background: linear-gradient(100deg, var(--tint-rain) 0%, var(--color-surface) 46%); }
-.wpick--snow   { background: linear-gradient(100deg, var(--tint-snow) 0%, var(--color-surface) 46%); }
+.wpick--clear  { background: linear-gradient(104deg, var(--tint-clear) 0%, var(--color-soft) 36%, var(--color-surface) 64%); }
+.wpick--clouds { background: linear-gradient(104deg, var(--tint-clouds) 0%, var(--color-surface) 58%); }
+.wpick--rain   { background: linear-gradient(104deg, var(--tint-rain) 0%, var(--color-surface) 58%); }
+.wpick--snow   { background: linear-gradient(104deg, var(--tint-snow) 0%, var(--color-surface) 58%); }
 
 /* ===== 왼쪽 : 근거 ===== */
 .wpick__temp-row {
@@ -62,16 +69,22 @@
   margin: 0;
 }
 
-.wpick__emoji { font-size: 34px; line-height: 1; }
+.wpick__emoji { font-size: 36px; line-height: 1; }
 
+/* 온도는 이 칸의 주인공이라 숫자만 크게 키운다 */
 .wpick__temp {
-  font-size: 42px;
+  font-size: 48px;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
 }
 
-.wpick__unit { font-size: 24px; font-weight: 700; }
+.wpick__unit {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
 
 .wpick__cond {
   align-self: flex-end;
@@ -81,13 +94,21 @@
   color: var(--color-muted);
 }
 
+.wpick__location {
+  margin: 16px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .wpick__meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 14px 0 0;
+  margin: 6px 0 0;
   font-size: 12.5px;
+  color: var(--color-subtle);
+  font-variant-numeric: tabular-nums;
 }
 
 /* 구분선. 가운뎃점보다 항목 경계가 또렷해서 세 값이 각각 읽힌다 */
@@ -128,12 +149,20 @@
   width: clamp(160px, 34%, 250px);
   overflow: hidden;
   border-radius: var(--radius);
+  box-shadow: var(--shadow-rest);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.wpick__thumb:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
 }
 
 /* 목록 카드(148px)보다 크게 잡는다. 히어로에서까지 카드와 같은 높이면
    "오늘의 한 접시"가 여러 후보 중 하나처럼 보인다 */
 .wpick__thumb .thumb--lg {
   height: 214px;
+  border: none;
   border-radius: var(--radius);
 }
 
@@ -142,38 +171,46 @@
   min-width: 0;
 }
 
+/* 배지는 작고 얌전하게. 여기가 커지면 메뉴 이름보다 배지가 먼저 읽힌다 */
 .wpick__badge {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: var(--color-accent-weak);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 11px;
+  border: 1px solid var(--color-accent-weak);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
   color: var(--color-accent);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
+  letter-spacing: -0.1px;
 }
 
 .wpick__lead {
-  margin: 12px 0 0;
-  font-size: 13.5px;
+  margin: 14px 0 0;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--color-muted);
 }
 
+/* 화면에서 가장 큰 글자. "오늘 이거 먹고 싶다"가 여기서 나와야 한다 */
 .wpick__name {
-  margin: 6px 0 0;
-  font-size: 30px;
+  margin: 8px 0 0;
+  font-size: 38px;
   font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.6px;
+  line-height: 1.15;
+  letter-spacing: -1.4px;
 }
 
 .wpick__meta-line {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 12px 0 0;
+  gap: 8px;
+  margin: 14px 0 0;
   font-size: 13px;
-  color: var(--color-muted);
+  color: var(--color-subtle);
+  font-variant-numeric: tabular-nums;
 }
 
 .wpick__meta-icon { color: var(--color-muted); }
@@ -190,8 +227,8 @@
 .wpick__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .wpick__actions .btn {
@@ -204,17 +241,17 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 16px 0 0;
+  margin: 18px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .wpick__tags li {
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
   background: var(--color-bg);
   font-size: 12px;
-  color: var(--color-muted);
+  color: var(--color-subtle);
 }
 
 /*
@@ -333,14 +370,15 @@
 @media (max-width: 1279px) {
   .wpick {
     grid-template-columns: 1fr;
-    gap: 18px;
-    background: linear-gradient(180deg, var(--color-soft) 0%, var(--color-surface) 42%);
+    gap: 20px;
+    padding: 24px 22px;
+    background: linear-gradient(180deg, var(--color-peach) 0%, var(--color-soft) 26%, var(--color-surface) 52%);
   }
 
-  .wpick--clear  { background: linear-gradient(180deg, var(--tint-clear) 0%, var(--color-surface) 42%); }
-  .wpick--clouds { background: linear-gradient(180deg, var(--tint-clouds) 0%, var(--color-surface) 42%); }
-  .wpick--rain   { background: linear-gradient(180deg, var(--tint-rain) 0%, var(--color-surface) 42%); }
-  .wpick--snow   { background: linear-gradient(180deg, var(--tint-snow) 0%, var(--color-surface) 42%); }
+  .wpick--clear  { background: linear-gradient(180deg, var(--tint-clear) 0%, var(--color-soft) 28%, var(--color-surface) 54%); }
+  .wpick--clouds { background: linear-gradient(180deg, var(--tint-clouds) 0%, var(--color-surface) 46%); }
+  .wpick--rain   { background: linear-gradient(180deg, var(--tint-rain) 0%, var(--color-surface) 46%); }
+  .wpick--snow   { background: linear-gradient(180deg, var(--tint-snow) 0%, var(--color-surface) 46%); }
 
   .wpick__pick {
     padding-top: 18px;
@@ -360,16 +398,18 @@
 
   .wpick__refresh-label { display: none; }
 
-  .wpick__temp { font-size: 36px; }
-  .wpick__emoji { font-size: 28px; }
+  .wpick__temp { font-size: 40px; }
+  .wpick__emoji { font-size: 30px; }
 
   /* 그림과 글이 나란히 있으면 둘 다 좁아진다. 그림을 위로 올린다 */
   .wpick__pick {
     flex-direction: column;
-    gap: 14px;
+    align-items: stretch;
+    gap: 16px;
   }
 
   .wpick__thumb { width: 100%; }
-  .wpick__name { font-size: 25px; }
+  .wpick__thumb .thumb--lg { height: 190px; }
+  .wpick__name { font-size: 30px; letter-spacing: -1px; }
   .wpick__actions .btn { flex: 1; justify-content: center; }
 }
