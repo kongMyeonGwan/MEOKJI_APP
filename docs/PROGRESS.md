@@ -152,6 +152,37 @@ React가 뜬 뒤에 칠하면 다크 모드 사용자에게 흰 화면이 한 �
 
 ---
 
+## 🚨 지금 깨져 있는 것 (2026-09-04 머지 직후)
+
+스키마 v2에서 테이블 3개의 이름이 바뀌었는데, 팀원이 그 전에 붙여둔
+게시판 · History API는 옛 이름을 참조한다. **import는 되지만 조회하면
+`ORA-00942: 테이블 또는 뷰가 존재하지 않습니다`가 난다.**
+
+| 옛 이름 | 새 이름 |
+|---|---|
+| `posts` | `recipe_reviews` |
+| `post_likes` | `review_likes` |
+| `comments` | `review_comments` |
+| `posts.post_id` | `recipe_reviews.review_id` |
+
+고쳐야 하는 파일
+
+- `models/post.py` · `models/post_like.py` · `models/comment.py` — `__tablename__`과 컬럼
+- `models/meal_history.py` — `use_yn` 컬럼 추가
+- `services/post_service.py` (271줄) — 조회에 `use_yn='Y'` 필터, 삭제를 논리 삭제로
+- `services/history_service.py` — 같은 처리
+- `routers/posts.py` · `schemas/post.py` — 필드명
+- `frontend/src/api/posts.js` · `PostWritePage.jsx` · `PostDetailPage.jsx` · `CommunityPage.jsx`
+
+또한 v2는 `food_name` / `recipe_json` / `ingredients_json`을 `recipe_reviews`에
+두지 않고 `meal_histories`와 JOIN해서 읽는다. 팀원 버전은 값을 복사해 두는
+설계였고 "Guest가 남의 MEAL_HISTORIES를 JOIN하지 않게 한다"는 이유를 달아뒀다.
+**어느 쪽으로 갈지 팀에서 정한 뒤** 위 파일들을 고쳐야 한다.
+
+`db/02_seed.sql`(팀원 작성)도 옛 스키마 기준이라 그대로 실행되지 않는다.
+
+---
+
 ## 스키마 v2 (2026-09-04) — 논리 삭제 · 후기 게시판 FK
 
 ### 무엇이 바뀌었나
