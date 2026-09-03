@@ -12,12 +12,41 @@
    1400px대 화면에서 오른쪽 음식 칸이 그림 폭만큼밖에 안 남아
    버튼과 해시태그가 줄줄이 접힌다 */
 .wpick {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
   gap: 22px;
   align-items: center;
-  padding: 22px 24px;
+  padding: 22px 24px 14px;
   background: linear-gradient(100deg, var(--color-soft) 0%, var(--color-surface) 46%);
+}
+
+/* 5개를 통째로 새로 뽑는 버튼. 넘기기(아래 ‹ ›)와 하는 일이 달라서
+   자리도 멀리 떨어뜨려 놨다 */
+.wpick__refresh {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.wpick__refresh:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .wpick--clear  { background: linear-gradient(100deg, var(--tint-clear) 0%, var(--color-surface) 46%); }
@@ -79,24 +108,32 @@
 }
 
 /* ===== 오른쪽 : 답 ===== */
+/*
+ * 그림과 글을 세로 가운데에서 만나게 한다.
+ *
+ * 글이 7줄(배지·문구·이름·메타·별점·버튼·태그)이라 그림보다 늘 길다.
+ * 위로 붙이면 그림 아래에 빈 띠가 한 덩어리로 남고,
+ * 그림을 글 높이까지 늘리면 세로로 길쭉한 이상한 비율이 된다.
+ * 가운데로 두면 남는 공간이 위아래로 갈려서 여백처럼 읽힌다.
+ */
 .wpick__pick {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 22px;
 }
 
 /* 좁아질수록 그림이 먼저 양보한다. 글이 먼저 줄면 메뉴 이름과 버튼이 접힌다 */
 .wpick__thumb {
   flex-shrink: 0;
-  width: clamp(150px, 32%, 216px);
+  width: clamp(160px, 34%, 250px);
   overflow: hidden;
   border-radius: var(--radius);
 }
 
-/* 목록 카드보다 크게 잡는다. 히어로에서까지 카드와 같은 높이면
+/* 목록 카드(148px)보다 크게 잡는다. 히어로에서까지 카드와 같은 높이면
    "오늘의 한 접시"가 여러 후보 중 하나처럼 보인다 */
 .wpick__thumb .thumb--lg {
-  height: 176px;
+  height: 214px;
   border-radius: var(--radius);
 }
 
@@ -180,6 +217,116 @@
   color: var(--color-muted);
 }
 
+/*
+ * 후보가 바뀔 때 살짝 떠오른다.
+ * 그냥 갈아 끼우면 자동으로 넘어갔을 때 눈에 안 띄어서
+ * 아까 보던 메뉴가 계속 있는 줄 안다. 0.28초면 거슬리지 않는다.
+ */
+@keyframes wpick-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.wpick__pick { animation: wpick-in 0.28s ease; }
+
+/* ===== 넘기기 ===== */
+/* 두 칸 아래를 가로질러 놓는다. 오른쪽 칸에만 붙이면
+   화살표가 카드 한가운데에 몰려서 어디를 누르는 건지 헷갈린다 */
+.wpick__nav {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.wpick__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+
+  font-size: 17px;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.wpick__arrow:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.wpick__dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * 점은 6px이지만 버튼 자체는 20px로 잡는다.
+ * 보이는 크기대로 만들면 손가락으로 누르기 어렵다.
+ */
+.wpick__dot-btn {
+  display: block;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.wpick__dot-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-border);
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, background 0.2s;
+}
+
+.wpick__dot-btn:hover::after { background: var(--color-muted); }
+
+/* 현재 위치는 색만 바꾸지 않고 알약처럼 늘인다.
+   색만 다르면 점이 작아서 어디가 켜졌는지 눈에 안 들어온다 */
+.wpick__dot-btn.is-on::after {
+  width: 20px;
+  background: var(--color-accent);
+}
+
+.wpick__count {
+  min-width: 42px;
+  font-size: 12px;
+  text-align: right;
+}
+
+/* 움직임을 줄여달라는 설정이면 떠오르는 효과도 끈다.
+   자동 넘김 자체도 컴포넌트에서 함께 꺼진다 */
+@media (prefers-reduced-motion: reduce) {
+  .wpick__pick { animation: none; }
+  .wpick__dot-btn::after { transition: none; }
+}
+
 /* ===== 좁아질 때 ===== */
 /* 두 칸을 유지하면 각 칸이 반쪽이 되어 온도도 음식도 작아진다.
    위아래로 쌓고 사이에 선을 그어 "근거 -> 답" 순서를 유지한다 */
@@ -202,7 +349,16 @@
 }
 
 @media (max-width: 640px) {
-  .wpick { padding: 18px 16px; }
+  .wpick { padding: 18px 16px 12px; }
+
+  /* 온도 줄과 나란히 놓이는 자리라 글자까지 있으면 "맑음"을 밀어낸다 */
+  .wpick__refresh {
+    top: 12px;
+    right: 12px;
+    padding: 8px;
+  }
+
+  .wpick__refresh-label { display: none; }
 
   .wpick__temp { font-size: 36px; }
   .wpick__emoji { font-size: 28px; }

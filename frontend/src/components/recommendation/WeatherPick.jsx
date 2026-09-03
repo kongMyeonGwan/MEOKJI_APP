@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Icon from '../common/Icon'
 import FoodThumb from '../common/FoodThumb'
@@ -18,9 +18,17 @@ import '../../styles/components/recommendation/WeatherPick.css'
  * 날씨와 음식을 다른 카드에 두면 사용자가 인과를 직접 이어붙여야 한다.
  * 한 덩어리로 묶어야 설명 없이 전달된다.
  *
- * 후보를 5개 나란히 깔지 않는다. 여러 개를 같은 크기로 놓는 순간
- * "골라보세요"가 되어버려서 정해줬다는 느낌이 사라진다.
- * 대신 "다른 메뉴 추천"으로 한 번에 하나씩만 갈아 끼운다.
+ * 조작이 두 가지인데 하는 일이 다르다
+ * -----------------------------------
+ *   넘기기(‹ › · 점)      오늘 뽑힌 **5개 안에서** 이동
+ *   다른 메뉴 추천(우상단)  5개를 **통째로 새로 교체**
+ *
+ * 한 버튼이 두 역할을 겸하면 "다음 거"인지 "새로 뽑기"인지 알 수 없다.
+ * 자리도 갈라놨다. 넘기기는 내용 아래, 새로 뽑기는 카드 모서리다.
+ *
+ * 후보 5개를 같은 크기로 늘어놓지 않고 한 번에 하나씩만 보여주는 이유:
+ * 여러 개를 나란히 깔면 "골라보세요"가 되어버려서 정해줬다는 인상이 사라진다.
+ * 넘기면서 보게 하면 화면에는 항상 한 접시만 있다.
  */
 
 /** 날씨별 배경. condition_text(한글 표시용)가 아니라 condition 코드로 분기한다 */
@@ -38,22 +46,74 @@ const CONDITION_EMOJI = {
   SNOW: '❄️',
 }
 
-export default function WeatherPick() {
-  // 서버가 정렬해서 내려준 순서를 그대로 쓴다. 0번이 오늘의 한 접시.
-  const [index, setIndex] = useState(0)
+/** 한 세트에 보여줄 후보 수 */
+const PAGE_SIZE = 5
 
-  const weather = MOCK_WEATHER
-  const picks = MOCK_WEATHER_PICKS
+/**
+ * 자동으로 넘어가는 간격.
+ *
+ * 3초면 설명을 다 읽기 전에 넘어가고, 10초면 넘어가는 줄 모른다.
+ * 카드에 마우스를 올리거나 안쪽에 포커스가 있으면 멈춘다 —
+ * 읽고 있거나 버튼을 고르는 중이라는 뜻이다.
+ */
+const AUTO_MS = 5000
+
+export default function WeatherPick() {
+  const pool = MOCK_WEATHER_PICKS
+
+  // page: 몇 번째 5개 세트인가, index: 그 세트 안에서 몇 번째인가
+  const [page, setPage] = useState(0)
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  const pageCount = Math.max(1, Math.ceil(pool.length / PAGE_SIZE))
+
+  const picks = useMemo(() => {
+    const slice = pool.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
+    // 마지막 세트가 5개보다 적으면 앞에서 끌어와 채운다.
+    // 세트마다 개수가 다르면 아래 점 줄이 넘길 때마다 늘었다 줄었다 한다
+    return slice.length === PAGE_SIZE
+      ? slice
+      : [...slice, ...pool.slice(0, PAGE_SIZE - slice.length)]
+  }, [pool, page])
+
+  // 자동 넘김.
+  // setInterval이 아니라 setTimeout을 index에 걸어둔다. 손으로 넘기면 index가
+  // 바뀌면서 타이머가 새로 시작되므로, 방금 넘긴 화면이 1초 만에 또 넘어가지 않는다.
+  useEffect(() => {
+    if (paused || picks.length < 2) return
+
+    // 움직임을 줄여달라고 설정한 사용자에게는 자동으로 바꾸지 않는다.
+    // 어지럼증·주의력 문제로 켜두는 설정이라 무시하면 안 된다
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const timer = setTimeout(
+      () => setIndex((i) => (i + 1) % picks.length),
+      AUTO_MS
+    )
+    return () => clearTimeout(timer)
+  }, [index, page, paused, picks.length])
+
   const pick = picks[index]
 
   // 데이터가 없을 때 카드가 깨지느니 통째로 빠지는 편이 낫다.
   // STEP 12/13에서 날씨 API나 AI 호출이 실패하면 실제로 이 상태가 된다.
   if (!pick) return null
 
-  const nextPick = () => setIndex((i) => (i + 1) % picks.length)
+  const weather = MOCK_WEATHER
+  const emoji = CONDITION_EMOJI[weather.condition] ?? '🌤️'
+
+  const move = (step) =>
+    setIndex((i) => (i + step + picks.length) % picks.length)
+
+  const refresh = () => {
+    setPage((p) => (p + 1) % pageCount)
+    // 새 세트는 1위부터 보여준다. 3번째를 보다가 새로 뽑았는데 또 3번째가
+    // 나오면 "1등이 뭔지"를 놓친다
+    setIndex(0)
+  }
 
   const recipeHref = `/recipe/${encodeURIComponent(pick.food_name)}`
-  const emoji = CONDITION_EMOJI[weather.condition] ?? '🌤️'
 
   // 가격은 바로 위 줄에 원 단위로 적혀 있어서, 해시태그에는 대략의 구간만 넣는다
   const band = priceBand(pick.estimated_cost)
@@ -63,7 +123,25 @@ export default function WeatherPick() {
     <section
       className={`card wpick ${CONDITION_CLASS[weather.condition] ?? ''}`}
       aria-label="오늘 날씨 추천"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      // 포커스는 버블링되므로 카드 안 어느 버튼을 잡아도 멈춘다.
+      // 키보드로 넘기는 중에 자동으로 또 넘어가면 조작이 엇나간다
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
     >
+      {/* 5개를 통째로 갈아 끼운다. 카드 모서리에 둬서 넘기기 버튼과 섞이지 않게 한다 */}
+      <button
+        type="button"
+        className="wpick__refresh"
+        onClick={refresh}
+        aria-label="다른 메뉴 추천"
+      >
+        <Icon name="refresh" size={15} />
+        {/* 좁은 화면에서는 글자를 접고 아이콘만 남긴다(CSS) */}
+        <span className="wpick__refresh-label">다른 메뉴 추천</span>
+      </button>
+
       {/* ===== 왼쪽 : 근거 ===== */}
       <div className="wpick__weather">
         <p className="wpick__temp-row">
@@ -92,8 +170,10 @@ export default function WeatherPick() {
         </p>
       </div>
 
-      {/* ===== 오른쪽 : 답 ===== */}
-      <div className="wpick__pick">
+      {/* ===== 오른쪽 : 답 =====
+          key를 걸어 후보가 바뀔 때마다 새로 그린다. 살짝 떠오르는 효과가
+          다시 실행돼서 "넘어갔다"가 눈에 보인다 */}
+      <div className="wpick__pick" key={pick.food_name}>
         <Link to={recipeHref} className="wpick__thumb" tabIndex={-1} aria-hidden="true">
           <FoodThumb item={pick} size="lg" />
         </Link>
@@ -128,10 +208,6 @@ export default function WeatherPick() {
             <Link to={recipeHref} className="btn">
               레시피 보기
             </Link>
-            <button type="button" className="btn btn--ghost" onClick={nextPick}>
-              다른 메뉴 추천
-              <Icon name="refresh" size={16} className="wpick__refresh" />
-            </button>
           </div>
 
           {tags.length > 0 && (
@@ -142,6 +218,48 @@ export default function WeatherPick() {
             </ul>
           )}
         </div>
+      </div>
+
+      {/* ===== 넘기기 ===== */}
+      <div className="wpick__nav">
+        <button
+          type="button"
+          className="wpick__arrow"
+          onClick={() => move(-1)}
+          aria-label="이전 메뉴"
+        >
+          ‹
+        </button>
+
+        <ul className="wpick__dots">
+          {picks.map((food, i) => (
+            <li key={food.food_name}>
+              <button
+                type="button"
+                className={`wpick__dot-btn${i === index ? ' is-on' : ''}`}
+                onClick={() => setIndex(i)}
+                aria-current={i === index}
+                // 점만 있으면 무엇으로 가는지 모른다. 이름을 붙여두면
+                // 마우스를 올렸을 때와 스크린리더 양쪽에서 읽힌다
+                aria-label={food.food_name}
+                title={food.food_name}
+              />
+            </li>
+          ))}
+        </ul>
+
+        <button
+          type="button"
+          className="wpick__arrow"
+          onClick={() => move(1)}
+          aria-label="다음 메뉴"
+        >
+          ›
+        </button>
+
+        <span className="wpick__count muted">
+          {index + 1} / {picks.length}
+        </span>
       </div>
     </section>
   )
