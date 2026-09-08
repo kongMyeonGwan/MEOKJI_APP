@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MOCK_GAMES } from '../../mocks'
+import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/recommendation/GamePromo.css'
 
 /**
@@ -16,6 +16,8 @@ import '../../styles/components/recommendation/GamePromo.css'
  * 셋 다 안 정해진 사람을 위해 게임 목록(/game)으로 가는 문을 하나 둔다.
  */
 export default function GamePromo() {
+  const { games } = useCatalog()
+
   return (
     <section className="gpromo" aria-label="메뉴 게임">
       <div className="gpromo__lead">
@@ -34,7 +36,7 @@ export default function GamePromo() {
       </div>
 
       <ul className="gpromo__games">
-        {MOCK_GAMES.map((game) => (
+        {games.map((game) => (
           <li key={game.key}>
             <Link to={game.to} className="gpromo__game">
               <span className="gpromo__game-emoji" aria-hidden="true">

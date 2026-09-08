@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import Icon from '../components/common/Icon'
+import { useAiLog } from '../contexts/AiLogContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useLikes } from '../contexts/LikesContext'
 import { usePrefs } from '../contexts/PrefsContext'
@@ -20,16 +21,31 @@ export default function SettingsPage() {
   const { theme, setTheme, notify, setNotify } = usePrefs()
   const { isAuthenticated, user, logout } = useAuth()
   const { count, clear } = useLikes()
+  const { count: logCount, clear: clearLogs } = useAiLog()
   const navigate = useNavigate()
 
-  const onLogout = () => {
+  /** 로그아웃하고 홈으로 보낸다. */
+  function onLogout() {
     logout()
     navigate('/')
   }
 
-  const clearLikes = () => {
-    // 되돌릴 수 없는데 한 번에 지워지면 실수로 눌렀을 때 복구할 방법이 없다
-    if (window.confirm(`찜한 레시피 ${count}건을 모두 지울까요?`)) clear()
+  /** 찜한 레시피를 전부 지운다. */
+  function clearLikes() {
+    // 한 번 지우면 되돌릴 수 없어서 먼저 물어본다.
+    // window.confirm 은 브라우저가 띄우는 확인창이고, 확인을 누르면 true 다.
+    const ok = window.confirm(`찜한 레시피 ${count}건을 모두 지울까요?`)
+    if (ok) {
+      clear()
+    }
+  }
+
+  /** AI 추천 기록을 전부 지운다. */
+  function clearAiLogs() {
+    const ok = window.confirm(`AI 추천 기록 ${logCount}건을 모두 지울까요?`)
+    if (ok) {
+      clearLogs()
+    }
   }
 
   return (
@@ -128,6 +144,30 @@ export default function SettingsPage() {
 
         <div className="settings__row">
           <div>
+            <p className="settings__label">AI 추천 기록 {logCount}건</p>
+            <p className="settings__desc muted">
+              언제 어떤 조건으로 추천받았는지의 기록이에요. 이것도 이 브라우저에만
+              저장됩니다.
+            </p>
+          </div>
+
+          <div className="settings__actions">
+            <Link to="/ai-history" className="btn btn--ghost btn--sm">
+              목록 보기
+            </Link>
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm settings__danger"
+              onClick={clearAiLogs}
+              disabled={logCount === 0}
+            >
+              전체 삭제
+            </button>
+          </div>
+        </div>
+
+        <div className="settings__row">
+          <div>
             <p className="settings__label">못 먹는 재료</p>
             <p className="settings__desc muted">
               알레르기 재료는 추천에서 완전히 제외돼요.
@@ -151,9 +191,14 @@ export default function SettingsPage() {
               <p className="settings__desc muted">{user.email}</p>
             </div>
 
-            <button type="button" className="btn btn--ghost btn--sm" onClick={onLogout}>
-              로그아웃
-            </button>
+            <div className="settings__actions">
+              <Link to="/mypage" className="btn btn--ghost btn--sm">
+                내 정보 · 탈퇴
+              </Link>
+              <button type="button" className="btn btn--ghost btn--sm" onClick={onLogout}>
+                로그아웃
+              </button>
+            </div>
           </div>
         ) : (
           <div className="settings__row">

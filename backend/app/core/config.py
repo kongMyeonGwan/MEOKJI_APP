@@ -1,16 +1,27 @@
 """애플리케이션 설정.
 
-.env 파일의 값을 읽어 타입 검증된 Settings 객체로 제공한다.
-Credential을 코드에 직접 쓰지 않기 위한 단일 진입점이다.
+backend/.env 파일의 값을 읽어서 settings 라는 객체 하나에 담아둔다.
+다른 파일들은 이렇게 쓴다.
+
+    from app.core.config import settings
+    print(settings.DB_HOST)
+
+비밀번호나 API 키를 코드에 직접 쓰지 않으려고 만든 통로다.
+.env 는 git 에 올리지 않으므로(.gitignore) 키가 GitHub 에 새지 않는다.
+
+BaseSettings 를 상속하면 아래 적어둔 이름과 같은 항목을 .env 에서 자동으로 찾아
+넣어주고, 타입까지 맞춰준다. DB_PORT: int 라고 적어두면 .env 의 "1521"(문자열)이
+1521(정수)로 바뀌어 들어온다. 값이 없고 기본값도 없으면 서버가 뜰 때 바로 에러가 난다.
 """
 
-from functools import lru_cache
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 
-# app/core/config.py -> app/core -> app -> backend
+# 이 파일(app/core/config.py) 기준으로 두 단계 위가 backend 폴더다.
+#   app/core/config.py -> app/core -> app -> backend
+# .env 를 절대 경로로 찾아야, 어느 폴더에서 서버를 켜도 같은 파일을 읽는다.
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 
@@ -78,13 +89,18 @@ class Settings(BaseSettings):
     NAVER_CLIENT_ID: str = ""
     NAVER_CLIENT_SECRET: str = ""
 
+    # 아래 셋은 @property 다. 괄호 없이 settings.database_url 처럼 쓰면
+    # 그때마다 함수가 실행되어 계산된 값을 돌려준다.
+
     @property
     def database_url(self) -> URL:
-        """Oracle 접속 URL.
+        """Oracle 접속 주소를 만든다.
 
-        문자열을 직접 조립하지 않고 URL.create()를 쓴다.
-        비밀번호에 @ : / 같은 문자가 있어도 SQLAlchemy가 이스케이프해준다.
-        XEPDB1은 SID가 아니라 서비스명이므로 service_name 쿼리 파라미터로 전달한다.
+        문자열을 f-string 으로 직접 이어붙이지 않고 URL.create() 를 쓴다.
+        비밀번호에 @ : / 같은 글자가 들어있어도 SQLAlchemy 가 알아서 처리해준다.
+        직접 이어붙이면 그런 비밀번호에서 주소가 깨진다.
+
+        XEPDB1 은 SID 가 아니라 서비스명이라서 service_name 으로 넘겨야 한다.
         """
         return URL.create(
             "oracle+oracledb",
@@ -97,19 +113,33 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        """쉼표로 구분된 CORS_ORIGINS를 리스트로 변환."""
-        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+        """CORS_ORIGINS 를 리스트로 바꾼다.
+
+        .env 에는 한 줄로 적혀 있다.
+            CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+        이걸 ["http://localhost:5173", "http://localhost:3000"] 으로 만든다.
+        """
+        return split_by_comma(self.CORS_ORIGINS)
 
     @property
     def price_provider_list(self) -> list[str]:
-        """쉼표로 구분된 PRICE_PROVIDERS를 리스트로 변환."""
-        return [p.strip() for p in self.PRICE_PROVIDERS.split(",") if p.strip()]
+        """PRICE_PROVIDERS 를 리스트로 바꾼다. 적힌 순서가 곧 우선순위다."""
+        return split_by_comma(self.PRICE_PROVIDERS)
 
 
-@lru_cache
-def get_settings() -> Settings:
-    """설정을 한 번만 읽어 캐시한다."""
-    return Settings()
+def split_by_comma(text: str) -> list[str]:
+    """쉼표로 나누고, 앞뒤 공백을 떼고, 빈 칸은 버린다.
+
+    "a, b ,, c" -> ["a", "b", "c"]
+    """
+    result = []
+    for piece in text.split(","):
+        piece = piece.strip()
+        if piece:
+            result.append(piece)
+    return result
 
 
-settings = get_settings()
+# 서버가 켜질 때 딱 한 번 .env 를 읽어서 만들어 둔다.
+# 다른 파일에서는 이 settings 를 그대로 가져다 쓰면 된다.
+settings = Settings()

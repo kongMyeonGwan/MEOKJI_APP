@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MOCK_GAMES } from '../mocks'
+import { useCatalog } from '../contexts/CatalogContext'
 import '../styles/pages/ListPage.css'
 import '../styles/pages/GamePage.css'
 
@@ -14,9 +14,11 @@ import '../styles/pages/GamePage.css'
  *   돌림판   운에 맡긴다 — 제일 빠르다
  *
  * 대시보드의 배너(GamePromo)와 같은 목록을 쓴다. 게임을 하나 더 붙일 때
- * mocks의 MOCK_GAMES만 고치면 두 화면이 같이 따라온다.
+ * 서버의 catalog.json만 고치면 두 화면이 같이 따라온다.
  */
 export default function GamePage() {
+  const { games } = useCatalog()
+
   return (
     <div className="list-page">
       <div className="section-head">
@@ -28,7 +30,7 @@ export default function GamePage() {
       </p>
 
       <ul className="game-list">
-        {MOCK_GAMES.map((game) => (
+        {games.map((game) => (
           <li key={game.key}>
             <Link to={game.to} className="card game-list__item">
               <span className="game-list__emoji" aria-hidden="true">

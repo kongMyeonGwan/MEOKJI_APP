@@ -55,8 +55,9 @@ export default function PostWritePage() {
   // 이미 공유한 기록은 uq_posts_meal(UNIQUE)에 걸려 다시 올릴 수 없으므로 목록에서 뺀다.
   const sharableHistories = histories.filter((h) => !h.shared_post_id)
 
-  const onSubmit = async (e) => {
-    e.preventDefault()
+  /** 등록 버튼을 눌렀을 때. */
+  async function onSubmit(e) {
+    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
 
     const next = {}
     if (!title.trim()) next.title = '제목을 입력해주세요'

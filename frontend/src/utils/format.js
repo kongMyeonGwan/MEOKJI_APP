@@ -5,6 +5,16 @@
  * new Date()가 브라우저 시간대로 자동 변환해주므로 별도 계산이 필요 없다.
  */
 
+/**
+ * 한 자리 숫자 앞에 0을 붙인다. 8 -> "08"
+ *
+ * 날짜 · 시각을 "2026.08.16 09:20" 처럼 자릿수를 맞춰 찍을 때 쓴다.
+ * 아래 세 함수가 똑같이 필요해서 여기 한 번만 만들어 두고 같이 쓴다.
+ */
+function pad(n) {
+  return String(n).padStart(2, '0')
+}
+
 /** 8500 -> "8,500원" */
 export function formatPrice(value) {
   if (value === null || value === undefined) return '-'
@@ -30,7 +40,6 @@ export function priceBand(value) {
 export function formatDate(isoString) {
   if (!isoString) return '-'
   const d = new Date(isoString)
-  const pad = (n) => String(n).padStart(2, '0')
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`
 }
 
@@ -38,7 +47,6 @@ export function formatDate(isoString) {
 export function formatDateTime(isoString) {
   if (!isoString) return '-'
   const d = new Date(isoString)
-  const pad = (n) => String(n).padStart(2, '0')
   return `${formatDate(isoString)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
@@ -54,7 +62,6 @@ export function formatDateTime(isoString) {
  */
 export function toDateKey(value) {
   const d = value instanceof Date ? value : new Date(value)
-  const pad = (n) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 

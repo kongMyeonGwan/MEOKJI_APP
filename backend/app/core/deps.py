@@ -1,12 +1,21 @@
-"""FastAPI 의존성 — 요청의 Authorization 헤더에서 로그인 사용자를 찾아낸다.
+"""로그인한 사용자 찾아내기.
 
-두 가지를 제공한다.
+요청 헤더의 토큰을 읽어서 "지금 이 요청을 보낸 사람이 누구인가"를 알아낸다.
+라우터는 아래 둘 중 하나를 Depends 로 받기만 하면 되고,
+토큰을 직접 뜯어보거나 DB 를 조회할 필요가 없다.
 
-    get_current_user   로그인 필수. 토큰이 없거나 잘못됐으면 401
-    get_optional_user  로그인 선택. 없으면 None (게시판 Guest 조회용)
+    get_current_user    로그인 필수. 토큰이 없거나 잘못됐으면 401 에러
+    get_optional_user   로그인 선택. 없으면 None (게시판을 Guest 도 볼 수 있게)
 
-라우터는 이 둘 중 하나를 Depends로 받기만 하면 되고,
-토큰 파싱이나 DB 조회를 직접 하지 않는다.
+Depends 가 뭔가요
+-----------------
+FastAPI 에게 "이 함수를 먼저 실행하고, 그 결과를 내 매개변수에 넣어줘" 라고
+부탁하는 것이다. 라우터에 이렇게 쓰면
+
+    def read_me(current_user: User = Depends(get_current_user)):
+
+FastAPI 가 read_me 를 부르기 전에 get_current_user 를 먼저 실행해서,
+그 반환값을 current_user 에 넣어준다. 401 이 나면 read_me 는 아예 실행되지 않는다.
 """
 
 from fastapi import Depends, HTTPException, status
@@ -19,48 +28,58 @@ from app.database.database import get_db
 from app.models.types import USE_YN_YES
 from app.models.user import User
 
-# auto_error=False : 헤더가 없을 때 FastAPI가 곧바로 403을 뱉지 않고
-# credentials=None 으로 넘겨준다. get_optional_user가 성립하려면 필수다.
-# 그 대신 "없을 때 401" 판단은 아래에서 직접 한다.
+# 요청 헤더에서 "Authorization: Bearer <토큰>" 을 꺼내주는 도구.
+#
+# auto_error=False 로 둔 이유:
+# 기본값(True)이면 헤더가 없을 때 FastAPI 가 곧바로 403 을 내버린다.
+# 그러면 "로그인 안 해도 되는" get_optional_user 를 만들 수가 없다.
+# False 로 두면 헤더가 없을 때 None 을 넘겨주므로, 401 을 낼지 말지 우리가 정한다.
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
-def _unauthorized(detail: str) -> HTTPException:
-    """401 응답을 만든다.
+def make_401(message: str) -> HTTPException:
+    """401 (인증 실패) 에러를 만든다.
 
-    WWW-Authenticate 헤더는 HTTP 표준이 401에 요구하는 값이다.
+    WWW-Authenticate 헤더는 HTTP 규칙상 401 응답에 넣게 되어 있는 값이다.
     """
     return HTTPException(
-        status.HTTP_401_UNAUTHORIZED,
-        detail,
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=message,
         headers={"WWW-Authenticate": "Bearer"},
     )
 
 
-def _resolve_user(token: str, db: Session) -> User:
-    """토큰 문자열 -> User. 실패하면 401을 던진다."""
+def find_user_by_token(token: str, db: Session) -> User:
+    """토큰 문자열을 받아서 User 를 찾아준다. 실패하면 401 을 던진다."""
+
+    # 1) 토큰이 진짜 우리가 발급한 것인지 확인하고 내용물을 꺼낸다
     try:
         payload = decode_token(token)
-    except InvalidTokenError as exc:
-        # 만료(ExpiredSignatureError) · 서명 불일치 · 형식 오류가 모두 여기로 온다.
-        # 어느 쪽인지 응답에 밝히지 않는다.
-        raise _unauthorized("토큰이 유효하지 않거나 만료되었습니다.") from exc
+    except InvalidTokenError:
+        # 만료됐든, 서명이 안 맞든, 형식이 깨졌든 전부 여기로 온다.
+        # 어느 쪽인지는 응답에 밝히지 않는다. 공격자에게 힌트가 되기 때문이다.
+        raise make_401("토큰이 유효하지 않거나 만료되었습니다.")
 
-    subject = payload.get("sub")
-    try:
-        user_id = int(subject)
-    except (TypeError, ValueError) as exc:
-        raise _unauthorized("토큰이 유효하지 않거나 만료되었습니다.") from exc
+    # 2) 토큰 안에 들어있는 사용자 id 를 꺼낸다
+    #    JWT 규칙상 sub 는 문자열이라서 정수로 바꿔야 한다
+    user_id_text = payload.get("sub")
+    if user_id_text is None or not str(user_id_text).isdigit():
+        raise make_401("토큰이 유효하지 않거나 만료되었습니다.")
 
+    user_id = int(user_id_text)
+
+    # 3) 그 id 의 사용자를 DB 에서 찾는다
     user = db.get(User, user_id)
+
     if user is None or user.use_yn != USE_YN_YES:
-        # 토큰 발급 후 탈퇴한 경우. 서명은 멀쩡하지만 주인이 없다.
-        # 탈퇴는 물리 삭제가 아니라 use_yn='N' 이므로 행은 남아 있다.
-        # db.get 만으로는 걸러지지 않아 값을 직접 확인해야 한다.
-        raise _unauthorized("존재하지 않는 사용자입니다.")
+        # 토큰을 받은 뒤에 탈퇴한 경우. 서명은 멀쩡한데 주인이 없다.
+        # 탈퇴는 행을 지우는 게 아니라 use_yn 을 'N' 으로 바꾸는 것이라서
+        # db.get() 만으로는 안 걸러진다. 값을 직접 확인해야 한다.
+        raise make_401("존재하지 않는 사용자입니다.")
 
     if user.is_locked:
-        # 로그인 이후에 계정이 잠긴 경우, 남은 토큰으로 계속 쓰지 못하게 막는다.
+        # 로그인한 뒤에 계정이 잠긴 경우.
+        # 이미 받아둔 토큰으로 계속 쓰지 못하게 막는다.
         raise HTTPException(status.HTTP_423_LOCKED, "계정이 잠겼습니다.")
 
     return user
@@ -70,26 +89,29 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    """로그인 필수 엔드포인트용."""
+    """로그인이 반드시 필요한 곳에서 쓴다. 토큰이 없으면 401."""
     if credentials is None:
-        raise _unauthorized("인증이 필요합니다.")
-    return _resolve_user(credentials.credentials, db)
+        raise make_401("인증이 필요합니다.")
+
+    # credentials.credentials 안에 "Bearer " 를 뗀 토큰 문자열만 들어있다
+    return find_user_by_token(credentials.credentials, db)
 
 
 def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User | None:
-    """로그인 선택 엔드포인트용 (게시글 목록/상세 등).
+    """로그인해도 되고 안 해도 되는 곳에서 쓴다 (게시글 목록 · 상세 등).
 
-    토큰이 잘못됐거나 만료됐을 때도 401이 아니라 None(Guest)으로 처리한다.
-    Guest에게 열어둔 화면인데 만료된 토큰 하나 때문에 에러 페이지가 뜨면
-    안 되기 때문이다. 로그인이 반드시 필요한 동작은 어차피
-    get_current_user를 쓰므로 거기서 401이 나간다.
+    토큰이 잘못됐거나 만료됐을 때도 401 을 내지 않고 None(Guest) 으로 넘어간다.
+    누구나 볼 수 있는 화면인데 만료된 토큰 하나 때문에 에러 페이지가 뜨면 안 되기 때문이다.
+    로그인이 꼭 필요한 동작(글쓰기 · 좋아요)은 get_current_user 를 쓰므로
+    거기서 제대로 401 이 나간다.
     """
     if credentials is None:
         return None
+
     try:
-        return _resolve_user(credentials.credentials, db)
+        return find_user_by_token(credentials.credentials, db)
     except HTTPException:
         return None

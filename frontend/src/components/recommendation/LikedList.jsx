@@ -20,7 +20,7 @@ export default function LikedList({ items }) {
             <FoodThumb item={item} size="md" />
 
             <span className="liked__body">
-              <span className="liked__name">{item.recipe_name}</span>
+              <span className="liked__name">{item.recipe_name ?? item.food_name}</span>
               <span className="liked__meta">
                 <span className="liked__heart">♥ {item.like_count}</span>
                 <span className="muted">{formatDate(item.liked_at)}</span>

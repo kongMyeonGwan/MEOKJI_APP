@@ -18,8 +18,9 @@ export default function DateRangeFilter({ start, end, onSearch }) {
     setDraft({ start, end })
   }, [start, end])
 
-  const onSubmit = (e) => {
-    e.preventDefault()
+  /** 조회 버튼을 누르면 고른 기간을 부모에게 알려준다. */
+  function onSubmit(e) {
+    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
     onSearch(draft.start, draft.end)
   }
 
@@ -31,6 +32,8 @@ export default function DateRangeFilter({ start, end, onSearch }) {
         value={draft.start}
         // 시작일이 종료일보다 뒤로 갈 수 없게 브라우저가 막아준다
         max={draft.end}
+        // { ...prev, start: 새값 } = 기존 값을 복사하고 start 만 바꾼다.
+        // end 를 안 적었으니 end 는 그대로 유지된다.
         onChange={(e) => setDraft((prev) => ({ ...prev, start: e.target.value }))}
         aria-label="시작일"
       />

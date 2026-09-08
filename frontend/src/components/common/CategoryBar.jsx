@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import FoodIllustration from './FoodIllustration'
-import { MOCK_CATEGORIES } from '../../mocks'
+import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/common/CategoryBar.css'
 
 /**
@@ -10,21 +10,29 @@ import '../../styles/components/common/CategoryBar.css'
  * (마우스만 쓰는 데스크톱)을 위해 오른쪽 끝에 넘김 버튼을 둔다.
  *
  * 선택은 부모가 들고 있는다. 이 컴포넌트는 그리기만 한다.
+ *
+ * 분류 목록은 서버에서 온다(CatalogContext). 서버와 같은 이름을 써야
+ * ?category=한식 로 넘겼을 때 결과가 나온다.
  */
 export default function CategoryBar({ value, onChange }) {
   const listRef = useRef(null)
+  const { categories } = useCatalog()
 
-  const scrollNext = () => {
-    const el = listRef.current
-    if (!el) return
-    // 한 번에 화면 너비의 3/4씩. 전부 넘기면 어디까지 봤는지 놓친다
-    el.scrollBy({ left: el.clientWidth * 0.75, behavior: 'smooth' })
+  /** 오른쪽 › 버튼을 누르면 칩 목록을 옆으로 밀어준다. */
+  function scrollNext() {
+    // useRef 로 잡아둔 <ul> 요소. 아직 화면에 없으면 null 이다
+    const list = listRef.current
+    if (!list) return
+
+    // 한 번에 화면 너비의 3/4씩 민다.
+    // 한 화면을 통째로 넘기면 어디까지 봤는지 놓친다.
+    list.scrollBy({ left: list.clientWidth * 0.75, behavior: 'smooth' })
   }
 
   return (
     <div className="cats">
       <ul className="cats__list" ref={listRef}>
-        {MOCK_CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <li key={cat.key}>
             <button
               type="button"

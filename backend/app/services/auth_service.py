@@ -37,6 +37,13 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
         email=payload.email,
         password_hash=hash_password(payload.password),
         nickname=payload.nickname,
+        # 아래 넷은 선택 항목이라 안 보내면 None 이 들어간다.
+        # 주소는 대시보드 첫 화면의 날씨를 좌표로 조회할 때 쓴다.
+        gender=payload.gender,
+        address_sido=payload.address_sido,
+        address_sigungu=payload.address_sigungu,
+        latitude=payload.latitude,
+        longitude=payload.longitude,
     )
     db.add(user)
 
@@ -46,18 +53,21 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
         # 2차: 사전 조회와 INSERT 사이에 다른 요청이 끼어든 경우(경합).
         # Oracle은 ORA-00001을 던지며 메시지에 위반된 제약조건 이름이 들어있다.
         db.rollback()
-        detail = str(exc.orig).upper()
-        if "UQ_USERS_EMAIL" in detail:
-            raise HTTPException(status.HTTP_409_CONFLICT, "이미 사용 중인 이메일입니다.") from exc
-        if "UQ_USERS_NICKNAME" in detail:
-            raise HTTPException(status.HTTP_409_CONFLICT, "이미 사용 중인 닉네임입니다.") from exc
+        error_message = str(exc.orig).upper()
+
+        if "UQ_USERS_EMAIL" in error_message:
+            raise HTTPException(status.HTTP_409_CONFLICT, "이미 사용 중인 이메일입니다.")
+        if "UQ_USERS_NICKNAME" in error_message:
+            raise HTTPException(status.HTTP_409_CONFLICT, "이미 사용 중인 닉네임입니다.")
+
+        # 그 외의 DB 에러는 그대로 올린다 (숨기면 원인을 못 찾는다)
         raise
 
     db.refresh(user)  # DB가 채운 id / created_at 을 읽어온다
     return user
 
 
-_INVALID_CREDENTIALS = "이메일 또는 비밀번호가 올바르지 않습니다."
+INVALID_CREDENTIALS = "이메일 또는 비밀번호가 올바르지 않습니다."
 
 
 def login_user(db: Session, payload: LoginRequest) -> User:
@@ -75,7 +85,7 @@ def login_user(db: Session, payload: LoginRequest) -> User:
     if user is None:
         # 가입되지 않았거나 탈퇴한 이메일. 실패 횟수를 셀 대상 자체가 없다.
         # 탈퇴 여부를 응답으로 구분해주지 않는다.
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, _INVALID_CREDENTIALS)
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, INVALID_CREDENTIALS)
 
     # 이미 잠긴 계정은 비밀번호 검증까지 가지 않는다.
     # 여기서 막지 않으면 잠긴 뒤에도 계속 카운트가 올라간다.
@@ -105,11 +115,11 @@ def login_user(db: Session, payload: LoginRequest) -> User:
         # 남은 횟수를 알려주기로 한 결정 (2026-08-17)
         # 트레이드오프: 존재하는 계정에만 이 문구가 붙으므로, 없는 이메일과
         # 응답을 비교하면 가입 여부를 알아낼 수 있다. 사용성을 택한 것이며
-        # 계정 열거를 막아야 한다면 이 부분을 _INVALID_CREDENTIALS로 되돌리면 된다.
+        # 계정 열거를 막아야 한다면 이 부분을 INVALID_CREDENTIALS로 되돌리면 된다.
         remaining = settings.MAX_LOGIN_FAIL_COUNT - user.login_fail_count
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
-            f"{_INVALID_CREDENTIALS} (남은 시도 {remaining}회)",
+            f"{INVALID_CREDENTIALS} (남은 시도 {remaining}회)",
         )
 
     # 로그인 성공. 그동안 쌓인 실패 기록을 지운다.

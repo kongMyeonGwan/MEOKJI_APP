@@ -3,12 +3,26 @@ import client from './client'
 /**
  * 회원가입.
  * 성공 시 생성된 사용자 정보를 반환한다(비밀번호 해시는 포함되지 않음).
+ *
+ * 성별과 주소는 선택이다. 안 보내면 undefined 라서 axios 가 JSON 에서 빼고,
+ * 서버는 NULL 로 저장한다.
+ * 주소는 대시보드 첫 화면의 날씨 조회에 쓴다.
  */
-export async function register({ email, password, nickname }) {
+export async function register({
+  email,
+  password,
+  nickname,
+  gender,
+  addressSido,
+  addressSigungu,
+}) {
   const { data } = await client.post('/api/auth/register', {
     email,
     password,
     nickname,
+    gender,
+    address_sido: addressSido,
+    address_sigungu: addressSigungu,
   })
   return data
 }

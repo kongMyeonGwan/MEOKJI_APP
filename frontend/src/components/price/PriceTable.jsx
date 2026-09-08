@@ -18,17 +18,23 @@ function pickRange(offers) {
 }
 
 export function getPriceSummary(prices) {
-  return prices.reduce(
-    (acc, item) => {
-      const range = pickRange(item.offers)
-      if (!range) return acc
-      return {
-        min: acc.min + range.low.price,
-        max: acc.max + range.high.price,
-      }
-    },
-    { min: 0, max: 0 }
-  )
+  // 재료마다 최저가끼리 더한 값과 최고가끼리 더한 값을 각각 구한다.
+  //   min: 전부 제일 싼 데서 샀을 때
+  //   max: 전부 제일 비싼 데서 샀을 때
+  let min = 0
+  let max = 0
+
+  for (const item of prices) {
+    const range = pickRange(item.offers)
+
+    // 판매처 정보가 없는 재료는 건너뛴다
+    if (!range) continue
+
+    min += range.low.price
+    max += range.high.price
+  }
+
+  return { min, max }
 }
 
 export default function PriceTable({ prices }) {

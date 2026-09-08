@@ -22,10 +22,30 @@ const STEP = 1000
 
 export default function BudgetRange({ min, max, onChange, variant = 'stacked' }) {
   // 두 손잡이가 서로를 넘어가지 못하게 막는다. 넘어가면 구간이 뒤집힌다.
-  const setMin = (v) => onChange(Math.min(Number(v), max - STEP), max)
-  const setMax = (v) => onChange(min, Math.max(Number(v), min + STEP))
+  /**
+   * 왼쪽(하한) 손잡이를 움직였을 때.
+   *
+   * Math.min 으로 상한보다 커지지 않게 막는다.
+   * 안 막으면 두 손잡이가 서로를 지나쳐서 구간이 뒤집힌다.
+   * STEP 만큼 띄우는 건 둘이 완전히 겹쳐서 잡을 수 없게 되는 걸 막기 위해서다.
+   */
+  function setMin(value) {
+    onChange(Math.min(Number(value), max - STEP), max)
+  }
 
-  const pct = (v) => ((v - BUDGET_MIN) / (BUDGET_MAX - BUDGET_MIN)) * 100
+  /** 오른쪽(상한) 손잡이를 움직였을 때. 하한보다 작아지지 않게 막는다. */
+  function setMax(value) {
+    onChange(min, Math.max(Number(value), min + STEP))
+  }
+
+  /**
+   * 금액을 막대 위의 위치(%)로 바꾼다.
+   *
+   * 0원이면 0%, 최대 금액이면 100%.  예) 최대가 2만원일 때 5000원 -> 25%
+   */
+  function pct(value) {
+    return ((value - BUDGET_MIN) / (BUDGET_MAX - BUDGET_MIN)) * 100
+  }
 
   const inline = variant === 'inline'
 

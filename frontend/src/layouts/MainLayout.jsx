@@ -29,8 +29,15 @@ export default function MainLayout() {
   // 이게 없으면 폰 크기로 줄였다 늘렸을 때 넓은 화면인데 사이드바가 사라져 있다.
   useEffect(() => {
     const mq = window.matchMedia(WEB_MODE)
-    const sync = (e) => setNavOpen(e.matches)
+    // 창 크기가 경계를 넘을 때마다 불린다.
+    // e.matches 가 true 면 웹 모드(넓은 화면)라는 뜻이다.
+    function sync(e) {
+      setNavOpen(e.matches)
+    }
+
     mq.addEventListener('change', sync)
+
+    // 화면을 떠날 때 등록을 해제한다. 안 하면 계속 쌓인다.
     return () => mq.removeEventListener('change', sync)
   }, [])
 
@@ -43,8 +50,16 @@ export default function MainLayout() {
 
   // 앱 모드에서 메뉴를 눌러 화면이 바뀌면 서랍을 닫는다.
   // 웹 모드에서는 서랍이 아니라 고정 사이드바라 닫으면 안 된다.
-  const closeDrawer = () => {
-    if (!window.matchMedia(WEB_MODE).matches) setNavOpen(false)
+  /**
+   * 앱 모드에서 메뉴를 눌러 화면이 바뀌면 서랍을 닫는다.
+   *
+   * 웹 모드에서는 서랍이 아니라 항상 떠 있는 사이드바라서 닫으면 안 된다.
+   */
+  function closeDrawer() {
+    const isWebMode = window.matchMedia(WEB_MODE).matches
+    if (!isWebMode) {
+      setNavOpen(false)
+    }
   }
 
   return (

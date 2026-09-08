@@ -27,7 +27,7 @@ from app.core.security import (
     hash_password,
     verify_otp_code,
 )
-from app.integrations.email import get_email_provider
+from app.integrations.email_sender import send_verification_code
 from app.models.types import USE_YN_YES
 from app.models.user import User
 from app.models.verification_code import PURPOSE_PASSWORD_RESET, VerificationCode
@@ -35,17 +35,17 @@ from app.models.verification_code import PURPOSE_PASSWORD_RESET, VerificationCod
 # verify / change 단계의 실패 문구는 하나로 통일한다.
 # "코드가 틀렸다" / "만료됐다" / "그런 요청이 없다"를 구분해서 알려주면
 # 공격자가 유효한 코드를 좁혀나가는 데 쓸 수 있다.
-_INVALID_CODE = "인증번호가 올바르지 않거나 만료되었습니다."
+INVALID_CODE = "인증번호가 올바르지 않거나 만료되었습니다."
 
 
-def _find_user(db: Session, email: str) -> User | None:
+def find_active_user(db: Session, email: str) -> User | None:
     # 탈퇴한 회원에게는 재설정 메일을 보내지 않는다.
     return db.execute(
         select(User).where(User.email == email, User.use_yn == USE_YN_YES)
     ).scalar_one_or_none()
 
 
-def _latest_code(db: Session, user_id: int) -> VerificationCode | None:
+def find_latest_code(db: Session, user_id: int) -> VerificationCode | None:
     """해당 사용자의 가장 최근 비밀번호 재설정 코드."""
     return db.execute(
         select(VerificationCode)
@@ -64,7 +64,7 @@ def send_reset_code(db: Session, email: str) -> None:
     가입되지 않은 이메일이어도 아무 일 없었다는 듯 조용히 끝낸다.
     404를 주면 로그인 폼을 거치지 않고도 가입 여부를 확인할 수 있게 된다.
     """
-    user = _find_user(db, email)
+    user = find_active_user(db, email)
     if user is None:
         return
 
@@ -91,24 +91,24 @@ def send_reset_code(db: Session, email: str) -> None:
 
     # 메일 발송은 커밋 이후에 한다. 발송에 성공했는데 DB 저장이 롤백되면
     # 사용자는 코드를 받았는데 서버는 모르는 상태가 된다.
-    get_email_provider().send_verification_code(
+    send_verification_code(
         to=user.email, code=code, expire_minutes=settings.OTP_EXPIRE_MINUTES
     )
 
 
 def verify_reset_code(db: Session, email: str, code: str) -> None:
     """인증번호를 확인하고 used_at을 찍는다."""
-    user = _find_user(db, email)
+    user = find_active_user(db, email)
     if user is None:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, _INVALID_CODE)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, INVALID_CODE)
 
-    record = _latest_code(db, user.id)
+    record = find_latest_code(db, user.id)
     if record is None or record.used_at is not None:
         # 이미 검증에 성공한 코드는 다시 쓸 수 없다.
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, _INVALID_CODE)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, INVALID_CODE)
 
     if record.expires_at <= datetime.now(timezone.utc):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, _INVALID_CODE)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, INVALID_CODE)
 
     if record.attempt_count >= settings.OTP_MAX_ATTEMPT:
         # 100만 분의 1을 무작위로 맞히려는 시도를 여기서 끊는다.
@@ -130,7 +130,7 @@ def verify_reset_code(db: Session, email: str, code: str) -> None:
             )
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            f"{_INVALID_CODE} (남은 시도 {remaining}회)",
+            f"{INVALID_CODE} (남은 시도 {remaining}회)",
         )
 
     record.used_at = datetime.now(timezone.utc)
@@ -139,23 +139,23 @@ def verify_reset_code(db: Session, email: str, code: str) -> None:
 
 def change_password(db: Session, email: str, code: str, new_password: str) -> None:
     """검증을 통과한 코드로 비밀번호를 교체하고 계정 잠금을 푼다."""
-    user = _find_user(db, email)
+    user = find_active_user(db, email)
     if user is None:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, _INVALID_CODE)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, INVALID_CODE)
 
-    record = _latest_code(db, user.id)
+    record = find_latest_code(db, user.id)
 
     # used_at이 NULL이면 verify를 건너뛰고 바로 change를 부른 것이다.
     if record is None or record.used_at is None:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, _INVALID_CODE)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, INVALID_CODE)
 
     # verify 이후에도 만료는 계속 적용된다.
     # 아니면 인증만 해두고 몇 시간 뒤에 비밀번호를 바꿀 수 있게 된다.
     if record.expires_at <= datetime.now(timezone.utc):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, _INVALID_CODE)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, INVALID_CODE)
 
     if not verify_otp_code(code, record.code_hash):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, _INVALID_CODE)
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, INVALID_CODE)
 
     user.password_hash = hash_password(new_password)
 

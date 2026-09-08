@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FoodThumb from '../common/FoodThumb'
 import DateRangeFilter from '../common/DateRangeFilter'
-import { MOCK_LIKED_RECIPES } from '../../mocks'
+import { getPopular } from '../../api/posts'
 import { shiftDays, toDateKey } from '../../utils/format'
 import '../../styles/components/recommendation/PopularRecipes.css'
 
@@ -17,8 +17,9 @@ import '../../styles/components/recommendation/PopularRecipes.css'
  * 좋아요는 오래된 글일수록 쌓이기만 해서, 기간을 안 자르면 몇 달째 같은 순위가 뜬다.
  * 기본값을 30일로 두면 "요즘"이 되고, 오늘만 보면 실시간에 가까워진다.
  *
- * 지금은 화면에서 거르지만, 실제로는 서버가 기간을 받아
- * 그 안에서 눌린 좋아요만 세서(ORDER BY count DESC) 내려줘야 한다.
+ * 집계는 서버가 한다(GET /api/posts/popular).
+ * 그 기간에 **새로 눌린** 좋아요만 세야 하는데, 화면에서는 언제 눌렸는지를
+ * 알 수 없다. 목록에 실려 오는 건 이미 합쳐진 숫자뿐이기 때문이다.
  */
 
 /** 사이드에 보여줄 순위 개수. 전체는 /popular 에서 본다 */
@@ -30,46 +31,69 @@ const PRESETS = [
   { key: 'D30', label: '30일', days: 29, title: '오늘 -30일' },
 ]
 
-export default function PopularRecipes() {
-  const [preset, setPreset] = useState('D30')
-  const [range, setRange] = useState(() => ({
-    start: toDateKey(shiftDays(-29)),
+/** 오늘부터 며칠 전까지의 기간을 만든다. days=6 이면 최근 7일. */
+function makeRange(days) {
+  return {
+    start: toDateKey(shiftDays(-days)),
     end: toDateKey(new Date()),
-  }))
+  }
+}
 
-  const choosePreset = (item) => {
+export default function PopularRecipes() {
+  // 지금 켜진 탭 ('TODAY' / 'D7' / 'D30' / 'CUSTOM')
+  const [preset, setPreset] = useState('D30')
+  const [range, setRange] = useState(() => makeRange(29))
+
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  // 기간이 바뀔 때마다 서버에 다시 물어본다.
+  //
+  // alive 플래그가 필요한 이유: 요청은 보낸 순서대로 도착하지 않는다.
+  // '30일' 응답이 '오늘' 응답보다 늦게 오면 화면에 엉뚱한 목록이 남는다.
+  // effect 가 다시 실행되기 직전에 정리 함수가 alive 를 false 로 바꾸므로,
+  // 낡은 응답이 도착해도 setItems 를 부르지 않는다.
+  useEffect(() => {
+    let alive = true
+    setLoading(true)
+
+    getPopular({ start: range.start, end: range.end, limit: TOP_N })
+      .then((data) => {
+        if (alive) setItems(data)
+      })
+      .catch(() => {
+        // 순위를 못 받았다고 대시보드 전체가 에러가 되면 안 된다.
+        if (alive) setItems([])
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [range.start, range.end])
+
+  /** 오늘 / 7일 / 30일 탭을 눌렀을 때 */
+  function choosePreset(item) {
     setPreset(item.key)
-    setRange({ start: toDateKey(shiftDays(-item.days)), end: toDateKey(new Date()) })
+    setRange(makeRange(item.days))
   }
 
-  // 날짜를 직접 고치면 어느 프리셋에도 해당하지 않는 기간이 된다.
-  // 이때 탭이 '30일'에 켜진 채로 남으면 무엇을 보고 있는 건지 알 수 없다.
-  const applyCustom = (start, end) => {
+  /**
+   * 날짜를 직접 골랐을 때.
+   *
+   * 어느 탭에도 해당하지 않는 기간이 되므로 preset 을 'CUSTOM' 으로 바꾼다.
+   * 이때 탭이 '30일'에 켜진 채로 남으면 지금 뭘 보고 있는 건지 알 수 없다.
+   */
+  function applyCustom(start, end) {
     setPreset('CUSTOM')
     setRange({ start, end })
   }
 
-  const items = useMemo(
-    () =>
-      MOCK_LIKED_RECIPES
-        // 'YYYY-MM-DD' 문자열끼리 비교하면 날짜순과 일치한다. 양 끝 포함.
-        .filter((item) => {
-          const key = toDateKey(item.liked_at)
-          return key >= range.start && key <= range.end
-        })
-        // 좋아요 수가 같으면 최근에 받은 것을 위로 올린다.
-        // 이 기준이 없으면 같은 데이터인데도 순서가 들쭉날쭉해 보인다.
-        .sort(
-          (a, b) =>
-            b.like_count - a.like_count ||
-            new Date(b.liked_at) - new Date(a.liked_at)
-        )
-        .slice(0, TOP_N),
-    [range]
-  )
-
-  const rangeTitle =
-    PRESETS.find((item) => item.key === preset)?.title ?? '직접 선택한 기간'
+  // 제목에 쓸 기간 이름. 직접 고른 기간이면 PRESETS 에 없다.
+  const matchedPreset = PRESETS.find((item) => item.key === preset)
+  const rangeTitle = matchedPreset?.title ?? '직접 선택한 기간'
 
   return (
     <section className="card popular">
@@ -113,7 +137,9 @@ export default function PopularRecipes() {
         * 선택한 기간 동안 새로 받은 좋아요 수 기준
       </p>
 
-      {items.length === 0 ? (
+      {loading ? (
+        <p className="empty">불러오는 중…</p>
+      ) : items.length === 0 ? (
         <p className="empty">이 기간에 좋아요를 받은 레시피가 없습니다.</p>
       ) : (
         <ol className="popular__list">
@@ -126,7 +152,9 @@ export default function PopularRecipes() {
                 <span className="popular__rank">{i + 1}</span>
                 <FoodThumb item={item} size="md" />
                 <span className="popular__body">
-                  <span className="popular__name">{item.recipe_name}</span>
+                  <span className="popular__name">
+                    {item.recipe_name ?? item.food_name}
+                  </span>
                   <span className="popular__likes">♥ {item.like_count}</span>
                 </span>
               </Link>

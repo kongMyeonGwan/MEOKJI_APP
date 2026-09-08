@@ -1,67 +1,92 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import ErrorMessage from '../components/common/ErrorMessage'
 import Loading from '../components/common/Loading'
 import RecipeView from '../components/recipe/RecipeView'
 import { useAuth } from '../contexts/AuthContext'
-import ErrorMessage from '../components/common/ErrorMessage'
-import { addComment, getPost, setPostLike } from '../api/posts'
+import { useProfile } from '../contexts/ProfileContext'
+import {
+  addComment,
+  countPostView,
+  getPost,
+  removeComment,
+  removePost,
+  setPostLike,
+  updateComment,
+  updatePost,
+} from '../api/posts'
 import { parseApiError } from '../utils/apiError'
 import { formatDateTime } from '../utils/format'
 import '../styles/pages/PostDetailPage.css'
 
 /**
- * 게시글 상세 + 좋아요 + 댓글 (STEP 21~23).
+ * 게시글 상세 + 좋아요 + 댓글.
  *
- * 조회는 Guest도 가능하다. 좋아요와 댓글 작성은 로그인이 필요하다.
+ * 로그인 안 해도 볼 수 있다. 좋아요 · 댓글 · 수정 · 삭제만 로그인이 필요하고,
+ * 수정 · 삭제는 내가 쓴 것만 된다(서버가 다시 확인한다).
  *
- * 레시피/재료는 posts 테이블에 복사돼 있는 스냅샷을 그대로 보여준다.
- * meal_histories 를 JOIN하지 않는다 — 남의 개인 기록이기 때문이다.
+ * 파일 안에 컴포넌트가 두 개인 이유
+ * ---------------------------------
+ * 아래 PostDetail 에 key={postId} 를 주기 위해서다.
+ *
+ * key 가 바뀌면 리액트는 "다른 컴포넌트"로 보고 처음부터 새로 만든다.
+ * 이게 없으면 1번 글에서 2번 글로 이동했을 때 좋아요 · 댓글 state 가
+ * 1번 글의 값으로 남아 있는다. useState 의 초기값은 처음 만들 때 한 번만
+ * 계산되기 때문이다.
  */
 export default function PostDetailPage() {
-  const { postId } = useParams()
-  // key를 주면 postId가 바뀔 때 컴포넌트가 새로 마운트된다.
-  // 이게 없으면 다른 글로 이동해도 좋아요/댓글 state가 이전 글 것으로 남는다.
-  // useState의 초기값은 첫 렌더에서 한 번만 계산되기 때문이다.
+  const { postId } = useParams() // 주소의 /community/:postId 부분
   return <PostDetail key={postId} postId={postId} />
 }
 
 function PostDetail({ postId }) {
   const { isAuthenticated } = useAuth()
+  const { reload } = useProfile()
+  const navigate = useNavigate()
 
+  // --- 게시글 불러오기 관련 ---
   const [post, setPost] = useState(null)
   const [comments, setComments] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
-  const [liked, setLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
-  const [likeBusy, setLikeBusy] = useState(false)
+  // --- 좋아요 관련 ---
+  const [liked, setLiked] = useState(false)      // 내가 눌렀는지
+  const [likeCount, setLikeCount] = useState(0)  // 전체 개수
+  const [likeBusy, setLikeBusy] = useState(false) // 요청 중이면 버튼 잠금
 
-  const [draft, setDraft] = useState('')
+  // --- 댓글 작성 관련 ---
+  const [draft, setDraft] = useState('')          // 입력칸에 쓰는 중인 글
   const [commentBusy, setCommentBusy] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  useEffect(() => {
-    let alive = true
+  // --- 글 수정 관련 ---
+  const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [editBusy, setEditBusy] = useState(false)
 
+  // 화면이 처음 열릴 때 게시글을 불러오고, 조회수를 한 번 올린다.
+  //
+  // 조회수를 GET 에서 같이 올리지 않는 이유는, GET 은 몇 번을 보내도 결과가
+  // 같아야 하기 때문이다. 그래서 서버에 따로 엔드포인트를 뒀고 화면이 부른다.
+  useEffect(() => {
     getPost(postId)
       .then((data) => {
-        if (!alive) return
         setPost(data)
+        // 서버가 준 값을 각각의 state 에 나눠 담는다.
+        // 좋아요와 댓글은 이 화면에서 바뀌니까 따로 들고 있어야 한다.
         setComments(data.comments)
         setLiked(data.liked)
         setLikeCount(data.like_count)
+        setEditTitle(data.title)
+        setEditContent(data.content)
       })
-      .catch((err) => {
-        if (alive) setLoadError(parseApiError(err).message)
-      })
-      .finally(() => {
-        if (alive) setLoading(false)
-      })
+      .catch((err) => setLoadError(parseApiError(err).message))
+      .finally(() => setLoading(false))
 
-    return () => {
-      alive = false
-    }
+    // 조회수는 실패해도 무시한다. 숫자 하나 때문에 에러를 띄울 이유가 없다.
+    countPostView(postId).catch(() => {})
   }, [postId])
 
   if (loading) {
@@ -84,46 +109,140 @@ function PostDetail({ postId }) {
     )
   }
 
-  const onToggleLike = async () => {
-    const next = !liked
+  /**
+   * 하트를 누르면 실행된다.
+   *
+   * 서버 응답을 기다리지 않고 화면부터 먼저 바꾼다(낙관적 갱신).
+   * 하트는 즉시 반응해야 눌린 느낌이 나는데, 서버를 기다리면 0.3초쯤 멍하다.
+   * 대신 실패하면 아래 catch 에서 되돌린다.
+   */
+  async function onToggleLike() {
+    // 실패했을 때 되돌릴 수 있도록 지금 값을 먼저 적어둔다
+    const previousLiked = liked
+    const previousCount = likeCount
 
-    // 낙관적 갱신. 하트는 즉시 반응해야 눌린 느낌이 난다.
-    setLiked(next)
-    setLikeCount((n) => n + (next ? 1 : -1))
+    const nextLiked = !liked // 켜져 있으면 끄고, 꺼져 있으면 켠다
+
+    // 1) 화면부터 먼저 바꾼다
+    setLiked(nextLiked)
+    if (nextLiked) {
+      setLikeCount(previousCount + 1)
+    } else {
+      setLikeCount(previousCount - 1)
+    }
+
     setActionError('')
-    setLikeBusy(true)
+    setLikeBusy(true) // 응답이 올 때까지 버튼을 잠근다
 
     try {
-      // 서버가 세어 준 값으로 덮어쓴다. 그 사이 남이 누른 것까지 반영된다.
-      const result = await setPostLike(post.id, next)
+      // 2) 서버에 알린다
+      const result = await setPostLike(post.id, nextLiked)
+
+      // 3) 서버가 직접 세어준 값으로 덮어쓴다.
+      //    내가 누르는 사이에 남이 누른 것까지 반영된다.
       setLiked(result.liked)
       setLikeCount(result.like_count)
     } catch (err) {
-      // 실패하면 낙관적 갱신을 되돌린다.
-      setLiked(!next)
-      setLikeCount((n) => n - (next ? 1 : -1))
+      // 실패했으니 1)에서 바꾼 화면을 눌렀던 순간의 값으로 되돌린다
+      setLiked(previousLiked)
+      setLikeCount(previousCount)
       setActionError(parseApiError(err).message)
     } finally {
       setLikeBusy(false)
     }
   }
 
-  const onSubmitComment = async (e) => {
-    e.preventDefault()
+  /** 댓글 등록 버튼을 누르면 실행된다. */
+  async function onSubmitComment(e) {
+    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
+
     const content = draft.trim()
     if (!content) return
 
     setActionError('')
     setCommentBusy(true)
+
     try {
-      // 서버가 돌려준 행을 그대로 붙인다. 목록 정렬이 작성 순이라 맨 뒤가 맞다.
       const created = await addComment(post.id, content)
-      setComments((prev) => [...prev, created])
-      setDraft('')
+
+      // 서버가 돌려준 댓글을 목록 맨 뒤에 붙인다.
+      // 댓글은 작성한 순서대로 보여주므로 맨 뒤가 맞다.
+      setComments([...comments, created])
+
+      setDraft('') // 입력칸을 비운다
+      reload() // 댓글도 경험치라 레벨 카드를 다시 맞춘다
     } catch (err) {
       setActionError(parseApiError(err).message)
     } finally {
       setCommentBusy(false)
+    }
+  }
+
+  /** 댓글을 고친다. 서버가 돌려준 값으로 그 자리만 갈아 끼운다. */
+  async function onEditComment(comment, content) {
+    const updated = await updateComment(post.id, comment.id, content)
+
+    setComments(
+      comments.map((item) => {
+        if (item.id === comment.id) {
+          return updated
+        }
+        return item
+      }),
+    )
+  }
+
+  /** 댓글을 지운다. */
+  async function onRemoveComment(comment) {
+    const ok = window.confirm('댓글을 지울까요?')
+    if (!ok) return
+
+    setActionError('')
+
+    try {
+      await removeComment(post.id, comment.id)
+      setComments(comments.filter((item) => item.id !== comment.id))
+      reload()
+    } catch (err) {
+      setActionError(parseApiError(err).message)
+    }
+  }
+
+  /** 글 수정 저장. */
+  async function onSaveEdit(e) {
+    e.preventDefault()
+
+    setEditBusy(true)
+    setActionError('')
+
+    try {
+      const updated = await updatePost(post.id, {
+        title: editTitle.trim(),
+        content: editContent.trim(),
+      })
+      setPost(updated)
+      setEditing(false)
+    } catch (err) {
+      const { fieldErrors, message } = parseApiError(err)
+      setActionError(fieldErrors.title ?? fieldErrors.content ?? message)
+    } finally {
+      setEditBusy(false)
+    }
+  }
+
+  /** 글 삭제. 지우고 나면 볼 화면이 없으므로 목록으로 보낸다. */
+  async function onRemovePost() {
+    const ok = window.confirm('이 글을 지울까요?\n달린 댓글도 함께 보이지 않게 됩니다.')
+    if (!ok) return
+
+    setActionError('')
+
+    try {
+      await removePost(post.id)
+      reload()
+      navigate('/community')
+    } catch (err) {
+      setActionError(parseApiError(err).message)
     }
   }
 
@@ -134,19 +253,64 @@ function PostDetail({ postId }) {
       </p>
 
       <article className="card">
-        <h2 className="post__title">{post.title}</h2>
+        {editing ? (
+          <form className="post__edit" onSubmit={onSaveEdit}>
+            <label className="post__edit-field">
+              <span>제목</span>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                maxLength={200}
+                required
+              />
+            </label>
 
-        <div className="post__meta">
-          <span>{post.nickname}</span>
-          <span className="muted">{formatDateTime(post.created_at)}</span>
-          <span className="muted">조회 {post.view_count}</span>
-          {post.food_name && <span className="tag">{post.food_name}</span>}
-        </div>
+            <label className="post__edit-field">
+              <span>내용</span>
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={12}
+                required
+              />
+            </label>
 
-        {/* 줄바꿈을 살리기 위해 white-space: pre-wrap 을 쓴다 */}
-        <div className="post__content">{post.content}</div>
+            <div className="post__edit-actions">
+              <button type="submit" className="btn btn--sm" disabled={editBusy}>
+                {editBusy ? '저장 중…' : '저장'}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={() => {
+                  // 고치던 내용을 버리고 원래 값으로 되돌린다
+                  setEditTitle(post.title)
+                  setEditContent(post.content)
+                  setEditing(false)
+                }}
+              >
+                취소
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <h2 className="post__title">{post.title}</h2>
 
-        {/* 확정 당시 복사해 둔 레시피 스냅샷 */}
+            <div className="post__meta">
+              <span>{post.nickname}</span>
+              <span className="muted">{formatDateTime(post.created_at)}</span>
+              <span className="muted">조회 {post.view_count}</span>
+              {post.food_name && <span className="tag">{post.food_name}</span>}
+            </div>
+
+            {/* 줄바꿈을 살리기 위해 white-space: pre-wrap 을 쓴다 */}
+            <div className="post__content">{post.content}</div>
+          </>
+        )}
+
+        {/* 글쓴이가 확정했을 때의 레시피. 서버가 원본 기록에서 가져와 준다 */}
         {post.recipe_json && (
           <div className="post__recipe">
             <RecipeView
@@ -171,6 +335,26 @@ function PostDetail({ postId }) {
               <Link to="/login" className="post__link">로그인</Link> 후 좋아요를 누를 수 있습니다
             </span>
           )}
+
+          {/* 내 글에만 나오는 버튼. 서버도 남의 글이면 404로 막는다 */}
+          {post.is_mine && !editing && (
+            <span className="post__owner-actions">
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={() => setEditing(true)}
+              >
+                수정
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm post__danger"
+                onClick={onRemovePost}
+              >
+                삭제
+              </button>
+            </span>
+          )}
         </div>
 
         <ErrorMessage message={actionError} />
@@ -184,13 +368,12 @@ function PostDetail({ postId }) {
         ) : (
           <ul className="post__comments divided">
             {comments.map((comment) => (
-              <li key={comment.id}>
-                <div className="post__comment-head">
-                  <strong>{comment.nickname}</strong>
-                  <span className="muted">{formatDateTime(comment.created_at)}</span>
-                </div>
-                <p className="post__comment-body">{comment.content}</p>
-              </li>
+              <Comment
+                key={comment.id}
+                comment={comment}
+                onEdit={onEditComment}
+                onRemove={onRemoveComment}
+              />
             ))}
           </ul>
         )}
@@ -222,5 +405,95 @@ function PostDetail({ postId }) {
         )}
       </section>
     </div>
+  )
+}
+
+/**
+ * 댓글 한 줄.
+ *
+ * 따로 컴포넌트로 뺀 이유는 "지금 고치는 중인가"를 댓글마다 따로 들고 있어야
+ * 하기 때문이다. 부모가 들고 있으면 어느 댓글을 고치는 중인지 id 로 비교하는
+ * 코드가 여기저기 생긴다.
+ */
+function Comment({ comment, onEdit, onRemove }) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(comment.content)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  async function onSubmit(e) {
+    e.preventDefault()
+
+    const content = draft.trim()
+    if (!content) return
+
+    setBusy(true)
+    setError('')
+
+    try {
+      await onEdit(comment, content)
+      setEditing(false)
+    } catch (err) {
+      setError(parseApiError(err).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <li>
+      <div className="post__comment-head">
+        <strong>{comment.nickname}</strong>
+        <span className="muted">{formatDateTime(comment.created_at)}</span>
+
+        {/* 내 댓글에만 나오는 버튼. 서버도 남의 댓글이면 404로 막는다 */}
+        {comment.is_mine && !editing && (
+          <span className="post__comment-actions">
+            <button type="button" onClick={() => setEditing(true)}>
+              수정
+            </button>
+            <button
+              type="button"
+              className="post__danger"
+              onClick={() => onRemove(comment)}
+            >
+              삭제
+            </button>
+          </span>
+        )}
+      </div>
+
+      {editing ? (
+        <form className="post__form" onSubmit={onSubmit}>
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            maxLength={1000}
+            rows={3}
+          />
+          <div className="post__form-foot">
+            <span className="muted">{draft.length} / 1000</span>
+            <span className="post__edit-actions">
+              <button type="submit" className="btn btn--sm" disabled={busy}>
+                {busy ? '저장 중…' : '저장'}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={() => {
+                  setDraft(comment.content)
+                  setEditing(false)
+                }}
+              >
+                취소
+              </button>
+            </span>
+          </div>
+          <ErrorMessage message={error} />
+        </form>
+      ) : (
+        <p className="post__comment-body">{comment.content}</p>
+      )}
+    </li>
   )
 }

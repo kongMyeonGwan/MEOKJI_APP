@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MOCK_ROULETTE } from '../../mocks'
+import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/recommendation/Roulette.css'
 
 /**
@@ -14,9 +14,10 @@ import '../../styles/components/recommendation/Roulette.css'
  *     그래야 "한참 돌다가 멈추는" 느낌이 난다
  *   - 각도를 누적시키는 이유는 두 번째 회전이 0도로 되돌아갔다가
  *     다시 도는 역회전으로 보이지 않게 하기 위함이다
+ *
+ * 조각 목록은 서버에서 온다(CatalogContext).
+ * 개수가 고정이 아니라서 조각 각도(360 / 개수)를 그릴 때마다 계산한다.
  */
-const SLICE_COUNT = MOCK_ROULETTE.length
-const SLICE_DEG = 360 / SLICE_COUNT
 const SPIN_MS = 3200
 
 /**
@@ -27,6 +28,8 @@ const SPIN_MS = 3200
  * 기다리는 시간 자체를 JS에서도 없애야 앞뒤가 맞는다.
  */
 function prefersReducedMotion() {
+  // ?.( 는 "matchMedia 라는 함수가 있으면 부르고, 없으면 undefined" 라는 뜻이다.
+  // 아주 옛날 브라우저에는 이 함수가 없다. 그때는 ?? false 가 받아서 false 로 만든다.
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 }
 
@@ -37,16 +40,19 @@ function pointOn(deg, radius, center = 50) {
 }
 
 /** 한 조각의 부채꼴 path */
-function slicePath(index) {
-  const start = index * SLICE_DEG
-  const end = start + SLICE_DEG
+function slicePath(index, sliceDeg) {
+  const start = index * sliceDeg
+  const end = start + sliceDeg
   const [x1, y1] = pointOn(start, 48)
   const [x2, y2] = pointOn(end, 48)
-  // 조각이 180도를 넘지 않으므로 large-arc-flag 는 항상 0
-  return `M50,50 L${x1},${y1} A48,48 0 0,1 ${x2},${y2} Z`
+  // 조각이 180도를 넘으면 SVG에게 "먼 쪽 호"라고 알려줘야 한다.
+  // 조각이 두 개뿐일 때(각 180도) 이 값이 필요하다.
+  const largeArc = sliceDeg > 180 ? 1 : 0
+  return `M50,50 L${x1},${y1} A48,48 0 ${largeArc},1 ${x2},${y2} Z`
 }
 
 export default function Roulette() {
+  const { roulette } = useCatalog()
   const [angle, setAngle] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState(null)
@@ -57,12 +63,17 @@ export default function Roulette() {
   // 사라진 컴포넌트에 setState가 걸린다.
   useEffect(() => () => clearTimeout(timer.current), [])
 
-  const spin = () => {
-    if (spinning) return
+  const sliceCount = roulette.length
+  const sliceDeg = sliceCount > 0 ? 360 / sliceCount : 360
 
-    const picked = Math.floor(Math.random() * SLICE_COUNT)
+  /** 돌리기 버튼을 눌렀을 때. */
+  function spin() {
+    if (spinning) return // 도는 중에 또 누르면 무시한다
+    if (sliceCount === 0) return // 아직 목록을 못 받았다
+
+    const picked = Math.floor(Math.random() * sliceCount)
     // 당첨 조각의 한가운데가 12시 바늘에 오도록 되돌릴 각도
-    const target = 360 - (picked * SLICE_DEG + SLICE_DEG / 2)
+    const target = 360 - (picked * sliceDeg + sliceDeg / 2)
     // 이미 돈 만큼을 버리지 않고 그 위에 5바퀴를 더 얹는다
     const next = angle - (angle % 360) + 360 * 5 + target
 
@@ -74,7 +85,7 @@ export default function Roulette() {
     timer.current = setTimeout(
       () => {
         setSpinning(false)
-        setResult(MOCK_ROULETTE[picked])
+        setResult(roulette[picked])
       },
       prefersReducedMotion() ? 0 : SPIN_MS
     )
@@ -117,13 +128,13 @@ export default function Roulette() {
           }}
           aria-hidden="true"
         >
-          {MOCK_ROULETTE.map((slice, i) => (
-            <path key={slice.label} d={slicePath(i)} fill={slice.color} />
+          {roulette.map((slice, i) => (
+            <path key={slice.label} d={slicePath(i, sliceDeg)} fill={slice.color} />
           ))}
 
-          {MOCK_ROULETTE.map((slice, i) => {
+          {roulette.map((slice, i) => {
             // 글자는 조각 한가운데, 바깥쪽에 놓는다
-            const mid = i * SLICE_DEG + SLICE_DEG / 2
+            const mid = i * sliceDeg + sliceDeg / 2
             const [tx, ty] = pointOn(mid, 32)
             return (
               <text
@@ -145,7 +156,7 @@ export default function Roulette() {
           type="button"
           className="roulette__spin"
           onClick={spin}
-          disabled={spinning}
+          disabled={spinning || sliceCount === 0}
         >
           {spinning ? '…' : '돌리기'}
         </button>
