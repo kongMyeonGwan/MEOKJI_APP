@@ -71,7 +71,20 @@ class Settings(BaseSettings):
     SMTP_FROM: str = ""
 
     # ===== AI =====
-    AI_PROVIDER: str = "claude"
+    # mock   : API 키 없이 카탈로그에서 골라준다 (개발용)
+    # gemini : Google Gemini
+    # claude : Anthropic Claude
+    AI_PROVIDER: str = "mock"
+
+    # Gemini (https://aistudio.google.com 에서 발급)
+    GEMINI_API_KEY: str = ""
+
+    # 쉼표로 여러 개를 적으면 앞에서부터 시도한다.
+    # 무료 등급은 모델이 붐빌 때(503) 실패하는 일이 잦아서, 예비 모델을
+    # 하나 적어두면 시연 중에 화면이 비는 일을 크게 줄일 수 있다.
+    GEMINI_MODEL: str = "gemini-3.7-flash,gemini-3.5-flash"
+
+    # Claude (https://console.anthropic.com 에서 발급)
     ANTHROPIC_API_KEY: str = ""
     AI_MODEL: str = "claude-opus-5"
 
@@ -120,6 +133,11 @@ class Settings(BaseSettings):
         이걸 ["http://localhost:5173", "http://localhost:3000"] 으로 만든다.
         """
         return split_by_comma(self.CORS_ORIGINS)
+
+    @property
+    def gemini_model_list(self) -> list[str]:
+        """GEMINI_MODEL 을 리스트로 바꾼다. 적힌 순서가 곧 우선순위다."""
+        return split_by_comma(self.GEMINI_MODEL)
 
     @property
     def price_provider_list(self) -> list[str]:

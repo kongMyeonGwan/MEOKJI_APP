@@ -138,7 +138,7 @@ MEOKJI_APP/
 │       ├── data/              테이블이 필요 없는 고정 목록
 │       │   └── catalog.json       카테고리 · 룰렛 · 게임 · 공지 · mock 음식 39종
 │       └── integrations/      외부 서비스 연동 (파일 하나 = 서비스 하나)
-│           ├── ai_api.py          AI 추천·레시피 (mock / claude)
+│           ├── ai_api.py          AI 추천·레시피 (mock / gemini / claude)
 │           ├── weather_api.py     날씨 (mock / openweather)
 │           ├── email_sender.py    메일 (mock / smtp)
 │           └── price_api.py       재료 가격 (mock / naver)
@@ -238,13 +238,23 @@ JWT_SECRET_KEY=         # 아무 랜덤 문자열
 
 | 하고 싶은 것 | `.env` 에 넣을 값 |
 |---|---|
-| AI 로 진짜 추천/레시피 생성 | `AI_PROVIDER=claude` + `ANTHROPIC_API_KEY=...` |
+| AI 로 진짜 추천/레시피 생성 (무료) | `AI_PROVIDER=gemini` + `GEMINI_API_KEY=...` |
+| AI 로 진짜 추천/레시피 생성 (유료) | `AI_PROVIDER=claude` + `ANTHROPIC_API_KEY=...` |
 | 실제 날씨 | `WEATHER_PROVIDER=openweather` + `OPENWEATHER_API_KEY=...` |
 | 실제 재료 최저가 | `PRICE_PROVIDERS=naver,mock` + `NAVER_CLIENT_ID/SECRET=...` |
 | 실제 인증 메일 발송 | `EMAIL_PROVIDER=smtp` + `SMTP_*` |
 
 `PRICE_PROVIDERS` 는 쉼표로 여러 개를 적을 수 있다. 적은 순서대로 전부
 조회해서 판매처별 가격을 나란히 보여준다.
+
+`GEMINI_MODEL` 도 쉼표로 여러 개를 적을 수 있는데 뜻이 다르다. 이쪽은
+**앞에서부터 하나만** 쓰고, 그 모델이 붐비면(503) 다음 모델로 넘어간다.
+무료 등급은 붐비는 일이 잦아서 예비 모델을 하나 적어두는 편이 좋다.
+
+    GEMINI_MODEL=gemini-3.7-flash,gemini-3.5-flash
+
+**어느 프로바이더를 쓰든 프롬프트와 응답 스키마는 같다.** 바꿔 끼웠을 때
+추천의 성격까지 달라지면 비교가 불가능해지기 때문이다.
 
 ### frontend/.env
 

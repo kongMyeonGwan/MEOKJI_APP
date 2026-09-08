@@ -124,6 +124,10 @@ def test_KST는_9시간_앞선다():
 
 # =========================================================
 # mock AI — 추천
+#
+# 분기 함수(recommend_foods)가 아니라 mock 구현(mock_recommend_foods)을
+# 직접 부른다. 분기 함수를 부르면 .env 의 AI_PROVIDER 를 따라가서,
+# gemini 로 켜둔 사람의 컴퓨터에서는 이 테스트가 진짜 API 를 호출한다.
 # =========================================================
 
 
@@ -153,35 +157,35 @@ def names_of(items) -> list[str]:
 
 
 def test_요청한_개수만큼_돌려준다():
-    items = ai_api.recommend_foods(context(limit=3))
+    items = ai_api.mock_recommend_foods(context(limit=3))
 
     assert len(items) == 3
 
 
 def test_같은_조건이면_같은_결과가_나온다():
     # 랜덤을 쓰면 새로고침할 때마다 순서가 바뀌어 화면 버그를 못 잡는다
-    first = ai_api.recommend_foods(context(limit=5))
-    second = ai_api.recommend_foods(context(limit=5))
+    first = ai_api.mock_recommend_foods(context(limit=5))
+    second = ai_api.mock_recommend_foods(context(limit=5))
 
     assert names_of(first) == names_of(second)
 
 
 def test_알레르기_재료가_든_메뉴는_빠진다():
-    items = ai_api.recommend_foods(context(limit=12, allergies=["돼지고기"]))
+    items = ai_api.mock_recommend_foods(context(limit=12, allergies=["돼지고기"]))
 
     assert "김치찌개" not in names_of(items)
     assert "마파두부" not in names_of(items)
 
 
 def test_예산_상한을_넘는_메뉴는_빠진다():
-    items = ai_api.recommend_foods(context(limit=12, budget_max=5000))
+    items = ai_api.mock_recommend_foods(context(limit=12, budget_max=5000))
 
     for item in items:
         assert item["estimated_cost"] <= 5000
 
 
 def test_분류를_주면_그_분류만_나온다():
-    items = ai_api.recommend_foods(context(limit=12, category="중식"))
+    items = ai_api.mock_recommend_foods(context(limit=12, category="중식"))
 
     assert len(items) > 0
     for item in items:
@@ -189,10 +193,10 @@ def test_분류를_주면_그_분류만_나온다():
 
 
 def test_이미_본_메뉴는_다시_안_나온다():
-    first = ai_api.recommend_foods(context(limit=5))
+    first = ai_api.mock_recommend_foods(context(limit=5))
     shown = names_of(first)
 
-    second = ai_api.recommend_foods(context(limit=5, exclude=shown))
+    second = ai_api.mock_recommend_foods(context(limit=5, exclude=shown))
 
     for name in names_of(second):
         assert name not in shown
@@ -201,7 +205,7 @@ def test_이미_본_메뉴는_다시_안_나온다():
 def test_검색어가_있으면_날씨보다_검색어가_우선이다():
     # '매운 국물요리'를 찾았는데 더운 날이라고 냉면이 위로 오면
     # 검색이 고장 난 것처럼 보인다
-    items = ai_api.recommend_foods(
+    items = ai_api.mock_recommend_foods(
         context(limit=3, query="매운 국물요리", weather={"temp": 30})
     )
 
@@ -210,20 +214,20 @@ def test_검색어가_있으면_날씨보다_검색어가_우선이다():
 
 
 def test_더운_날에는_시원한_메뉴가_먼저_나온다():
-    items = ai_api.recommend_foods(context(limit=3, weather={"temp": 30}))
+    items = ai_api.mock_recommend_foods(context(limit=3, weather={"temp": 30}))
 
     assert "시원한음식" in (items[0].get("tags") or [])
 
 
 def test_추운_날에는_국물_메뉴가_먼저_나온다():
-    items = ai_api.recommend_foods(context(limit=3, weather={"temp": 0}))
+    items = ai_api.mock_recommend_foods(context(limit=3, weather={"temp": 0}))
 
     tags = items[0].get("tags") or []
     assert "국물" in tags or "얼큰" in tags
 
 
 def test_냉장고_재료가_많이_겹치는_메뉴가_먼저_나온다():
-    items = ai_api.recommend_foods(
+    items = ai_api.mock_recommend_foods(
         context(limit=3, ingredients=["계란", "대파", "밥"])
     )
 
@@ -242,7 +246,7 @@ def test_냉장고_재료가_많이_겹치는_메뉴가_먼저_나온다():
 
 
 def test_레시피_모양이_스키마와_맞는다():
-    recipe = ai_api.build_recipe("김치찌개", {})
+    recipe = ai_api.mock_build_recipe("김치찌개", {})
 
     assert recipe["recipe_name"]
     assert recipe["servings"] == 2
@@ -254,7 +258,7 @@ def test_레시피_모양이_스키마와_맞는다():
 
 
 def test_알레르기_재료는_레시피에서_아예_빠진다():
-    recipe = ai_api.build_recipe("김치찌개", {"allergies": ["돼지고기"]})
+    recipe = ai_api.mock_build_recipe("김치찌개", {"allergies": ["돼지고기"]})
 
     names = []
     for item in recipe["ingredients"]:
@@ -264,7 +268,7 @@ def test_알레르기_재료는_레시피에서_아예_빠진다():
 
 
 def test_싫어하는_재료는_두되_대체안을_붙인다():
-    recipe = ai_api.build_recipe("김치찌개", {"dislikes": ["돼지고기"]})
+    recipe = ai_api.mock_build_recipe("김치찌개", {"dislikes": ["돼지고기"]})
 
     names = []
     for item in recipe["ingredients"]:
@@ -276,7 +280,7 @@ def test_싫어하는_재료는_두되_대체안을_붙인다():
 
 
 def test_카탈로그에_없는_음식도_레시피가_나온다():
-    recipe = ai_api.build_recipe("할머니표 비밀 국수", {})
+    recipe = ai_api.mock_build_recipe("할머니표 비밀 국수", {})
 
     assert recipe["recipe_name"]
     assert len(recipe["steps"]) > 0
@@ -425,3 +429,60 @@ def test_키가_틀리면_키를_확인하라고_알려준다():
 
     assert response.status_code == 503
     assert "OPENWEATHER_API_KEY" in response.json()["detail"]
+
+
+# =========================================================
+# Gemini 오류 문구
+#
+# 실제 호출 없이 확인할 수 있는 부분만 본다.
+# 원문이 영어라 그대로 내보내면 사용자가 못 읽는다.
+# =========================================================
+
+
+class FakeApiError:
+    """google.genai 의 APIError 를 흉내 낸다. code 만 있으면 된다."""
+
+    def __init__(self, code):
+        self.code = code
+
+
+def test_붐빌_때는_기다리라고_알려준다():
+    message = ai_api.describe_gemini_error(FakeApiError(503), "gemini-3.7-flash")
+
+    assert "붐비" in message
+    assert "다시 시도" in message
+
+
+def test_할당량_초과는_한도라고_알려준다():
+    message = ai_api.describe_gemini_error(FakeApiError(429), "gemini-3.7-flash")
+
+    assert "한도" in message
+
+
+def test_없는_모델이면_모델_이름을_짚어준다():
+    # 어느 모델이 문제인지 안 적어주면 예비 모델까지 있을 때 원인을 못 찾는다
+    message = ai_api.describe_gemini_error(FakeApiError(404), "gemini-9-flash")
+
+    assert "gemini-9-flash" in message
+    assert "GEMINI_MODEL" in message
+
+
+def test_인증_오류는_키를_확인하라고_알려준다():
+    message = ai_api.describe_gemini_error(FakeApiError(400), "gemini-3.7-flash")
+
+    assert "GEMINI_API_KEY" in message
+
+
+def test_모르는_오류도_영어를_그대로_내보내지_않는다():
+    message = ai_api.describe_gemini_error(FakeApiError(418), "gemini-3.7-flash")
+
+    assert "AI 응답을 받지 못했습니다" in message
+
+
+def test_모델_목록은_쉼표로_나뉜다():
+    from app.core.config import split_by_comma
+
+    assert split_by_comma("gemini-3.7-flash, gemini-3.5-flash") == [
+        "gemini-3.7-flash",
+        "gemini-3.5-flash",
+    ]

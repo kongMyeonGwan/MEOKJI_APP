@@ -80,6 +80,27 @@ def remove_test_users() -> None:
                 connection.execute(text(statement), {"uid": user_id})
 
 
+@pytest.fixture(scope="session", autouse=True)
+def use_mock_providers():
+    """테스트가 도는 동안에는 AI 를 mock 으로 고정한다.
+
+    .env 가 gemini/claude 로 켜져 있어도 테스트는 바깥을 부르지 않는다.
+    이유가 셋 있다.
+      - 돌릴 때마다 API 할당량과 돈이 나간다
+      - 남의 서버가 붐비면(503) 우리 코드는 멀쩡한데 테스트가 빨개진다
+      - AI 는 같은 입력에 다른 답을 준다. "이 조건이면 이 결과" 를 검증할 수 없다
+
+    진짜 AI 응답이 우리 스키마에 맞는지는 테스트가 아니라 실제로 한 번
+    호출해서 확인할 일이다.
+    """
+    from app.core.config import settings
+
+    original = settings.AI_PROVIDER
+    settings.AI_PROVIDER = "mock"
+    yield
+    settings.AI_PROVIDER = original
+
+
 @pytest.fixture(scope="session")
 def client():
     """FastAPI 를 서버로 띄우지 않고 직접 호출하는 테스트용 클라이언트.

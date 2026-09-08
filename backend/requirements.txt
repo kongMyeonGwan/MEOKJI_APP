@@ -17,9 +17,13 @@ oracledb>=2.5.0
 bcrypt>=4.2.0
 pyjwt>=2.10.0
 
-# --- 외부 API 호출 (STEP 10~17에서 사용) ---
+# --- 외부 API 호출 (STEP 10~19에서 사용) ---
 httpx>=0.28.0
-anthropic>=0.40.0
+
+# AI 프로바이더. .env 의 AI_PROVIDER 로 하나를 고른다.
+# 상한을 열어두면 SDK 가 메이저 버전을 올릴 때 코드가 조용히 깨지므로 묶어둔다.
+google-genai>=2.0,<3.0
+anthropic>=0.40,<1.0
 
 # --- 테스트 ---
 pytest>=8.3.0

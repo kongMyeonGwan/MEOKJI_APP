@@ -1,10 +1,15 @@
 """AI 음식 추천 · 레시피 생성 (STEP 10~11).
 
-.env 의 AI_PROVIDER 값에 따라 두 가지로 동작한다.
+.env 의 AI_PROVIDER 값에 따라 세 가지로 동작한다.
 
     mock     API 키 없이도 화면 전체를 눌러볼 수 있게, 카탈로그(app/data)에서
              조건에 맞는 후보를 골라준다. 진짜 AI 는 아니지만 응답 모양이 같다
+    gemini   Google Gemini 를 부른다
     claude   Anthropic Claude 를 부른다
+
+프로바이더가 달라도 프롬프트와 응답 스키마는 **똑같은 것을 쓴다**.
+바꿔 끼웠을 때 추천의 성격까지 달라지면 비교가 불가능해지기 때문이다.
+다르게 만드는 건 "그 회사 API 를 어떻게 부르느냐" 뿐이다.
 
 바깥에서는 두 함수만 쓴다.
 
@@ -36,6 +41,7 @@ context 는 app/services/ai_service.py 가 만들어 넘기는 딕셔너리다.
 
 import hashlib
 import json
+import time
 
 from app.core.config import settings
 from app.data import FOODS, HOT_WEATHER_PICKS, category_labels
@@ -43,6 +49,14 @@ from app.data import FOODS, HOT_WEATHER_PICKS, category_labels
 # AI 응답을 기다리는 최대 시간(초).
 # 프론트의 axios timeout 이 30초라, 그보다 짧게 잡아야 우리 에러 메시지가 나간다.
 AI_TIMEOUT_SECONDS = 25.0
+
+# 모델이 붐빌 때(503) 다시 시도하는 횟수와 간격(초).
+#
+# 무료 등급에서는 "This model is currently experiencing high demand" 가
+# 심심찮게 나온다. 한 번 실패했다고 화면에 에러를 띄우면, 사용자는 자기가
+# 뭘 잘못한 줄 안다. 잠깐 기다렸다 다시 부르면 대부분 통과한다.
+AI_RETRY_COUNT = 2
+AI_RETRY_WAIT_SECONDS = 1.5
 
 # 한 번에 만들 수 있는 후보 개수의 상한.
 # 많이 받아봐야 화면에서 다 안 보고, 토큰만 늘어난다.
@@ -173,6 +187,10 @@ def recommend_foods(context: dict) -> list[dict]:
     if provider == "mock":
         return mock_recommend_foods(context)
 
+    if provider == "gemini":
+        raw_items = gemini_generate(build_foods_prompt(context), FOODS_SCHEMA)
+        return cut_foods(raw_items, context)
+
     if provider == "claude":
         require_api_key()
         return claude_recommend_foods(context)
@@ -181,8 +199,21 @@ def recommend_foods(context: dict) -> list[dict]:
     # 조용히 넘어가면 "AI 를 붙였는데 추천이 늘 똑같다"가 된다.
     raise RuntimeError(
         f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
-        "사용 가능한 값: mock, claude"
+        "사용 가능한 값: mock, gemini, claude"
     )
+
+
+def cut_foods(result: dict, context: dict) -> list[dict]:
+    """AI 응답에서 후보 목록만 꺼내고 요청한 개수만큼 자른다.
+
+    개수를 지켜달라고 프롬프트에 적어두지만 더 주는 경우가 있어서
+    받는 쪽에서 한 번 더 자른다.
+    """
+    foods = result.get("foods")
+    if not foods:
+        return []
+
+    return foods[: get_limit(context)]
 
 
 def build_recipe(food_name: str, context: dict) -> dict:
@@ -192,13 +223,16 @@ def build_recipe(food_name: str, context: dict) -> dict:
     if provider == "mock":
         return mock_build_recipe(food_name, context)
 
+    if provider == "gemini":
+        return gemini_generate(build_recipe_prompt(food_name, context), RECIPE_SCHEMA)
+
     if provider == "claude":
         require_api_key()
         return claude_build_recipe(food_name, context)
 
     raise RuntimeError(
         f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
-        "사용 가능한 값: mock, claude"
+        "사용 가능한 값: mock, gemini, claude"
     )
 
 
@@ -208,6 +242,127 @@ def require_api_key() -> None:
         raise RuntimeError(
             "AI_PROVIDER=claude 인데 ANTHROPIC_API_KEY 가 비어 있습니다."
         )
+
+
+# =========================================================
+# Gemini — 진짜 AI
+# =========================================================
+
+
+def gemini_generate(prompt: str, schema: dict) -> dict:
+    """Gemini 를 부르고, 스키마대로 채워진 딕셔너리를 돌려준다.
+
+    Claude 는 "도구를 하나 주고 그걸로만 답하게" 해서 모양을 고정하는데,
+    Gemini 는 응답 스키마를 직접 받는다(response_schema). 방식만 다르고
+    목적은 같다 — 문장이 아니라 정해진 JSON 으로 받는 것.
+
+    같은 FOODS_SCHEMA / RECIPE_SCHEMA 를 두 회사가 그대로 쓴다.
+    """
+    # import 를 함수 안에서 한다. AI_PROVIDER=mock 으로 쓰는 팀원이
+    # google-genai 를 안 깔았어도 서버가 뜨게 하기 위함이다.
+    from google import genai
+    from google.genai import errors, types
+
+    if not settings.GEMINI_API_KEY:
+        raise RuntimeError(
+            "AI_PROVIDER=gemini 인데 GEMINI_API_KEY 가 비어 있습니다. "
+            "https://aistudio.google.com 에서 발급받아 backend/.env 에 넣으세요."
+        )
+
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+
+    config = types.GenerateContentConfig(
+        # 이 둘이 한 쌍이다. mime_type 만 주면 스키마 없는 아무 JSON 이 오고,
+        # schema 만 주면 그걸 무시한 문장이 올 수 있다.
+        response_mime_type="application/json",
+        response_schema=schema,
+        http_options=types.HttpOptions(
+            # 밀리초 단위다. 초로 착각해서 25 를 넣으면 0.025초 만에 끊긴다.
+            timeout=int(AI_TIMEOUT_SECONDS * 1000),
+        ),
+    )
+
+    response = call_gemini_with_retry(client, prompt, config, errors)
+
+    # response_schema 를 줬으므로 본문은 JSON 문자열이다.
+    # 그래도 파싱은 감싸둔다. 안전 필터에 걸리면 본문이 비어서 올 수 있다.
+    try:
+        return json.loads(response.text)
+    except (TypeError, ValueError):
+        raise RuntimeError(
+            "AI 응답을 해석하지 못했습니다. 잠시 후 다시 시도해주세요."
+        )
+
+
+def call_gemini_with_retry(client, prompt: str, config, errors):
+    """붐빌 때(503) 잠깐 쉬었다 다시 부르고, 그래도 안 되면 예비 모델로 넘어간다.
+
+    무료 등급에서는 "This model is currently experiencing high demand" 가
+    심심찮게 나온다. 사용자가 뭘 잘못한 게 아니라 남의 서버가 붐비는 것이라,
+    한 번 실패했다고 바로 에러 화면을 띄우지 않는다.
+
+    순서는 이렇다.
+        1번 모델 -> (붐빔) 잠깐 쉬고 다시 -> 또 붐비면 -> 2번 모델 -> ...
+
+    429(할당량 초과)도 같이 재시도한다. 분당 제한이라면 곧 풀린다.
+    그 외(잘못된 키 · 없는 모델)는 기다려도 안 풀리므로 바로 올린다.
+    """
+    models = settings.gemini_model_list
+
+    if not models:
+        raise RuntimeError(
+            "GEMINI_MODEL 이 비어 있습니다. backend/.env 를 확인해주세요."
+        )
+
+    last_error = None
+
+    for model in models:
+        for attempt in range(AI_RETRY_COUNT + 1):
+            try:
+                return client.models.generate_content(
+                    model=model,
+                    contents=prompt,
+                    config=config,
+                )
+            except errors.APIError as exc:
+                last_error = exc
+
+                # 기다린다고 풀릴 오류가 아니면(잘못된 키 등) 바로 알린다
+                if exc.code not in (429, 503):
+                    raise RuntimeError(describe_gemini_error(exc, model))
+
+                # 이 모델의 마지막 시도였으면 쉬지 말고 다음 모델로 넘어간다
+                if attempt < AI_RETRY_COUNT:
+                    time.sleep(AI_RETRY_WAIT_SECONDS)
+
+        print(f"[Gemini] {model} 이(가) 붐벼서 다음 모델로 넘어갑니다.", flush=True)
+
+    raise RuntimeError(describe_gemini_error(last_error, models[-1]))
+
+
+def describe_gemini_error(exc, model: str) -> str:
+    """Gemini 오류를 화면에 띄울 만한 문구로 바꾼다.
+
+    원문은 영어라 그대로 내보내면 사용자가 읽지 못한다.
+    개발자가 원인을 짚을 수 있을 만큼만 남긴다.
+    """
+    code = getattr(exc, "code", None)
+
+    if code == 400:
+        return (
+            "AI 요청이 거부되었습니다. GEMINI_API_KEY 가 올바른지 확인해주세요."
+        )
+    if code == 404:
+        return (
+            f"AI 모델을 찾을 수 없습니다: {model}. "
+            "backend/.env 의 GEMINI_MODEL 을 확인해주세요."
+        )
+    if code == 429:
+        return "AI 사용량 한도를 넘었습니다. 잠시 후 다시 시도해주세요."
+    if code == 503:
+        return "AI 서버가 붐비고 있습니다. 잠시 후 다시 시도해주세요."
+
+    return "AI 응답을 받지 못했습니다. 잠시 후 다시 시도해주세요."
 
 
 # =========================================================
@@ -257,12 +412,7 @@ def claude_recommend_foods(context: dict) -> list[dict]:
     """Claude 에게 후보 목록을 받아온다."""
     result = call_claude(build_foods_prompt(context), "submit_foods", FOODS_SCHEMA)
 
-    foods = result.get("foods")
-    if not foods:
-        return []
-
-    # AI 가 개수를 넘겨줄 수 있으니 우리가 한 번 더 자른다
-    return foods[: get_limit(context)]
+    return cut_foods(result, context)
 
 
 def claude_build_recipe(food_name: str, context: dict) -> dict:
