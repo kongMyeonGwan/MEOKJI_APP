@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useCatalog } from '../../contexts/CatalogContext'
 import { useLikes } from '../../contexts/LikesContext'
 import { usePrefs } from '../../contexts/PrefsContext'
+import { useProfile } from '../../contexts/ProfileContext'
 import Icon, { LogoMark } from './Icon'
-import { MOCK_NOTIFICATIONS, MOCK_PROFILE, MOCK_SEARCH_SUGGESTIONS } from '../../mocks'
 import { formatDate } from '../../utils/format'
 import '../../styles/components/common/TopBar.css'
 
@@ -26,27 +27,60 @@ export default function TopBar({ onToggleNav, navOpen }) {
   const { isAuthenticated, user, logout } = useAuth()
   const { count: likeCount } = useLikes()
   const { notify } = usePrefs()
+  const { searchSuggestions } = useCatalog()
+  const { profile, notifications, unreadCount, isUnread, markAllRead } = useProfile()
   const navigate = useNavigate()
 
-  const toggle = (name) => setOpen((prev) => (prev === name ? null : name))
-  const close = () => setOpen(null)
+  /**
+   * 패널을 열거나 닫는다.
+   *
+   * 이미 열려 있는 걸 또 누르면 닫히고(null), 다른 걸 누르면 그쪽이 열린다.
+   * 상태가 하나라서 두 개가 동시에 열리는 일이 자동으로 막힌다.
+   */
+  function toggle(name) {
+    setOpen((prev) => {
+      const next = prev === name ? null : name
+
+      // 알림을 여는 순간 "여기까지 확인했다"고 표시한다.
+      // 하나씩 눌러야 읽음이 되면 배지가 계속 남아 있어서 잔소리처럼 느껴진다.
+      if (next === 'bell') {
+        markAllRead()
+      }
+
+      return next
+    })
+  }
+
+  /** 열려 있는 패널을 닫는다. */
+  function close() {
+    setOpen(null)
+  }
 
   // 알림을 꺼두면 숫자를 세지 않는다. 꺼놓고도 배지가 붙어 있으면 꺼진 것 같지 않다
-  const unread = notify ? MOCK_NOTIFICATIONS.filter((n) => !n.read).length : 0
+  const unread = notify ? unreadCount : 0
 
-  const search = (text) => {
+  /**
+   * 검색 화면으로 이동한다.
+   *
+   * encodeURIComponent 는 한글이나 공백을 주소에 넣을 수 있는 형태로 바꿔준다.
+   * "김치 찌개" -> "%EA%B9%80%EC%B9%98%20%EC%B0%8C%EA%B0%9C"
+   */
+  function search(text) {
     const trimmed = text.trim()
-    if (!trimmed) return
-    close()
+    if (!trimmed) return // 빈 검색어로는 이동하지 않는다
+
+    close() // 열려 있던 패널을 닫고 넘어간다
     navigate(`/search?q=${encodeURIComponent(trimmed)}`)
   }
 
-  const onSubmit = (e) => {
-    e.preventDefault()
+  /** 검색창에서 엔터를 치거나 돋보기를 누르면 실행된다. */
+  function onSubmit(e) {
+    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
     search(keyword)
   }
 
-  const onLogout = () => {
+  /** 로그아웃하고 홈으로 보낸다. */
+  function onLogout() {
     close()
     logout()
     navigate('/')
@@ -99,7 +133,7 @@ export default function TopBar({ onToggleNav, navOpen }) {
           <div className="topbar__panel topbar__panel--ai">
             <p className="topbar__panel-title">이렇게 물어보셔도 돼요</p>
             <ul className="topbar__ai-list">
-              {MOCK_SEARCH_SUGGESTIONS.map((text) => (
+              {searchSuggestions.map((text) => (
                 <li key={text}>
                   <button type="button" onClick={() => search(text)}>
                     {text}
@@ -137,22 +171,33 @@ export default function TopBar({ onToggleNav, navOpen }) {
                   있어요.
                 </p>
               ) : (
-                <ul className="topbar__notis">
-                  {MOCK_NOTIFICATIONS.map((noti) => (
-                    <li key={noti.id} className={noti.read ? '' : 'is-unread'}>
-                      <span className="topbar__noti-icon" aria-hidden="true">
-                        {noti.icon}
-                      </span>
-                      <span className="topbar__noti-body">
-                        <strong>{noti.title}</strong>
-                        <span className="muted">{noti.body}</span>
-                        <span className="topbar__noti-date muted">
-                          {formatDate(noti.created_at)}
+                notifications.length === 0 ? (
+                  <p className="topbar__panel-foot muted">
+                    아직 알림이 없어요. 내 글에 댓글이나 좋아요가 달리면 여기에
+                    모입니다.
+                  </p>
+                ) : (
+                  <ul className="topbar__notis">
+                    {notifications.map((noti) => (
+                      <li key={noti.id} className={isUnread(noti) ? 'is-unread' : ''}>
+                        <span className="topbar__noti-icon" aria-hidden="true">
+                          {noti.icon}
                         </span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        <Link
+                          to={noti.link}
+                          className="topbar__noti-body"
+                          onClick={close}
+                        >
+                          <strong>{noti.title}</strong>
+                          <span className="muted">{noti.body}</span>
+                          <span className="topbar__noti-date muted">
+                            {formatDate(noti.created_at)}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )
               )}
             </div>
           )}
@@ -176,9 +221,13 @@ export default function TopBar({ onToggleNav, navOpen }) {
               </span>
               <span className="topbar__who">
                 <span className="topbar__name">안녕하세요, {user.nickname}님!</span>
-                <span className="topbar__level">
-                  Lv.{MOCK_PROFILE.level} {MOCK_PROFILE.title}
-                </span>
+                {/* 레벨은 서버에서 계산해 온다. 아직 못 받았으면 줄을 통째로 뺀다.
+                    'Lv.- ' 같은 자리표시자를 보여주면 고장난 것처럼 보인다 */}
+                {profile && (
+                  <span className="topbar__level">
+                    Lv.{profile.level} {profile.title}
+                  </span>
+                )}
               </span>
               <span className="topbar__caret" aria-hidden="true">
                 ⌄

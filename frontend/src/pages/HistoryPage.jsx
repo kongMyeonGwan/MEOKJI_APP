@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import ErrorMessage from '../components/common/ErrorMessage'
 import Loading from '../components/common/Loading'
 import RecipeView from '../components/recipe/RecipeView'
-import { getHistories } from '../api/histories'
+import { getHistories, removeHistory } from '../api/histories'
+import { useProfile } from '../contexts/ProfileContext'
 import { parseApiError } from '../utils/apiError'
 import { formatDate, formatPrice } from '../utils/format'
 import '../styles/pages/HistoryPage.css'
@@ -15,8 +16,12 @@ import '../styles/pages/HistoryPage.css'
  * 여기 저장된 내용은 바뀌지 않는다.
  *
  * shared_post_id 가 있으면 이미 커뮤니티로 공유한 기록이다.
- * posts.meal_history_id 의 UNIQUE 제약 때문에 다시 공유할 수 없어서,
+ * uq_reviews_meal(함수 기반 UNIQUE) 때문에 다시 공유할 수 없어서,
  * 배지를 띄우고 그 게시글로 바로 갈 수 있게 해둔다.
+ *
+ * 삭제도 여기서 한다. 공유한 기록은 서버가 409로 막는다.
+ * 기록이 사라지면 게시글의 레시피가 통째로 비기 때문이다
+ * (게시글은 레시피를 복사해 두지 않고 이 기록을 JOIN 해서 읽는다).
  */
 export default function HistoryPage() {
   // 펼쳐진 항목의 id. 목록에서 바로 레시피를 확인할 수 있게 한다.
@@ -26,25 +31,44 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
+  // 지우는 중인 항목의 id. 그 줄의 버튼만 잠근다.
+  const [removingId, setRemovingId] = useState(null)
+  const [actionError, setActionError] = useState('')
+
+  const { reload } = useProfile()
+
+  // 화면이 처음 열릴 때 내 기록을 불러온다.
+  // 의존성이 [] 라서 딱 한 번만 실행된다.
   useEffect(() => {
-    // 응답이 오기 전에 화면을 떠나면 setState가 헛돈다. 플래그로 막는다.
-    let alive = true
-
     getHistories()
-      .then((data) => {
-        if (alive) setHistories(data)
-      })
-      .catch((err) => {
-        if (alive) setLoadError(parseApiError(err).message)
-      })
-      .finally(() => {
-        if (alive) setLoading(false)
-      })
-
-    return () => {
-      alive = false
-    }
+      .then((data) => setHistories(data))
+      .catch((err) => setLoadError(parseApiError(err).message))
+      .finally(() => setLoading(false))
   }, [])
+
+  /** 삭제 버튼. 한 번 지우면 되돌릴 수 없어서 먼저 물어본다. */
+  async function onRemove(item) {
+    const ok = window.confirm(`'${item.food_name}' 기록을 지울까요?`)
+    if (!ok) return
+
+    setRemovingId(item.id)
+    setActionError('')
+
+    try {
+      await removeHistory(item.id)
+
+      // 낙관적으로 먼저 지우지 않는다. 실패했는데 화면에서만 사라지면
+      // 새로고침할 때 되살아나 사용자가 혼란스럽다.
+      setHistories(histories.filter((row) => row.id !== item.id))
+
+      // 요리 횟수가 줄었으니 레벨 카드도 다시 맞춘다
+      reload()
+    } catch (err) {
+      setActionError(parseApiError(err).message)
+    } finally {
+      setRemovingId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -77,7 +101,12 @@ export default function HistoryPage() {
     )
   }
 
-  const totalCost = histories.reduce((sum, h) => sum + (h.estimated_cost ?? 0), 0)
+  // 지금까지 먹은 것들의 예상 비용을 전부 더한다.
+  // estimated_cost 가 없는(null) 기록도 있어서 ?? 0 으로 0 취급한다.
+  let totalCost = 0
+  for (const history of histories) {
+    totalCost += history.estimated_cost ?? 0
+  }
 
   return (
     <div className="history">
@@ -90,6 +119,8 @@ export default function HistoryPage() {
             총 {histories.length}건 · 누적 {formatPrice(totalCost)}
           </span>
         </div>
+
+        <ErrorMessage message={actionError} />
 
         <ul className="history__list">
           {histories.map((item) => {
@@ -132,6 +163,23 @@ export default function HistoryPage() {
                         </Link>
                       )}
                     </p>
+
+                    <div className="history__actions">
+                      <Link
+                        to={`/recipe/${encodeURIComponent(item.food_name)}`}
+                        className="btn btn--ghost btn--sm"
+                      >
+                        이 메뉴 다시 보기
+                      </Link>
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm history__delete"
+                        onClick={() => onRemove(item)}
+                        disabled={removingId === item.id}
+                      >
+                        {removingId === item.id ? '삭제 중…' : '기록 삭제'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </li>

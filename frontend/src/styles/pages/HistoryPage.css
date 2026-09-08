@@ -79,3 +79,16 @@
   .history__date { width: auto; }
   .history__names { flex-basis: 100%; order: 3; white-space: normal; }
 }
+
+/* 펼친 기록 아래의 버튼 줄. 다시 보기 / 삭제.
+   삭제만 색을 달리해서, 되돌릴 수 없는 쪽이 눈에 먼저 들어오게 한다. */
+.history__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.history__delete {
+  color: var(--color-error);
+}

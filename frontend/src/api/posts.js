@@ -59,3 +59,60 @@ export async function addComment(postId, content) {
   const { data } = await client.post(`/api/posts/${postId}/comments`, { content })
   return data
 }
+
+/**
+ * 글 수정. 제목과 본문만 바뀐다.
+ *
+ * 어떤 기록에 대한 글인지(meal_history_id)는 못 바꾼다.
+ * 그게 바뀌면 본문과 레시피가 어긋나는데, 그건 수정이 아니라 다른 글이다.
+ */
+export async function updatePost(postId, { title, content }) {
+  const { data } = await client.put(`/api/posts/${postId}`, { title, content })
+  return data
+}
+
+/** 글 삭제. 내 글만 지울 수 있다. 성공하면 204라 본문이 없다. */
+export async function removePost(postId) {
+  await client.delete(`/api/posts/${postId}`)
+}
+
+/**
+ * 조회수 올리기.
+ *
+ * 상세를 GET 할 때 서버가 같이 올리지 않는다. GET 은 몇 번을 보내도 결과가
+ * 같아야 하기 때문이다. 화면이 상세를 열 때 이 함수를 한 번 부른다.
+ */
+export async function countPostView(postId) {
+  const { data } = await client.post(`/api/posts/${postId}/view`)
+  return data
+}
+
+/** 댓글 수정. 내 댓글만 고칠 수 있다. */
+export async function updateComment(postId, commentId, content) {
+  const { data } = await client.put(
+    `/api/posts/${postId}/comments/${commentId}`,
+    { content },
+  )
+  return data
+}
+
+/** 댓글 삭제. 내 댓글만 지울 수 있다. */
+export async function removeComment(postId, commentId) {
+  await client.delete(`/api/posts/${postId}/comments/${commentId}`)
+}
+
+/**
+ * 인기 레시피 — 고른 기간에 **새로 받은** 좋아요가 많은 순.
+ *
+ * 누적 좋아요가 아니다. 누적으로 세면 오래된 글이 영원히 1위라서
+ * 순위가 움직이지 않는다.
+ *
+ * start · end 는 'YYYY-MM-DD' 한국 날짜다. 서버가 UTC 로 바꿔서 비교한다.
+ * 안 주면 오늘 포함 최근 30일이다.
+ */
+export async function getPopular({ start, end, limit } = {}) {
+  const { data } = await client.get('/api/posts/popular', {
+    params: { start, end, limit },
+  })
+  return data
+}

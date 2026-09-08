@@ -24,15 +24,15 @@ def list_bans(db: Session, user: User) -> list[UserBan]:
     해제한 재료(use_yn='N')는 행이 남아 있으므로 반드시 걸러야 한다.
     개수가 많아야 수십 개라 페이징하지 않는다.
     """
-    return list(
-        db.execute(
-            select(UserBan)
-            .where(UserBan.user_id == user.id, UserBan.use_yn == USE_YN_YES)
-            .order_by(UserBan.created_at, UserBan.id)
-        )
-        .scalars()
-        .all()
+    rows = db.execute(
+        select(UserBan)
+        .where(UserBan.user_id == user.id, UserBan.use_yn == USE_YN_YES)
+        .order_by(UserBan.created_at, UserBan.id)
     )
+
+    # .scalars() 는 "각 행의 첫 번째 값만 꺼내줘" 라는 뜻이다.
+    # 이걸 안 쓰면 UserBan 이 아니라 (UserBan,) 처럼 튜플로 나온다.
+    return list(rows.scalars().all())
 
 
 def create_ban(db: Session, user: User, payload: BanCreateRequest) -> UserBan:
@@ -52,11 +52,12 @@ def create_ban(db: Session, user: User, payload: BanCreateRequest) -> UserBan:
         db.commit()
     except IntegrityError as exc:
         db.rollback()
-        # Oracle은 ORA-00001을 던지며 메시지에 위반된 제약조건 이름이 들어있다.
+        # 중복이면 Oracle 이 ORA-00001 을 던지는데,
+        # 그 에러 메시지 안에 위반된 제약조건 이름이 들어있다.
         if "UQ_USER_BANS" in str(exc.orig).upper():
-            raise HTTPException(
-                status.HTTP_409_CONFLICT, "이미 등록한 재료입니다."
-            ) from exc
+            raise HTTPException(status.HTTP_409_CONFLICT, "이미 등록한 재료입니다.")
+
+        # 그 외의 DB 에러는 그대로 올린다 (숨기면 원인을 못 찾는다)
         raise
 
     db.refresh(ban)  # DB가 채운 id / created_at 을 읽어온다

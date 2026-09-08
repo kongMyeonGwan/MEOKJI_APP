@@ -14,6 +14,8 @@ import '../styles/pages/PasswordResetPage.css'
  * 로그인 실패 20회로 잠긴 계정도 이 절차로 풀린다.
  */
 
+// 화면이 네 단계로 바뀐다. 문자열을 직접 쓰면 오타를 내도 아무 에러가 안 나서
+// 이렇게 모아두고 STEP.SEND 처럼 꺼내 쓴다.
 const STEP = { SEND: 'send', VERIFY: 'verify', CHANGE: 'change', DONE: 'done' }
 
 export default function PasswordResetPage() {
@@ -30,73 +32,106 @@ export default function PasswordResetPage() {
 
   const navigate = useNavigate()
 
-  /** 각 단계 공통 처리: 에러 초기화 -> 요청 -> 실패 시 메시지 표시. */
-  const run = async (fn) => {
+  /** 요청을 보내기 전에 이전 에러 메시지를 지우고 버튼을 잠근다. */
+  function startSubmit() {
     setMessage('')
     setFieldErrors({})
     setSubmitting(true)
+  }
+
+  /** 요청이 실패했을 때 에러를 화면에 표시한다. */
+  function showError(err) {
+    const parsed = parseApiError(err)
+    setFieldErrors(parsed.fieldErrors)
+    setMessage(parsed.message)
+  }
+
+  // --- 1단계. 이메일로 인증번호 받기 ---
+  async function onSend(e) {
+    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
+
+    if (!email.trim()) {
+      setFieldErrors({ email: '이메일을 입력해주세요' })
+      return
+    }
+
+    startSubmit()
     try {
-      await fn()
+      const res = await sendResetCode(email.trim())
+      setNotice(res.message)
+      setStep(STEP.VERIFY) // 다음 단계로 넘어간다
     } catch (err) {
-      const { fieldErrors: fe, message: msg } = parseApiError(err)
-      setFieldErrors(fe)
-      setMessage(msg)
+      showError(err)
+    } finally {
+      // 성공하든 실패하든 버튼 잠금은 풀어야 한다
+      setSubmitting(false)
+    }
+  }
+
+  // --- 2단계. 인증번호 확인 ---
+  async function onVerify(e) {
+    e.preventDefault()
+
+    if (code.length !== 6) {
+      setFieldErrors({ code: '인증번호 6자리를 입력해주세요' })
+      return
+    }
+
+    startSubmit()
+    try {
+      const res = await verifyResetCode(email.trim(), code)
+      setNotice(res.message)
+      setStep(STEP.CHANGE)
+    } catch (err) {
+      showError(err)
     } finally {
       setSubmitting(false)
     }
   }
 
-  const onSend = (e) => {
+  // --- 3단계. 새 비밀번호로 바꾸기 ---
+  async function onChange(e) {
     e.preventDefault()
-    if (!email.trim()) {
-      setFieldErrors({ email: '이메일을 입력해주세요' })
-      return
-    }
-    run(async () => {
-      const res = await sendResetCode(email.trim())
-      setNotice(res.message)
-      setStep(STEP.VERIFY)
-    })
-  }
 
-  const onVerify = (e) => {
-    e.preventDefault()
-    if (code.length !== 6) {
-      setFieldErrors({ code: '인증번호 6자리를 입력해주세요' })
-      return
-    }
-    run(async () => {
-      const res = await verifyResetCode(email.trim(), code)
-      setNotice(res.message)
-      setStep(STEP.CHANGE)
-    })
-  }
-
-  const onChange = (e) => {
-    e.preventDefault()
+    // 서버에 보내기 전에 화면에서 먼저 확인할 수 있는 것들
     const errors = {}
-    if (newPassword.length < 8) errors.new_password = '비밀번호는 8자 이상이어야 합니다'
+    if (newPassword.length < 8) {
+      errors.new_password = '비밀번호는 8자 이상이어야 합니다'
+    }
     if (newPassword !== passwordConfirm) {
       errors.passwordConfirm = '비밀번호가 일치하지 않습니다'
     }
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
       return
     }
-    run(async () => {
+
+    startSubmit()
+    try {
       await changePassword(email.trim(), code, newPassword)
       setNotice('')
       setStep(STEP.DONE)
-    })
+    } catch (err) {
+      showError(err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  /** 인증번호를 다시 받는다. 시도 횟수를 초과했을 때 필요하다. */
-  const onResend = () =>
-    run(async () => {
+  /** 인증번호를 다시 받는다. 시도 횟수를 넘겼을 때 필요하다. */
+  async function onResend() {
+    startSubmit()
+    try {
       const res = await sendResetCode(email.trim())
-      setCode('')
+      setCode('') // 입력칸을 비워서 새 번호를 넣게 한다
       setNotice(res.message)
-    })
+    } catch (err) {
+      showError(err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="card reset">

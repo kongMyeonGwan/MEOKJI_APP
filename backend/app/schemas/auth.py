@@ -1,45 +1,80 @@
 """인증 관련 요청/응답 스키마."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.core.security import BCRYPT_MAX_BYTES, OTP_LENGTH
 
 
-def check_password_bytes(v: str) -> str:
-    """bcrypt의 72바이트 제한을 문자 수가 아닌 바이트로 검사한다.
+def check_password_bytes(password: str) -> str:
+    """비밀번호가 bcrypt 의 72바이트 제한을 넘지 않는지 검사한다.
 
-    max_length=72는 '문자 72개'라서 한글 비밀번호는 통과해도
-    UTF-8 인코딩 후 216바이트가 되어 bcrypt에서 터진다.
+    Field(max_length=72) 로는 부족하다. 그건 "글자 72개" 라서
+    한글 비밀번호 30자는 통과하는데, UTF-8 로 바꾸면 90바이트가 되어
+    bcrypt 에서 에러가 난다 (한글 1자 = 3바이트).
 
-    회원가입과 비밀번호 재설정이 같은 규칙을 써야 하므로 함수로 빼뒀다.
+    회원가입과 비밀번호 재설정이 같은 규칙을 써야 해서 함수로 빼뒀다.
     """
-    if len(v.encode("utf-8")) > BCRYPT_MAX_BYTES:
+    byte_length = len(password.encode("utf-8"))
+
+    if byte_length > BCRYPT_MAX_BYTES:
         raise ValueError(
             f"비밀번호는 UTF-8 기준 {BCRYPT_MAX_BYTES}바이트 이하여야 합니다 "
             "(한글은 1자당 3바이트)"
         )
-    return v
+
+    return password
 
 
 class RegisterRequest(BaseModel):
+    """회원가입 요청.
+
+    Field(...) 의 점 세 개는 "필수 항목" 이라는 뜻이다.
+    여기 적은 규칙에 안 맞는 요청은 우리 코드가 실행되기도 전에 422 로 막힌다.
+    """
+
     email: EmailStr = Field(..., max_length=255)
-    # min_length=1 이 중요하다. Oracle은 빈 문자열을 NULL로 취급하므로
-    # ''를 그대로 넘기면 ORA-01400(NOT NULL 위반)으로 500이 난다.
+    # min_length=1 이 중요하다. Oracle 은 빈 문자열을 NULL 로 취급해서,
+    # 빈 값을 그대로 넘기면 NOT NULL 위반으로 500 이 난다.
     password: str = Field(..., min_length=8, max_length=72)
     nickname: str = Field(..., min_length=1, max_length=50)
 
-    _check_password = field_validator("password")(check_password_bytes)
+    # 아래 넷은 선택 항목이다. 안 보내면 NULL 로 들어간다.
+    #
+    # 성별을 필수로 만들지 않는다. 추천 품질에 큰 영향이 없는데
+    # 가입 첫 화면에서 답하기 껄끄러운 질문을 하면 이탈이 생긴다.
+    #
+    # 주소는 대시보드 첫 화면의 날씨 조회에 쓴다.
+    # 화면에는 "서울특별시 강남구"로 보여주고, 날씨 API 는 좌표로 부른다.
+    # OpenWeather 가 한국 시·군·구를 도시명 문자열로 못 찾기 때문에 둘로 나눠 둔다.
+    gender: Literal["MALE", "FEMALE", "OTHER"] | None = None
+    address_sido: str | None = Field(None, max_length=30)
+    address_sigungu: str | None = Field(None, max_length=30)
+    latitude: float | None = Field(None, ge=-90, le=90)
+    longitude: float | None = Field(None, ge=-180, le=180)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, password: str) -> str:
+        """Field 규칙만으로 부족한 부분을 직접 검사한다.
+
+        @field_validator("password") 는 "password 값이 들어오면 이 함수를 통과시켜라"
+        라는 뜻이다. 여기서 ValueError 를 던지면 FastAPI 가 422 로 바꿔서 내보낸다.
+        """
+        return check_password_bytes(password)
 
     @field_validator("nickname")
     @classmethod
-    def strip_nickname(cls, v: str) -> str:
-        """공백만 입력한 닉네임을 거른다."""
-        stripped = v.strip()
-        if not stripped:
+    def validate_nickname(cls, nickname: str) -> str:
+        """공백만 입력한 닉네임을 거르고, 앞뒤 공백을 떼어낸다."""
+        nickname = nickname.strip()
+
+        if not nickname:
             raise ValueError("닉네임을 입력해주세요")
-        return stripped
+
+        return nickname
 
 
 class LoginRequest(BaseModel):
@@ -55,7 +90,12 @@ class LoginRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
-    """응답에 password_hash를 절대 포함하지 않는다."""
+    """응답에 password_hash를 절대 포함하지 않는다.
+
+    요리 레벨 · 연속 방문일은 여기 없다. 그건 COUNT 쿼리가 몇 개 필요해서
+    /api/users/me 로 따로 뺐다. 이 응답은 새로고침할 때마다 나가는 값이라
+    가벼워야 한다.
+    """
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -63,6 +103,10 @@ class UserResponse(BaseModel):
     email: EmailStr
     nickname: str
     created_at: datetime
+
+    gender: str | None = None
+    address_sido: str | None = None
+    address_sigungu: str | None = None
 
 
 class TokenResponse(BaseModel):
@@ -102,7 +146,11 @@ class PasswordResetChangeRequest(BaseModel):
     code: str = Field(..., min_length=OTP_LENGTH, max_length=OTP_LENGTH)
     new_password: str = Field(..., min_length=8, max_length=72)
 
-    _check_password = field_validator("new_password")(check_password_bytes)
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, password: str) -> str:
+        """회원가입과 똑같은 규칙을 적용한다."""
+        return check_password_bytes(password)
 
 
 class MessageResponse(BaseModel):

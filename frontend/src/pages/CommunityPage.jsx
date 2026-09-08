@@ -6,9 +6,9 @@ import Icon from '../components/common/Icon'
 import ErrorMessage from '../components/common/ErrorMessage'
 import Loading from '../components/common/Loading'
 import { useAuth } from '../contexts/AuthContext'
+import { getNotices } from '../api/catalog'
 import { getPosts } from '../api/posts'
 import { parseApiError } from '../utils/apiError'
-import { MOCK_NOTICES } from '../mocks'
 import '../styles/pages/CommunityPage.css'
 
 /**
@@ -18,8 +18,9 @@ import '../styles/pages/CommunityPage.css'
  * 그래서 이 라우트는 ProtectedRoute로 감싸지 않는다.
  *
  * 탭은 두 개다.
- *   recipe  레시피 추천 — DB의 posts 테이블. 검색 · 글쓰기 있음
- *   notice  공지사항     — 운영자만 쓴다. notices 테이블이 아직 없어 목업 그대로다
+ *   recipe  레시피 추천 — DB의 recipe_reviews 테이블. 검색 · 글쓰기 있음
+ *   notice  공지사항     — 운영자만 쓴다. 사용자가 만드는 값이 아니라
+ *                          테이블 없이 서버 파일(catalog.json)에서 내려준다
  */
 const TABS = [
   { key: 'recipe', label: '레시피 추천', icon: 'sparkles' },
@@ -35,15 +36,47 @@ export default function CommunityPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
+  const [notices, setNotices] = useState([])
+
   const isRecipeTab = tab === 'recipe'
 
-  // 검색은 서버가 한다. Oracle에는 ILIKE가 없어 LOWER(col) LIKE LOWER(:kw)로 처리된다.
-  // keyword를 의존성에 넣어 입력이 바뀔 때마다 다시 조회한다.
-  // 타이핑마다 요청이 나가지 않도록 300ms 쉰 뒤에 보낸다.
+  // 공지는 검색도 페이징도 없어서 화면이 열릴 때 한 번만 받아온다.
+  // 실패하면 빈 목록으로 둔다. 공지를 못 받았다고 게시판까지 막을 이유는 없다.
   useEffect(() => {
     let alive = true
+
+    getNotices()
+      .then((data) => {
+        if (alive) setNotices(data)
+      })
+      .catch(() => {})
+
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  // 검색은 서버가 한다 (백엔드의 post_service.add_keyword_filter).
+  //
+  // 의존성이 [keyword] 라서 검색어를 고칠 때마다 이 effect 가 다시 실행된다.
+  //
+  // 여기 두 가지 장치가 있는데 둘 다 필요하다.
+  //
+  // 1) setTimeout 300ms — "김치찌개" 를 치면 글자마다 요청이 나가서 5번 나간다.
+  //    0.3초 안에 다시 치면 앞의 타이머를 취소하고 새로 잡는다(아래 clearTimeout).
+  //    타이핑을 멈춘 뒤에야 한 번 나간다.
+  //
+  // 2) alive 플래그 — 요청은 보낸 순서대로 도착하지 않는다.
+  //    "김" 을 검색한 응답이 "김치" 응답보다 늦게 올 수 있는데,
+  //    그러면 화면에 "김치" 결과가 떴다가 "김" 결과로 덮여버린다.
+  //    effect 가 다시 실행되기 직전에 아래 정리 함수가 alive 를 false 로 바꾸므로,
+  //    낡은 응답이 도착해도 setPosts 를 부르지 않는다.
+  useEffect(() => {
+    let alive = true
+
     const timer = setTimeout(() => {
       setLoadError('')
+
       getPosts(keyword)
         .then((data) => {
           if (alive) setPosts(data)
@@ -56,9 +89,10 @@ export default function CommunityPage() {
         })
     }, 300)
 
+    // 검색어가 또 바뀌거나 화면을 떠날 때 실행된다
     return () => {
-      alive = false
-      clearTimeout(timer)
+      alive = false        // 이미 보낸 요청의 응답을 무시한다
+      clearTimeout(timer)  // 아직 안 보낸 요청은 취소한다
     }
   }, [keyword])
 
@@ -101,8 +135,8 @@ export default function CommunityPage() {
           >
             <Icon name={t.icon} size={16} />
             {t.label}
-            {t.key === 'notice' && (
-              <span className="community__tab-count">{MOCK_NOTICES.length}</span>
+            {t.key === 'notice' && notices.length > 0 && (
+              <span className="community__tab-count">{notices.length}</span>
             )}
           </button>
         ))}
@@ -136,8 +170,8 @@ export default function CommunityPage() {
           )}
         </>
       ) : (
-        // 공지는 다섯 건뿐이라 검색을 붙이지 않았다
-        <NoticeList notices={MOCK_NOTICES} />
+        // 공지는 몇 건뿐이라 검색을 붙이지 않았다
+        <NoticeList notices={notices} />
       )}
     </div>
   )

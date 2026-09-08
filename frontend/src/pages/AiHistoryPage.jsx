@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MOCK_AI_LOGS } from '../mocks'
+import { useAiLog } from '../contexts/AiLogContext'
 import { formatDateTime } from '../utils/format'
 import '../styles/pages/ListPage.css'
 import '../styles/pages/AiHistoryPage.css'
@@ -16,25 +16,51 @@ import '../styles/pages/AiHistoryPage.css'
  *
  * 추천 결과 자체를 저장하지 않는다는 원칙(§13)과 어긋나지 않는다.
  * 여기 남는 건 메뉴 이름과 조건뿐이고, 레시피 본문은 다시 열 때 새로 만든다.
+ *
+ * 서버가 아니라 이 브라우저에 저장한다(AiLogContext).
+ * 그래서 브라우저를 바꾸면 기록이 따라오지 않는다. 그 대신 테이블을
+ * 하나도 늘리지 않았다.
  */
 export default function AiHistoryPage() {
+  const { logs, count, clear } = useAiLog()
+
   return (
     <div className="list-page">
       <div className="section-head">
         <h2 className="section-title">AI 추천 기록</h2>
-        <span className="muted section-more">{MOCK_AI_LOGS.length}건</span>
+        {count > 0 && (
+          <button
+            type="button"
+            className="section-more"
+            onClick={() => {
+              // 한 번 지우면 되돌릴 수 없어서 먼저 물어본다
+              if (window.confirm(`추천 기록 ${count}건을 모두 지울까요?`)) {
+                clear()
+              }
+            }}
+          >
+            전체 지우기
+          </button>
+        )}
       </div>
 
       <p className="muted list-page__desc">
-        어떤 조건으로 무엇을 추천받았는지 남겨둡니다. 고른 메뉴는 History에도 함께
-        기록돼요.
+        어떤 조건으로 무엇을 추천받았는지 이 브라우저에 남겨둡니다. 고른 메뉴는
+        History에도 함께 기록돼요.
       </p>
 
-      {MOCK_AI_LOGS.length === 0 ? (
-        <p className="empty">아직 추천받은 기록이 없어요.</p>
+      {count === 0 ? (
+        <p className="empty">
+          아직 추천받은 기록이 없어요.
+          <br />
+          <br />
+          <Link to="/" className="btn btn--outline btn--sm">
+            오늘의 추천 보러 가기
+          </Link>
+        </p>
       ) : (
         <ul className="ailog">
-          {MOCK_AI_LOGS.map((log) => (
+          {logs.map((log) => (
             <li key={log.id} className="card ailog__item">
               <div className="ailog__head">
                 <span className="tag ailog__source">{log.source}</span>

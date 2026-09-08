@@ -1,7 +1,10 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { AiLogProvider } from './contexts/AiLogContext'
 import { AuthProvider } from './contexts/AuthContext'
+import { CatalogProvider } from './contexts/CatalogContext'
 import { LikesProvider } from './contexts/LikesContext'
 import { PrefsProvider } from './contexts/PrefsContext'
+import { ProfileProvider } from './contexts/ProfileContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import MainLayout from './layouts/MainLayout'
 import HomePage from './pages/HomePage'
@@ -37,61 +40,70 @@ import NotFoundPage from './pages/NotFoundPage'
  *
  * Provider 순서
  * -------------
- *   PrefsProvider   테마·알림. 로그인과 무관하고 가장 바깥에서 <html>을 칠한다
- *   AuthProvider    로그인 상태
- *   LikesProvider   찜 목록. 지금은 브라우저에만 저장하지만 서버에 붙으면
- *                   로그인 사용자별로 불러와야 해서 Auth 안쪽에 둔다
+ *   PrefsProvider    테마·알림. 로그인과 무관하고 가장 바깥에서 <html>을 칠한다
+ *   CatalogProvider  카테고리·게임 같은 고정 목록. 서버에서 한 번만 받아온다
+ *   AuthProvider     로그인 상태
+ *   ProfileProvider  요리 레벨·알림. useAuth를 쓰므로 반드시 Auth 안쪽이다
+ *   LikesProvider    찜 목록. 지금은 브라우저에만 저장하지만 서버에 붙으면
+ *                    로그인 사용자별로 불러와야 해서 Auth 안쪽에 둔다
+ *   AiLogProvider    AI 추천 기록. 브라우저에만 저장한다
  */
 export default function App() {
   return (
     <BrowserRouter>
       <PrefsProvider>
-        <AuthProvider>
-          <LikesProvider>
-            <Routes>
-              <Route element={<MainLayout />}>
-                <Route index element={<HomePage />} />
+        <CatalogProvider>
+          <AuthProvider>
+            <ProfileProvider>
+              <LikesProvider>
+                <AiLogProvider>
+                  <Routes>
+                    <Route element={<MainLayout />}>
+                      <Route index element={<HomePage />} />
 
-                {/* 인증 */}
-                <Route path="login" element={<LoginPage />} />
-                <Route path="register" element={<RegisterPage />} />
-                <Route path="password-reset" element={<PasswordResetPage />} />
+                      {/* 인증 */}
+                      <Route path="login" element={<LoginPage />} />
+                      <Route path="register" element={<RegisterPage />} />
+                      <Route path="password-reset" element={<PasswordResetPage />} />
 
-                {/* 추천 · 레시피 */}
-                <Route path="recommend" element={<RecommendPage />} />
-                <Route path="budget" element={<BudgetPage />} />
-                <Route path="search" element={<SearchPage />} />
-                <Route path="fridge" element={<FridgePage />} />
-                <Route path="recipe/:foodName" element={<RecipePage />} />
+                      {/* 추천 · 레시피 */}
+                      <Route path="recommend" element={<RecommendPage />} />
+                      <Route path="budget" element={<BudgetPage />} />
+                      <Route path="search" element={<SearchPage />} />
+                      <Route path="fridge" element={<FridgePage />} />
+                      <Route path="recipe/:foodName" element={<RecipePage />} />
 
-                {/* 메뉴 게임 */}
-                <Route path="game" element={<GamePage />} />
-                <Route path="game/worldcup" element={<WorldCupPage />} />
-                <Route path="game/balance" element={<BalancePage />} />
-                <Route path="roulette" element={<RoulettePage />} />
+                      {/* 메뉴 게임 */}
+                      <Route path="game" element={<GamePage />} />
+                      <Route path="game/worldcup" element={<WorldCupPage />} />
+                      <Route path="game/balance" element={<BalancePage />} />
+                      <Route path="roulette" element={<RoulettePage />} />
 
-                {/* 커뮤니티 — 조회는 Guest 허용 */}
-                <Route path="liked" element={<LikedPage />} />
-                <Route path="popular" element={<PopularPage />} />
-                <Route path="community" element={<CommunityPage />} />
-                <Route path="community/:postId" element={<PostDetailPage />} />
+                      {/* 커뮤니티 — 조회는 Guest 허용 */}
+                      <Route path="liked" element={<LikedPage />} />
+                      <Route path="popular" element={<PopularPage />} />
+                      <Route path="community" element={<CommunityPage />} />
+                      <Route path="community/:postId" element={<PostDetailPage />} />
 
-                {/* 설정은 이 브라우저에 저장되는 값이라 Guest도 쓸 수 있다 */}
-                <Route path="settings" element={<SettingsPage />} />
+                      {/* 설정은 이 브라우저에 저장되는 값이라 Guest도 쓸 수 있다 */}
+                      <Route path="settings" element={<SettingsPage />} />
 
-                {/* 로그인 필수 */}
-                <Route element={<ProtectedRoute />}>
-                  <Route path="community/write" element={<PostWritePage />} />
-                  <Route path="history" element={<HistoryPage />} />
-                  <Route path="ai-history" element={<AiHistoryPage />} />
-                  <Route path="mypage" element={<MyPage />} />
-                </Route>
+                      {/* 로그인 필수 */}
+                      <Route element={<ProtectedRoute />}>
+                        <Route path="community/write" element={<PostWritePage />} />
+                        <Route path="history" element={<HistoryPage />} />
+                        <Route path="ai-history" element={<AiHistoryPage />} />
+                        <Route path="mypage" element={<MyPage />} />
+                      </Route>
 
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </LikesProvider>
-        </AuthProvider>
+                      <Route path="*" element={<NotFoundPage />} />
+                    </Route>
+                  </Routes>
+                </AiLogProvider>
+              </LikesProvider>
+            </ProfileProvider>
+          </AuthProvider>
+        </CatalogProvider>
       </PrefsProvider>
     </BrowserRouter>
   )

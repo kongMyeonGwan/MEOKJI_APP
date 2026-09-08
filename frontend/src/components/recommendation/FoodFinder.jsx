@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from '../common/Icon'
-import { MOCK_SEARCH_SUGGESTIONS } from '../../mocks'
+import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/recommendation/FoodFinder.css'
 
 /**
@@ -23,14 +23,21 @@ export default function FoodFinder() {
   const [keyword, setKeyword] = useState('')
   const [expanded, setExpanded] = useState(false)
   const navigate = useNavigate()
+  const { searchSuggestions } = useCatalog()
 
   const shown = expanded
-    ? MOCK_SEARCH_SUGGESTIONS
-    : MOCK_SEARCH_SUGGESTIONS.slice(0, FOLDED_COUNT)
+    ? searchSuggestions
+    : searchSuggestions.slice(0, FOLDED_COUNT)
 
-  const search = (text) => {
+  /**
+   * 검색 화면으로 이동한다.
+   *
+   * encodeURIComponent 는 한글이나 공백을 주소에 넣을 수 있는 형태로 바꿔준다.
+   */
+  function search(text) {
     const trimmed = text.trim()
-    if (!trimmed) return
+    if (!trimmed) return // 빈 검색어로는 이동하지 않는다
+
     navigate(`/search?q=${encodeURIComponent(trimmed)}`)
   }
 
@@ -74,7 +81,7 @@ export default function FoodFinder() {
 
         {/* 예시를 처음부터 다 깔면 카드가 두 줄 세 줄로 늘어나
             아래에 있는 예산·카테고리가 화면 밖으로 밀린다 */}
-        {MOCK_SEARCH_SUGGESTIONS.length > FOLDED_COUNT && (
+        {searchSuggestions.length > FOLDED_COUNT && (
           <button
             type="button"
             className="finder__more"

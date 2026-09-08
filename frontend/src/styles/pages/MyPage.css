@@ -105,3 +105,40 @@
   .mypage__info { grid-template-columns: 1fr; gap: 2px; }
   .mypage__info dd { margin-bottom: 10px; }
 }
+
+/* ===== 정보 수정 · 계정 관리 폼 =====
+   라벨을 입력칸 위에 두는 세로 폼이다. 항목이 넷뿐이라 두 칸 그리드로
+   나란히 놓으면 넓은 화면에서 빈 곳이 크게 남는다. */
+.mypage__profile {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.mypage__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mypage__field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-subtle);
+}
+
+.mypage__field-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mypage__account-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 되돌릴 수 없는 동작(탈퇴)만 색을 달리한다 */
+.mypage__danger { color: var(--color-error); }

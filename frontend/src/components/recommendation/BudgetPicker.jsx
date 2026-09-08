@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BudgetRange, { BUDGET_MAX, BUDGET_MIN } from './BudgetRange'
-import { MOCK_BUDGET_PRESETS } from '../../mocks'
+import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/recommendation/BudgetPicker.css'
 
 /**
@@ -22,18 +22,21 @@ export default function BudgetPicker() {
   const [range, setRange] = useState({ min: BUDGET_MIN, max: BUDGET_MAX })
   const [preset, setPreset] = useState('UNDER_20K')
   const navigate = useNavigate()
+  const { budgetPresets } = useCatalog()
 
-  const choosePreset = (item) => {
+  /** 금액 칩(5천원 이하 · 1만원 이하 ...)을 눌렀을 때. */
+  function choosePreset(item) {
     setPreset(item.key)
     // '상관없음'은 슬라이더를 끝까지 펼친 모습으로 보여준다.
     // 조건이 없다는 걸 말로만 하지 않고 손잡이 위치로도 보여주는 편이 빠르다
     setRange({ min: BUDGET_MIN, max: item.max ?? BUDGET_MAX })
   }
 
-  const dragRange = (min, max) => {
+  /** 슬라이더를 직접 끌었을 때. */
+  function dragRange(min, max) {
     setRange({ min, max })
     // 직접 끌어 만든 구간이 우연히 칩과 같으면 그 칩을 켠 채로 둔다
-    const matched = MOCK_BUDGET_PRESETS.find(
+    const matched = budgetPresets.find(
       (item) => item.max !== null && min === BUDGET_MIN && max === item.max
     )
     setPreset(matched?.key ?? null)
@@ -41,7 +44,8 @@ export default function BudgetPicker() {
 
   const noLimit = preset === 'ANY'
 
-  const submit = () => {
+  /** 찾기 버튼을 눌렀을 때 예산을 들고 추천 화면으로 넘어간다. */
+  function submit() {
     if (noLimit) {
       navigate('/recommend')
       return
@@ -58,7 +62,7 @@ export default function BudgetPicker() {
 
       <div className="bpick__row">
         <div className="chip-row bpick__presets">
-          {MOCK_BUDGET_PRESETS.map((item) => (
+          {budgetPresets.map((item) => (
             <button
               key={item.key}
               type="button"

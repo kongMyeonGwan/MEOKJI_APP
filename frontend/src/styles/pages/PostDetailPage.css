@@ -137,3 +137,56 @@
   .post__like { padding: 10px 22px; }
   .post__actions { flex-wrap: wrap; }
 }
+
+/* ===== 내 글 · 내 댓글에만 나오는 수정/삭제 =====
+   좋아요 버튼과 같은 줄에 두되, margin-left:auto 로 오른쪽 끝에 붙인다.
+   나란히 놓으면 하트를 누르려다 삭제를 누르게 된다. */
+.post__owner-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.post__comment-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.post__comment-actions button {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.post__comment-actions button:hover { color: var(--color-accent); }
+
+/* 되돌릴 수 없는 동작만 색을 달리한다 */
+.post__danger { color: var(--color-error); }
+.post__comment-actions .post__danger:hover { color: var(--color-error); }
+
+/* ===== 글 수정 폼 ===== */
+.post__edit {
+  display: grid;
+  gap: 12px;
+}
+
+.post__edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.post__edit-field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-subtle);
+}
+
+.post__edit-actions {
+  display: flex;
+  gap: 8px;
+}

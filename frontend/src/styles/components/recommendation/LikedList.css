@@ -4,15 +4,34 @@
   list-style: none;
 }
 
+.liked li {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.liked li:last-child { border-bottom: none; }
+
 .liked__row {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--color-border);
 }
 
-.liked li:last-child .liked__row { border-bottom: none; }
+/* 찜한 레시피 목록(/liked)에서만 쓰는 하트. 눌러서 바로 뺀다.
+   인기 레시피 목록에는 이 버튼이 없다 — 남이 누른 좋아요라 뺄 수 없다. */
+.liked__unlike {
+  flex-shrink: 0;
+  padding: 8px;
+  border: none;
+  background: none;
+  color: var(--color-heart);
+  cursor: pointer;
+  line-height: 0;
+}
 
 .liked__row:hover .liked__name { color: var(--color-accent); }
 

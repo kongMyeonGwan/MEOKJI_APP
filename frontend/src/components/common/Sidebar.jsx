@@ -1,8 +1,9 @@
 import { Link, NavLink } from 'react-router-dom'
+import { useAiLog } from '../../contexts/AiLogContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { usePrefs } from '../../contexts/PrefsContext'
+import { useProfile } from '../../contexts/ProfileContext'
 import Icon, { LogoMark } from './Icon'
-import { MOCK_PROFILE } from '../../mocks'
 import '../../styles/components/common/Sidebar.css'
 
 /**
@@ -62,6 +63,8 @@ function NavItem({ item, onNavigate }) {
  */
 function LevelCard({ onNavigate }) {
   const { isAuthenticated } = useAuth()
+  const { profile } = useProfile()
+  const { count: recommendCount } = useAiLog()
 
   if (!isAuthenticated) {
     return (
@@ -79,7 +82,13 @@ function LevelCard({ onNavigate }) {
     )
   }
 
-  const { level, title, exp, exp_next: expNext, streak_days: streak } = MOCK_PROFILE
+  // 아직 못 받았으면 카드를 그리지 않는다.
+  // 0레벨 · 0 EXP 를 잠깐 보여줬다가 바꾸면 레벨이 초기화된 것처럼 보인다.
+  if (!profile) {
+    return null
+  }
+
+  const { level, title, exp, exp_next: expNext, streak_days: streak } = profile
   const percent = Math.min(100, Math.round((exp / expNext) * 100))
 
   return (
@@ -116,12 +125,14 @@ function LevelCard({ onNavigate }) {
           <dd>{streak}일</dd>
         </div>
         <div>
+          {/* 추천받은 횟수는 서버가 모른다. 추천 결과를 DB에 저장하지 않기
+              때문이다(§13). 이 브라우저에 남긴 AI 추천 기록에서 센다. */}
           <dt>추천 완료</dt>
-          <dd>{MOCK_PROFILE.recommend_count}회</dd>
+          <dd>{recommendCount}회</dd>
         </div>
         <div>
           <dt>요리 완료</dt>
-          <dd>{MOCK_PROFILE.cook_count}회</dd>
+          <dd>{profile.cook_count}회</dd>
         </div>
       </dl>
 
@@ -144,7 +155,16 @@ export default function Sidebar({ onNavigate }) {
   const { isAuthenticated } = useAuth()
   const { theme, setTheme, notify, setNotify } = usePrefs()
 
-  const visible = (items) => items.filter((item) => !item.auth || isAuthenticated)
+  /**
+   * 지금 보여줘도 되는 메뉴만 남긴다.
+   *
+   * auth: true 인 메뉴는 로그인해야 열리는 화면이라 Guest 에게는 숨긴다.
+   * 보여줘도 누르는 순간 /login 으로 튕기기 때문에, 눌러보기 전에는
+   * 왜 안 열리는지 알 수 없는 메뉴가 된다.
+   */
+  function visible(items) {
+    return items.filter((item) => !item.auth || isAuthenticated)
+  }
 
   return (
     <aside className="sidebar">

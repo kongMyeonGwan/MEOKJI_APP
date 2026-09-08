@@ -1,11 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import ErrorMessage from '../components/common/ErrorMessage'
+import Icon from '../components/common/Icon'
+import Loading from '../components/common/Loading'
 import RecipeView from '../components/recipe/RecipeView'
 import PriceTable, { getPriceSummary } from '../components/price/PriceTable'
-import Icon from '../components/common/Icon'
+import { getRecipe } from '../api/recommendations'
+import { createHistory } from '../api/histories'
+import { useAiLog } from '../contexts/AiLogContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useLikes } from '../contexts/LikesContext'
-import { MOCK_HISTORIES, MOCK_PRICES } from '../mocks'
+import { useProfile } from '../contexts/ProfileContext'
+import { parseApiError } from '../utils/apiError'
 import { formatPrice } from '../utils/format'
 import '../styles/pages/RecipePage.css'
 
@@ -15,6 +21,9 @@ import '../styles/pages/RecipePage.css'
  * 홈에서 음식을 검색하거나 추천 카드를 누르면 이 화면으로 온다.
  * "이걸로 먹을래요"를 눌러야 비로소 meal_histories에 저장된다(STEP 15).
  * 저장 전까지는 아무것도 DB에 남기지 않는다.
+ *
+ * 레시피와 재료 가격을 한 번에 받아온다(GET /api/recipes/{이름}).
+ * 나눠서 부르면 레시피가 먼저 뜨고 가격표가 나중에 나타나 화면이 한 번 튄다.
  */
 export default function RecipePage() {
   const { foodName } = useParams()
@@ -26,30 +35,101 @@ function Recipe({ foodName }) {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const { has, toggle } = useLikes()
+  const { markPicked } = useAiLog()
+  const { reload } = useProfile()
+
+  const [recipe, setRecipe] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
+  const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
-  // 하드코딩 데이터에서 이름이 맞는 것을 찾고, 없으면 첫 번째를 보여준다.
-  // 실제로는 AI 응답을 그대로 쓰게 된다.
-  const decoded = decodeURIComponent(foodName ?? '')
-  const source =
-    MOCK_HISTORIES.find((h) => h.food_name === decoded) ?? MOCK_HISTORIES[0]
+  const name = decodeURIComponent(foodName ?? '')
 
-  // 쇼핑몰마다 값이 달라 재료비는 하나의 숫자가 아니라 구간으로 나온다.
-  // 어디서 사느냐에 따라 얼마나 차이 나는지 먼저 보여준다.
-  const priceRange = getPriceSummary(MOCK_PRICES)
+  // 화면이 열릴 때 AI에게 레시피를 만들어달라고 한다.
+  // 응답이 몇 초 걸릴 수 있어서 로딩 문구를 확실히 띄운다.
+  useEffect(() => {
+    let alive = true
 
-  // 찜은 로그인 없이도 된다. 이 브라우저에만 저장되는 값이고(LikesContext),
-  // "이걸로 먹을래요"와 달리 기록으로 남지 않는다
-  const name = decoded || source.food_name
-  const liked = has(name)
+    getRecipe(name)
+      .then((data) => {
+        if (alive) setRecipe(data)
+      })
+      .catch((err) => {
+        if (alive) setLoadError(parseApiError(err).message)
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
 
-  const onConfirm = () => {
+    return () => {
+      alive = false
+    }
+  }, [name])
+
+  /**
+   * "이거 먹을래요" 버튼. 로그인 안 했으면 로그인 화면으로 보낸다.
+   *
+   * 저장에 성공하면 요리 레벨이 오르므로 프로필을 다시 불러온다.
+   * 안 그러면 사이드바 레벨 카드가 새로고침 전까지 옛 값을 보여준다.
+   */
+  async function onConfirm() {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: `/recipe/${foodName}` } })
       return
     }
-    setSaved(true)
+
+    setSaving(true)
+    setSaveError('')
+
+    try {
+      await createHistory(recipe)
+      setSaved(true)
+
+      // AI 추천 기록에도 "이걸로 정했다"고 표시한다
+      markPicked(recipe.food_name)
+
+      reload()
+    } catch (err) {
+      setSaveError(parseApiError(err).message)
+    } finally {
+      setSaving(false)
+    }
   }
+
+  if (loading) {
+    return (
+      <div className="recipe-page">
+        <section className="card">
+          <Loading message={`AI가 '${name}' 레시피를 만드는 중...`} />
+        </section>
+      </div>
+    )
+  }
+
+  if (loadError || !recipe) {
+    return (
+      <div className="recipe-page">
+        <section className="card">
+          <p className="empty">
+            {loadError || '레시피를 만들지 못했습니다.'}
+            <br />
+            <Link to="/">← 홈으로</Link>
+          </p>
+        </section>
+      </div>
+    )
+  }
+
+  // 쇼핑몰마다 값이 달라 재료비는 하나의 숫자가 아니라 구간으로 나온다.
+  // 어디서 사느냐에 따라 얼마나 차이 나는지 먼저 보여준다.
+  const priceRange = getPriceSummary(recipe.prices)
+
+  // 찜은 로그인 없이도 된다. 이 브라우저에만 저장되는 값이고(LikesContext),
+  // "이걸로 먹을래요"와 달리 기록으로 남지 않는다
+  const liked = has(recipe.food_name)
 
   return (
     <div className="recipe-page">
@@ -60,8 +140,8 @@ function Recipe({ foodName }) {
       <section className="card">
         <header className="recipe-page__head">
           <div>
-            <h2 className="recipe-page__name">{decoded || source.food_name}</h2>
-            <p className="muted recipe-page__sub">{source.recipe_name}</p>
+            <h2 className="recipe-page__name">{recipe.food_name}</h2>
+            <p className="muted recipe-page__sub">{recipe.recipe_name}</p>
           </div>
           <span className="recipe-page__cost">
             재료비 {formatPrice(priceRange.min)}
@@ -73,15 +153,15 @@ function Recipe({ foodName }) {
         </header>
 
         <RecipeView
-          recipe={source.recipe_json}
-          ingredients={source.ingredients_json}
-          substitutes={source.substitutes_json}
+          recipe={recipe.recipe_json}
+          ingredients={recipe.ingredients_json}
+          substitutes={recipe.substitutes_json}
         />
       </section>
 
       <section className="card">
         <h3 className="section-title">재료 가격 비교</h3>
-        <PriceTable prices={MOCK_PRICES} />
+        <PriceTable prices={recipe.prices} />
       </section>
 
       <section className="card recipe-page__confirm">
@@ -108,19 +188,25 @@ function Recipe({ foodName }) {
               {!isAuthenticated && ' (로그인이 필요합니다)'}
             </p>
             <div className="recipe-page__actions">
-              <button type="button" className="btn" onClick={onConfirm}>
-                이걸로 먹을래요
+              <button
+                type="button"
+                className="btn"
+                onClick={onConfirm}
+                disabled={saving}
+              >
+                {saving ? '저장 중…' : '이걸로 먹을래요'}
               </button>
               <button
                 type="button"
                 className="btn btn--ghost recipe-page__like"
-                onClick={() => toggle(name)}
+                onClick={() => toggle(recipe.food_name)}
                 aria-pressed={liked}
               >
                 <Icon name={liked ? 'heart-fill' : 'heart'} size={17} />
                 {liked ? '찜 해제' : '찜하기'}
               </button>
             </div>
+            <ErrorMessage message={saveError} />
           </>
         )}
       </section>

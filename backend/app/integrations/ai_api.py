@@ -1,0 +1,885 @@
+"""AI 음식 추천 · 레시피 생성 (STEP 10~11).
+
+.env 의 AI_PROVIDER 값에 따라 두 가지로 동작한다.
+
+    mock     API 키 없이도 화면 전체를 눌러볼 수 있게, 카탈로그(app/data)에서
+             조건에 맞는 후보를 골라준다. 진짜 AI 는 아니지만 응답 모양이 같다
+    claude   Anthropic Claude 를 부른다
+
+바깥에서는 두 함수만 쓴다.
+
+    recommend_foods(context)              후보 목록을 만든다
+    build_recipe(food_name, context)      한 음식의 레시피를 만든다
+
+context 는 app/services/ai_service.py 가 만들어 넘기는 딕셔너리다.
+이 파일은 DB 를 모른다. "누구의 Ban 인지" 가 아니라 "빼야 할 재료 목록" 만 받는다.
+
+    {
+      "limit":       후보 개수,
+      "category":    "한식" 또는 None,
+      "budget_min":  하한(원) 또는 None,
+      "budget_max":  상한(원) 또는 None,
+      "query":       "8천원 이하 파스타" 같은 문장 또는 None,
+      "ingredients": ["계란", "대파"]   냉장고에 있는 재료,
+      "allergies":   ["땅콩"]           반드시 제외,
+      "dislikes":    ["오이"]           가능하면 피하고 대체재료 제시,
+      "weather":     {"temp": 28, "condition_text": "맑음", ...} 또는 None,
+      "exclude":     ["김치찌개"]       이미 보여준 메뉴,
+    }
+
+왜 Structured Output 인가
+-------------------------
+자유 텍스트로 받으면 "1. 김치찌개 - 얼큰합니다" 같은 답이 오는데,
+줄바꿈 하나만 달라져도 파싱이 깨진다. 아래 SCHEMA 로 모양을 못 박아두고
+그 모양으로만 답하게 하면, 응답을 그대로 화면에 쓸 수 있다.
+"""
+
+import hashlib
+import json
+
+from app.core.config import settings
+from app.data import FOODS, HOT_WEATHER_PICKS, category_labels
+
+# AI 응답을 기다리는 최대 시간(초).
+# 프론트의 axios timeout 이 30초라, 그보다 짧게 잡아야 우리 에러 메시지가 나간다.
+AI_TIMEOUT_SECONDS = 25.0
+
+# 한 번에 만들 수 있는 후보 개수의 상한.
+# 많이 받아봐야 화면에서 다 안 보고, 토큰만 늘어난다.
+MAX_FOODS = 12
+
+# 난이도는 세 가지로 고정한다. 화면의 필터와 밸런스 게임이 이 값으로 비교한다.
+DIFFICULTIES = ("쉬움", "보통", "어려움")
+
+
+# =========================================================
+# 응답 스키마 — claude 와 mock 이 똑같은 모양을 만든다
+# =========================================================
+
+FOODS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "foods": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "food_name": {"type": "string", "description": "음식 이름"},
+                    "category": {
+                        "type": "string",
+                        "enum": category_labels(),
+                        "description": "분류",
+                    },
+                    "reason": {
+                        "type": "string",
+                        "description": "왜 이걸 추천하는지 한 문장 (40자 이내)",
+                    },
+                    "cook_time_minutes": {"type": "integer"},
+                    "difficulty": {"type": "string", "enum": list(DIFFICULTIES)},
+                    "estimated_cost": {
+                        "type": "integer",
+                        "description": "2인분 기준 예상 재료비(원)",
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "해시태그 2~3개 (예: 국물, 얼큰)",
+                    },
+                    "ingredients": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "주재료 이름만 3~5개",
+                    },
+                },
+                "required": [
+                    "food_name",
+                    "category",
+                    "reason",
+                    "cook_time_minutes",
+                    "difficulty",
+                    "estimated_cost",
+                    "tags",
+                    "ingredients",
+                ],
+            },
+        }
+    },
+    "required": ["foods"],
+}
+
+RECIPE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "recipe_name": {
+            "type": "string",
+            "description": "레시피 이름 (예: 돼지고기 김치찌개)",
+        },
+        "cook_time_minutes": {"type": "integer"},
+        "servings": {"type": "integer", "description": "몇 인분인지"},
+        "difficulty": {"type": "string", "enum": list(DIFFICULTIES)},
+        "steps": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "만드는 순서. 한 줄에 한 동작",
+        },
+        "ingredients": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "quantity": {"type": "number"},
+                    "unit": {"type": "string", "description": "g, 개, 큰술 등"},
+                },
+                "required": ["name", "quantity", "unit"],
+            },
+        },
+        "substitutes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "original": {"type": "string"},
+                    "substitute": {"type": "string"},
+                    "reason": {"type": "string"},
+                },
+                "required": ["original", "substitute", "reason"],
+            },
+            "description": "싫어하는 재료를 바꿀 방법. 없으면 빈 배열",
+        },
+        "estimated_cost": {"type": "integer", "description": "예상 재료비(원)"},
+    },
+    "required": [
+        "recipe_name",
+        "cook_time_minutes",
+        "servings",
+        "difficulty",
+        "steps",
+        "ingredients",
+        "estimated_cost",
+    ],
+}
+
+
+# =========================================================
+# 바깥에서 부르는 두 함수
+# =========================================================
+
+
+def recommend_foods(context: dict) -> list[dict]:
+    """조건에 맞는 음식 후보를 만든다."""
+    provider = settings.AI_PROVIDER.lower()
+
+    if provider == "mock":
+        return mock_recommend_foods(context)
+
+    if provider == "claude":
+        require_api_key()
+        return claude_recommend_foods(context)
+
+    # 모르는 값이면 조용히 mock 으로 넘어가지 않고 에러를 낸다.
+    # 조용히 넘어가면 "AI 를 붙였는데 추천이 늘 똑같다"가 된다.
+    raise RuntimeError(
+        f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
+        "사용 가능한 값: mock, claude"
+    )
+
+
+def build_recipe(food_name: str, context: dict) -> dict:
+    """음식 하나의 레시피를 만든다."""
+    provider = settings.AI_PROVIDER.lower()
+
+    if provider == "mock":
+        return mock_build_recipe(food_name, context)
+
+    if provider == "claude":
+        require_api_key()
+        return claude_build_recipe(food_name, context)
+
+    raise RuntimeError(
+        f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
+        "사용 가능한 값: mock, claude"
+    )
+
+
+def require_api_key() -> None:
+    """키가 비어 있으면 여기서 바로 알려준다."""
+    if not settings.ANTHROPIC_API_KEY:
+        raise RuntimeError(
+            "AI_PROVIDER=claude 인데 ANTHROPIC_API_KEY 가 비어 있습니다."
+        )
+
+
+# =========================================================
+# Claude — 진짜 AI
+# =========================================================
+
+
+def call_claude(prompt: str, tool_name: str, schema: dict) -> dict:
+    """Claude 를 부르고, 스키마대로 채워진 딕셔너리를 돌려준다.
+
+    tools 에 함수 하나를 알려주고 tool_choice 로 "반드시 이걸 써서 답해라" 고
+    시킨다. 그러면 답이 문장이 아니라 schema 모양의 JSON 으로 온다.
+    """
+    # import 를 함수 안에서 한다. AI_PROVIDER=mock 으로 쓰는 팀원이
+    # anthropic 패키지를 안 깔았어도 서버가 뜨게 하기 위함이다.
+    import anthropic
+
+    client = anthropic.Anthropic(
+        api_key=settings.ANTHROPIC_API_KEY,
+        timeout=AI_TIMEOUT_SECONDS,
+    )
+
+    message = client.messages.create(
+        model=settings.AI_MODEL,
+        max_tokens=4096,
+        tools=[
+            {
+                "name": tool_name,
+                "description": "이 형식에 맞춰 결과를 제출한다",
+                "input_schema": schema,
+            }
+        ],
+        # "무조건 이 도구를 써라". 안 주면 그냥 문장으로 답할 때가 있다.
+        tool_choice={"type": "tool", "name": tool_name},
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    for block in message.content:
+        if block.type == "tool_use":
+            return block.input
+
+    # tool_choice 를 줬으므로 정상적으로는 여기까지 오지 않는다.
+    raise RuntimeError("AI 응답에서 결과를 찾지 못했습니다. 잠시 후 다시 시도해주세요.")
+
+
+def claude_recommend_foods(context: dict) -> list[dict]:
+    """Claude 에게 후보 목록을 받아온다."""
+    result = call_claude(build_foods_prompt(context), "submit_foods", FOODS_SCHEMA)
+
+    foods = result.get("foods")
+    if not foods:
+        return []
+
+    # AI 가 개수를 넘겨줄 수 있으니 우리가 한 번 더 자른다
+    return foods[: get_limit(context)]
+
+
+def claude_build_recipe(food_name: str, context: dict) -> dict:
+    """Claude 에게 레시피 한 건을 받아온다."""
+    prompt = build_recipe_prompt(food_name, context)
+    return call_claude(prompt, "submit_recipe", RECIPE_SCHEMA)
+
+
+def build_foods_prompt(context: dict) -> str:
+    """후보 추천용 프롬프트를 만든다."""
+    lines = [
+        "당신은 한국 가정식 요리 추천 도우미입니다.",
+        f"집에서 직접 만들어 먹을 메뉴를 {get_limit(context)}개 제안해주세요.",
+        "",
+        "규칙",
+        "- 배달 음식이 아니라 집에서 만드는 요리만 제안합니다.",
+        "- estimated_cost 는 2인분 기준 재료비를 원 단위 정수로 적습니다.",
+        "- reason 은 왜 지금 이 메뉴인지 한 문장으로 적습니다.",
+        "- 같은 메뉴를 두 번 넣지 않습니다.",
+        "",
+        "조건",
+    ]
+    lines.extend(describe_conditions(context))
+
+    return "\n".join(lines)
+
+
+def build_recipe_prompt(food_name: str, context: dict) -> str:
+    """레시피 생성용 프롬프트를 만든다."""
+    lines = [
+        f"'{food_name}' 을(를) 집에서 만드는 레시피를 알려주세요.",
+        "",
+        "규칙",
+        "- steps 는 순서대로, 한 줄에 한 동작만 적습니다.",
+        "- ingredients 의 quantity 는 숫자, unit 은 g · 개 · 큰술 처럼 짧게 적습니다.",
+        "- estimated_cost 는 재료비 합계를 원 단위 정수로 적습니다.",
+        "",
+        "조건",
+    ]
+    lines.extend(describe_conditions(context))
+
+    return "\n".join(lines)
+
+
+def describe_conditions(context: dict) -> list[str]:
+    """context 를 사람이 읽는 조건 문장으로 바꾼다.
+
+    프롬프트의 '조건' 아래에 그대로 붙는다.
+    두 프롬프트가 같은 문장을 써야 결과의 성격도 같아진다.
+    """
+    lines = []
+
+    allergies = context.get("allergies") or []
+    if allergies:
+        # 알레르기는 대체재료로도 넣으면 안 된다. 가장 강한 말로 적는다.
+        lines.append(
+            "- 알레르기 재료(절대 사용 금지, 대체재료로도 넣지 말 것): "
+            + ", ".join(allergies)
+        )
+
+    dislikes = context.get("dislikes") or []
+    if dislikes:
+        lines.append(
+            "- 싫어하는 재료(가능하면 빼고, 꼭 필요하면 substitutes 에 대체안을 적을 것): "
+            + ", ".join(dislikes)
+        )
+
+    category = context.get("category")
+    if category:
+        lines.append(f"- 분류: {category}")
+
+    budget_max = context.get("budget_max")
+    budget_min = context.get("budget_min")
+    if budget_max is not None:
+        # 만들어 놓고 거르면 후보가 0건이 되기 쉬우므로 생성 단계에서 제한한다.
+        lines.append(f"- 재료비 상한: {budget_max}원 이하로만 제안할 것")
+    if budget_min:
+        lines.append(f"- 재료비 하한: {budget_min}원 이상")
+
+    ingredients = context.get("ingredients") or []
+    if ingredients:
+        lines.append(
+            "- 지금 냉장고에 있는 재료(이 재료를 최대한 쓰고, 새로 살 재료는 적게): "
+            + ", ".join(ingredients)
+        )
+
+    weather = context.get("weather")
+    if weather:
+        lines.append(
+            f"- 오늘 날씨: {weather.get('city', '')} "
+            f"{weather.get('condition_text', '')} {weather.get('temp')}도 "
+            f"(체감 {weather.get('feels_like')}도). 이 날씨에 어울리는 메뉴로."
+        )
+
+    query = context.get("query")
+    if query:
+        lines.append(f'- 사용자가 적은 말: "{query}" (이 요청을 최우선으로 해석할 것)')
+
+    exclude = context.get("exclude") or []
+    if exclude:
+        lines.append("- 이미 보여준 메뉴(빼고 새로 제안): " + ", ".join(exclude))
+
+    if not lines:
+        lines.append("- 특별한 조건 없음. 무난하고 대중적인 메뉴로.")
+
+    return lines
+
+
+# =========================================================
+# mock — API 키 없이 쓰는 가짜 AI
+#
+# 카탈로그(app/data/catalog.json)에서 조건에 맞는 것을 골라 점수를 매긴다.
+# 랜덤을 쓰지 않는다. 같은 조건이면 늘 같은 결과가 나와야 화면 버그를 잡을 수 있다.
+# =========================================================
+
+
+def get_limit(context: dict) -> int:
+    """만들 후보 개수. 값이 없거나 이상하면 5개."""
+    limit = context.get("limit")
+
+    if not isinstance(limit, int) or limit < 1:
+        return 5
+
+    return min(limit, MAX_FOODS)
+
+
+def mock_recommend_foods(context: dict) -> list[dict]:
+    """카탈로그에서 조건에 맞는 후보를 골라준다."""
+    allergies = context.get("allergies") or []
+    dislikes = context.get("dislikes") or []
+    exclude = context.get("exclude") or []
+    category = context.get("category")
+    budget_min = context.get("budget_min")
+    budget_max = context.get("budget_max")
+    fridge = context.get("ingredients") or []
+    query = context.get("query")
+    weather = context.get("weather")
+
+    scored = []
+
+    for food in FOODS:
+        name = food["food_name"]
+
+        if name in exclude:
+            continue
+
+        # 알레르기 재료가 들어간 메뉴는 후보에서 통째로 뺀다
+        if uses_any(food, allergies):
+            continue
+
+        if category and food["category"] != category:
+            continue
+
+        cost = food["estimated_cost"]
+        if budget_min is not None and cost < budget_min:
+            continue
+        if budget_max is not None and cost > budget_max:
+            continue
+
+        score = score_food(food, query, fridge, weather)
+
+        # 싫어하는 재료가 들어가면 순위를 뒤로 미룬다(빼지는 않는다).
+        # 대체재료를 제시할 수 있기 때문이다.
+        if uses_any(food, dislikes):
+            score -= 4
+
+        scored.append((score, cost, name, food))
+
+    # 점수가 높은 순 -> 싼 순 -> 이름순.
+    # 마지막 이름순이 없으면 점수가 같을 때 순서가 들쭉날쭉해 보인다.
+    scored.sort(key=sort_key)
+
+    results = []
+    for _score, _cost, _name, food in scored[: get_limit(context)]:
+        results.append(to_food_response(food))
+
+    return results
+
+
+def sort_key(row):
+    """정렬 기준: 점수 내림차순, 가격 오름차순, 이름 오름차순."""
+    score, cost, name, _food = row
+    return (-score, cost, name)
+
+
+def uses_any(food: dict, names: list[str]) -> bool:
+    """이 음식이 주어진 재료 중 하나라도 쓰는지 확인한다.
+
+    글자가 완전히 같은지만 보지 않는다.
+    '돼지고기'를 등록했는데 레시피에 '돼지고기 앞다리살'로 적혀 있으면
+    못 걸러내기 때문이다. 한쪽이 다른 쪽을 품고 있으면 같은 재료로 본다.
+    """
+    if not names:
+        return False
+
+    haystack = list(food.get("ingredients") or [])
+    haystack.append(food["food_name"])
+
+    for banned in names:
+        banned = banned.strip()
+        if not banned:
+            continue
+
+        for item in haystack:
+            if banned in item or item in banned:
+                return True
+
+    return False
+
+
+def score_food(food: dict, query, fridge: list[str], weather) -> int:
+    """조건에 얼마나 맞는지 점수를 매긴다. 높을수록 앞에 온다."""
+    score = 0
+
+    if query:
+        score += score_query(food, query)
+
+    if fridge:
+        score += score_fridge(food, fridge)
+
+    # 검색어가 있으면 날씨는 보지 않는다.
+    # '매운 국물요리'를 찾았는데 더운 날이라고 냉면이 위로 올라오면
+    # 검색이 고장 난 것처럼 보인다. 사용자가 직접 말한 조건이 우선이다.
+    if weather and not query:
+        score += score_weather(food, weather)
+
+    return score
+
+
+def score_query(food: dict, query: str) -> int:
+    """검색 문장이 이 음식과 얼마나 맞는지.
+
+    이름이 맞을 때를 가장 높게 준다. '김치찌개'를 찾는 사람에게
+    김치가 들어간 다른 메뉴가 먼저 나오면 검색이 고장 난 것처럼 보인다.
+    """
+    words = split_words(query)
+    score = 0
+
+    for word in words:
+        if word in food["food_name"]:
+            score += 10
+        elif word in food["category"]:
+            score += 6
+        elif word_in_list(word, food.get("tags") or []):
+            score += 6
+        elif word_in_list(word, food.get("ingredients") or []):
+            score += 4
+        elif word in food["reason"]:
+            score += 2
+
+    return score
+
+
+def word_in_list(word: str, items: list[str]) -> bool:
+    """낱말이 목록의 어느 값에든 걸치는지."""
+    for item in items:
+        if word in item or item in word:
+            return True
+    return False
+
+
+def split_words(query: str) -> list[str]:
+    """검색 문장을 낱말로 쪼갠다. 한 글자짜리는 아무 데나 걸려서 뺀다."""
+    words = []
+
+    for raw in query.replace(",", " ").split():
+        word = raw.strip("?!.·")
+        if len(word) > 1:
+            words.append(word)
+
+    return words
+
+
+def score_fridge(food: dict, fridge: list[str]) -> int:
+    """가진 재료가 많이 겹칠수록, 더 살 게 적을수록 높게."""
+    need = food.get("ingredients") or []
+    if not need:
+        return 0
+
+    have = 0
+    for item in need:
+        for mine in fridge:
+            if mine in item or item in mine:
+                have += 1
+                break
+
+    if have == 0:
+        return -5  # 가진 재료가 하나도 없으면 이 화면에서 보여줄 이유가 없다
+
+    missing = len(need) - have
+
+    # 가진 것 하나당 +3, 더 사야 하는 것 하나당 -2
+    return have * 3 - missing * 2
+
+
+def score_weather(food: dict, weather: dict) -> int:
+    """날씨에 어울리면 가산점.
+
+    규칙은 두 가지뿐이다.
+      더운 날(25도 이상)   시원한 메뉴
+      추운 날(15도 미만)   국물 · 얼큰한 메뉴
+    """
+    temp = weather.get("temp")
+    if temp is None:
+        return 0
+
+    tags = food.get("tags") or []
+
+    if temp >= 25:
+        if food["food_name"] in HOT_WEATHER_PICKS:
+            return 8
+        if "시원한음식" in tags or "면" in tags:
+            return 4
+        if "국물" in tags:
+            return -3  # 더운 날 뜨끈한 국물은 뒤로
+        return 0
+
+    if temp < 15:
+        if "국물" in tags or "얼큰" in tags:
+            return 6
+        if "시원한음식" in tags:
+            return -6
+        return 0
+
+    return 0
+
+
+def to_food_response(food: dict) -> dict:
+    """카탈로그의 음식 하나를 AI 응답과 같은 모양으로 바꾼다."""
+    return {
+        "food_name": food["food_name"],
+        "category": food["category"],
+        "reason": food["reason"],
+        "cook_time_minutes": food["cook_time_minutes"],
+        "difficulty": food["difficulty"],
+        "estimated_cost": food["estimated_cost"],
+        "tags": list(food.get("tags") or []),
+        "ingredients": list(food.get("ingredients") or []),
+        "art": food.get("art"),
+        "image_url": food.get("image_url"),
+    }
+
+
+# ---------------------------------------------------------
+# mock 레시피 만들기
+#
+# 카탈로그에는 주재료 이름만 있고 분량과 조리 순서가 없다.
+# 여기서 재료명을 숫자로 바꿔 분량을 만들고, 태그를 보고 조리 순서를 만든다.
+# md5 를 쓰는 이유는 파이썬 내장 hash() 가 서버를 다시 켤 때마다 값이 달라져서,
+# 같은 음식인데 새로고침할 때마다 분량이 바뀌기 때문이다.
+# ---------------------------------------------------------
+
+# 재료 성격별 기본 분량과 단위.
+# 앞의 글자가 재료명에 들어 있으면 그 규칙을 쓴다. 위에 있는 것이 우선이다.
+QUANTITY_RULES = [
+    (("소금", "설탕", "간장", "고추장", "된장", "참기름", "식용유"), (1, 3, "큰술")),
+    (("들깨가루", "고춧가루", "다진마늘"), (1, 3, "큰술")),
+    (("돼지고기", "소고기", "닭고기", "닭다리살", "닭가슴살", "해물", "연어"), (200, 400, "g")),
+    (("밀가루", "소면", "스파게티면", "떡", "신김치", "김치", "양배추"), (100, 300, "g")),
+    (("계란", "달걀", "감자", "양파", "애호박", "고구마", "토마토", "오이", "바나나"), (1, 3, "개")),
+    (("대파",), (1, 2, "대")),
+    (("두부",), (1, 1, "모")),
+    (("우유", "생크림"), (100, 300, "ml")),
+    (("밥",), (1, 2, "공기")),
+]
+
+# 위 표에 없는 재료에 쓸 기본값
+DEFAULT_QUANTITY = (50, 200, "g")
+
+# 태그별 조리 순서 뼈대. 없는 태그면 BASIC_STEPS 를 쓴다.
+STEP_TEMPLATES = {
+    "국물": [
+        "재료를 먹기 좋은 크기로 썬다.",
+        "냄비에 물 {water}ml 를 붓고 센 불로 끓인다.",
+        "{main}{을를} 먼저 넣고 {half}분간 끓인다.",
+        "나머지 재료를 넣고 {rest}분 더 끓인다.",
+        "간을 보고 소금으로 맞춘 뒤 불을 끈다.",
+    ],
+    "볶음": [
+        "재료를 먹기 좋은 크기로 썬다.",
+        "팬을 달구고 기름을 두른다.",
+        "{main}{을를} 넣고 센 불에서 {half}분간 볶는다.",
+        "나머지 재료와 양념을 넣고 {rest}분 더 볶는다.",
+        "불을 끄고 그릇에 담는다.",
+    ],
+    "면": [
+        "물을 넉넉히 올려 끓인다.",
+        "면을 넣고 봉지에 적힌 시간만큼 삶는다.",
+        "그동안 {main}{을를} 손질해 둔다.",
+        "삶은 면을 건져 찬물에 헹구거나 물기를 뺀다.",
+        "재료와 양념을 넣고 고루 버무린다.",
+    ],
+    "튀김": [
+        "재료를 먹기 좋은 크기로 썬다.",
+        "밑간을 하고 {half}분간 재워둔다.",
+        "튀김옷을 입힌다.",
+        "기름을 170도로 달궈 노릇하게 튀긴다.",
+        "기름을 빼고 그릇에 담는다.",
+    ],
+    "덮밥": [
+        "재료를 먹기 좋은 크기로 썬다.",
+        "{main}{을를} 양념과 함께 {half}분간 익힌다.",
+        "밥을 그릇에 담는다.",
+        "익힌 재료를 밥 위에 얹는다.",
+    ],
+}
+
+BASIC_STEPS = [
+    "재료를 먹기 좋은 크기로 썬다.",
+    "{main}{을를} 먼저 손질해 준비한다.",
+    "재료를 모두 넣고 {half}분간 조리한다.",
+    "간을 맞추고 {rest}분 더 익힌 뒤 마무리한다.",
+]
+
+# 싫어하는 재료를 뺄 때 제안할 대체재료.
+SUBSTITUTES = {
+    "오이": ("애호박", "아삭한 식감을 살리면서 향은 약합니다"),
+    "고수": ("깻잎", "향채 역할을 대신하면서 거부감이 적습니다"),
+    "당근": ("파프리카", "단맛과 색을 비슷하게 냅니다"),
+    "가지": ("애호박", "볶았을 때 식감이 비슷합니다"),
+    "돼지고기": ("닭고기", "기름기가 적고 값도 쌉니다"),
+    "소고기": ("돼지고기", "국물 맛을 비슷하게 내면서 훨씬 쌉니다"),
+    "닭고기": ("두부", "단백질을 채우면서 조리가 간단합니다"),
+    "해물": ("두부", "비린내 없이 국물 맛을 냅니다"),
+    "우유": ("두유", "질감이 비슷하고 유당이 없습니다"),
+    "치즈": ("두부", "고소한 맛을 대신합니다"),
+    "계란": ("두부", "부드러운 식감을 대신합니다"),
+    "밀가루": ("쌀가루", "글루텐 없이 비슷하게 반죽됩니다"),
+}
+
+DEFAULT_SUBSTITUTE = ("생략", "빼고 만들어도 맛이 크게 달라지지 않습니다")
+
+
+def mock_build_recipe(food_name: str, context: dict) -> dict:
+    """카탈로그를 바탕으로 레시피 한 건을 만든다.
+
+    카탈로그에 없는 음식(사용자가 직접 검색한 이름)이면 재료를 모르므로,
+    이름에서 만들어낸 기본 재료로 최소한의 레시피를 만든다.
+    """
+    food = None
+    for item in FOODS:
+        if item["food_name"] == food_name:
+            food = item
+            break
+
+    if food is None:
+        food = make_unknown_food(food_name)
+
+    names = list(food.get("ingredients") or [])
+    if not names:
+        names = ["양파", "대파", "소금"]
+
+    allergies = context.get("allergies") or []
+    dislikes = context.get("dislikes") or []
+
+    ingredients = []
+    substitutes = []
+
+    for name in names:
+        # 알레르기 재료는 레시피에서 아예 뺀다
+        if matches_any(name, allergies):
+            continue
+
+        if matches_any(name, dislikes):
+            replacement, reason = SUBSTITUTES.get(name, DEFAULT_SUBSTITUTE)
+            substitutes.append(
+                {"original": name, "substitute": replacement, "reason": reason}
+            )
+
+        quantity, unit = make_quantity(name)
+        ingredients.append({"name": name, "quantity": quantity, "unit": unit})
+
+    minutes = food["cook_time_minutes"]
+
+    return {
+        "recipe_name": make_recipe_name(food),
+        "cook_time_minutes": minutes,
+        "servings": 2,
+        "difficulty": food["difficulty"],
+        "steps": make_steps(food, names, minutes),
+        "ingredients": ingredients,
+        "substitutes": substitutes,
+        "estimated_cost": food["estimated_cost"],
+    }
+
+
+def make_unknown_food(food_name: str) -> dict:
+    """카탈로그에 없는 이름으로 최소한의 음식 정보를 만든다."""
+    digest = hashlib.md5(food_name.encode("utf-8")).digest()
+
+    return {
+        "food_name": food_name,
+        "category": "한식",
+        "reason": "직접 찾으신 메뉴예요.",
+        "cook_time_minutes": 20 + digest[0] % 25,
+        "difficulty": DIFFICULTIES[digest[1] % 2],  # 쉬움 또는 보통
+        "estimated_cost": (5_000 + digest[2] * 40) // 100 * 100,
+        "tags": [],
+        "ingredients": ["양파", "대파", "계란", "소금"],
+        "art": None,
+        "image_url": None,
+    }
+
+
+def matches_any(name: str, names: list[str]) -> bool:
+    """재료 이름 하나가 목록의 어느 값에든 걸치는지."""
+    for other in names:
+        other = other.strip()
+        if other and (other in name or name in other):
+            return True
+    return False
+
+
+def make_quantity(name: str) -> tuple[float, str]:
+    """재료명으로 분량과 단위를 정한다. 같은 재료는 늘 같은 값이 나온다."""
+    low, high, unit = DEFAULT_QUANTITY
+
+    for keywords, rule in QUANTITY_RULES:
+        matched = False
+        for keyword in keywords:
+            if keyword in name:
+                matched = True
+                break
+        if matched:
+            low, high, unit = rule
+            break
+
+    digest = hashlib.md5(name.encode("utf-8")).digest()
+
+    if low == high:
+        return low, unit
+
+    span = high - low
+    value = low + digest[0] % (span + 1)
+
+    # g · ml 은 10 단위로 떨어뜨려야 진짜 레시피처럼 보인다
+    if unit in ("g", "ml") and value >= 50:
+        value = value // 10 * 10
+
+    return value, unit
+
+
+def make_recipe_name(food: dict) -> str:
+    """레시피 이름을 만든다. 주재료를 앞에 붙인다.
+
+    '김치찌개' -> '돼지고기 김치찌개'
+    """
+    names = food.get("ingredients") or []
+
+    for name in names:
+        # 주재료로 삼을 만한 것이 앞에 있으면 그것을 쓴다
+        if name not in ("소금", "설탕", "밥", "밀가루") and name not in food["food_name"]:
+            return f"{name} {food['food_name']}"
+
+    return food["food_name"]
+
+
+def make_steps(food: dict, names: list[str], minutes: int) -> list[str]:
+    """태그를 보고 조리 순서를 만든다."""
+    template = BASIC_STEPS
+
+    for tag in food.get("tags") or []:
+        if tag in STEP_TEMPLATES:
+            template = STEP_TEMPLATES[tag]
+            break
+
+    main = names[0]
+    half = max(3, minutes // 3)
+    rest = max(2, minutes // 4)
+    water = 400 + (minutes % 5) * 50
+
+    steps = []
+    for line in template:
+        steps.append(
+            line.format(
+                main=main,
+                을를=pick_josa(main, "을", "를"),
+                half=half,
+                rest=rest,
+                water=water,
+            )
+        )
+
+    return steps
+
+
+def pick_josa(word: str, with_final: str, without_final: str) -> str:
+    """앞 글자의 받침에 따라 조사를 고른다.
+
+        돼지고기 -> 를      (받침 없음)
+        신김치   -> 를
+        두부     -> 를
+        대파     -> 를
+        달걀     -> 을      (받침 있음)
+
+    "돼지고기 을(를)" 처럼 두 개를 다 적으면 레시피가 기계가 쓴 글처럼 읽힌다.
+
+    한글 코드는 가(0xAC00)부터 힣(0xD7A3)까지 순서대로 놓여 있고,
+    한 글자는 (초성 x 21 + 중성) x 28 + 종성 으로 만들어진다.
+    그래서 28로 나눈 나머지가 0이면 받침이 없는 글자다.
+    """
+    if not word:
+        return without_final
+
+    last = word[-1]
+    code = ord(last)
+
+    # 한글이 아니면(영어 · 숫자) 받침을 알 수 없다. 무난한 쪽을 쓴다.
+    if code < 0xAC00 or code > 0xD7A3:
+        return without_final
+
+    if (code - 0xAC00) % 28 == 0:
+        return without_final
+
+    return with_final
+
+
+def dump_context(context: dict) -> str:
+    """디버깅용. 서버 콘솔에 조건을 한 줄로 찍을 때 쓴다."""
+    return json.dumps(context, ensure_ascii=False)

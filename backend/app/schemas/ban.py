@@ -19,16 +19,18 @@ class BanCreateRequest(BaseModel):
 
     @field_validator("ingredient_name")
     @classmethod
-    def strip_name(cls, v: str) -> str:
-        """공백만 입력한 재료명을 거른다.
+    def validate_ingredient_name(cls, name: str) -> str:
+        """공백만 입력한 재료명을 거르고, 앞뒤 공백을 떼어낸다.
 
-        앞뒤 공백도 여기서 떼어낸다. '오이'와 '오이 '가 서로 다른 값으로
-        저장되면 uq_user_bans가 중복을 못 막는다.
+        공백을 떼는 게 중요하다. "오이" 와 "오이 " 가 서로 다른 값으로 저장되면
+        DB 의 중복 방지 인덱스(uq_user_bans)가 둘을 다른 재료로 보고 통과시킨다.
         """
-        stripped = v.strip()
-        if not stripped:
+        name = name.strip()
+
+        if not name:
             raise ValueError("재료 이름을 입력해주세요")
-        return stripped
+
+        return name
 
 
 class BanResponse(BaseModel):

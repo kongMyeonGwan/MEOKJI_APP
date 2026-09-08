@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import ErrorMessage from '../components/common/ErrorMessage'
 import FoodThumb from '../components/common/FoodThumb'
+import Loading from '../components/common/Loading'
+import { getRecommendations } from '../api/recommendations'
+import { useAiLog } from '../contexts/AiLogContext'
 import { useLikes } from '../contexts/LikesContext'
-import { MOCK_RECOMMENDATIONS } from '../mocks'
+import { parseApiError } from '../utils/apiError'
 import { formatMinutes, formatPrice } from '../utils/format'
 import '../styles/pages/ListPage.css'
 import '../styles/pages/GamePage.css'
@@ -17,8 +21,9 @@ import '../styles/pages/GamePage.css'
  * 8강으로 시작하는 이유: 16강은 열다섯 번을 눌러야 해서 중간에 지치고,
  * 4강은 두 번 만에 끝나 고른 것 같지가 않다.
  *
- * 후보는 매번 섞는다. 같은 순서로 나오면 두 번째부터는 결과가 뻔해진다.
- * 서버가 붙으면 이 자리에 날씨·못 먹는 재료를 반영한 후보가 내려온다.
+ * 후보는 서버에서 받아온다. 못 먹는 재료(Ban)가 반영된 목록이라,
+ * 알레르기 재료가 들어간 메뉴가 대진표에 오르지 않는다.
+ * '처음부터'를 누르면 다시 요청해서 다른 후보로 시작한다.
  */
 
 /** 대진표 크기. 2의 거듭제곱이어야 부전승 없이 딱 떨어진다 */
@@ -26,39 +31,96 @@ const BRACKET_SIZE = 8
 
 const ROUND_NAME = { 8: '8강', 4: '4강', 2: '결승' }
 
-function drawBracket() {
-  // 원본을 건드리지 않도록 복사한 뒤 섞는다
-  const shuffled = [...MOCK_RECOMMENDATIONS].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, BRACKET_SIZE)
-}
-
 export default function WorldCupPage() {
-  const [round, setRound] = useState(drawBracket)
-  // 지금 화면에 띄운 두 명이 round의 몇 번째인지
+  // 이번 라운드에 남아있는 메뉴들 (8개 -> 4개 -> 2개 -> 1개)
+  const [round, setRound] = useState([])
+
+  // 지금 화면에 띄운 두 메뉴가 round 배열의 몇 번째인지 (0, 2, 4, 6)
   const [index, setIndex] = useState(0)
+
+  // 이번 라운드에서 이긴 메뉴들. 라운드가 끝나면 이게 다음 round 가 된다
   const [winners, setWinners] = useState([])
 
-  const { has, toggle } = useLikes()
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
 
-  const restart = () => {
-    setRound(drawBracket())
-    setIndex(0)
-    setWinners([])
+  const { has, toggle } = useLikes()
+  const { add, markPicked } = useAiLog()
+
+  /** 후보를 새로 받아와 대진표를 짠다. */
+  function draw() {
+    setLoading(true)
+    setLoadError('')
+
+    getRecommendations({ source: '메뉴 게임', limit: BRACKET_SIZE })
+      .then((data) => {
+        setRound(data.items)
+        setIndex(0)
+        setWinners([])
+
+        const names = []
+        for (const item of data.items) {
+          names.push(item.food_name)
+        }
+        add({
+          source: '음식 월드컵',
+          condition: `${data.items.length}강 · ${data.condition}`,
+          foods: names,
+        })
+      })
+      .catch((err) => setLoadError(parseApiError(err).message))
+      .finally(() => setLoading(false))
   }
 
-  const choose = (food) => {
+  // 화면이 처음 열릴 때 한 번만 후보를 받아온다
+  useEffect(() => {
+    draw()
+  }, [])
+
+  /** 두 카드 중 하나를 눌렀을 때. 고른 쪽이 다음 라운드로 올라간다. */
+  function choose(food) {
     const nextWinners = [...winners, food]
 
-    // 이번 라운드의 마지막 대결이면 이긴 사람들로 다음 라운드를 연다
+    // 이번 라운드의 마지막 대결이었으면, 이긴 메뉴들로 다음 라운드를 시작한다
     if (index + 2 >= round.length) {
-      setRound(nextWinners)
+      // 우승이 정해졌으면 AI 추천 기록에도 표시한다
+      if (nextWinners.length === 1) {
+        markPicked(nextWinners[0].food_name)
+      }
+
+      setRound(nextWinners) // 8강 승자 4명 -> 4강
       setWinners([])
       setIndex(0)
       return
     }
 
+    // 아직 이번 라운드가 안 끝났으면 다음 대결로 넘어간다.
+    // 한 대결에 두 명씩이라 2칸씩 이동한다.
     setWinners(nextWinners)
     setIndex(index + 2)
+  }
+
+  if (loading) {
+    return (
+      <div className="list-page list-page--narrow">
+        <div className="card">
+          <Loading message="AI가 후보를 고르는 중..." />
+        </div>
+      </div>
+    )
+  }
+
+  if (loadError || round.length === 0) {
+    return (
+      <div className="list-page list-page--narrow">
+        <div className="card">
+          <ErrorMessage message={loadError || '후보를 받아오지 못했습니다.'} />
+          <button type="button" className="btn" onClick={draw}>
+            다시 시도
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // ===== 우승 =====
@@ -103,7 +165,7 @@ export default function WorldCupPage() {
             >
               {liked ? '♥ 찜 해제' : '♡ 찜하기'}
             </button>
-            <button type="button" className="btn btn--ghost" onClick={restart}>
+            <button type="button" className="btn btn--ghost" onClick={draw}>
               다시 하기
             </button>
           </div>
@@ -113,15 +175,36 @@ export default function WorldCupPage() {
   }
 
   // ===== 대결 중 =====
-  const [left, right] = [round[index], round[index + 1]]
+  const left = round[index]
+  const right = round[index + 1]
+
+  // 후보가 홀수로 오면 마지막 한 명이 짝을 못 만난다.
+  // 부전승으로 다음 라운드에 올려보내지 않고, 그냥 승자로 확정한다.
+  if (!right) {
+    return (
+      <div className="list-page list-page--narrow">
+        <div className="card">
+          <p className="empty">
+            후보가 부족해 대진표를 짤 수 없습니다.
+            <br />
+            <button type="button" className="btn btn--sm" onClick={draw}>
+              다시 뽑기
+            </button>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // 한 대결에 두 명씩이라 index 를 2로 나누면 몇 번째 대결인지 나온다
   const matchNo = index / 2 + 1
-  const matchTotal = round.length / 2
+  const matchTotal = Math.floor(round.length / 2)
 
   return (
     <div className="list-page">
       <div className="section-head">
         <h2 className="section-title">음식 월드컵</h2>
-        <button type="button" className="section-more wc__restart" onClick={restart}>
+        <button type="button" className="section-more wc__restart" onClick={draw}>
           처음부터 ↻
         </button>
       </div>

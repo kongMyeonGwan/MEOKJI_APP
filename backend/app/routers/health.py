@@ -32,8 +32,17 @@ def health_check(db: Session = Depends(get_db)):
         # 운영에서 커넥션 문자열이 노출되지 않도록 예외 타입만 남긴다
         db_error = type(exc).__name__
 
+    # DB가 안 되면 앱은 떠 있어도 정상 서비스는 못 하는 상태다.
+    # 그래서 상태 문구와 HTTP 상태 코드를 같이 바꿔준다.
+    if db_status == "ok":
+        overall_status = "ok"
+        status_code = 200
+    else:
+        overall_status = "degraded"
+        status_code = 503
+
     body = {
-        "status": "ok" if db_status == "ok" else "degraded",
+        "status": overall_status,
         "app": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "env": settings.APP_ENV,
@@ -42,4 +51,4 @@ def health_check(db: Session = Depends(get_db)):
     if db_error:
         body["database_error"] = db_error
 
-    return JSONResponse(status_code=200 if db_status == "ok" else 503, content=body)
+    return JSONResponse(status_code=status_code, content=body)

@@ -12,16 +12,19 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-def _require_text(value: str, label: str) -> str:
-    """공백만 들어온 입력을 거른다.
+def require_text(value: str, label: str) -> str:
+    """공백만 들어온 입력을 거르고, 앞뒤 공백을 떼어낸다.
 
-    Oracle은 빈 문자열을 NULL로 취급한다. ''를 그대로 넘기면
-    ORA-01400(NOT NULL 위반)으로 500이 나므로 여기서 422로 끊는다.
+    "   " 처럼 스페이스만 넣은 값은 Field(min_length=1) 을 통과해버린다.
+    그런데 Oracle 은 빈 문자열을 NULL 로 취급해서, 그대로 저장하려 하면
+    NOT NULL 위반으로 500 이 난다. 그 전에 여기서 422 로 끊는다.
     """
-    stripped = value.strip()
-    if not stripped:
+    value = value.strip()
+
+    if not value:
         raise ValueError(f"{label}을(를) 입력해주세요")
-    return stripped
+
+    return value
 
 
 class PostCreateRequest(BaseModel):
@@ -38,13 +41,35 @@ class PostCreateRequest(BaseModel):
 
     @field_validator("title")
     @classmethod
-    def strip_title(cls, v: str) -> str:
-        return _require_text(v, "제목")
+    def validate_title(cls, title: str) -> str:
+        return require_text(title, "제목")
 
     @field_validator("content")
     @classmethod
-    def strip_content(cls, v: str) -> str:
-        return _require_text(v, "내용")
+    def validate_content(cls, content: str) -> str:
+        return require_text(content, "내용")
+
+
+class PostUpdateRequest(BaseModel):
+    """글 수정 요청.
+
+    meal_history_id 는 받지 않는다. 어떤 식사에 대한 글인지가 바뀌면
+    본문과 레시피가 어긋나는데, 그건 수정이 아니라 다른 글이다.
+    바꾸고 싶으면 지우고 새로 쓰면 된다.
+    """
+
+    title: str = Field(..., min_length=1, max_length=200)
+    content: str = Field(..., min_length=1)
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, title: str) -> str:
+        return require_text(title, "제목")
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, content: str) -> str:
+        return require_text(content, "내용")
 
 
 class CommentCreateRequest(BaseModel):
@@ -53,8 +78,8 @@ class CommentCreateRequest(BaseModel):
 
     @field_validator("content")
     @classmethod
-    def strip_content(cls, v: str) -> str:
-        return _require_text(v, "댓글")
+    def validate_content(cls, content: str) -> str:
+        return require_text(content, "댓글")
 
 
 class LikeResponse(BaseModel):
@@ -117,3 +142,26 @@ class PostDetailResponse(BaseModel):
     is_mine: bool = False
 
     comments: list[CommentResponse] = []
+
+
+class PopularItem(BaseModel):
+    """인기 레시피 한 줄 (기간 안에 새로 받은 좋아요 기준).
+
+    화면의 LikedList · PopularRecipes 가 이 모양을 그대로 쓴다.
+    id 는 게시글 번호다. 클릭하면 /recipe/{food_name} 으로 가고,
+    좋아요 수는 "선택한 기간에 눌린 것"만 센 값이다.
+    """
+
+    id: int
+    food_name: str
+    recipe_name: str | None
+    nickname: str
+    like_count: int
+    estimated_cost: int | None
+
+    # 그 기간에 마지막으로 좋아요를 받은 시각. 같은 개수일 때 정렬 기준이 된다.
+    liked_at: datetime
+
+    # 썸네일 그림. 카탈로그에 있는 음식이면 서버가 채워준다.
+    art: str | None = None
+    image_url: str | None = None

@@ -20,15 +20,34 @@ export default function LoginPage() {
   // ProtectedRoute가 넘겨준 "원래 가려던 곳". 없으면 홈으로 보낸다.
   const redirectTo = location.state?.from ?? '/'
 
-  const onChange = (e) => {
+  /**
+   * 입력칸에 글자를 칠 때마다 실행된다.
+   *
+   * 칸이 여러 개인데 함수는 하나다. e.target.name 으로 어느 칸인지 알아낸다.
+   *
+   *   { ...prev, [name]: value }
+   *     ...prev    기존 값을 전부 복사하고
+   *     [name]     그중 name 에 해당하는 칸만
+   *     : value    새 값으로 덮어쓴다
+   *
+   *   name 이 'email' 이면 { email: '새값', password: '기존값' } 이 된다.
+   *   대괄호를 씌우면 "변수에 담긴 이름"을 키로 쓴다는 뜻이다.
+   *   대괄호 없이 { name: value } 라고 쓰면 진짜 'name' 이라는 칸이 만들어진다.
+   *
+   * 기존 값을 복사하는 이유: 리액트는 state 를 직접 고치면 안 되고
+   * 항상 새 객체를 만들어 넣어줘야 화면이 다시 그려진다.
+   */
+  function onChange(e) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+    // 입력을 고치는 순간 그 칸의 빨간 에러 글씨는 지운다
     setFieldErrors((prev) => ({ ...prev, [name]: undefined }))
     setMessage('')
   }
 
-  const onSubmit = async (e) => {
-    e.preventDefault()
+  /** 로그인 버튼을 눌렀을 때. */
+  async function onSubmit(e) {
+    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
     setMessage('')
 
     // 로그인은 형식 검증을 최소한만 한다.
