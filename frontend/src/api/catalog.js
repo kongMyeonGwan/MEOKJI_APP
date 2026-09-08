@@ -25,3 +25,16 @@ export async function getNotices() {
   const { data } = await client.get('/api/catalog/notices')
   return data
 }
+
+/**
+ * 시·도 · 시·군·구 목록. 회원가입 · 마이페이지의 주소 드롭다운이 쓴다.
+ *
+ * /api/catalog 에 안 묶여 있다. 250개가 넘어서 합쳐두면 대시보드를 열 때마다
+ * 쓰지도 않는 목록을 같이 받게 된다.
+ *
+ *   [{ name: "서울특별시", sigungu: ["종로구", "중구", ...] }, ...]
+ */
+export async function getRegions() {
+  const { data } = await client.get('/api/catalog/regions')
+  return data
+}

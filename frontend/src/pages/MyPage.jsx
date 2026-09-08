@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import AddressPicker from '../components/common/AddressPicker'
 import ApiStatus from '../components/common/ApiStatus'
 import ErrorMessage from '../components/common/ErrorMessage'
 import { addBan, getBans, removeBan } from '../api/bans'
@@ -273,8 +274,8 @@ function ProfileForm({ profile, onSaved }) {
         nickname: nickname.trim(),
         // 빈 문자열은 "선택 안 함"이다. null 로 보내야 DB 에서도 비워진다.
         gender: gender || null,
-        addressSido: sido.trim(),
-        addressSigungu: sigungu.trim(),
+        addressSido: sido || null,
+        addressSigungu: sigungu || null,
       })
       setDone(true)
       onSaved()
@@ -290,8 +291,8 @@ function ProfileForm({ profile, onSaved }) {
     <section className="card">
       <h2 className="section-title">정보 수정</h2>
       <p className="muted mypage__desc">
-        이메일은 로그인 아이디라 바꿀 수 없습니다. 주소를 적어두면 그 지역 날씨로
-        메뉴를 추천해드려요.
+        이메일은 로그인 아이디라 바꿀 수 없습니다. 사는 곳을 골라두면 위치 권한을
+        주지 않아도 그 지역 날씨로 메뉴를 추천해드려요.
       </p>
 
       <form className="mypage__profile" onSubmit={onSubmit}>
@@ -317,27 +318,20 @@ function ProfileForm({ profile, onSaved }) {
           </select>
         </label>
 
-        <label className="mypage__field">
-          <span>시 · 도</span>
-          <input
-            type="text"
-            value={sido}
-            onChange={(e) => setSido(e.target.value)}
-            placeholder="서울특별시"
-            maxLength={30}
+        <div className="mypage__field">
+          <span>사는 곳</span>
+          <AddressPicker
+            sido={sido}
+            sigungu={sigungu}
+            onChange={(nextSido, nextSigungu) => {
+              // 시·도와 시·군·구를 한 번에 바꾼다.
+              // 따로 바꾸면 있지도 않은 조합이 잠깐 만들어진다.
+              setSido(nextSido)
+              setSigungu(nextSigungu)
+            }}
+            disabled={saving}
           />
-        </label>
-
-        <label className="mypage__field">
-          <span>시 · 군 · 구</span>
-          <input
-            type="text"
-            value={sigungu}
-            onChange={(e) => setSigungu(e.target.value)}
-            placeholder="강남구"
-            maxLength={30}
-          />
-        </label>
+        </div>
 
         <div className="mypage__field-actions">
           <button type="submit" className="btn" disabled={saving}>

@@ -1,0 +1,20 @@
+/* 시·도 + 시·군·구 드롭다운 두 개.
+   좁은 화면에서는 세로로 쌓이도록 wrap 을 켜둔다. */
+.address {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.address__select {
+  /* 둘이 같은 폭을 나눠 갖는다. min-width 가 없으면 긴 지명
+     ("강원특별자치도")이 들어갔을 때 한쪽만 늘어난다. */
+  flex: 1;
+  min-width: 140px;
+}
+
+.address__loading {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}

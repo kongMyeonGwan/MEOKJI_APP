@@ -486,3 +486,97 @@ def test_모델_목록은_쉼표로_나뉜다():
         "gemini-3.7-flash",
         "gemini-3.5-flash",
     ]
+
+
+# =========================================================
+# 주소 -> 좌표
+#
+# 회원가입에서 고른 주소를 좌표로 바꿔 저장하고, 그 좌표로 날씨를 부른다.
+# 목록에서 찾기만 하므로 바깥 API 를 부르지 않는다.
+# =========================================================
+
+
+def test_시군구까지_고르면_그_좌표가_나온다():
+    from app.data.regions import find_coords
+
+    coords = find_coords("서울특별시", "강남구")
+
+    assert coords is not None
+    lat, lon = coords
+    # 강남구는 대략 북위 37.5, 동경 127.0 언저리다
+    assert 37.0 < lat < 38.0
+    assert 126.5 < lon < 127.5
+
+
+def test_시도만_골라도_중심_좌표가_나온다():
+    # 시·군·구를 안 골랐다고 좌표가 아예 없으면, 위치 권한을 거부한 사람은
+    # 영영 기본 좌표(종로2가) 날씨를 보게 된다
+    from app.data.regions import find_coords
+
+    assert find_coords("부산광역시", None) is not None
+
+
+def test_시군구가_없는_시도도_좌표가_나온다():
+    # 세종특별자치시는 아래에 시·군·구가 없는 단층 자치시다
+    from app.data.regions import find_coords
+
+    assert find_coords("세종특별자치시", None) is not None
+
+
+def test_먼_지역은_좌표도_멀다():
+    from app.data.regions import find_coords
+
+    seoul = find_coords("서울특별시", "종로구")
+    jeju = find_coords("제주특별자치도", "서귀포시")
+
+    # 서울과 서귀포는 위도가 4도 넘게 차이 난다
+    assert seoul[0] - jeju[0] > 3
+
+
+def test_시군구가_안_맞으면_시도_중심으로_떨어진다():
+    """해운대구는 부산의 구다. 서울과 짝지으면 맞는 조합이 아니다.
+
+    이때 None 을 주면 그 회원은 기본 좌표(종로2가) 날씨를 보게 된다.
+    적어도 고른 시·도 안에서는 맞는 날씨를 보여주는 편이 낫다.
+    """
+    from app.data.regions import find_coords
+
+    seoul_center = find_coords("서울특별시", None)
+
+    assert find_coords("서울특별시", "해운대구") == seoul_center
+
+
+def test_아예_없는_시도는_None():
+    from app.data.regions import find_coords
+
+    assert find_coords("없는도", "없는구") is None
+    assert find_coords(None, None) is None
+    assert find_coords("", "강남구") is None
+
+
+def test_목록에는_좌표가_없다():
+    # 화면은 이름만 쓴다. 250개가 넘는 항목마다 숫자 두 개씩 붙으면
+    # 응답만 커진다.
+    from app.data.regions import list_regions
+
+    regions = list_regions()
+
+    assert len(regions) == 17  # 시·도 17개
+    for item in regions:
+        assert set(item.keys()) == {"name", "sigungu"}
+
+
+def test_모든_시군구에_좌표가_있다():
+    # 좌표가 빠진 항목이 있으면 그 지역 사람은 주소를 골라도 날씨가 안 맞는다.
+    # 목록을 만들 때 지명을 잘못 적으면 여기서 걸린다.
+    from app.data.regions import REGIONS
+
+    missing = []
+    for sido in REGIONS:
+        if "lat" not in sido:
+            missing.append(sido["name"])
+        for sigungu in sido["sigungu"]:
+            if "lat" not in sigungu:
+                missing.append(f"{sido['name']} {sigungu['name']}")
+
+    assert missing == [], f"좌표 없는 지역: {missing}"

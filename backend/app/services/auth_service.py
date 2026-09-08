@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import hash_password, verify_password
+from app.data.regions import find_coords
 from app.models.types import USE_YN_YES
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest
@@ -42,9 +43,12 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
         gender=payload.gender,
         address_sido=payload.address_sido,
         address_sigungu=payload.address_sigungu,
-        latitude=payload.latitude,
-        longitude=payload.longitude,
     )
+
+    # 고른 주소를 좌표로 바꿔 함께 저장한다.
+    # 이 좌표가 대시보드 날씨 조회에 쓰인다. 주소만 저장해두면 화면에
+    # 보여줄 수는 있어도 날씨는 못 부른다 — OpenWeather 는 좌표로만 받는다.
+    set_coords_from_address(user)
     db.add(user)
 
     try:
@@ -68,6 +72,26 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
 
 
 INVALID_CREDENTIALS = "이메일 또는 비밀번호가 올바르지 않습니다."
+
+
+def set_coords_from_address(user: User) -> None:
+    """회원의 주소를 좌표로 바꿔 latitude / longitude 에 채운다.
+
+    목록(app/data/regions.json)에서 찾기만 하므로 바깥 API 를 부르지 않는다.
+    가입이 느려지지 않고, 그 API 가 죽어도 가입은 된다.
+
+    주소를 안 골랐거나 목록에 없으면 좌표를 지운다.
+    지우지 않으면 주소만 바꿨을 때 옛 좌표가 남아, 화면에는 부산이라고
+    적혀 있는데 서울 날씨가 나오는 상태가 된다.
+    """
+    coords = find_coords(user.address_sido, user.address_sigungu)
+
+    if coords is None:
+        user.latitude = None
+        user.longitude = None
+        return
+
+    user.latitude, user.longitude = coords
 
 
 def login_user(db: Session, payload: LoginRequest) -> User:

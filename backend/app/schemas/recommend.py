@@ -55,6 +55,10 @@ class RecommendRequest(BaseModel):
     exclude: list[str] = Field(default_factory=list, max_length=30)
 
     # 날씨를 반영할지. 대시보드 히어로만 True 로 보낸다.
+    #
+    # 좌표를 안 보내도 된다. 로그인했으면 서버가 회원가입 때 고른 주소의
+    # 좌표를 쓰고, 그것도 없으면 기본 좌표(종로2가)로 답한다
+    # (services/ai_service.pick_coords).
     use_weather: bool = False
     lat: float | None = Field(None, ge=-90, le=90)
     lon: float | None = Field(None, ge=-180, le=180)

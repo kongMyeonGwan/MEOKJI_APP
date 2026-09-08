@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password, verify_password
+from app.services.auth_service import set_coords_from_address
 from app.models.meal_history import MealHistory
 from app.models.recipe_review import RecipeReview
 from app.models.review_comment import ReviewComment
@@ -180,6 +181,11 @@ def update_profile(
 
     for field, value in changes.items():
         setattr(user, field, value)
+
+    # 주소를 건드렸으면 좌표도 다시 맞춘다.
+    # 안 하면 이사한 뒤에도 예전 동네 날씨로 추천이 나간다.
+    if "address_sido" in changes or "address_sigungu" in changes:
+        set_coords_from_address(user)
 
     try:
         db.commit()

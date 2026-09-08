@@ -49,11 +49,13 @@ class RegisterRequest(BaseModel):
     # 주소는 대시보드 첫 화면의 날씨 조회에 쓴다.
     # 화면에는 "서울특별시 강남구"로 보여주고, 날씨 API 는 좌표로 부른다.
     # OpenWeather 가 한국 시·군·구를 도시명 문자열로 못 찾기 때문에 둘로 나눠 둔다.
+    #
+    # 위경도는 받지 않는다. 고른 주소를 서버가 좌표로 바꿔 저장한다
+    # (services/auth_service.set_coords_from_address).
+    # 클라이언트가 좌표를 직접 보내게 하면 주소와 좌표가 어긋난 회원이 생긴다.
     gender: Literal["MALE", "FEMALE", "OTHER"] | None = None
     address_sido: str | None = Field(None, max_length=30)
     address_sigungu: str | None = Field(None, max_length=30)
-    latitude: float | None = Field(None, ge=-90, le=90)
-    longitude: float | None = Field(None, ge=-180, le=180)
 
     @field_validator("password")
     @classmethod

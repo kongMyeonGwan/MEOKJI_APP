@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { register } from '../api/auth'
 import { parseApiError } from '../utils/apiError'
+import AddressPicker from '../components/common/AddressPicker'
 import ErrorMessage from '../components/common/ErrorMessage'
 import '../styles/pages/RegisterPage.css'
 
@@ -54,6 +55,16 @@ export default function RegisterPage() {
     setForm((prev) => ({ ...prev, [name]: value }))
     // 입력을 고치는 순간 그 칸의 빨간 에러 글씨는 지운다
     setFieldErrors((prev) => ({ ...prev, [name]: undefined }))
+  }
+
+  /**
+   * 주소를 골랐을 때. 시·도와 시·군·구를 **한 번에** 바꾼다.
+   *
+   * 따로 바꾸면 시·도를 바꾼 직후 한 순간 "부산광역시 강남구" 같은
+   * 있지도 않은 조합이 만들어진다.
+   */
+  function setAddress(addressSido, addressSigungu) {
+    setForm((prev) => ({ ...prev, addressSido, addressSigungu }))
   }
 
   /** 서버에 보내기 전 프론트에서 먼저 거를 수 있는 것들. */
@@ -182,8 +193,8 @@ export default function RegisterPage() {
         {/* 여기부터는 선택 항목이다. 필수처럼 보이면 가입 도중에 그만두는
             사람이 생기므로 "선택" 이라고 분명히 적어둔다. */}
         <p className="muted register__optional">
-          아래는 선택 항목이에요. 사는 곳을 적어두면 그 지역 날씨로 메뉴를
-          추천해드립니다.
+          아래는 선택 항목이에요. 사는 곳을 골라두면 위치 권한을 주지 않아도
+          그 지역 날씨로 메뉴를 추천해드립니다.
         </p>
 
         <label className="register__field">
@@ -197,29 +208,14 @@ export default function RegisterPage() {
           </select>
         </label>
 
-        <label className="register__field">
-          <span>시 · 도 (선택)</span>
-          <input
-            type="text"
-            name="addressSido"
-            value={form.addressSido}
-            onChange={onChange}
-            placeholder="서울특별시"
-            maxLength={30}
+        <div className="register__field">
+          <span>사는 곳 (선택)</span>
+          <AddressPicker
+            sido={form.addressSido}
+            sigungu={form.addressSigungu}
+            onChange={setAddress}
           />
-        </label>
-
-        <label className="register__field">
-          <span>시 · 군 · 구 (선택)</span>
-          <input
-            type="text"
-            name="addressSigungu"
-            value={form.addressSigungu}
-            onChange={onChange}
-            placeholder="강남구"
-            maxLength={30}
-          />
-        </label>
+        </div>
 
         <ErrorMessage message={message} />
 

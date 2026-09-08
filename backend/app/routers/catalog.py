@@ -12,6 +12,7 @@ DB 가 아니라 파일(app/data/catalog.json)에서 읽는다.
 
 from fastapi import APIRouter
 
+from app.data.regions import list_regions
 from app.data import (
     BALANCE_QUESTIONS,
     BUDGET_PRESETS,
@@ -42,6 +43,17 @@ def read_catalog() -> dict:
         "search_suggestions": SEARCH_SUGGESTIONS,
         "budget_presets": BUDGET_PRESETS,
     }
+
+
+@router.get("/regions", summary="시·도 · 시·군·구 목록")
+def read_regions() -> list[dict]:
+    """회원가입 · 정보수정의 주소 드롭다운이 쓰는 목록.
+
+    /api/catalog 에 합치지 않고 따로 뺐다. 250개가 넘어서 합쳐두면
+    대시보드를 열 때마다 쓰지도 않는 목록을 같이 받게 된다.
+    이 목록이 필요한 화면은 회원가입과 마이페이지뿐이다.
+    """
+    return list_regions()
 
 
 @router.get("/notices", summary="공지사항 목록")

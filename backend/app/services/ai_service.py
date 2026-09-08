@@ -56,6 +56,26 @@ def collect_bans(db: Session, user: User | None) -> tuple[list[str], list[str]]:
     return allergies, dislikes
 
 
+def pick_coords(payload: RecommendRequest, user: User | None):
+    """어느 좌표로 날씨를 볼지 정한다. 우선순위가 있다.
+
+        1) 브라우저가 준 위치      지금 있는 곳이 가장 정확하다
+        2) 회원가입 때 고른 주소   위치 권한을 거부했거나 지원 안 하는 브라우저
+        3) None                   서버가 기본 좌표(종로2가)로 답한다
+
+    2번이 없으면 위치 권한을 거부한 사람은 서울에 살든 부산에 살든
+    영영 종로 날씨를 보게 된다. 주소를 받아둔 이유가 이것이다.
+    """
+    if payload.lat is not None and payload.lon is not None:
+        return payload.lat, payload.lon
+
+    if user is not None and user.latitude is not None and user.longitude is not None:
+        # DB 는 NUMBER(9,6) 이라 Decimal 로 온다. float 로 바꿔서 넘긴다.
+        return float(user.latitude), float(user.longitude)
+
+    return None, None
+
+
 def build_context(
     payload: RecommendRequest,
     allergies: list[str],
@@ -86,7 +106,8 @@ def recommend(
     weather = None
     weather_response = None
     if payload.use_weather:
-        weather_response = get_current_weather(payload.lat, payload.lon)
+        lat, lon = pick_coords(payload, user)
+        weather_response = get_current_weather(lat, lon)
         weather = weather_response.model_dump()
 
     context = build_context(payload, allergies, dislikes, weather)

@@ -60,12 +60,12 @@ class ProfileUpdateRequest(BaseModel):
     바꾸려면 본인 확인이 한 번 더 필요하다. MVP 범위 밖이다.
     """
 
+    #
+    # 위경도는 받지 않는다. 주소를 바꾸면 서버가 좌표를 다시 계산한다.
     nickname: str | None = Field(None, min_length=1, max_length=50)
     gender: Gender | None = None
     address_sido: str | None = Field(None, max_length=30)
     address_sigungu: str | None = Field(None, max_length=30)
-    latitude: float | None = Field(None, ge=-90, le=90)
-    longitude: float | None = Field(None, ge=-180, le=180)
 
     @field_validator("nickname")
     @classmethod
