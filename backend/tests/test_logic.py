@@ -1,17 +1,20 @@
 """DB 없이 도는 검증.
 
-계산만 하는 코드(요리 레벨 · mock AI · mock 가격 · KST 변환)를 확인한다.
+계산만 하는 코드(요리 레벨 · mock AI · 가격 응답 파싱 · KST 변환)를 확인한다.
 Oracle 을 안 켜도 돌아가므로, 로직을 고칠 때마다 부담 없이 실행할 수 있다.
 """
 
 from datetime import date, datetime, timedelta, timezone
 
 import httpx
+import pytest
 
 from app.core.kst import KST, day_end_utc, day_start_utc, to_kst_date
 from app.integrations import ai_api
 from app.integrations.weather_api import cache_key, join_address
-from app.integrations.price_api import mock_offers
+from app.integrations import ingredient_match
+from app.integrations import price_api
+from app.services import unit_convert
 from app.services.history_service import count_streak
 from app.services.user_service import make_level, make_title
 
@@ -254,7 +257,9 @@ def test_레시피_모양이_스키마와_맞는다():
     assert len(recipe["ingredients"]) > 0
 
     first = recipe["ingredients"][0]
-    assert set(first.keys()) == {"name", "quantity", "unit"}
+    # grams 는 가격 환산에 쓴다. 없으면 "고춧가루 1큰술" 에 1kg 값이 붙는다.
+    assert set(first.keys()) == {"name", "quantity", "unit", "grams"}
+    assert first["grams"] > 0
 
 
 def test_알레르기_재료는_레시피에서_아예_빠진다():
@@ -296,34 +301,54 @@ def test_조사를_받침에_맞춰_고른다():
 
 
 # =========================================================
-# mock 가격
+# 가격을 못 구한 재료
+#
+# KAMIS 는 농수산물만 조사한다. 두부·간장 같은 가공식품은 값이 없다.
+# 예전에는 mock 프로바이더가 그럴듯한 숫자로 채웠는데, 화면에서 진짜
+# 조사가격과 구분되지 않아 표의 절반이 가짜인 채로 합계까지 계산됐다.
+# 지금은 값을 지어내지 않고 빈 채로 내보낸다.
 # =========================================================
 
 
-def test_판매처_세_곳의_가격이_나온다():
-    offers = mock_offers("두부")
+def test_코드표에_없는_재료는_가격이_비어서_나간다():
+    import asyncio
 
-    assert len(offers) == 3
+    from app.integrations.price_api import collect_offers
 
-    shops = []
-    for offer in offers:
-        shops.append(offer["shop"])
-    assert set(shops) == {"쿠팡", "네이버쇼핑", "알리익스프레스"}
+    # conftest 가 KAMIS_ITEM_CODES 를 비워둬서 바깥을 타지 않는다
+    rows = asyncio.run(collect_offers(["두부", "간장"]))
 
-
-def test_같은_재료는_늘_같은_가격이다():
-    # 서버를 다시 켤 때마다 가격이 바뀌면 화면 버그를 못 잡는다
-    assert mock_offers("돼지고기") == mock_offers("돼지고기")
+    assert len(rows) == 2
+    for row in rows:
+        assert row["offers"] == []
 
 
-def test_가격은_100원_단위다():
-    for offer in mock_offers("소고기"):
-        assert offer["price"] % 100 == 0
+def test_가격을_못_구해도_재료_줄은_남는다():
+    import asyncio
+
+    from app.integrations.price_api import collect_offers
+
+    # 줄째로 사라지면 화면에서 "이 재료는 왜 없지?" 가 되고,
+    # 합계가 전체 재료비인 것처럼 보인다.
+    rows = asyncio.run(collect_offers(["두부", "대파", "간장"]))
+
+    assert [row["name"] for row in rows] == ["두부", "대파", "간장"]
 
 
-def test_링크가_검색_결과로_이어진다():
-    for offer in mock_offers("감자"):
-        assert offer["link"].startswith("https://")
+def test_지원하지_않는_프로바이더는_에러를_낸다():
+    import asyncio
+
+    from app.core.config import settings
+    from app.integrations.price_api import collect_offers
+
+    before = settings.PRICE_PROVIDERS
+    settings.PRICE_PROVIDERS = "naver"
+    try:
+        # 조용히 건너뛰면 "가격이 안 나오는데 이유를 모르겠다"가 된다
+        with pytest.raises(RuntimeError, match="naver"):
+            asyncio.run(collect_offers(["대파"]))
+    finally:
+        settings.PRICE_PROVIDERS = before
 
 
 # =========================================================
@@ -392,20 +417,41 @@ def test_먼_곳은_다른_자리다():
 
 
 def call_weather_with(broken):
-    """httpx.get 을 고장난 함수로 바꿔치기하고 /api/weather 를 부른다."""
+    """httpx.get 을 고장난 함수로 바꿔치기하고 /api/weather 를 부른다.
+
+    provider 를 openweather 로 강제하는 이유
+    ---------------------------------------
+    .env 가 WEATHER_PROVIDER=mock 이면 get_weather() 가 httpx 를 타지 않고
+    고정값을 그대로 돌려준다. 그러면 고장난 함수가 불릴 일이 없어서
+    이 테스트는 늘 200 을 받고 실패한다.
+
+    확인하려는 건 "바깥 서버가 죽었을 때 우리 API 가 503 을 주는가" 이므로,
+    바깥을 부르는 경로를 타도록 여기서 설정을 갈아끼운다. .env 값에 따라
+    통과했다 실패했다 하면 테스트가 아니라 운이다.
+    """
     from unittest.mock import patch
 
     from fastapi.testclient import TestClient
 
+    from app.core.config import settings
     from app.integrations import weather_api
     from app.main import app
 
     # 캐시가 남아 있으면 바깥을 안 부르고 저장된 값을 돌려준다
     weather_api.weather_cache.clear()
 
-    client = TestClient(app, raise_server_exceptions=False)
-    with patch.object(weather_api.httpx, "get", broken):
-        return client.get("/api/weather", params={"lat": 37.6, "lon": 127.0})
+    before = (settings.WEATHER_PROVIDER, settings.OPENWEATHER_API_KEY)
+    settings.WEATHER_PROVIDER = "openweather"
+    # 키가 비어 있으면 httpx 를 부르기 전에 RuntimeError 로 먼저 막힌다.
+    settings.OPENWEATHER_API_KEY = "test-key"
+
+    try:
+        client = TestClient(app, raise_server_exceptions=False)
+        with patch.object(weather_api.httpx, "get", broken):
+            return client.get("/api/weather", params={"lat": 37.6, "lon": 127.0})
+    finally:
+        settings.WEATHER_PROVIDER, settings.OPENWEATHER_API_KEY = before
+        weather_api.weather_cache.clear()
 
 
 def test_날씨_API_가_안_되면_500이_아니라_503():
@@ -580,3 +626,261 @@ def test_모든_시군구에_좌표가_있다():
                 missing.append(f"{sido['name']} {sigungu['name']}")
 
     assert missing == [], f"좌표 없는 지역: {missing}"
+
+
+# =========================================================
+# KAMIS 응답 파싱
+#
+# 실제 호출은 인증키가 있어야 하므로, 명세서에 적힌 응답 모양을
+# 그대로 흉내낸 값으로 파싱만 확인한다.
+# =========================================================
+
+
+def kamis_row(day, region, market, price, unit="1", size="kg"):
+    return {
+        "exmn_ymd": day,
+        "sgg_nm": region,
+        "mrkt_nm": market,
+        "unit": unit,
+        "unit_sz": size,
+        "exmn_dd_prc": price,
+    }
+
+
+def test_KAMIS_응답에서_행을_꺼낸다():
+    payload = {
+        "response": {
+            "header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"},
+            "body": {"items": {"item": [kamis_row("20260908", "서울", "가락시장", "3200")]}},
+        }
+    }
+
+    rows = price_api.kamis_rows(payload)
+
+    assert len(rows) == 1
+    assert rows[0]["mrkt_nm"] == "가락시장"
+
+
+def test_KAMIS_행이_하나면_객체로_와도_읽는다():
+    # 기관에 따라 행이 하나일 때 배열이 아니라 객체로 온다
+    payload = {"response": {"body": {"items": {"item": kamis_row("20260908", "서울", "가락시장", "3200")}}}}
+
+    assert len(price_api.kamis_rows(payload)) == 1
+
+
+def test_KAMIS_가장_최근_조사일자만_남긴다():
+    # 주말을 건너뛰려고 일주일치를 받아온다. 섞어서 최저/최고를 내면
+    # '시장 차이'가 아니라 '날짜 차이'를 보여주게 된다.
+    rows = [
+        kamis_row("20260902", "서울", "가락시장", "9000"),
+        kamis_row("20260908", "서울", "가락시장", "3200"),
+        kamis_row("20260908", "부산", "엄궁시장", "3000"),
+    ]
+
+    latest = price_api.latest_rows(rows)
+
+    assert len(latest) == 2
+    assert {row["exmn_dd_prc"] for row in latest} == {"3200", "3000"}
+
+
+def test_KAMIS_인증키_오류를_읽어낸다():
+    # 인증키 문제는 서비스 봉투가 아니라 게이트웨이 봉투로 온다
+    payload = {
+        "OpenAPI_ServiceResponse": {
+            "cmmMsgHeader": {
+                "errMsg": "SERVICE_KEY_IS_NOT_REGISTERED_ERROR",
+                "returnAuthMsg": "등록되지 않은 서비스키",
+                "returnReasonCode": "30",
+            }
+        }
+    }
+
+    message = price_api.kamis_error(payload)
+
+    assert message is not None
+    assert "등록되지 않은 서비스키" in message
+
+
+def test_KAMIS_정상응답은_오류가_아니다():
+    payload = {"response": {"header": {"resultCode": "00", "resultMsg": "NORMAL SERVICE"}}}
+
+    assert price_api.kamis_error(payload) is None
+
+
+def test_KAMIS_단위를_붙여_읽는다():
+    assert price_api.kamis_unit({"unit_sz": "1", "unit": "kg"}) == "1kg"
+    assert price_api.kamis_unit({"unit_sz": "", "unit": ""}) == ""
+
+
+def test_가격에_쉼표가_붙어도_정수로_읽는다():
+    assert price_api.to_int("4,350") == 4350
+    assert price_api.to_int("3200") == 3200
+    assert price_api.to_int("") is None
+
+
+def test_코드표에_있는_재료는_부류와_품목을_모두_가진다():
+    # 표는 ingredient_match 가 갖고 있다 (price_api 는 그걸 빌려 쓴다)
+    for name, codes in ingredient_match.KAMIS_ITEM_CODES.items():
+        category, item, variety = codes
+        assert category in {"100", "200", "300", "400", "500", "600"}, name
+        assert item.isdigit(), name
+        assert variety is None or variety.isdigit(), name
+
+
+def test_단위가_섞이면_가장_흔한_단위만_남긴다():
+    # 계란은 10구와 30구가 같이 온다. 섞으면 최저 10구 ~ 최고 30구가 되어
+    # 세 배쯤 부풀려진다.
+    rows = [
+        {"unit_sz": "30", "unit": "구", "exmn_dd_prc": "7000"},
+        {"unit_sz": "30", "unit": "구", "exmn_dd_prc": "8000"},
+        {"unit_sz": "10", "unit": "구", "exmn_dd_prc": "3000"},
+    ]
+
+    kept = price_api.same_unit_rows(rows)
+
+    assert len(kept) == 2
+    assert {price_api.kamis_unit(r) for r in kept} == {"30구"}
+
+
+def test_품종코드가_있으면_요청에_넣는다():
+    with_variety = price_api.kamis_params("200", "246", "00")
+    without = price_api.kamis_params("200", "245", None)
+
+    assert with_variety["cond[vrty_cd::EQ]"] == "00"
+    assert "cond[vrty_cd::EQ]" not in without
+
+
+# =========================================================
+# 필요량 환산
+#
+# KAMIS 는 "고춧가루 1kg 25,200원" 처럼 판매 단위로만 값을 준다.
+# 레시피는 "1큰술" 을 요구한다. 환산하지 않고 더하면 재료비가
+# 백 배 넘게 부풀려진다 (김치수제비 1,179원 -> 31,905원).
+# =========================================================
+
+
+def test_무게_단위는_그램으로_환산한다():
+    # 고춧가루 1큰술(7g) 이 필요하고 KAMIS 는 1kg 단위로 판다
+    ratio = unit_convert.needed_ratio(7, 1, "큰술", "1kg")
+
+    assert ratio == pytest.approx(0.007)
+    assert unit_convert.scale_price(25_200, ratio) == 176
+
+
+def test_판매단위가_100g_이면_그램수를_그대로_나눈다():
+    # 돼지고기 240g 이 필요하고 KAMIS 는 100g 단위
+    ratio = unit_convert.needed_ratio(240, 240, "g", "100g")
+
+    assert ratio == pytest.approx(2.4)
+    assert unit_convert.scale_price(1_573, ratio) == 3_775
+
+
+def test_세는_단위는_개수끼리_맞춘다():
+    # 애호박 0.5개가 필요하고 KAMIS 는 1개 단위.
+    # 개당 무게를 몰라도 개수끼리는 맞출 수 있다.
+    ratio = unit_convert.needed_ratio(140, 0.5, "개", "1개")
+
+    assert ratio == pytest.approx(0.5)
+
+
+def test_구와_개는_같은_것을_센다():
+    # 계란은 KAMIS 가 30구로 파는데 레시피는 2개라고 적는다
+    ratio = unit_convert.needed_ratio(110, 2, "개", "30구")
+
+    assert ratio == pytest.approx(2 / 30)
+
+
+def test_생선_한_손은_두_마리다():
+    ratio = unit_convert.needed_ratio(None, 1, "마리", "1손")
+
+    assert ratio == pytest.approx(0.5)
+
+
+def test_세는_단위가_서로_다르면_환산하지_않는다():
+    # '마리' 짜리를 '개' 로 나누면 엉뚱한 값이 나온다.
+    # 억지로 맞춘 숫자를 합계에 넣느니 환산 불가로 두는 편이 낫다.
+    assert unit_convert.needed_ratio(None, 2, "개", "1마리") is None
+
+
+def test_무게_판매인데_그램을_모르면_환산하지_않는다():
+    assert unit_convert.needed_ratio(None, 1, "큰술", "1kg") is None
+    assert unit_convert.needed_ratio(0, 1, "큰술", "1kg") is None
+
+
+def test_환산가는_0원이_되지_않는다():
+    # 소금 0.5작은술은 2원이다. 반올림해서 0 이 되면 합계에서 사라진다.
+    assert unit_convert.scale_price(3_750, 0.0000001) == 1
+
+
+def test_판매단위_문자열을_쪼갠다():
+    assert unit_convert.parse_unit("1kg") == (1.0, "kg")
+    assert unit_convert.parse_unit("100g") == (100.0, "g")
+    assert unit_convert.parse_unit("30구") == (30.0, "구")
+    assert unit_convert.parse_unit("") is None
+
+
+# =========================================================
+# 재료명 맞추기
+#
+# 제미나이는 "다진 마늘" 이라고 적고 KAMIS 는 "마늘" 로만 찾을 수 있다.
+# 이름이 조금만 달라도 값이 안 붙어서, 실제로 김치수제비 재료 14개 중
+# 4개만 가격이 나왔다.
+# =========================================================
+
+
+def test_손질_표현을_떼어낸다():
+    assert ingredient_match.normalize("다진 마늘") == "마늘"
+    assert ingredient_match.normalize("잘게 썬 대파") == "대파"
+    assert ingredient_match.normalize("국산 돼지고기") == "돼지고기"
+
+
+def test_괄호_설명을_떼어낸다():
+    assert ingredient_match.normalize("밀가루 (중력분)") == "밀가루"
+    assert ingredient_match.normalize("고추장(태양초)") == "고추장"
+
+
+def test_다진마늘은_마늘로_찾는다():
+    codes = ingredient_match.find_codes("다진 마늘")
+
+    assert codes is not None
+    assert codes[:2] == ("200", "258")
+
+
+def test_별칭으로도_찾는다():
+    # 청양고추는 KAMIS 품목명이 아니지만 풋고추로 조사된다
+    assert ingredient_match.find_codes("청양고추") == ingredient_match.find_codes("고추")
+
+
+def test_긴_이름_안에_든_품목을_찾는다():
+    codes = ingredient_match.find_codes("돼지고기 앞다리살")
+
+    assert codes is not None
+    assert codes[:2] == ("500", "4304")
+
+
+def test_짧은_품목명이_긴_이름을_가로채지_않는다():
+    # '김치' 에서 '김'(해조류)을, '양파' 에서 '파'를 찾으면 안 된다.
+    # 한 글자 품목은 정확히 일치할 때만 쓴다.
+    assert ingredient_match.find_codes("김치") is None
+    assert ingredient_match.find_codes("김칫국물") is None
+
+    assert ingredient_match.find_codes("양파")[:2] == ("200", "245")
+    assert ingredient_match.find_codes("파")[:2] == ("200", "246")
+    assert ingredient_match.find_codes("배추")[:2] == ("200", "211")
+
+
+def test_물은_가격_조회_대상이_아니다():
+    assert ingredient_match.is_not_priced("물")
+    assert ingredient_match.is_not_priced("반죽용 물")
+    assert ingredient_match.is_not_priced("멸치 다시마 육수용 물")
+    assert not ingredient_match.is_not_priced("대파")
+
+
+def test_별칭은_모두_실제_품목을_가리킨다():
+    # 없는 품목으로 이으면 코드를 못 찾아 조용히 값이 빈다
+    for name, target in ingredient_match.ALIASES.items():
+        assert target in ingredient_match.KAMIS_ITEM_CODES, name
+
+
+def test_프롬프트_어휘는_품목표와_같다():
+    assert set(ingredient_match.vocabulary()) == set(ingredient_match.KAMIS_ITEM_CODES)

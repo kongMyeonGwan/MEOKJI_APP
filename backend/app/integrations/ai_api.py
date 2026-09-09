@@ -44,6 +44,7 @@ import json
 import time
 
 from app.core.config import settings
+from app.integrations.ingredient_match import vocabulary
 from app.data import FOODS, HOT_WEATHER_PICKS, category_labels
 
 # AI 응답을 기다리는 최대 시간(초).
@@ -144,8 +145,26 @@ RECIPE_SCHEMA = {
                     "name": {"type": "string"},
                     "quantity": {"type": "number"},
                     "unit": {"type": "string", "description": "g, 개, 큰술 등"},
+                    # 가격 환산에 쓴다.
+                    #
+                    # KAMIS 는 "고춧가루 1kg 25,200원" 처럼 큰 단위로만 값을 준다.
+                    # 레시피가 "1큰술"을 요구하는데 1kg 값을 그대로 더하면
+                    # 재료비가 백 배 넘게 부풀려진다. 그램으로 받아야
+                    # "필요한 만큼이 얼마인지" 를 계산할 수 있다.
+                    #
+                    # 큰술/작은술/컵 같은 계량 단위는 AI 가 사람보다 잘 안다.
+                    # 우리가 변환표를 만드는 것보다 물어보는 편이 정확하다.
+                    "grams": {
+                        "type": "number",
+                        "description": (
+                            "이 재료의 필요량을 그램으로 환산한 값. "
+                            "액체는 ml 을 g 으로 봅니다(물 100ml = 100). "
+                            "예: 1큰술=15, 1작은술=5, 대파 0.5대=50, "
+                            "감자 1개=170, 계란 1개=55"
+                        ),
+                    },
                 },
-                "required": ["name", "quantity", "unit"],
+                "required": ["name", "quantity", "unit", "grams"],
             },
         },
         "substitutes": {
@@ -448,6 +467,16 @@ def build_recipe_prompt(food_name: str, context: dict) -> str:
         "규칙",
         "- steps 는 순서대로, 한 줄에 한 동작만 적습니다.",
         "- ingredients 의 quantity 는 숫자, unit 은 g · 개 · 큰술 처럼 짧게 적습니다.",
+        "- ingredients 의 grams 에는 그 양을 그램으로 환산한 값을 반드시 적습니다.",
+        "  (1큰술=15, 1작은술=5, 종이컵 1컵=180, 대파 1대=100, 감자 1개=170)",
+        "  물처럼 값을 매기지 않는 재료도 grams 는 적습니다.",
+        "- ingredients 의 name 에는 재료 이름만 적습니다.",
+        "  손질 방법과 괄호 설명은 넣지 않습니다. 그건 steps 에 적습니다.",
+        "  (O) 마늘 · 밀가루 · 대파      (X) 다진 마늘 · 밀가루(중력분) · 잘게 썬 대파",
+        "- 아래 목록에 있는 재료는 반드시 목록의 이름 그대로 적습니다.",
+        "  시세를 붙일 수 있는 이름이라, 다르게 적으면 가격이 나오지 않습니다.",
+        "  목록에 없는 재료는 자유롭게 적으면 됩니다.",
+        f"  [{' · '.join(vocabulary())}]",
         "- estimated_cost 는 재료비 합계를 원 단위 정수로 적습니다.",
         "",
         "조건",
@@ -782,6 +811,15 @@ QUANTITY_RULES = [
 # 위 표에 없는 재료에 쓸 기본값
 DEFAULT_QUANTITY = (50, 200, "g")
 
+# mock 레시피의 grams 를 채울 때 쓰는 단위별 대표 무게.
+# 진짜 AI 는 재료마다 다르게 답한다. 이건 화면과 계산 경로가 도는지만
+# 확인하려고 두는 값이라 정확할 필요가 없다.
+MOCK_GRAMS_PER_UNIT = {
+    "g": 1, "ml": 1,
+    "큰술": 15, "작은술": 5, "컵": 180, "공기": 210,
+    "개": 100, "대": 100, "모": 300, "장": 3, "마리": 300, "포기": 2500,
+}
+
 # 태그별 조리 순서 뼈대. 없는 태그면 BASIC_STEPS 를 쓴다.
 STEP_TEMPLATES = {
     "국물": [
@@ -883,7 +921,14 @@ def mock_build_recipe(food_name: str, context: dict) -> dict:
             )
 
         quantity, unit = make_quantity(name)
-        ingredients.append({"name": name, "quantity": quantity, "unit": unit})
+        ingredients.append(
+            {
+                "name": name,
+                "quantity": quantity,
+                "unit": unit,
+                "grams": mock_grams(quantity, unit),
+            }
+        )
 
     minutes = food["cook_time_minutes"]
 
@@ -924,6 +969,16 @@ def matches_any(name: str, names: list[str]) -> bool:
         if other and (other in name or name in other):
             return True
     return False
+
+
+def mock_grams(quantity: float, unit: str) -> float:
+    """mock 레시피의 grams 를 대충 채운다.
+
+    진짜 AI 는 재료마다 다르게 답하지만, mock 은 화면과 계산 경로가
+    도는지만 보면 되므로 단위별 대표값 하나로 곱한다.
+    """
+    per = MOCK_GRAMS_PER_UNIT.get(unit, 100)
+    return round(quantity * per, 1)
 
 
 def make_quantity(name: str) -> tuple[float, str]:

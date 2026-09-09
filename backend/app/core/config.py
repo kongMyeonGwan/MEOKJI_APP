@@ -97,10 +97,18 @@ class Settings(BaseSettings):
     DEFAULT_WEATHER_LAT: float = 37.5711
     DEFAULT_WEATHER_LON: float = 126.9885
 
-    # ===== Shopping =====
-    PRICE_PROVIDERS: str = "mock"
-    NAVER_CLIENT_ID: str = ""
-    NAVER_CLIENT_SECRET: str = ""
+    # ===== 재료 가격 =====
+    # kamis : 공공데이터포털 KAMIS 일별 도·소매 가격정보
+    #
+    # 네이버 쇼핑 검색 API 는 2026-07-31 종료되어 뺐다. 대체 API 는 없다.
+    # 값을 지어내던 mock 프로바이더도 없앴다. 진짜 조사가격과 구분이
+    # 안 되는 채로 합계까지 계산돼서, 표의 절반이 가짜였다.
+    PRICE_PROVIDERS: str = "kamis"
+
+    # 공공데이터포털 마이페이지의 일반 인증키 — Decoding 값을 넣는다.
+    # Encoding 값을 넣으면 httpx 가 한 번 더 인코딩해서 인증 실패한다.
+    # https://www.data.go.kr/data/15156057/openapi.do
+    DATA_GO_KR_SERVICE_KEY: str = ""
 
     # 아래 셋은 @property 다. 괄호 없이 settings.database_url 처럼 쓰면
     # 그때마다 함수가 실행되어 계산된 값을 돌려준다.

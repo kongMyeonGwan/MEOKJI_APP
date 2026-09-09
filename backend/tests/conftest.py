@@ -23,6 +23,32 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.core.config import settings
+from app.integrations import price_api
+
+# 테스트가 공공데이터포털을 실제로 때리지 않게 막는다.
+#
+# 때리게 두면 (1) 느려지고 (2) 일일 할당량을 깎고 (3) 조사일 데이터가
+# 바뀌면 어제 통과하던 테스트가 오늘 깨진다. 외부 상태에 기대는 테스트는
+# 코드가 깨진 건지 남의 서버가 바뀐 건지 구분해주지 못한다.
+#
+# 바깥으로 나가는 조회 자체를 막는다.
+#
+# 코드표를 비우는 방법도 써봤는데, 그러면 이름 맞추기 테스트가 같이
+# 죽는다(찾을 표가 없으니 전부 None). 데이터가 아니라 네트워크를
+# 막아야 둘 다 산다.
+#
+# 빈 배열은 실제로도 나오는 값이다 — KAMIS 에 없는 가공식품이 그렇다.
+# 그래서 '가격 없는 재료' 경로가 그대로 확인된다.
+settings.PRICE_PROVIDERS = "kamis"
+
+
+async def _no_lookup(client, name):
+    return []
+
+
+price_api.kamis_offers = _no_lookup
+
 # 이 이메일로 만든 데이터는 테스트가 끝날 때 전부 지운다.
 # 실제 사용자와 겹치지 않도록 도메인을 example.com 으로 둔다.
 TEST_EMAILS = (

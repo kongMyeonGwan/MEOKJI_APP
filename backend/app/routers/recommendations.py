@@ -62,7 +62,7 @@ async def read_recipe(
     current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> RecipeResponse:
-    """레시피를 만들고, 그 재료의 판매처 가격까지 함께 담아 돌려준다.
+    """레시피를 만들고, 그 재료의 시장 조사가격까지 함께 담아 돌려준다.
 
     가격 조회를 따로 부르지 않는 이유는 화면이 둘을 같이 쓰기 때문이다.
     나눠 두면 레시피가 먼저 뜨고 가격표가 나중에 나타나 화면이 한 번 튄다.
@@ -82,7 +82,7 @@ async def read_recipe(
     responses={422: {"description": "재료를 하나도 안 보냄"}},
 )
 async def read_prices(payload: PriceRequest) -> list[PriceItem]:
-    """재료 이름 목록으로 판매처별 가격을 조회한다.
+    """재료 이름 목록으로 시장별 조사가격을 조회한다.
 
     화면(PriceTable)이 이 중에서 최저가와 최고가를 뽑아 보여준다.
     """

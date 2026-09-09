@@ -67,7 +67,7 @@ export async function getRecipe(foodName) {
   return data
 }
 
-/** 재료 이름 목록으로 판매처별 가격을 조회한다. */
+/** 재료 이름 목록으로 시장별 조사가격을 조회한다. */
 export async function getPrices(ingredients) {
   const { data } = await client.post('/api/prices', { ingredients })
   return data

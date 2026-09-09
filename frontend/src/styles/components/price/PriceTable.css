@@ -34,3 +34,18 @@ a.price-table__best:hover { text-decoration: underline; }
   font-size: 13px;
   line-height: 1.5;
 }
+
+/* 재료명 옆의 "1kg 기준" 같은 작은 단위 표기.
+   단위를 안 적으면 쌀 20kg 값과 깻잎 100g 값이 같은 표에서 비교돼 보인다. */
+.price-table__unit {
+  margin-left: 0.4rem;
+  font-size: 0.75em;
+  color: var(--muted, #888);
+  white-space: nowrap;
+}
+
+/* 가격을 못 구한 재료 줄. 줄째로 빼지 않고 흐리게 남겨서
+   "빠뜨린 게 아니라 값이 없는 것"임을 보이게 한다. */
+.price-table__unknown td {
+  opacity: 0.55;
+}

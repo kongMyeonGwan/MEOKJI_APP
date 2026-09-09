@@ -123,9 +123,14 @@ function Recipe({ foodName }) {
     )
   }
 
-  // 쇼핑몰마다 값이 달라 재료비는 하나의 숫자가 아니라 구간으로 나온다.
+  // 시장마다 값이 달라 재료비는 하나의 숫자가 아니라 구간으로 나온다.
   // 어디서 사느냐에 따라 얼마나 차이 나는지 먼저 보여준다.
+  //
+  // KAMIS 는 농수산물만 조사하므로 가공식품은 값이 없다. 그래서 이 합계는
+  // 재료 전체가 아닐 수 있다. 몇 개 기준인지 밝히지 않으면 사용자가
+  // 이 숫자를 '이 요리 만드는 총비용'으로 읽는다.
   const priceRange = getPriceSummary(recipe.prices)
+  const partial = priceRange.counted < priceRange.total
 
   // 찜은 로그인 없이도 된다. 이 브라우저에만 저장되는 값이고(LikesContext),
   // "이걸로 먹을래요"와 달리 기록으로 남지 않는다
@@ -149,6 +154,11 @@ function Recipe({ foodName }) {
               {' ~ '}
               {formatPrice(priceRange.max)}
             </span>
+            {partial && (
+              <span className="muted recipe-page__cost-note">
+                재료 {priceRange.total}개 중 {priceRange.counted}개 기준
+              </span>
+            )}
           </span>
         </header>
 

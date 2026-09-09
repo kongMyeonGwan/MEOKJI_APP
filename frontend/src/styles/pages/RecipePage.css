@@ -79,3 +79,12 @@
   .recipe-page__confirm .btn { width: 100%; }
   .recipe-page__actions { flex-direction: column; }
 }
+
+/* 재료비 옆의 "재료 8개 중 4개 기준". KAMIS 에 없는 가공식품 때문에
+   합계가 전체가 아닐 때만 뜬다. */
+.recipe-page__cost-note {
+  display: block;
+  font-size: 0.72em;
+  font-weight: 400;
+  text-align: right;
+}

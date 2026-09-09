@@ -111,8 +111,15 @@ def test_레시피와_재료_가격이_한_번에_온다(client):
     assert response.status_code == 200
     assert len(body["recipe_json"]["steps"]) > 0
     assert len(body["ingredients_json"]) > 0
-    # 재료마다 판매처 세 곳(mock)
-    assert len(body["prices"][0]["offers"]) == 3
+
+    # 재료마다 가격 줄이 하나씩 따라온다. 가격을 못 구한 재료도 줄은 남는다
+    # (KAMIS 는 농수산물만 조사한다). 그래야 화면이 '가격 정보 없음' 을
+    # 보여주고, 합계가 전체 재료비인 것처럼 읽히지 않는다.
+    #
+    # offers 개수는 조사된 시장 수에 따라 매일 달라지므로 세지 않는다.
+    assert len(body["prices"]) == len(body["ingredients_json"])
+    for row in body["prices"]:
+        assert "offers" in row
 
 
 def test_재료_가격만_따로도_조회된다(client):

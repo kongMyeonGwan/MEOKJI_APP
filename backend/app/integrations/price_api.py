@@ -1,28 +1,48 @@
 """재료 가격 조회 (STEP 17~19).
 
-.env 의 PRICE_PROVIDERS 에 적은 곳을 전부 조회해서, 재료 하나에 여러 판매처
-가격을 붙여 돌려준다. 화면(PriceTable)은 그중 최저가와 최고가를 뽑아 보여준다.
+KAMIS 조사가격을 재료별로 모아 돌려준다.
+화면(PriceTable)은 그중 최저가와 최고가를 뽑아 보여준다.
 
-    PRICE_PROVIDERS=naver,mock
+    PRICE_PROVIDERS=kamis
+
+값을 지어내지 않는다
+--------------------
+전에는 KAMIS 에 없는 재료(두부·간장 등)를 mock 프로바이더가 그럴듯한
+숫자로 채웠다. 그런데 화면에서 진짜 조사가격과 지어낸 값이 구분되지 않아,
+표의 절반이 가짜인 채로 합계까지 계산됐다.
+
+모르는 값은 모른다고 하는 편이 낫다. 지금은 KAMIS 에 없는 재료면
+offers 를 빈 배열로 돌려주고, 화면이 '가격 정보 없음'으로 표시한다.
+
+쇼핑몰이 아니라 '시장'을 본다
+----------------------------
+처음에는 네이버 쇼핑 검색 API 로 쇼핑몰 최저가를 붙였다. 그런데 이 API 는
+2026-07-31 자로 종료됐고 공식 대체가 없다. 쿠팡·11번가는 제휴 승인이 필요해서
+바로 못 쓴다. 그래서 공공데이터포털의 KAMIS 일별 도·소매 가격정보로 바꿨다.
+
+    https://www.data.go.kr/data/15156057/openapi.do
+
+같은 품목이 시장·지역·등급별로 여러 행 나오므로, 그 행들의 최저/최고가 곧
+화면의 최저가/최고가가 된다. 다만 '어느 쇼핑몰에서 얼마'가 아니라
+'어느 시장 조사가격이 얼마'라서, 구매 링크는 없고 조사일자를 반드시 같이 적는다.
 
 바깥에서는 두 함수만 쓴다.
 
     collect_offers(ingredients)   여러 재료를 한 번에 (비동기, 병렬)
-    get_price(ingredient)         재료 하나의 최저/최고만 (동기)
 
 돌려주는 모양 — 프론트의 components/price/PriceTable.jsx 가 이 모양을 기대한다.
 
     [
       {"name": "돼지고기 앞다리살 200g",
        "offers": [
-         {"shop": "쿠팡",       "price": 3980, "link": "https://..."},
-         {"shop": "네이버쇼핑", "price": 4350, "link": "https://..."}
+         {"shop": "서울 가락시장", "price": 3980, "link": "https://..."},
+         {"shop": "부산 엄궁시장", "price": 4350, "link": "https://..."}
        ]}
     ]
 
 왜 병렬로 부르는가
 ------------------
-재료가 8개이고 판매처가 3곳이면 순차 호출은 24번을 줄 세우는 것이다.
+재료가 8개이고 조사처가 3곳이면 순차 호출은 24번을 줄 세우는 것이다.
 한 번에 0.3초만 걸려도 7초가 넘어간다. httpx.AsyncClient 로 동시에 던지면
 가장 느린 한 건만큼만 기다린다.
 
@@ -31,55 +51,29 @@
 """
 
 import asyncio
-import hashlib
-from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from urllib.parse import quote
 
 import httpx
 
 from app.core.config import settings
-
-# 화면에 나란히 보여주는 판매처. mock 은 이 세 곳을 흉내낸다.
-SHOP_NAVER = "네이버쇼핑"
-SHOP_COUPANG = "쿠팡"
-SHOP_ALI = "알리익스프레스"
-MOCK_SHOPS = (SHOP_COUPANG, SHOP_NAVER, SHOP_ALI)
+from app.integrations.ingredient_match import find_codes, is_not_priced
 
 # 외부 API 하나를 기다리는 최대 시간(초).
 # 한 곳이 느리다고 레시피 화면 전체가 멈추면 안 된다.
 PRICE_TIMEOUT_SECONDS = 6.0
 
-# 네이버 쇼핑 검색 API
-# https://developers.naver.com/docs/serviceapi/search/shopping/
-NAVER_SHOPPING_URL = "https://openapi.naver.com/v1/search/shop.json"
+# 한 재료당 받아올 최대 행 수. 많이 받아도 화면에는 최저/최고 둘만 쓴다.
+KAMIS_ROWS = 100
 
-# 한 재료당 가져올 상품 개수. 많이 받아도 화면에는 최저/최고 둘만 쓴다.
-NAVER_DISPLAY = 5
+# 조사일자가 비는 날(주말·공휴일)을 대비해 며칠까지 거슬러 올라가 볼지.
+KAMIS_LOOKBACK_DAYS = 7
 
+# 사용자가 값을 직접 확인할 수 있는 곳. 상품 페이지가 아니라 조사가격 페이지다.
+KAMIS_REFERENCE_URL = "https://www.kamis.or.kr/customer/price/retail/item.do"
 
-@dataclass
-class PriceQuote:
-    """재료 하나의 가격 조회 결과 (최저/최고 요약).
-
-    금액은 원 단위 정수로 다룬다. 국내 소매가는 소수점이 없어서
-    정수로 두는 편이 JSON 변환도 화면 표시도 단순하다.
-    """
-
-    ingredient: str  # 무엇을 물어봤는지. 응답만 봐도 알 수 있게 남긴다
-    low: int         # 최저가(원)
-    high: int        # 최고가(원). 후보가 하나뿐이면 low 와 같은 값
-    unit: str        # 가격의 기준 단위. 예: "1kg", "500g", "10개"
-    source: str      # 어느 곳이 준 값인지. 화면 출처 표기와 디버깅에 쓴다
-    sample_size: int  # 최저/최고를 계산할 때 쓴 후보 개수
-
-    # 조사일자. 실시간으로 받아오는 곳은 None 이다.
-    # None 이 아니면 화면에 반드시 같이 적는다.
-    # 지난주 가격을 오늘 가격으로 오해시키면 안 되기 때문이다.
-    surveyed_at: date | None = None
-
-    # 사용자가 직접 확인할 수 있는 링크. 없으면 None.
-    reference_url: str | None = None
+# 지원하는 PRICE_PROVIDERS 값. 에러 메시지에 그대로 쓴다.
+SUPPORTED_PROVIDERS = ("kamis",)
 
 
 # ==========================================================
@@ -88,7 +82,7 @@ class PriceQuote:
 
 
 async def collect_offers(ingredients: list[str]) -> list[dict]:
-    """재료 목록의 가격을 판매처별로 모아온다 (병렬).
+    """재료 목록의 가격을 조사처별로 모아온다 (병렬).
 
     가격을 못 구한 재료는 offers 가 빈 배열로 나간다.
     그 재료 하나 때문에 화면 전체가 죽으면 안 되기 때문에 예외를 던지지 않는다.
@@ -102,7 +96,7 @@ async def collect_offers(ingredients: list[str]) -> list[dict]:
         # 조용히 빈 값을 돌려주면 "가격이 아무 데도 안 나오는데 이유를 모르겠다"가 된다.
         raise RuntimeError(
             "PRICE_PROVIDERS 가 비어 있습니다. backend/.env 에 최소 한 개를 적으세요. "
-            "사용 가능한 값: mock, naver"
+            f"사용 가능한 값: {', '.join(SUPPORTED_PROVIDERS)}"
         )
 
     # 재료 하나당 할 일을 하나씩 만들어서 한꺼번에 던진다.
@@ -120,27 +114,34 @@ async def collect_offers(ingredients: list[str]) -> list[dict]:
 async def collect_one(
     client: httpx.AsyncClient, name: str, providers: list[str]
 ) -> dict:
-    """재료 하나의 판매처별 가격을 모은다."""
-    offers = []
+    """재료 하나의 조사처별 가격을 모은다.
 
+    적은 순서대로 시도하다가 값이 나오면 거기서 멈춘다. 여러 곳의 결과를
+    합치지 않는다 — 곳마다 단위 기준이 달라 한 표에 담으면 최저/최고가
+    시장 차이가 아니라 단위 차이가 되기 때문이다.
+
+    어디서도 못 구하면 offers 가 빈 배열로 나간다. 화면은 그 줄을
+    '가격 정보 없음'으로 표시한다.
+    """
     for provider in providers:
         key = provider.lower()
 
-        if key == "mock":
-            offers.extend(mock_offers(name))
-        elif key == "naver":
-            offers.extend(await naver_offers(client, name))
+        if key == "kamis":
+            offers = await kamis_offers(client, name)
         else:
             # 오타 하나 때문에 전부 조용히 건너뛰는 것보다 에러가 낫다.
             raise RuntimeError(
                 f"지원하지 않는 PRICE_PROVIDERS 항목: {provider}. "
-                "사용 가능한 값: mock, naver"
+                f"사용 가능한 값: {', '.join(SUPPORTED_PROVIDERS)}"
             )
 
-    # 싼 곳부터 보여준다. 화면도 최저가를 먼저 읽는다.
-    offers.sort(key=offer_price)
+        if offers:
+            # 싼 곳부터 보여준다. 화면도 최저가를 먼저 읽는다.
+            offers.sort(key=offer_price)
+            return {"name": name, "offers": offers}
 
-    return {"name": name, "offers": offers}
+    # 어디서도 못 구했다. 화면은 이 재료 줄을 건너뛴다.
+    return {"name": name, "offers": []}
 
 
 def offer_price(offer: dict) -> int:
@@ -163,254 +164,294 @@ def clean_names(ingredients: list[str]) -> list[str]:
     return names
 
 
-def get_price(ingredient: str) -> PriceQuote | None:
-    """재료 하나의 최저/최고만 간단히 알아본다 (동기).
+def kamis_link(name: str) -> str:
+    """사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지 주소.
 
-    예산 계산처럼 판매처를 나눠 볼 필요가 없는 곳에서 쓴다.
-    못 찾으면 None 을 돌려준다.
+    쇼핑몰과 달리 '이 상품을 사는 링크'가 없다. 조사가격 원문을 보여주는
+    페이지로 보내서, 화면 숫자가 어디서 왔는지 확인할 수 있게 한다.
     """
-    name = ingredient.strip()
-    if not name:
-        return None
-
-    offers = mock_offers(name)
-    if not offers:
-        return None
-
-    prices = []
-    for offer in offers:
-        prices.append(offer["price"])
-
-    return PriceQuote(
-        ingredient=name,
-        low=min(prices),
-        high=max(prices),
-        unit=base_unit(name),
-        source="mock",
-        sample_size=len(prices),
-    )
+    return f"{KAMIS_REFERENCE_URL}?keyword={quote(name)}"
 
 
 # ==========================================================
-# 개발용 가짜 가격
+# KAMIS — 공공데이터포털 일별 도·소매 가격정보 (진짜 가격)
 #
-# 외부 API 키 없이도 레시피 화면과 가격 비교표를 만들 수 있게 한다.
-# 값은 재료명에서 계산해서 만들기 때문에, 같은 재료는 서버를 껐다 켜도
-# 늘 같은 가격이 나온다. 랜덤을 쓰면 새로고침할 때마다 가격이 바뀌어서
-# 오히려 화면 버그를 못 잡는다.
+# https://www.data.go.kr/data/15156057/openapi.do
+# 무료 · 개발계정 자동승인 · 일 10,000건
+#
+# 인증키만 .env 로 뺐다(팀원마다 다르다). URL 은 명세서 값 그대로다.
+#     DATA_GO_KR_SERVICE_KEY=...  (마이페이지의 일반 인증키, Decoding 값)
 # ==========================================================
 
-# 자주 쓰는 재료는 실제와 비슷한 값을 적어둔다.
-# 시연할 때 "감자 1kg 47,300원" 이 나오면 설득력이 떨어진다.
-#   재료명: (최저가, 최고가, 단위)
-KNOWN_PRICES = {
-    "감자": (2_900, 6_500, "1kg"),
-    "양파": (2_400, 5_800, "1kg"),
-    "대파": (2_100, 4_900, "1단"),
-    "당근": (2_800, 5_200, "1kg"),
-    "배추": (4_500, 9_800, "1포기"),
-    "무": (2_200, 4_300, "1개"),
-    "애호박": (1_800, 3_400, "1개"),
-    "양배추": (3_200, 6_400, "1통"),
-    "고구마": (4_100, 8_800, "1kg"),
-    "버섯": (2_600, 5_400, "200g"),
-    "토마토": (4_300, 9_100, "1kg"),
-    "깻잎": (1_500, 3_200, "30장"),
-    "콩나물": (1_400, 2_900, "300g"),
-    "마늘": (7_900, 14_500, "1kg"),
-    "계란": (5_800, 9_200, "30구"),
-    "달걀": (5_800, 9_200, "30구"),
-    "두부": (1_500, 3_200, "300g"),
-    "돼지고기": (11_800, 24_000, "1kg"),
-    "소고기": (32_000, 68_000, "1kg"),
-    "닭고기": (5_900, 12_400, "1kg"),
-    "연어": (18_000, 39_000, "500g"),
-    "해물": (8_900, 17_500, "500g"),
-    "어묵": (3_200, 6_900, "500g"),
-    "참치캔": (2_400, 4_800, "150g"),
-    "고등어": (4_200, 8_900, "1마리"),
-    "간장": (3_400, 8_700, "500ml"),
-    "고추장": (5_600, 12_900, "500g"),
-    "된장": (4_800, 11_200, "500g"),
-    "참기름": (7_200, 16_800, "320ml"),
-    "설탕": (2_600, 4_900, "1kg"),
-    "소금": (1_900, 4_100, "1kg"),
-    "식용유": (4_700, 9_300, "900ml"),
-    "밀가루": (2_300, 4_600, "1kg"),
-    "쌀": (24_000, 42_000, "10kg"),
-    "밥": (1_200, 2_400, "210g"),
-    "소면": (2_100, 4_300, "900g"),
-    "스파게티면": (3_400, 7_200, "500g"),
-    "떡": (3_800, 7_400, "500g"),
-    "신김치": (6_200, 13_500, "1kg"),
-    "라면": (3_900, 6_800, "5개입"),
-    "우유": (2_700, 4_200, "1L"),
-    "치즈": (5_400, 11_800, "180g"),
-    "생크림": (3_600, 6_900, "500ml"),
-    "요거트": (3_100, 6_200, "450g"),
-    "버터": (5_900, 12_400, "450g"),
-    "바나나": (3_200, 5_800, "1송이"),
-    "딸기": (7_900, 16_500, "500g"),
-    "오이": (1_600, 3_400, "3개"),
-}
+KAMIS_URL = "https://apis.data.go.kr/B552845/perDay/price"
 
-# 표에 없는 재료에 쓸 가격 범위. 식료품 한 품목의 현실적인 가격대에 맞췄다.
-FALLBACK_MIN_PRICE = 1_500
-FALLBACK_MAX_PRICE = 9_000
+# 구분코드 01=소매, 02=중도매, 03/07=친환경.
+# 소매만 본다. 도매 단가(10kg 상자 등)와 섞으면 최저/최고가 뒤죽박죽이 된다.
+KAMIS_RETAIL_CODE = "01"
 
-FALLBACK_UNITS = ("1개", "100g", "300g", "500g", "1kg")
+# 한 번에 받아올 최대 행 수 (명세서 max 1000).
+# 품목 하나가 시장 × 품종 × 등급 × 날짜만큼 행으로 쪼개져 나온다.
+KAMIS_ROWS = 1000
 
-# 판매처별 가격 성향(%). 100 이 기준가다.
-#   쿠팡     로켓배송이라 조금 싸게
-#   네이버   중간
-#   알리     상품가는 제일 싸지만 배송비가 붙어 실제로는 비쌀 때가 많다
-SHOP_RATES = {
-    SHOP_COUPANG: 96,
-    SHOP_NAVER: 104,
-    SHOP_ALI: 118,
-}
+# 조사일자는 필수 파라미터인데 주말·공휴일은 조사가 없다.
+# 오늘 하루만 물으면 월요일 아침에 0건이 나오므로 며칠 거슬러 올라가 묻고,
+# 받아온 것 중 가장 최근 조사일자만 골라 쓴다.
+KAMIS_LOOKBACK_DAYS = 7
+
+# 응답에서 실제로 쓰는 컬럼만 받는다. 행 수는 그대로지만 응답이 가벼워진다.
+KAMIS_COLUMNS = "exmn_ymd,sgg_nm,mrkt_nm,unit,unit_sz,exmn_dd_prc,grd_nm"
+
+# 사용자가 값을 직접 확인할 수 있는 곳. 상품 페이지가 아니라 조사가격 페이지다.
+KAMIS_REFERENCE_URL = "https://www.kamis.or.kr/customer/price/retail/item.do"
 
 
-def base_prices(name: str) -> tuple[int, int]:
-    """재료명으로 기준 최저가/최고가를 정한다."""
-    if name in KNOWN_PRICES:
-        low, high, _unit = KNOWN_PRICES[name]
-        return low, high
-
-    return make_price_from_name(name)
-
-
-def base_unit(name: str) -> str:
-    """재료명으로 판매 단위를 정한다."""
-    if name in KNOWN_PRICES:
-        return KNOWN_PRICES[name][2]
-
-    digest = hashlib.md5(name.encode("utf-8")).digest()
-    return FALLBACK_UNITS[digest[3] % len(FALLBACK_UNITS)]
-
-
-def mock_offers(name: str) -> list[dict]:
-    """개발용 가짜 판매처 가격 세 건.
-
-    기준가를 판매처 성향(SHOP_RATES)만큼 올리고 내려서 만든다.
-    실제 쇼핑몰처럼 어디가 싼지 갈리게 하려고, 재료명으로 뽑은 숫자를 섞는다.
-    """
-    low, high = base_prices(name)
-    digest = hashlib.md5(name.encode("utf-8")).digest()
-
-    offers = []
-    index = 0
-
-    for shop in MOCK_SHOPS:
-        rate = SHOP_RATES[shop]
-
-        # 재료마다 판매처 순위가 조금씩 달라지도록 -8% ~ +8% 를 더 섞는다
-        jitter = 92 + digest[index % len(digest)] % 17
-        price = low * rate // 100 * jitter // 100
-
-        # 최고가를 넘지 않게 눌러둔다. 표의 "최고가" 칸이 의미를 잃지 않도록.
-        if price > high:
-            price = high
-
-        # 100원 단위로 떨어뜨려야 진짜 가격처럼 보인다
-        price = max(100, price // 100 * 100)
-
-        offers.append({"shop": shop, "price": price, "link": shop_link(shop, name)})
-        index += 1
-
-    return offers
-
-
-def shop_link(shop: str, name: str) -> str:
-    """판매처 검색 결과 페이지 주소.
-
-    가짜 가격이라 상품 하나를 특정할 수 없다. 대신 검색 결과로 보내면
-    사용자가 실제 가격을 바로 확인할 수 있다.
-    """
-    keyword = quote(name)
-
-    if shop == SHOP_COUPANG:
-        return f"https://www.coupang.com/np/search?q={keyword}"
-    if shop == SHOP_ALI:
-        return f"https://ko.aliexpress.com/w/wholesale-{keyword}.html"
-
-    return f"https://search.shopping.naver.com/search/all?query={keyword}"
-
-
-def make_price_from_name(name: str) -> tuple[int, int]:
-    """재료명을 숫자로 바꿔서 기준 가격을 만든다.
-
-    파이썬 내장 hash() 를 안 쓰는 이유: 파이썬은 실행할 때마다 문자열 해시에
-    무작위 값을 섞어서, 서버를 다시 켜면 가격이 바뀐다.
-    md5 는 언제 어디서 돌려도 같은 값이 나온다.
-    (암호 용도가 아니라 "항상 같은 숫자"를 뽑으려고 쓴다.)
-    """
-    digest = hashlib.md5(name.encode("utf-8")).digest()
-
-    # 앞 2바이트로 최저가를 정한다 (1,500 ~ 9,000원 사이)
-    price_range = FALLBACK_MAX_PRICE - FALLBACK_MIN_PRICE
-    low = FALLBACK_MIN_PRICE + int.from_bytes(digest[:2], "big") % price_range
-
-    # 3번째 바이트로 최고가 배율을 정한다 (최저가의 1.4배 ~ 2.6배)
-    spread_percent = 140 + digest[2] % 121
-    high = low * spread_percent // 100
-
-    return low // 100 * 100, high // 100 * 100
-
-
-# ==========================================================
-# 네이버 쇼핑 — 진짜 가격
-# ==========================================================
-
-
-async def naver_offers(client: httpx.AsyncClient, name: str) -> list[dict]:
-    """네이버 쇼핑에서 최저가 상품 하나를 찾아 offer 로 만든다.
+async def kamis_offers(client: httpx.AsyncClient, name: str) -> list[dict]:
+    """KAMIS 소매 조사가격을 시장별 offer 목록으로 만든다.
 
     실패해도 예외를 던지지 않는다. 재료 하나의 가격을 못 구했다고
     레시피 화면 전체가 에러가 되면 안 된다.
     """
-    if not settings.NAVER_CLIENT_ID or not settings.NAVER_CLIENT_SECRET:
+    if not settings.DATA_GO_KR_SERVICE_KEY:
         raise RuntimeError(
-            "PRICE_PROVIDERS 에 naver 를 켰는데 NAVER_CLIENT_ID / "
-            "NAVER_CLIENT_SECRET 이 비어 있습니다."
+            "PRICE_PROVIDERS 에 kamis 를 켰는데 DATA_GO_KR_SERVICE_KEY 가 "
+            "비어 있습니다. 공공데이터포털에서 활용신청 후 일반 인증키의 "
+            "Decoding 값을 backend/.env 에 넣으세요."
         )
 
-    try:
-        response = await client.get(
-            NAVER_SHOPPING_URL,
-            params={"query": name, "display": NAVER_DISPLAY, "sort": "asc"},
-            headers={
-                "X-Naver-Client-Id": settings.NAVER_CLIENT_ID,
-                "X-Naver-Client-Secret": settings.NAVER_CLIENT_SECRET,
-            },
-        )
-        response.raise_for_status()
-        items = response.json().get("items", [])
-    except (httpx.HTTPError, ValueError) as exc:
-        print(f"[네이버 가격 조회 실패] {name}: {type(exc).__name__}: {exc}", flush=True)
+    if is_not_priced(name):
+        # 물·얼음처럼 사는 재료가 아닌 것. 물어볼 일이 아니다.
         return []
 
-    offers = []
+    codes = find_codes(name)
+    if not codes:
+        # KAMIS 는 농수산물만 조사한다. 간장·두부·라면 같은 가공식품은
+        # 여기 없다. 값을 지어내지 않고 빈 채로 돌려준다.
+        return []
 
-    for item in items:
-        price = to_int(item.get("lprice"))
-        if price is None:
+    try:
+        response = await client.get(KAMIS_URL, params=kamis_params(*codes))
+    except httpx.HTTPError as exc:
+        print(f"[KAMIS 조회 실패] {name}: {type(exc).__name__}: {exc}", flush=True)
+        return []
+
+    # raise_for_status() 를 쓰지 않는다. 인증키가 틀리면 403 과 함께
+    # 사유가 본문에 실려 오는데, 예외로 던져버리면 "403" 만 남고
+    # 무엇이 잘못됐는지는 사라진다.
+    try:
+        payload = response.json()
+    except ValueError:
+        print(
+            f"[KAMIS 조회 실패] {name}: HTTP {response.status_code} "
+            f"{response.text[:200]}",
+            flush=True,
+        )
+        return []
+
+    message = kamis_error(payload)
+    if message:
+        # 인증키 오타·트래픽 초과는 조용히 빈 값을 돌려주면 원인을 못 찾는다.
+        print(f"[KAMIS 오류] {name}: {message}", flush=True)
+        return []
+
+    rows = same_unit_rows(latest_rows(kamis_rows(payload)))
+
+    offers = []
+    for row in rows:
+        price = to_int(row.get("exmn_dd_prc"))
+        if price is None or price <= 0:
             continue
 
-        # mallName 이 비어 있는 상품이 있다. 그때는 "네이버쇼핑" 으로 묶는다.
-        shop = item.get("mallName") or SHOP_NAVER
-
-        offers.append({"shop": shop, "price": price, "link": item.get("link", "")})
+        offers.append(
+            {
+                "shop": kamis_market_label(row),
+                "price": price,
+                "unit": kamis_unit(row),
+                "link": kamis_link(name),
+                "surveyed_at": str(row.get("exmn_ymd") or "").strip() or None,
+            }
+        )
 
     return offers
 
 
+def kamis_params(
+    category_code: str, item_code: str, variety_code: str | None = None
+) -> dict:
+    """요청 파라미터를 만든다.
+
+    조사일자(GTE/LTE)·부류코드·품목코드가 전부 필수다. 하나라도 빠지면
+    에러가 아니라 0건이 돌아와서, 데이터가 없는 것처럼 보인다.
+    파라미터 이름의 대괄호와 :: 는 명세서 그대로다.
+    """
+    today = date.today()
+    start = today - timedelta(days=KAMIS_LOOKBACK_DAYS)
+
+    params = {
+        "serviceKey": settings.DATA_GO_KR_SERVICE_KEY,
+        "returnType": "JSON",
+        "pageNo": 1,
+        "numOfRows": KAMIS_ROWS,
+        "cond[exmn_ymd::GTE]": start.strftime("%Y%m%d"),
+        "cond[exmn_ymd::LTE]": today.strftime("%Y%m%d"),
+        "cond[se_cd::EQ]": KAMIS_RETAIL_CODE,
+        "cond[ctgry_cd::EQ]": category_code,
+        "cond[item_cd::EQ]": item_code,
+        "selectable": KAMIS_COLUMNS,
+    }
+
+    if variety_code:
+        params["cond[vrty_cd::EQ]"] = variety_code
+
+    return params
+
+
+def kamis_error(payload: dict) -> str | None:
+    """에러 사유를 꺼낸다. 정상이면 None.
+
+    공공데이터포털은 실패 지점에 따라 봉투가 두 가지다. 하나만 보면
+    나머지 절반을 놓친다.
+
+    1. 게이트웨이가 막은 것 — 인증키 오타 · 미등록 · 트래픽 초과
+           {"OpenAPI_ServiceResponse": {"cmmMsgHeader": {"errMsg": ...}}}
+
+    2. 서비스까지 갔다가 실패한 것 — 파라미터 오류 등
+           {"response": {"header": {"resultCode": "01", "resultMsg": ...}}}
+    """
+    if not isinstance(payload, dict):
+        return None
+
+    # 1. 게이트웨이 봉투
+    gateway = payload.get("OpenAPI_ServiceResponse")
+    if isinstance(gateway, dict):
+        header = gateway.get("cmmMsgHeader")
+        if isinstance(header, dict):
+            reason = str(header.get("errMsg") or "").strip()
+            detail = str(header.get("returnAuthMsg") or "").strip()
+            code = str(header.get("returnReasonCode") or "").strip()
+            return " ".join(part for part in (code, reason, detail) if part)
+
+    # 2. 서비스 봉투
+    header = payload.get("response")
+    if isinstance(header, dict):
+        header = header.get("header")
+
+    if not isinstance(header, dict):
+        return None
+
+    code = str(header.get("resultCode") or "").strip()
+    if not code or code in ("00", "0"):
+        return None
+
+    return f"{code} {header.get('resultMsg') or ''}".strip()
+
+
+def kamis_rows(payload: dict) -> list[dict]:
+    """응답에서 데이터 행 목록만 꺼낸다.
+
+    명세서 기준 response.body.items.item 이다. 행이 하나뿐일 때 배열이
+    아니라 객체로 오는 기관이 있어서 그 경우도 받아준다.
+    """
+    node = payload
+    for key in ("response", "body", "items", "item"):
+        if isinstance(node, dict) and key in node:
+            node = node[key]
+
+    if isinstance(node, dict):
+        node = [node]
+
+    if not isinstance(node, list):
+        return []
+
+    return [row for row in node if isinstance(row, dict)]
+
+
+def latest_rows(rows: list[dict]) -> list[dict]:
+    """가장 최근 조사일자의 행만 남긴다.
+
+    주말을 건너뛰려고 일주일치를 받아왔다. 그대로 두면 지난 화요일 가격과
+    오늘 가격이 한 표에 섞여서, 최저/최고가 '시장 차이'가 아니라
+    '날짜 차이'가 되어버린다.
+    """
+    days = []
+    for row in rows:
+        day = str(row.get("exmn_ymd") or "").strip()
+        if day:
+            days.append(day)
+
+    if not days:
+        return []
+
+    newest = max(days)
+    return [row for row in rows if str(row.get("exmn_ymd") or "").strip() == newest]
+
+
+def same_unit_rows(rows: list[dict]) -> list[dict]:
+    """단위가 같은 행만 남긴다. 가장 많이 나온 단위를 기준으로 삼는다.
+
+    품종을 골라도 단위가 갈리는 품목이 있다. 계란은 10구와 30구가,
+    쌀은 10kg 과 20kg 이 같이 나온다. 그대로 최저/최고를 내면
+    '10구 최저가 ~ 30구 최고가'가 되어 세 배쯤 부풀려진다.
+
+    품종코드로 대부분 걸러지지만, 코드가 새로 생기거나 조사 방식이
+    바뀌어도 표가 이상해지지 않도록 마지막에 한 번 더 통일한다.
+    """
+    if not rows:
+        return []
+
+    counts: dict[str, int] = {}
+    for row in rows:
+        counts[kamis_unit(row)] = counts.get(kamis_unit(row), 0) + 1
+
+    # 가장 흔한 단위. 같으면 이름순으로 정해서 매번 같은 답이 나오게 한다.
+    best = sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))[0][0]
+
+    return [row for row in rows if kamis_unit(row) == best]
+
+
+def kamis_market_label(row: dict) -> str:
+    """화면에 보여줄 조사처 이름.  '서울' + '가락시장' -> '서울 가락시장'"""
+    region = str(row.get("sgg_nm") or "").strip()
+    market = str(row.get("mrkt_nm") or "").strip()
+
+    if region and market:
+        return f"{region} {market}"
+
+    return market or region or "조사가격"
+
+
+def kamis_unit(row: dict) -> str:
+    """가격의 기준 단위.  단위크기 '1' + 단위 'kg' -> '1kg'
+
+    단위를 안 적으면 쌀 10kg 값과 두부 300g 값이 한 표에 나란히 서서
+    쌀이 터무니없이 비싸 보인다.
+    """
+    size = str(row.get("unit_sz") or "").strip()
+    unit = str(row.get("unit") or "").strip()
+
+    return f"{size}{unit}".strip()
+
+
+def kamis_link(name: str) -> str:
+    """사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지 주소.
+
+    쇼핑몰과 달리 '이 상품을 사는 링크'가 없다. 조사가격 원문을 보여주는
+    페이지로 보내서, 화면 숫자가 어디서 왔는지 확인할 수 있게 한다.
+    """
+    return f"{KAMIS_REFERENCE_URL}?keyword={quote(name)}"
+
+
 def to_int(value) -> int | None:
-    """네이버가 문자열로 주는 가격("4350")을 정수로 바꾼다. 실패하면 None."""
+    """가격이 문자열("4,350")로 와도 정수로 바꾼다. 실패하면 None."""
     if value is None:
         return None
 
+    if isinstance(value, int):
+        return value
+
+    # 천 단위 쉼표가 붙어서 오는 기관이 있다
+    text = str(value).replace(",", "").strip()
+
     try:
-        return int(value)
+        return int(float(text))
     except (TypeError, ValueError):
         return None

@@ -130,18 +130,43 @@ class RecommendResponse(BaseModel):
 
 
 class PriceOffer(BaseModel):
-    """판매처 한 곳의 가격."""
+    """조사처 한 곳의 가격.
+
+    shop 은 쇼핑몰이 아니라 시장명이다. 예: "서울 가락시장"
+    """
 
     shop: str
     price: int
     link: str
 
+    # 가격의 기준 단위. 예: "1kg", "30개", "500g"
+    #
+    # 이걸 안 적으면 쌀 20kg 값과 깻잎 100g 값이 한 표에 나란히 서서
+    # 쌀이 터무니없이 비싸 보인다. KAMIS 는 품목마다 단위가 다르다.
+    unit: str = ""
+
+    # 조사일자(YYYYMMDD). 주말·공휴일은 조사가 없어서 며칠 전 값일 수 있다.
+    # 지난주 가격을 오늘 가격으로 오해시키면 안 되므로 화면에 같이 적는다.
+    surveyed_at: str | None = None
+
 
 class PriceItem(BaseModel):
-    """재료 하나와 그 재료를 파는 곳들."""
+    """재료 하나와 그 재료를 조사한 곳들."""
 
     name: str
     offers: list[PriceOffer] = []
+
+    # ----- 필요한 만큼으로 환산한 값 -----
+    #
+    # offers 의 price 는 판매 단위 가격이다(고춧가루 1kg 25,200원).
+    # 레시피가 요구하는 건 1큰술이라, 그대로 더하면 재료비가 백 배 넘게
+    # 부풀려진다. 그래서 "필요한 만큼이 얼마인지" 를 따로 담는다.
+    #
+    # 환산할 수 없으면(판매 단위가 '1마리' 인데 레시피는 'g' 으로 적은 경우)
+    # 셋 다 None 으로 두고, 화면이 합계에서 뺀다.
+    need_text: str | None = None   # "1큰술" 처럼 사람이 읽는 필요량
+    low_cost: int | None = None    # 가장 싼 시장 기준 필요량 값(원)
+    high_cost: int | None = None   # 가장 비싼 시장 기준 필요량 값(원)
 
 
 class PriceRequest(BaseModel):
@@ -174,5 +199,5 @@ class RecipeResponse(BaseModel):
     art: str | None = None
     image_url: str | None = None
 
-    # 재료별 판매처 가격. DB 에 저장하지 않는 조회 시점의 값이다.
+    # 재료별 시장 조사가격. DB 에 저장하지 않는 조회 시점의 값이다.
     prices: list[PriceItem] = []

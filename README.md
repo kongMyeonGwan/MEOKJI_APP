@@ -141,7 +141,7 @@ MEOKJI_APP/
 │           ├── ai_api.py          AI 추천·레시피 (mock / gemini / claude)
 │           ├── weather_api.py     날씨 (mock / openweather)
 │           ├── email_sender.py    메일 (mock / smtp)
-│           └── price_api.py       재료 가격 (mock / naver)
+│           └── price_api.py       재료 가격 (kamis)
 └── frontend/
     ├── package.json
     ├── .env.example
@@ -177,7 +177,7 @@ MEOKJI_APP/
 | bans | `GET·POST /api/bans`, `DELETE /api/bans/{id}` | ● | 못 먹는 재료 |
 | 추천 | `POST /api/recommendations` | | 날씨·예산·검색어·냉장고 조건 추천 |
 | | `GET /api/recipes/{음식이름}` | | 레시피 생성 + 재료 가격 |
-| | `POST /api/prices` | | 재료별 판매처 가격 |
+| | `POST /api/prices` | | 재료별 시장 조사가격 |
 | histories | `GET /api/histories` | ● | 내 식사 기록 |
 | | `GET /api/histories/stats` | ● | 건수 · 누적 비용 · 연속 방문일 |
 | | `POST /api/histories` | ● | 식사 확정 (이걸로 먹을래요) |
@@ -241,11 +241,33 @@ JWT_SECRET_KEY=         # 아무 랜덤 문자열
 | AI 로 진짜 추천/레시피 생성 (무료) | `AI_PROVIDER=gemini` + `GEMINI_API_KEY=...` |
 | AI 로 진짜 추천/레시피 생성 (유료) | `AI_PROVIDER=claude` + `ANTHROPIC_API_KEY=...` |
 | 실제 날씨 | `WEATHER_PROVIDER=openweather` + `OPENWEATHER_API_KEY=...` |
-| 실제 재료 최저가 | `PRICE_PROVIDERS=naver,mock` + `NAVER_CLIENT_ID/SECRET=...` |
+| 실제 재료 최저가 | `PRICE_PROVIDERS=kamis` + `DATA_GO_KR_SERVICE_KEY=...` |
 | 실제 인증 메일 발송 | `EMAIL_PROVIDER=smtp` + `SMTP_*` |
 
-`PRICE_PROVIDERS` 는 쉼표로 여러 개를 적을 수 있다. 적은 순서대로 전부
-조회해서 판매처별 가격을 나란히 보여준다.
+`PRICE_PROVIDERS` 는 쉼표로 여러 개를 적을 수 있다. **앞에서부터 시도하다가
+값이 나오면 거기서 멈춘다** — 여러 곳의 결과를 합치지 않는다. 곳마다 단위
+기준이 달라서, 합치면 최저/최고가 시장 차이가 아니라 단위 차이가 된다.
+
+값을 지어내던 mock 프로바이더는 없앴다. 진짜 조사가격과 화면에서 구분되지
+않은 채 합계까지 계산돼서, 재료 절반이 가짜인 표가 나왔기 때문이다.
+지금은 KAMIS 에 없는 재료면 '가격 정보 없음'으로 두고, 합계에도
+"재료 8개 중 4개 기준"처럼 몇 개를 더한 값인지 밝힌다.
+
+`kamis` 는 공공데이터포털의 [한국농수산식품유통공사 일별 도·소매 가격정보][kamis]
+다. 무료이고 개발계정은 자동승인(일 10,000건)이다. 인증키는 마이페이지의
+**Decoding** 값을 넣어야 한다 — Encoding 값을 넣으면 인증에 실패한다.
+
+품목 124개를 `KAMIS_ITEM_CODES` 에 매핑해뒀다(참고문서 코드표 기준).
+**농수산물만** 나오므로 두부·간장·라면 같은 가공식품까지 채우려면
+`kamis,mock` 처럼 mock 을 뒤에 붙인다.
+
+쇼핑몰 최저가가 아니라 **소매시장 조사가격**이라, 구매 링크가 없고 품목마다
+단위가 다르다(쌀 20kg / 깻잎 100g). 그래서 표에 단위와 조사일자를 같이 적는다.
+
+네이버 쇼핑 검색 API 는 2026-07-31 종료됐고 공식 대체가 없다. 쿠팡·11번가는
+제휴 승인이 필요해서 지금은 쓰지 않는다.
+
+[kamis]: https://www.data.go.kr/data/15156057/openapi.do
 
 `GEMINI_MODEL` 도 쉼표로 여러 개를 적을 수 있는데 뜻이 다르다. 이쪽은
 **앞에서부터 하나만** 쓰고, 그 모델이 붐비면(503) 다음 모델로 넘어간다.
