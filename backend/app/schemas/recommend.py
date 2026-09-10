@@ -14,6 +14,7 @@ from app.schemas.weather import WeatherResponse
 # 추천을 어디서 요청했는지. 화면의 'AI 추천 기록'에 그대로 찍힌다.
 RecommendSource = Literal[
     "날씨 추천",
+    "시세 추천",
     "카테고리",
     "예산 추천",
     "레시피 검색",
@@ -53,6 +54,12 @@ class RecommendRequest(BaseModel):
 
     # 이미 보여준 메뉴. '다른 메뉴 추천'을 눌렀을 때 겹치지 않게 한다.
     exclude: list[str] = Field(default_factory=list, max_length=30)
+
+    # 요즘 값이 내린 재료를 반영할지.
+    #
+    # 켜면 서버가 KAMIS 시세를 훑어 싼 재료를 찾고, 그 재료를 쓰는 메뉴를
+    # 우선 추천한다. 쇼핑몰 API 로는 못 하는 일이다 — 그쪽은 지금 값만 준다.
+    use_bargains: bool = False
 
     # 날씨를 반영할지. 대시보드 히어로만 True 로 보낸다.
     #
@@ -114,6 +121,19 @@ class FoodItem(BaseModel):
     image_url: str | None = None
 
 
+class BargainItem(BaseModel):
+    """요즘 값이 내린 재료 한 건.
+
+    화면의 "지금 싼 재료" 칩과 AI 프롬프트가 이 모양을 함께 쓴다.
+    """
+
+    name: str
+    percent: float      # 일주일 전 대비 등락률. 내린 것만 담으므로 음수다
+    price: int          # 가장 싼 시장의 조사가격
+    unit: str           # 그 가격의 기준 단위 ("1kg", "10개")
+    surveyed_at: str | None = None
+
+
 class RecommendResponse(BaseModel):
     """추천 결과.
 
@@ -127,6 +147,10 @@ class RecommendResponse(BaseModel):
 
     # use_weather=True 로 요청했을 때만 채워진다
     weather: WeatherResponse | None = None
+
+    # use_bargains=True 로 요청했을 때만 채워진다.
+    # 화면이 "지금 대파가 12% 쌉니다" 칩을 그리는 데 쓴다.
+    bargains: list[BargainItem] = []
 
 
 class PriceOffer(BaseModel):
@@ -150,11 +174,31 @@ class PriceOffer(BaseModel):
     surveyed_at: str | None = None
 
 
+class PriceTrend(BaseModel):
+    """최근 가격이 어느 쪽으로 움직였는지.
+
+    쇼핑몰 API 로는 못 만드는 값이다. 그쪽은 지금 값만 준다.
+    KAMIS 는 일별 조사값이라 "요즘 싼지 비싼지" 를 말할 수 있다.
+
+    변동이 작으면(5% 미만) 아예 만들지 않는다. 늘 떠 있는 배지는
+    아무 뜻이 없기 때문이다.
+    """
+
+    percent: float      # +는 오름, -는 내림
+    from_price: int     # 기간 처음 날의 전국 평균
+    to_price: int       # 기간 마지막 날의 전국 평균
+    from_day: str       # YYYYMMDD
+    to_day: str
+
+
 class PriceItem(BaseModel):
     """재료 하나와 그 재료를 조사한 곳들."""
 
     name: str
     offers: list[PriceOffer] = []
+
+    # 최근 가격 흐름. 변동이 작거나 조사일이 하루뿐이면 None.
+    trend: PriceTrend | None = None
 
     # ----- 필요한 만큼으로 환산한 값 -----
     #

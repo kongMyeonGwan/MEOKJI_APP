@@ -1,0 +1,306 @@
+{
+ "scanned_on": "2026-09-09",
+ "rows": [
+  {
+   "name": "방울토마토",
+   "percent": -21.2,
+   "price": 5180,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "오렌지",
+   "percent": -16.9,
+   "price": 9920,
+   "unit": "10개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "고구마",
+   "percent": -16.7,
+   "price": 5000,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "파",
+   "percent": -11.7,
+   "price": 2830,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "토마토",
+   "percent": -10.9,
+   "price": 4500,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "바지락",
+   "percent": -10.1,
+   "price": 8500,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "쪽파",
+   "percent": -9.5,
+   "price": 8880,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "양파",
+   "percent": -8.9,
+   "price": 2400,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "땅콩",
+   "percent": -8.2,
+   "price": 1860,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "감귤",
+   "percent": -8.2,
+   "price": 9330,
+   "unit": "10개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "꽃게",
+   "percent": -7.7,
+   "price": 21000,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "감자",
+   "percent": -6.3,
+   "price": 350,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "양배추",
+   "percent": -5.9,
+   "price": 4000,
+   "unit": "1포기",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "멜론",
+   "percent": -5.9,
+   "price": 9000,
+   "unit": "1개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "가지",
+   "percent": 5.0,
+   "price": 1520,
+   "unit": "3개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "조기",
+   "percent": 5.0,
+   "price": 1660,
+   "unit": "1마리",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "버섯",
+   "percent": 5.2,
+   "price": 1830,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "갈치",
+   "percent": 5.2,
+   "price": 6540,
+   "unit": "1마리",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "복숭아",
+   "percent": 5.7,
+   "price": 11900,
+   "unit": "10개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "삼치",
+   "percent": 5.7,
+   "price": 17900,
+   "unit": "1마리",
+   "surveyed_at": "20260907"
+  },
+  {
+   "name": "브로콜리",
+   "percent": 6.0,
+   "price": 4000,
+   "unit": "1개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "돼지갈비",
+   "percent": 6.1,
+   "price": 1680,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "새송이버섯",
+   "percent": 7.0,
+   "price": 630,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "망고",
+   "percent": 7.1,
+   "price": 2910,
+   "unit": "1개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "아보카도",
+   "percent": 7.1,
+   "price": 1690,
+   "unit": "1개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "알배기배추",
+   "percent": 7.2,
+   "price": 5000,
+   "unit": "1포기",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "열무",
+   "percent": 7.6,
+   "price": 3830,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "깻잎",
+   "percent": 7.9,
+   "price": 1310,
+   "unit": "50g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "돼지고기",
+   "percent": 7.9,
+   "price": 1705,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "소고기안심",
+   "percent": 8.5,
+   "price": 17172,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "마늘",
+   "percent": 8.7,
+   "price": 10000,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "시금치",
+   "percent": 9.9,
+   "price": 1790,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "거봉",
+   "percent": 11.5,
+   "price": 18800,
+   "unit": "2kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "부추",
+   "percent": 11.7,
+   "price": 450,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "오이",
+   "percent": 11.8,
+   "price": 13000,
+   "unit": "10개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "쥬키니",
+   "percent": 12.6,
+   "price": 2000,
+   "unit": "1개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "얼갈이배추",
+   "percent": 12.7,
+   "price": 3160,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "적상추",
+   "percent": 12.9,
+   "price": 2080,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "배추",
+   "percent": 13.5,
+   "price": 7880,
+   "unit": "1포기",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "파프리카",
+   "percent": 17.2,
+   "price": 3160,
+   "unit": "1개",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "상추",
+   "percent": 19.7,
+   "price": 2080,
+   "unit": "100g",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "대추방울토마토",
+   "percent": 33.8,
+   "price": 8660,
+   "unit": "1kg",
+   "surveyed_at": "20260908"
+  },
+  {
+   "name": "호박",
+   "percent": 40.4,
+   "price": 2660,
+   "unit": "1개",
+   "surveyed_at": "20260908"
+  }
+ ]
+}

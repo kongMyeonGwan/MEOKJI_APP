@@ -7,7 +7,16 @@ export default function PostCard({ post }) {
   return (
     <article className="post-card">
       <Link to={`/community/${post.id}`} className="post-card__link">
-        <h3 className="post-card__title">{post.title}</h3>
+        <h3 className="post-card__title">
+          {post.title}
+          {/* 사진이 붙은 글임을 알린다. 서버는 목록에 파일 정보를 싣지 않고
+              붙었는지 여부(has_file)만 내려준다 — 목록에서 쓸 값이 그것뿐이다. */}
+          {post.has_file && (
+            <span className="post-card__clip" title="사진 있음" aria-label="사진 있음">
+              📎
+            </span>
+          )}
+        </h3>
 
         {/* 본문 미리보기. 줄바꿈은 CSS로 2줄까지만 보여준다. */}
         <p className="muted post-card__excerpt">{post.content}</p>

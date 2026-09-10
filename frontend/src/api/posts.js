@@ -77,6 +77,48 @@ export async function removePost(postId) {
 }
 
 /**
+ * 첨부파일 올리기 · 교체. 후기 하나당 파일 하나라 두 번째부터는 갈아 끼워진다.
+ *
+ * 글쓰기(createPost)와 따로 부른다. 한 요청에 JSON과 파일을 같이 담을 수 없고,
+ * 합치면 서버의 검증 스키마(PostCreateRequest)를 못 쓰게 되기 때문이다.
+ * 이게 실패해도 글은 이미 등록돼 있다 — 첨부 없는 글이 정상 상태다.
+ *
+ * ⚠ Content-Type 을 여기서 덮어써야 한다.
+ *   client.js 의 기본값이 application/json 인데, axios 는 그 상태로 FormData 를
+ *   받으면 파일을 버리고 JSON 문자열로 바꿔서 보낸다. 여기서 multipart 라고
+ *   적어주면 그 변환을 건너뛰고, 브라우저가 경계 문자열까지 붙여준다.
+ *
+ * 돌려주는 값은 갱신된 게시글 상세다 (file 필드가 채워져 있다).
+ */
+export async function uploadPostFile(postId, file) {
+  const form = new FormData()
+  form.append('file', file)
+
+  const { data } = await client.post(`/api/posts/${postId}/file`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data
+}
+
+/** 첨부파일 떼기. 첨부가 없어도 에러가 아니다. */
+export async function removePostFile(postId) {
+  await client.delete(`/api/posts/${postId}/file`)
+}
+
+/**
+ * 첨부파일을 실제로 가져올 주소.
+ *
+ * 서버는 '/api/posts/12/file' 처럼 앞부분 없는 경로만 준다. 백엔드 주소는
+ * .env(VITE_API_BASE_URL)로 바뀔 수 있어서 서버가 알 수 없기 때문이다.
+ * <img src> 에 넣으려면 여기서 붙여줘야 한다.
+ */
+export function postFileUrl(path) {
+  if (!path) return ''
+
+  return `${client.defaults.baseURL ?? ''}${path}`
+}
+
+/**
  * 조회수 올리기.
  *
  * 상세를 GET 할 때 서버가 같이 올리지 않는다. GET 은 몇 번을 보내도 결과가

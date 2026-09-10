@@ -13,6 +13,9 @@
 아래에서 붙인 API 목록을 화면에서 직접 눌러볼 수 있다.
 """
 
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,7 +32,25 @@ from app.routers import (
     weather,
 )
 
+from app.services.bargain_service import warm_bargains
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """서버가 뜰 때 KAMIS 시세를 미리 한 번 훑어둔다.
+
+    품목이 101개이고 KAMIS 는 한 번에 한 품목만 답해서 16초쯤 걸린다.
+    첫 사용자가 그걸 기다리게 두지 않으려고 미리 받아둔다.
+
+    create_task 로 던져놓고 기다리지 않는다. 시세를 못 받아도 서버는
+    떠야 한다 — 추천 말고 다른 화면은 다 멀쩡히 돌기 때문이다.
+    """
+    asyncio.create_task(warm_bargains())
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     description="오늘 뭐 먹지? — AI/API 중심 음식 추천 서비스",

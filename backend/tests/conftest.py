@@ -19,12 +19,15 @@ DB 가 꺼져 있으면 test_api.py 는 통째로 건너뛴다(skip).
     pytest tests/test_logic.py   DB 없이 되는 것만
 """
 
+import time
+
 import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
 from app.integrations import price_api
+from app.services import bargain_service
 
 # 테스트가 공공데이터포털을 실제로 때리지 않게 막는다.
 #
@@ -44,10 +47,18 @@ settings.PRICE_PROVIDERS = "kamis"
 
 
 async def _no_lookup(client, name):
-    return []
+    # kamis_offers 와 같은 모양으로 돌려준다 — (조사가격, 가격추이)
+    return [], None
 
 
 price_api.kamis_offers = _no_lookup
+
+# 서버가 뜰 때 도는 시세 훑기도 건너뛴다.
+#
+# TestClient 를 만들 때마다 lifespan 이 돌면서 품목 101개를 훑는다.
+# 위에서 조회를 막아뒀으니 네트워크는 안 타지만, 그래도 테스트마다
+# 101번을 헛도는 건 낭비다. 이미 훑어둔 것처럼 비워서 채워둔다.
+bargain_service.bargain_cache = (time.time(), [])
 
 # 이 이메일로 만든 데이터는 테스트가 끝날 때 전부 지운다.
 # 실제 사용자와 겹치지 않도록 도메인을 example.com 으로 둔다.

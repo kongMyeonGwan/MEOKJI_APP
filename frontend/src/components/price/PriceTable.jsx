@@ -24,6 +24,28 @@ function pickSurveyDate(prices) {
   return formatSurveyDate(days.reduce((a, b) => (a > b ? a : b)))
 }
 
+/**
+ * 가격이 어느 쪽으로 움직였는지 한 조각으로 만든다.
+ *
+ * 장 볼 때 "지금이 살 때인가" 를 알려주는 정보다. 시장 조사가격이라
+ * 얻을 수 있는 값이고, 쇼핑몰 가격만 봐서는 알 수 없다.
+ */
+function TrendBadge({ trend }) {
+  if (!trend) return null
+
+  const down = trend.percent < 0
+  const percent = Math.abs(trend.percent).toFixed(0)
+
+  return (
+    <span
+      className={`price-table__trend ${down ? 'is-down' : 'is-up'}`}
+      title={`${formatPrice(trend.from_price)} → ${formatPrice(trend.to_price)} (같은 단위 전국 평균)`}
+    >
+      {down ? '▼' : '▲'} {percent}%
+    </span>
+  )
+}
+
 /** offers 배열에서 최저/최고를 뽑는다. */
 function pickRange(offers) {
   if (!offers?.length) return null
@@ -107,7 +129,10 @@ export default function PriceTable({ prices }) {
 
               return (
                 <tr key={item.name} className={scaled ? undefined : 'price-table__unknown'}>
-                  <td>{item.name}</td>
+                  <td>
+                    {item.name}
+                    <TrendBadge trend={item.trend} />
+                  </td>
 
                   <td className="num">
                     {scaled ? (
@@ -179,6 +204,11 @@ export default function PriceTable({ prices }) {
         구매 금액은 더 큽니다.
         {total.counted < total.total &&
           ' 가공식품은 농수산물 시세 조사 대상이 아니라 가격이 없습니다.'}
+        {' '}
+        <strong className="price-table__trend is-down">▼</strong>
+        {' · '}
+        <strong className="price-table__trend is-up">▲</strong>
+        는 일주일 전 전국 평균과 견준 값입니다.
       </p>
     </>
   )

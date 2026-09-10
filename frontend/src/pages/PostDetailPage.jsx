@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import ErrorMessage from '../components/common/ErrorMessage'
 import Loading from '../components/common/Loading'
 import RecipeView from '../components/recipe/RecipeView'
@@ -11,10 +11,13 @@ import {
   getPost,
   removeComment,
   removePost,
+  removePostFile,
   setPostLike,
   updateComment,
   updatePost,
+  uploadPostFile,
 } from '../api/posts'
+import PostAttachment from '../components/community/PostAttachment'
 import { parseApiError } from '../utils/apiError'
 import { formatDateTime } from '../utils/format'
 import '../styles/pages/PostDetailPage.css'
@@ -65,6 +68,15 @@ function PostDetail({ postId }) {
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
   const [editBusy, setEditBusy] = useState(false)
+
+  // --- 첨부파일 관련 ---
+  const [fileBusy, setFileBusy] = useState(false)
+  const fileInput = useRef(null)
+
+  // 글쓰기 화면에서 사진 업로드만 실패했을 때 들려 보낸 메시지.
+  // 글은 등록됐으므로 여기서 "다시 올려보세요" 라고 알려주는 편이 낫다.
+  const { state: navState } = useLocation()
+  const [fileError, setFileError] = useState(navState?.fileError ?? '')
 
   // 화면이 처음 열릴 때 게시글을 불러오고, 조회수를 한 번 올린다.
   //
@@ -246,6 +258,51 @@ function PostDetail({ postId }) {
     }
   }
 
+  /**
+   * 사진 붙이기 · 갈아 끼우기.
+   *
+   * 서버가 갱신된 게시글 상세를 돌려주므로 그걸 그대로 쓴다.
+   * 화면에서 file 만 직접 만들어 넣으면, 서버가 계산한 크기 표시나
+   * 내려받기 주소가 화면과 어긋날 수 있다.
+   */
+  async function onPickFile(e) {
+    const picked = e.target.files?.[0]
+    if (!picked) return
+
+    setFileError('')
+    setFileBusy(true)
+
+    try {
+      const updated = await uploadPostFile(post.id, picked)
+      setPost(updated)
+    } catch (err) {
+      setFileError(parseApiError(err).message)
+    } finally {
+      setFileBusy(false)
+      // 같은 파일을 다시 골라도 onChange 가 돌게 입력칸을 비운다.
+      // 안 비우면 방금 실패한 파일을 다시 선택할 때 아무 일도 안 일어난다.
+      if (fileInput.current) fileInput.current.value = ''
+    }
+  }
+
+  /** 사진 떼기. 서버가 DB를 정리하고 디스크에서도 지운다. */
+  async function onRemoveFile() {
+    const ok = window.confirm('첨부한 사진을 지울까요?')
+    if (!ok) return
+
+    setFileError('')
+    setFileBusy(true)
+
+    try {
+      await removePostFile(post.id)
+      setPost({ ...post, file: null })
+    } catch (err) {
+      setFileError(parseApiError(err).message)
+    } finally {
+      setFileBusy(false)
+    }
+  }
+
   return (
     <div className="post">
       <p className="muted post__back">
@@ -307,6 +364,19 @@ function PostDetail({ postId }) {
 
             {/* 줄바꿈을 살리기 위해 white-space: pre-wrap 을 쓴다 */}
             <div className="post__content">{post.content}</div>
+
+            {/* 본문 바로 아래. 레시피보다 위에 둔다 —
+                "이렇게 만들어 먹었다" 는 사진이 후기의 본론이고,
+                레시피는 그 근거로 뒤따라오는 순서다. */}
+            <PostAttachment
+              file={post.file}
+              isMine={post.is_mine}
+              busy={fileBusy}
+              error={fileError}
+              inputRef={fileInput}
+              onPick={onPickFile}
+              onRemove={onRemoveFile}
+            />
           </>
         )}
 

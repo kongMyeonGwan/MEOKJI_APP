@@ -22,6 +22,7 @@ from app.schemas.recommend import (
     RecommendResponse,
 )
 from app.services.ai_service import make_recipe, recommend
+from app.services.bargain_service import get_bargains
 from app.services.price_service import get_prices, get_recipe_prices
 
 router = APIRouter(prefix="/api", tags=["recommendations"])
@@ -37,7 +38,7 @@ AI_503 = {"description": "AI · 외부 API 설정 오류이거나 응답 없음"
     summary="AI 음식 추천 (Guest 가능)",
     responses={503: AI_503},
 )
-def create_recommendations(
+async def create_recommendations(
     payload: RecommendRequest,
     current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
@@ -47,8 +48,14 @@ def create_recommendations(
     GET 이 아니라 POST 인 이유는 두 가지다.
       - 냉장고 재료처럼 배열로 보내는 조건이 있어 주소창에 담기 어렵다
       - 부를 때마다 AI 가 새로 만들어내므로 캐시되면 안 된다
+
+    async def 인 이유는 use_bargains 를 켰을 때 KAMIS 시세를 먼저
+    훑어야 하기 때문이다. 시세 조회는 비동기라 recommend() 안에서
+    부를 수 없어서, 여기서 받아 넘긴다.
     """
-    return recommend(db, current_user, payload)
+    bargains = await get_bargains() if payload.use_bargains else None
+
+    return recommend(db, current_user, payload, bargains)
 
 
 @router.get(

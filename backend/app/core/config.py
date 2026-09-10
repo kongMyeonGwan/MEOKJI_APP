@@ -110,6 +110,23 @@ class Settings(BaseSettings):
     # https://www.data.go.kr/data/15156057/openapi.do
     DATA_GO_KR_SERVICE_KEY: str = ""
 
+    # ===== 후기 첨부파일 =====
+    #
+    # 파일 본체는 DB 에 넣지 않는다. 디스크에 저장하고 RECIPE_REVIEWS 의
+    # FILE_* 컬럼에는 경로만 적는다 (db/01_schema.sql 주석 참고).
+    # BLOB 으로 넣으면 목록 조회마다 사진이 딸려 나오고 백업이 그만큼 불어난다.
+
+    # 저장 폴더. 상대 경로면 backend 폴더 기준이다.
+    # DB 의 FILE_PATH 에도 이 이름이 앞에 붙어 들어간다 ("uploads/2026/09").
+    UPLOAD_DIR: str = "uploads"
+
+    # 한 파일의 최대 크기(MB). 후기 사진 한 장이라 크게 잡을 이유가 없다.
+    UPLOAD_MAX_MB: int = 5
+
+    # 받아줄 확장자. 실행 파일이 올라오는 것을 막는 게 목적이라
+    # "허용한 것만 받는다"로 적는다. 금지 목록은 빠뜨린 게 곧 구멍이 된다.
+    UPLOAD_ALLOWED_EXTS: str = "jpg,jpeg,png,gif,webp"
+
     # 아래 셋은 @property 다. 괄호 없이 settings.database_url 처럼 쓰면
     # 그때마다 함수가 실행되어 계산된 값을 돌려준다.
 
@@ -151,6 +168,29 @@ class Settings(BaseSettings):
     def price_provider_list(self) -> list[str]:
         """PRICE_PROVIDERS 를 리스트로 바꾼다. 적힌 순서가 곧 우선순위다."""
         return split_by_comma(self.PRICE_PROVIDERS)
+
+    @property
+    def upload_root(self) -> Path:
+        """첨부파일 저장 폴더의 절대 경로.
+
+        DB 의 FILE_PATH 는 "uploads/2026/09" 처럼 UPLOAD_DIR 을 포함한
+        상대 경로다. 그래서 그 값을 이어붙일 기준은 upload_root 가 아니라
+        BASE_DIR 이다 (file_service.absolute_path 참고).
+        여기서 만든 절대 경로는 "폴더 밖으로 나가지 않았는지" 검사에 쓴다.
+        """
+        folder = Path(self.UPLOAD_DIR)
+
+        return folder if folder.is_absolute() else BASE_DIR / folder
+
+    @property
+    def upload_max_bytes(self) -> int:
+        """UPLOAD_MAX_MB 를 바이트로. 검사는 바이트 단위로 한다."""
+        return self.UPLOAD_MAX_MB * 1024 * 1024
+
+    @property
+    def upload_allowed_ext_list(self) -> list[str]:
+        """허용 확장자 목록. 점 없이 소문자로 맞춰둔다 ('jpg')."""
+        return [ext.lower().lstrip(".") for ext in split_by_comma(self.UPLOAD_ALLOWED_EXTS)]
 
 
 def split_by_comma(text: str) -> list[str]:

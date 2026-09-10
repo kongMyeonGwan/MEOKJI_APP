@@ -17,10 +17,11 @@ import client from './client'
  *   - 냉장고 재료처럼 배열로 보내는 조건이 있어 주소창에 담기 어렵다
  *   - 부를 때마다 새로 만들어내므로 캐시되면 안 된다
  *
- * 응답: { condition, items, weather }
+ * 응답: { condition, items, weather, bargains }
  *   condition  "서울 · 맑음 28° · 못 먹는 재료 3건 제외" — AI 추천 기록에 쓴다
  *   items      화면에 그릴 음식 카드 목록
  *   weather    useWeather 를 켰을 때만 채워진다
+ *   bargains   useBargains 를 켰을 때만 채워진다. 요즘 값이 내린 재료
  */
 export async function getRecommendations({
   source = '카테고리',
@@ -32,6 +33,7 @@ export async function getRecommendations({
   ingredients = [],
   exclude = [],
   useWeather = false,
+  useBargains = false,
   lat = null,
   lon = null,
 } = {}) {
@@ -45,6 +47,7 @@ export async function getRecommendations({
     ingredients,
     exclude,
     use_weather: useWeather,
+    use_bargains: useBargains,
     lat,
     lon,
   })

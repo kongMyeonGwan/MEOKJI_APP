@@ -7,6 +7,13 @@
 
 .post-card__link:hover .post-card__title { color: var(--color-accent); }
 
+/* 제목 옆 클립. 제목을 밀어내지 않게 작게 둔다 */
+.post-card__clip {
+  margin-left: 5px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
 /* 본문 미리보기를 2줄로 자른다 */
 .post-card__excerpt {
   margin: 0 0 10px;

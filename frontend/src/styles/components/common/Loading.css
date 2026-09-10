@@ -1,0 +1,56 @@
+/* 기다리는 동안 보여주는 표시.
+   글자만 있으면 멈춘 것처럼 보여서, 도는 원을 같이 둔다. */
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.loading__spinner {
+  flex: none;
+  width: 1.05em;
+  height: 1.05em;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: loading-spin 0.7s linear infinite;
+}
+
+/* 문구가 바뀔 때 툭 튀지 않게 살짝 떠오르듯 바꾼다 */
+.loading__text {
+  animation: loading-fade var(--dur, 160ms) var(--ease, ease) both;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-fade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+
+/* "화면 움직임 줄이기"를 켜둔 사용자에게는 돌리지 않는다.
+   회전은 어지럼증을 유발할 수 있다. 대신 흐려졌다 진해지게만 한다. */
+@media (prefers-reduced-motion: reduce) {
+  .loading__spinner {
+    animation: loading-pulse 1.4s ease-in-out infinite;
+  }
+
+  .loading__text {
+    animation: none;
+  }
+}
+
+@keyframes loading-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}

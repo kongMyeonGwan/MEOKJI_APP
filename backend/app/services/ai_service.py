@@ -15,6 +15,8 @@
 확인해서 걸러낸다. 프롬프트는 부탁이고, 이 검사가 실제 방어선이다.
 """
 
+import time
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -23,6 +25,7 @@ from app.integrations.ai_api import build_recipe, recommend_foods, uses_any
 from app.models.user import User
 from app.models.user_ban import BAN_TYPE_ALLERGY
 from app.schemas.recommend import (
+    BargainItem,
     FoodItem,
     RecommendRequest,
     RecommendResponse,
@@ -34,6 +37,62 @@ from app.services.weather_service import get_current_weather
 # AI 가 조건을 못 맞춰 후보를 0건으로 주는 일이 있다.
 # 그때 예산을 이만큼 넓혀서 한 번 더 물어본다 (원).
 BUDGET_RELAX = 3_000
+
+
+# 레시피를 기억해두는 시간(초).
+#
+# 같은 음식의 레시피는 몇 시간이 지나도 달라질 이유가 없다. 그런데 제미나이를
+# 부르는 데 7~10초가 걸린다. 발표 리허설에서 김치찌개를 다섯 번 열면
+# 다섯 번 다 기다려야 하고, AI 호출도 다섯 번 나간다.
+RECIPE_CACHE_SECONDS = 60 * 60 * 6  # 6시간
+
+# 너무 커지면 통째로 비운다. 다시 물어보면 채워지는 값이라
+# 오래된 것만 골라 지우는 정교함이 필요 없다 (weather_api 와 같은 방식).
+RECIPE_CACHE_MAX_ENTRIES = 200
+
+# {(음식이름, 알레르기, 싫어함): (저장시각, 레시피)}
+#
+# Ban 을 열쇠에 넣는 이유: 같은 김치찌개라도 돼지고기 알레르기가 있는 사람에게는
+# 다른 레시피가 나간다. 이름만으로 묶으면 남의 알레르기 재료가 섞인 레시피를
+# 보여주게 된다.
+recipe_cache: dict[tuple, tuple[float, RecipeResponse]] = {}
+
+
+def recipe_cache_key(
+    food_name: str, allergies: list[str], dislikes: list[str]
+) -> tuple:
+    """레시피 캐시 열쇠. Ban 목록은 순서가 달라도 같은 열쇠가 되게 정렬한다."""
+    return (food_name, tuple(sorted(allergies)), tuple(sorted(dislikes)))
+
+
+def read_recipe_cache(key: tuple) -> RecipeResponse | None:
+    """기억해둔 레시피를 꺼낸다. 없거나 오래됐으면 None."""
+    found = recipe_cache.get(key)
+    if found is None:
+        return None
+
+    saved_at, recipe = found
+    if time.time() - saved_at >= RECIPE_CACHE_SECONDS:
+        return None
+
+    # 복사본을 준다. 부르는 쪽이 prices 를 채워 넣는데,
+    # 원본을 그대로 주면 캐시에 남의 조회 시점 가격이 눌어붙는다.
+    return recipe.model_copy(deep=True)
+
+
+def write_recipe_cache(key: tuple, recipe: RecipeResponse) -> None:
+    """레시피를 기억해둔다. 가격은 빼고 저장한다.
+
+    가격은 조회 시점의 값이라 캐시하면 안 된다(설계 원칙 §13).
+    6시간 전 가격을 오늘 가격으로 보여주게 된다.
+    """
+    if len(recipe_cache) > RECIPE_CACHE_MAX_ENTRIES:
+        recipe_cache.clear()
+
+    stored = recipe.model_copy(deep=True)
+    stored.prices = []
+
+    recipe_cache[key] = (time.time(), stored)
 
 
 def collect_bans(db: Session, user: User | None) -> tuple[list[str], list[str]]:
@@ -81,6 +140,7 @@ def build_context(
     allergies: list[str],
     dislikes: list[str],
     weather: dict | None,
+    bargains: list[dict] | None = None,
 ) -> dict:
     """AI 에게 넘길 조건 딕셔너리를 만든다."""
     return {
@@ -93,14 +153,24 @@ def build_context(
         "allergies": allergies,
         "dislikes": dislikes,
         "weather": weather,
+        # 요즘 값이 내린 재료. 라우터가 미리 훑어서 넘겨준다
+        # (시세를 받아오는 일은 비동기라 여기서 부르지 않는다).
+        "bargains": bargains or [],
         "exclude": payload.exclude,
     }
 
 
 def recommend(
-    db: Session, user: User | None, payload: RecommendRequest
+    db: Session,
+    user: User | None,
+    payload: RecommendRequest,
+    bargains: list[dict] | None = None,
 ) -> RecommendResponse:
-    """조건에 맞는 음식 후보를 만들어 돌려준다."""
+    """조건에 맞는 음식 후보를 만들어 돌려준다.
+
+    bargains 는 라우터가 미리 훑어 넘겨준다. 시세 조회가 비동기라
+    이 함수(동기) 안에서 부를 수 없기 때문이다.
+    """
     allergies, dislikes = collect_bans(db, user)
 
     weather = None
@@ -110,7 +180,7 @@ def recommend(
         weather_response = get_current_weather(lat, lon)
         weather = weather_response.model_dump()
 
-    context = build_context(payload, allergies, dislikes, weather)
+    context = build_context(payload, allergies, dislikes, weather, bargains)
 
     items = ask_ai(context, allergies)
 
@@ -122,9 +192,10 @@ def recommend(
         items = ask_ai(context, allergies)
 
     return RecommendResponse(
-        condition=describe(payload, allergies, dislikes, weather),
+        condition=describe(payload, allergies, dislikes, weather, bargains),
         items=items,
         weather=weather_response,
+        bargains=[BargainItem.model_validate(row) for row in (bargains or [])],
     )
 
 
@@ -197,6 +268,7 @@ def describe(
     allergies: list[str],
     dislikes: list[str],
     weather: dict | None,
+    bargains: list[dict] | None = None,
 ) -> str:
     """무슨 조건으로 골랐는지 한 줄로 적는다.
 
@@ -210,6 +282,14 @@ def describe(
             f"{weather.get('city')} · {weather.get('condition_text')} "
             f"{weather.get('temp')}°"
         )
+
+    if bargains:
+        # "대파 12%↓ 외 3건" — 무슨 근거로 골랐는지 한눈에 보이게 한다
+        first = bargains[0]
+        text = f"{first['name']} {abs(first['percent']):.0f}%↓"
+        if len(bargains) > 1:
+            text += f" 외 {len(bargains) - 1}건"
+        parts.append(f"시세 {text}")
 
     if payload.category:
         parts.append(payload.category)
@@ -264,6 +344,12 @@ def make_recipe(db: Session, user: User | None, food_name: str) -> RecipeRespons
 
     allergies, dislikes = collect_bans(db, user)
 
+    # 같은 음식을 다시 열면 AI 를 부르지 않는다. 7~10초가 0초가 된다.
+    key = recipe_cache_key(food_name, allergies, dislikes)
+    cached = read_recipe_cache(key)
+    if cached is not None:
+        return cached
+
     context = {
         "allergies": allergies,
         "dislikes": dislikes,
@@ -284,7 +370,7 @@ def make_recipe(db: Session, user: User | None, food_name: str) -> RecipeRespons
         art = known.get("art")
         image_url = known.get("image_url")
 
-    return RecipeResponse(
+    recipe = RecipeResponse(
         food_name=food_name,
         recipe_name=raw.get("recipe_name") or food_name,
         # meal_histories.recipe_json 에 그대로 들어갈 모양으로 묶는다
@@ -301,3 +387,7 @@ def make_recipe(db: Session, user: User | None, food_name: str) -> RecipeRespons
         art=art,
         image_url=image_url,
     )
+
+    write_recipe_cache(key, recipe)
+
+    return recipe

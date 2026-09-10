@@ -100,10 +100,27 @@ function Recipe({ foodName }) {
   }
 
   if (loading) {
+    // 서버가 하는 일 순서대로 적는다. AI가 레시피를 짓고, 그 재료로 시세를 찾는다.
+    // 진행률을 받아오지는 못해서 시간으로 넘기지만, 순서는 실제와 같다.
+    //
+    // 두 번째로 여는 레시피는 서버가 기억해둬서 2초 만에 끝난다.
+    // 그때는 첫 문구만 잠깐 스쳐 지나간다.
+    const steps = [
+      `AI가 '${name}' 레시피를 만드는 중...`,
+      '재료와 분량을 정리하는 중...',
+      '시장에서 재료 가격을 찾는 중...',
+      '조금만 더 기다려 주세요. AI가 붐비는 시간일 수 있어요.',
+    ]
+
     return (
       <div className="recipe-page">
+        <p className="muted recipe-page__back">
+          <Link to="/">← 홈으로</Link>
+        </p>
+
         <section className="card">
-          <Loading message={`AI가 '${name}' 레시피를 만드는 중...`} />
+          <Loading steps={steps} />
+          <RecipeSkeleton />
         </section>
       </div>
     )
@@ -220,6 +237,34 @@ function Recipe({ foodName }) {
           </>
         )}
       </section>
+    </div>
+  )
+}
+
+
+/**
+ * 레시피가 오기 전에 자리를 잡아두는 뼈대.
+ *
+ * 빈 카드에 글자 한 줄만 있으면 화면이 비어 보이고, 내용이 도착하는 순간
+ * 레이아웃이 확 늘어나면서 한 번 튄다. 미리 같은 모양을 깔아두면
+ * 기다리는 동안에도 "여기에 레시피가 들어오겠구나" 가 읽힌다.
+ */
+function RecipeSkeleton() {
+  return (
+    <div className="skeleton" aria-hidden="true">
+      <div className="skeleton__bar skeleton__bar--title" />
+      <div className="skeleton__bar skeleton__bar--sub" />
+
+      <div className="skeleton__group">
+        <div className="skeleton__bar" />
+        <div className="skeleton__bar" />
+        <div className="skeleton__bar skeleton__bar--short" />
+      </div>
+
+      <div className="skeleton__group">
+        <div className="skeleton__bar" />
+        <div className="skeleton__bar skeleton__bar--short" />
+      </div>
     </div>
   )
 }

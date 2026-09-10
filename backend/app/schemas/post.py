@@ -102,6 +102,29 @@ class CommentResponse(BaseModel):
     is_mine: bool = False
 
 
+class PostFileInfo(BaseModel):
+    """첨부파일 한 건. 파일 본체가 아니라 '어디서 받는지'를 알려준다.
+
+    서버에 저장한 이름(file_name)과 폴더(file_path)는 내려주지 않는다.
+    화면이 쓸 일이 없고, 디스크 구조를 밖에 알릴 이유도 없다.
+    """
+
+    # 사용자가 올린 원래 이름. 화면에 이 이름으로 보여준다.
+    name: str
+
+    # 점 없이 'jpg'. 아이콘을 고르거나 이미지인지 판단하는 데 쓴다.
+    ext: str
+
+    # 바이트. 크기를 못 구한 파일도 정상이라 None 일 수 있다.
+    size: int | None = None
+
+    # 사람이 읽는 크기 ('184 KB'). 화면마다 계산하지 않게 서버가 만들어 준다.
+    size_text: str = ""
+
+    # 실제로 받아갈 주소. GET /api/posts/{id}/file
+    url: str
+
+
 class PostListItem(BaseModel):
     """목록 한 줄. 본문은 미리보기용으로 잘라서 내려준다."""
 
@@ -116,6 +139,10 @@ class PostListItem(BaseModel):
     like_count: int
     comment_count: int
     created_at: datetime
+
+    # 첨부가 있는지만 알려준다. 목록은 클립 아이콘 하나만 붙이면 되는데
+    # 500자짜리 경로 컬럼까지 읽어올 이유가 없다 (DDL 의 FILE_YN 주석 참고).
+    has_file: bool = False
 
 
 class PostDetailResponse(BaseModel):
@@ -136,6 +163,9 @@ class PostDetailResponse(BaseModel):
 
     # 출처 추적용. 화면의 "원본 기록 보기" 링크에만 쓴다.
     meal_history_id: int
+
+    # 첨부파일. 없으면 None — 후기 하나당 파일 하나라 목록이 아니다.
+    file: PostFileInfo | None = None
 
     # 로그인 사용자 기준 값. Guest면 둘 다 False.
     liked: bool = False

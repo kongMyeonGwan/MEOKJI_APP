@@ -528,6 +528,20 @@ def describe_conditions(context: dict) -> list[str]:
             + ", ".join(ingredients)
         )
 
+    bargains = context.get("bargains") or []
+    if bargains:
+        cheap = ", ".join(
+            f"{row['name']}({row['percent']:.0f}%)" for row in bargains
+        )
+        lines.append(
+            "- 요즘 값이 내린 재료입니다(괄호는 일주일 전 대비 등락률): "
+            + cheap
+        )
+        lines.append(
+            "  이 중 두 가지 이상을 주재료로 쓰는 메뉴를 우선 추천하세요. "
+            "reason 에 어떤 재료가 싸서 골랐는지 적으세요."
+        )
+
     weather = context.get("weather")
     if weather:
         lines.append(

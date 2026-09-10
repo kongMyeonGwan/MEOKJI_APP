@@ -88,3 +88,58 @@
   font-weight: 400;
   text-align: right;
 }
+
+
+/* 레시피가 도착하기 전 자리를 잡아두는 뼈대.
+   내용이 들어올 때 레이아웃이 튀지 않게 비슷한 높이로 깔아둔다. */
+.skeleton {
+  margin-top: 1.25rem;
+}
+
+.skeleton__group {
+  margin-top: 1.25rem;
+}
+
+.skeleton__bar {
+  height: 0.85rem;
+  margin-bottom: 0.6rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 0%,
+    var(--color-soft) 50%,
+    var(--color-border) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+.skeleton__bar--title {
+  width: 45%;
+  height: 1.4rem;
+}
+
+.skeleton__bar--sub {
+  width: 30%;
+}
+
+.skeleton__bar--short {
+  width: 60%;
+}
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* 움직임을 줄여달라고 한 사용자에게는 흐르게 하지 않는다 */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton__bar {
+    animation: none;
+    background: var(--color-border);
+  }
+}

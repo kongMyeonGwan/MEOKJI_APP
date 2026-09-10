@@ -1,0 +1,70 @@
+/* 게시글에 붙은 사진 한 장.
+   후기 하나당 파일 하나라 갤러리가 아니다 — 본문 아래에 한 장만 놓인다. */
+
+.attach {
+  margin: 1.1rem 0 0;
+}
+
+.attach__figure {
+  margin: 0;
+}
+
+/* 세로로 긴 사진이 화면을 다 먹지 않게 높이를 묶는다.
+   contain 이라 잘리지 않고 통째로 줄어든다 — 음식 사진은 잘린 쪽이
+   더 예뻐 보이더라도, 글쓴이가 보여주려던 것이 안 보이면 안 된다. */
+.attach__image {
+  display: block;
+  width: 100%;
+  max-height: 26rem;
+  object-fit: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-soft);
+}
+
+.attach__caption {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+}
+
+.attach__name {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  /* 한글 파일명이 길면 줄을 통째로 밀어낸다. 한 줄로 자른다. */
+  max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- 내 글일 때만 나오는 버튼 ---- */
+
+.attach__actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+/* 파일 입력칸을 label 로 감싸서 숨겼기 때문에, 버튼처럼 보이려면
+   커서를 직접 지정해야 한다. */
+.attach__actions label {
+  cursor: pointer;
+}
+
+.attach__actions label.is-busy {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+/* PostDetailPage.css 의 .post__danger 와 같은 색을 쓴다.
+   같은 화면에서 '삭제' 버튼끼리 색이 다르면 눈에 걸린다. */
+.attach__danger {
+  color: var(--color-error);
+}

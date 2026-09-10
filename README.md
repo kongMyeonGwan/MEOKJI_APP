@@ -189,6 +189,8 @@ MEOKJI_APP/
 | | `POST /api/posts/{id}/view` | | 조회수 +1 |
 | | `PUT·DELETE /api/posts/{id}/like` | ● | 좋아요 켜기 · 끄기 |
 | | `POST·PUT·DELETE /api/posts/{id}/comments[/{cid}]` | ● | 댓글 |
+| | `POST·DELETE /api/posts/{id}/file` | ● | 사진 붙이기 · 교체 · 떼기 |
+| | `GET /api/posts/{id}/file` | | 사진 내려받기 (원본 파일명으로) |
 | weather | `GET /api/weather` | | 현재 날씨 |
 | catalog | `GET /api/catalog` | | 카테고리 · 룰렛 · 게임 · 질문 · 재료 칩 |
 | | `GET /api/catalog/notices` | | 공지사항 |
@@ -204,8 +206,8 @@ MEOKJI_APP/
 cd backend
 .venv\Scriptsctivate
 
-pytest                      # 전부 (69건)
-pytest tests/test_logic.py  # DB 없이 되는 것만 (32건)
+pytest                      # 전부 (157건)
+pytest tests/test_logic.py  # DB 없이 되는 것만 (113건)
 ```
 
 `tests/test_api.py` 는 실제 Oracle 에 붙는다. DB 가 꺼져 있으면 실패가 아니라
@@ -243,6 +245,10 @@ JWT_SECRET_KEY=         # 아무 랜덤 문자열
 | 실제 날씨 | `WEATHER_PROVIDER=openweather` + `OPENWEATHER_API_KEY=...` |
 | 실제 재료 최저가 | `PRICE_PROVIDERS=kamis` + `DATA_GO_KR_SERVICE_KEY=...` |
 | 실제 인증 메일 발송 | `EMAIL_PROVIDER=smtp` + `SMTP_*` |
+
+후기 첨부파일은 키가 필요 없다. `UPLOAD_DIR`(기본 `uploads`) 아래에
+저장하고 DB 에는 경로만 적는다. 폴더는 `.gitignore` 에 있어 커밋되지 않는다.
+받아줄 확장자와 최대 크기는 `UPLOAD_ALLOWED_EXTS` · `UPLOAD_MAX_MB` 로 정한다.
 
 `PRICE_PROVIDERS` 는 쉼표로 여러 개를 적을 수 있다. **앞에서부터 시도하다가
 값이 나오면 거기서 멈춘다** — 여러 곳의 결과를 합치지 않는다. 곳마다 단위

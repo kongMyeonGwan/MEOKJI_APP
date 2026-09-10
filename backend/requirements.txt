@@ -5,6 +5,11 @@
 fastapi>=0.115.0
 uvicorn[standard]>=0.34.0
 
+# 첨부파일 업로드(multipart/form-data) 파서.
+# FastAPI 가 직접 의존하지 않아서 따로 적어야 한다. 없으면 UploadFile 을
+# 쓰는 엔드포인트에서 서버가 뜰 때 RuntimeError 로 멈춘다.
+python-multipart>=0.0.20
+
 # --- 설정 / 검증 ---
 pydantic[email]>=2.10.0
 pydantic-settings>=2.7.0

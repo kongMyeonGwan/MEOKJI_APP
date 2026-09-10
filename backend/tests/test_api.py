@@ -13,6 +13,8 @@ pytest 는 파일에 적힌 순서대로 실행하므로 그 순서를 지켜서
 값은 module 수준의 STATE 에 담아 다음 테스트로 넘긴다.
 """
 
+import base64
+
 import pytest
 
 from tests.conftest import TEST_EMAILS, TEST_PASSWORD, database_is_up
@@ -378,6 +380,91 @@ def test_Guest에게는_내_글_표시가_없다(client):
     assert body["liked"] is False
 
 
+# ---------------------------------------------------------
+# 첨부파일 (후기 하나당 파일 하나)
+#
+# 글쓰기(JSON)와 따로 주고받는다. 순서가 있는 테스트라
+# 마지막에 사진을 떼면서 디스크에 남는 것도 같이 치운다.
+# ---------------------------------------------------------
+
+# 1x1 짜리 진짜 PNG. 확장자만 png 인 가짜를 쓰면 나중에 이미지 검사를
+# 붙였을 때 이 테스트부터 깨진다.
+PNG_1X1 = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8"
+    "z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+)
+
+
+def test_내_글에_사진을_붙인다(client):
+    response = client.post(
+        f"/api/posts/{STATE['post_id']}/file",
+        headers=STATE["owner"],
+        files={"file": ("김치찌개.png", PNG_1X1, "image/png")},
+    )
+    body = response.json()
+
+    assert response.status_code == 200, response.text
+
+    # 디스크에는 UUID 로 저장되지만, 화면에는 올린 이름 그대로 나가야 한다
+    assert body["file"]["name"] == "김치찌개.png"
+    assert body["file"]["ext"] == "png"
+    assert body["file"]["size"] == len(PNG_1X1)
+    assert body["file"]["url"] == f"/api/posts/{STATE['post_id']}/file"
+
+
+def test_목록에_사진_있음_표시가_붙는다(client):
+    # 목록은 파일 정보를 통째로 싣지 않는다. 붙었는지 여부만 내려준다.
+    response = client.get("/api/posts")
+    row = next(r for r in response.json() if r["id"] == STATE["post_id"])
+
+    assert row["has_file"] is True
+
+
+def test_사진은_로그인_없이_받을_수_있다(client):
+    # 게시판 조회가 Guest 에게 열려 있으니 사진도 같이 열려야 한다
+    response = client.get(f"/api/posts/{STATE['post_id']}/file")
+
+    assert response.status_code == 200
+    assert response.content == PNG_1X1
+    assert response.headers["content-type"] == "image/png"
+
+    # attachment 로 주면 <img> 에서 안 그려지고 내려받기 창이 뜬다
+    assert response.headers["content-disposition"].startswith("inline")
+
+
+def test_허용하지_않는_확장자는_막는다(client):
+    response = client.post(
+        f"/api/posts/{STATE['post_id']}/file",
+        headers=STATE["owner"],
+        files={"file": ("악성.exe", b"MZ-fake-exe", "application/octet-stream")},
+    )
+
+    assert response.status_code == 422
+
+
+def test_사진을_떼면_상세에서도_사라진다(client):
+    response = client.delete(
+        f"/api/posts/{STATE['post_id']}/file", headers=STATE["owner"]
+    )
+    assert response.status_code == 204
+
+    detail = client.get(f"/api/posts/{STATE['post_id']}").json()
+    assert detail["file"] is None
+
+    # 파일이 없으니 내려받기도 404 다
+    assert client.get(f"/api/posts/{STATE['post_id']}/file").status_code == 404
+
+
+def test_없는_첨부를_떼도_에러가_아니다(client):
+    # 요청의 목적은 '첨부 없는 상태' 이고, 이미 그 상태다.
+    # 좋아요 끄기(set_like)와 같은 규칙이다.
+    response = client.delete(
+        f"/api/posts/{STATE['post_id']}/file", headers=STATE["owner"]
+    )
+
+    assert response.status_code == 204
+
+
 def test_제목_본문으로_검색된다(client):
     response = client.get("/api/posts", params={"keyword": "테스트 후기"})
 
@@ -429,6 +516,17 @@ def test_남이_댓글과_좋아요를_달면_알림이_생긴다(client):
 
     for item in items:
         assert item["link"] == f"/community/{post_id}"
+
+
+def test_남의_글에는_사진을_못_붙인다(client):
+    # 남의 글일 때만 403 을 주면 "그 번호는 존재한다"가 새어나간다
+    response = client.post(
+        f"/api/posts/{STATE['post_id']}/file",
+        headers=STATE["guest"],
+        files={"file": ("남의글.png", PNG_1X1, "image/png")},
+    )
+
+    assert response.status_code == 404
 
 
 def test_내가_한_행동은_내_알림이_아니다(client):

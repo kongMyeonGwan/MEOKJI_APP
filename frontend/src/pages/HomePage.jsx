@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import WeatherPick from '../components/recommendation/WeatherPick'
+import BargainPick from '../components/recommendation/BargainPick'
 import GamePromo from '../components/recommendation/GamePromo'
 import FoodFinder from '../components/recommendation/FoodFinder'
 import BudgetPicker from '../components/recommendation/BudgetPicker'
@@ -21,7 +22,8 @@ import '../styles/pages/HomePage.css'
  * 블록 순서에 의도가 있다.
  *
  *   ① 오늘 날씨 추천 (WeatherPick)  — 답. 들어오자마자 음식이 이미 정해져 있다
- *   ② 메뉴 게임 (GamePromo)         — 그게 안 당길 때, 고르는 걸 대신해준다
+ *   ② 지금 싼 재료로 (BargainPick)  — 날씨 말고 '돈'을 기준으로 고른 답
+ *   ③ 메뉴 게임 (GamePromo)         — 둘 다 안 당길 때, 고르는 걸 대신해준다
  *   ③ 직접 찾기 (FoodFinder)        — 찾을 게 정해져 있을 때 쓰는 입력칸
  *   ④ 예산 설정 (BudgetPicker)      — 돈부터 정하고 싶을 때
  *   ⑤ 카테고리                      — 분류부터 고르고 싶을 때
@@ -126,7 +128,11 @@ export default function HomePage() {
         {/* ① 답 — 오늘 날씨에 맞는 음식이 이미 정해져 있다 */}
         <WeatherPick />
 
-        {/* ② 그래도 못 정했을 때 */}
+        {/* ② 같은 자리의 다른 축 — 날씨가 아니라 시세로 고른 답.
+            싼 재료가 없는 날은 이 카드가 스스로 사라진다. */}
+        <BargainPick />
+
+        {/* ③ 그래도 못 정했을 때 */}
         <GamePromo />
 
         {/* ③ 찾을 게 정해져 있을 때 */}

@@ -3,9 +3,16 @@ import { Link, useNavigate } from 'react-router-dom'
 import ErrorMessage from '../components/common/ErrorMessage'
 import Loading from '../components/common/Loading'
 import { getHistories } from '../api/histories'
-import { createPost } from '../api/posts'
+import { createPost, uploadPostFile } from '../api/posts'
 import { parseApiError } from '../utils/apiError'
 import '../styles/pages/PostWritePage.css'
+
+// 사진 한 장만 붙는다. 서버의 UPLOAD_ALLOWED_EXTS · UPLOAD_MAX_MB 와 같은 값이다.
+//
+// 서버가 어차피 다시 검사한다. 여기서 한 번 더 보는 건 막으려는 게 아니라,
+// 5MB짜리를 다 올려보낸 뒤에 거절당하는 일을 없애려는 것이다.
+const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+const MAX_MB = 5
 
 /**
  * 게시글 작성 (STEP 20).
@@ -23,6 +30,7 @@ export default function PostWritePage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [historyId, setHistoryId] = useState('')
+  const [file, setFile] = useState(null)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -55,6 +63,39 @@ export default function PostWritePage() {
   // 이미 공유한 기록은 uq_posts_meal(UNIQUE)에 걸려 다시 올릴 수 없으므로 목록에서 뺀다.
   const sharableHistories = histories.filter((h) => !h.shared_post_id)
 
+  /** 사진을 골랐을 때. 확장자와 크기를 여기서 한 번 본다. */
+  function onPickFile(e) {
+    const picked = e.target.files?.[0] ?? null
+
+    if (!picked) {
+      setFile(null)
+      setErrors((prev) => ({ ...prev, file: undefined }))
+      return
+    }
+
+    const ext = picked.name.split('.').pop()?.toLowerCase() ?? ''
+
+    if (!ALLOWED_EXTS.includes(ext)) {
+      setFile(null)
+      e.target.value = '' // 안 받을 파일을 입력칸에 남겨두지 않는다
+      setErrors((prev) => ({
+        ...prev,
+        file: `${ALLOWED_EXTS.join(', ')} 파일만 올릴 수 있어요`,
+      }))
+      return
+    }
+
+    if (picked.size > MAX_MB * 1024 * 1024) {
+      setFile(null)
+      e.target.value = ''
+      setErrors((prev) => ({ ...prev, file: `${MAX_MB}MB 이하만 올릴 수 있어요` }))
+      return
+    }
+
+    setFile(picked)
+    setErrors((prev) => ({ ...prev, file: undefined }))
+  }
+
   /** 등록 버튼을 눌렀을 때. */
   async function onSubmit(e) {
     e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
@@ -75,8 +116,29 @@ export default function PostWritePage() {
         title: title.trim(),
         content: content.trim(),
       })
+
+      // 글을 먼저 등록하고 사진을 이어서 올린다. 한 요청에 JSON과 파일을
+      // 같이 담을 수 없기 때문이다.
+      //
+      // 사진만 실패해도 글은 이미 등록돼 있으므로 되돌리지 않는다.
+      // 첨부 없는 글이 정상 상태이고, 상세 화면에서 다시 올리면 된다.
+      let fileError = ''
+      if (file) {
+        try {
+          await uploadPostFile(created.id, file)
+        } catch (uploadError) {
+          fileError = parseApiError(uploadError).message
+        }
+      }
+
       // 목록이 아니라 방금 쓴 글로 보낸다. 등록된 모습을 바로 확인할 수 있다.
-      navigate(`/community/${created.id}`)
+      //
+      // 사진이 실패했으면 그 사실을 상세 화면에 들려 보낸다. 여기서 에러를
+      // 띄우고 멈추면 사용자가 등록을 다시 누르는데, 그러면 409 가 난다
+      // (이미 공유한 기록이라 uq_reviews_meal 에 걸린다).
+      navigate(`/community/${created.id}`, {
+        state: fileError ? { fileError } : undefined,
+      })
     } catch (err) {
       const { fieldErrors, message } = parseApiError(err)
       // 서버의 422는 필드별로 쪼개 각 입력칸 아래에 붙인다.
@@ -152,9 +214,26 @@ export default function PostWritePage() {
             <ErrorMessage message={errors.content} />
           </label>
 
+          <label className="write__field">
+            <span>사진 (선택)</span>
+            <input
+              type="file"
+              accept={ALLOWED_EXTS.map((ext) => `.${ext}`).join(',')}
+              onChange={onPickFile}
+            />
+            <ErrorMessage message={errors.file} />
+            <p className="muted write__help">
+              {file
+                ? `${file.name} — 등록하면 함께 올라갑니다`
+                : `한 장까지 올릴 수 있어요. ${MAX_MB}MB 이하 이미지.`}
+            </p>
+          </label>
+
           <div className="write__actions">
-            <button type="submit" className="btn">
-              등록
+            {/* 사진이 붙으면 업로드까지 기다려야 해서, 그동안 다시 눌리면
+                글이 두 번 등록되려다 409 가 난다. */}
+            <button type="submit" className="btn" disabled={submitting}>
+              {submitting ? '등록하는 중...' : '등록'}
             </button>
           </div>
         </form>

@@ -49,3 +49,24 @@ a.price-table__best:hover { text-decoration: underline; }
 .price-table__unknown td {
   opacity: 0.55;
 }
+
+/* 재료명 옆의 "▼ 12%" 배지.
+   내린 쪽을 눈에 띄게 한다 — 장 볼 때 알고 싶은 건 "지금 싼가" 다. */
+.price-table__trend {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.price-table__trend.is-down {
+  color: var(--color-ok);
+  background: rgba(47, 138, 91, 0.1);
+}
+
+.price-table__trend.is-up {
+  color: var(--color-warn);
+  background: rgba(201, 130, 26, 0.1);
+}

@@ -21,8 +21,9 @@
 """
 
 from datetime import date
+from pathlib import Path
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -42,9 +43,11 @@ from app.schemas.post import (
     PopularItem,
     PostCreateRequest,
     PostDetailResponse,
+    PostFileInfo,
     PostListItem,
     PostUpdateRequest,
 )
+from app.services import file_service
 
 # 목록에 내려줄 본문 미리보기 길이.
 # 화면은 CSS 로 2줄까지만 보여주므로 200자면 넉넉하다.
@@ -163,6 +166,25 @@ def get_alive_post(db: Session, post_id: int) -> RecipeReview:
     return review
 
 
+def make_file_info(review: RecipeReview) -> PostFileInfo | None:
+    """첨부파일 정보를 화면이 쓸 모양으로 만든다. 첨부가 없으면 None.
+
+    파일 본체를 내려주는 주소만 알려준다. 서버에 저장된 실제 파일명과
+    폴더는 담지 않는다 — 화면이 쓸 일이 없고, 디스크 구조를 밖에
+    알려서 좋을 것도 없다.
+    """
+    if review.file_yn != USE_YN_YES:
+        return None
+
+    return PostFileInfo(
+        name=review.file_org_name or "첨부파일",
+        ext=review.file_ext or "",
+        size=review.file_size,
+        size_text=file_service.human_size(review.file_size),
+        url=f"/api/posts/{review.id}/file",
+    )
+
+
 # ==========================================================
 # 화면에서 부르는 기능들
 # ==========================================================
@@ -190,6 +212,8 @@ def list_posts(db: Session, keyword: str | None = None) -> list[PostListItem]:
             RecipeReview.view_count,
             RecipeReview.created_at,
             User.nickname,
+            # 첨부 여부만 읽는다. 경로(500자)와 원본 파일명은 상세에서만 쓴다.
+            RecipeReview.file_yn,
         )
         .join(User, User.id == RecipeReview.user_id)
         .join(MealHistory, MealHistory.id == RecipeReview.meal_history_id)
@@ -219,6 +243,7 @@ def list_posts(db: Session, keyword: str | None = None) -> list[PostListItem]:
                 like_count=like_counts.get(row.id, 0),
                 comment_count=comment_counts.get(row.id, 0),
                 created_at=row.created_at,
+                has_file=row.file_yn == USE_YN_YES,
             )
         )
 
@@ -282,6 +307,7 @@ def get_post(db: Session, post_id: int, user: User | None) -> PostDetailResponse
         recipe_json=history.recipe_json,
         ingredients_json=history.ingredients_json,
         meal_history_id=review.meal_history_id,
+        file=make_file_info(review),
         liked=is_liked_by(db, review.id, user),
         is_mine=user is not None and review.user_id == user.id,
         comments=comments,
@@ -466,6 +492,104 @@ def delete_post(db: Session, user: User, post_id: int) -> None:
 
     review.use_yn = USE_YN_NO
     db.commit()
+
+    # 첨부파일은 디스크에서 지우지 않는다.
+    # 논리 삭제는 되돌릴 수 있어야 하는데 파일을 지워버리면 글만 돌아온다.
+    # 삭제된 글의 사진은 open_post_file() 이 use_yn 을 보고 막는다.
+
+
+# ==========================================================
+# 첨부파일 (후기 하나당 파일 하나)
+#
+# 글쓰기(JSON)와 따로 두었다. 기존 엔드포인트를 multipart 로 바꾸면
+# PostCreateRequest 의 검증기(빈 제목·본문 차단)를 못 쓰게 되고, 수정에
+# "파일 유지 / 교체 / 삭제" 를 구분하는 플래그가 붙는다.
+#
+# 따로 두면 업로드가 실패해도 남는 건 '첨부 없는 멀쩡한 글' 이다.
+# 첨부는 선택 사항이라 그 상태가 이미 정상이다.
+# ==========================================================
+
+
+def attach_file(
+    db: Session, user: User, post_id: int, upload: UploadFile
+) -> PostDetailResponse:
+    """내 글에 첨부파일을 붙인다. 이미 있으면 새 파일로 갈아 끼운다.
+
+    순서에 뜻이 있다.
+      1. 새 파일을 먼저 디스크에 쓴다
+      2. DB 를 고치고 commit
+      3. 그 다음에 옛 파일을 지운다
+
+    옛 파일을 먼저 지우면, 2번에서 실패했을 때 DB 는 옛 파일을 가리키는데
+    디스크에는 없는 상태가 된다. 화면에 깨진 이미지가 뜬다.
+    """
+    review = get_my_post(db, user, post_id)
+
+    # 갈아 끼우기 전에 옛 파일 위치를 기억해둔다. set_file() 이 덮어쓴다.
+    old_path, old_name = review.file_path, review.file_name
+
+    saved = file_service.save_upload(upload)
+
+    # 컬럼 여섯 개를 손으로 만지지 않는다. 하나만 빠뜨려도
+    # ck_reviews_file_set 이 ORA-02290 으로 막는다.
+    review.set_file(**saved)
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        # DB 에 못 적었으면 방금 쓴 파일은 아무도 못 찾는 쓰레기다.
+        file_service.remove_file(saved["path"], saved["name"])
+        raise
+
+    file_service.remove_file(old_path, old_name)
+
+    return get_post(db, review.id, user)
+
+
+def detach_file(db: Session, user: User, post_id: int) -> None:
+    """내 글의 첨부파일을 뗀다.
+
+    첨부가 없어도 에러를 내지 않는다. "떼어달라" 는 요청의 목적은
+    '첨부 없는 상태' 이고, 이미 그 상태이기 때문이다.
+    좋아요 끄기(set_like)와 같은 규칙이다.
+    """
+    review = get_my_post(db, user, post_id)
+
+    if review.file_yn != USE_YN_YES:
+        return
+
+    old_path, old_name = review.file_path, review.file_name
+
+    # file_yn 만 'N' 으로 바꾸고 나머지를 남겨두면 ck_reviews_file_set 이 막는다.
+    review.clear_file()
+    db.commit()
+
+    # DB 를 먼저 정리하고 파일을 지운다. 반대로 하면 지우다 실패했을 때
+    # DB 는 첨부가 있다는데 파일이 없는 상태가 된다.
+    file_service.remove_file(old_path, old_name)
+
+
+def open_post_file(db: Session, post_id: int) -> tuple[Path, str, str]:
+    """내려줄 파일의 (실제 경로, 원본 파일명, 확장자).
+
+    get_alive_post 를 쓰므로 삭제된 글(use_yn='N')의 사진은 나가지 않는다.
+    업로드 폴더를 정적 서빙했다면 URL 만 알면 계속 열렸을 자리다.
+
+    DB 에는 있는데 디스크에 없는 경우도 404 로 처리한다. 서버가 바뀌었거나
+    파일을 손으로 지웠을 때인데, 화면에서는 '없는 파일' 과 다를 게 없다.
+    """
+    review = get_alive_post(db, post_id)
+
+    if review.file_yn != USE_YN_YES:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "첨부파일이 없습니다.")
+
+    target = file_service.absolute_path(review.file_path, review.file_name)
+
+    if not target.is_file():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "첨부파일을 찾을 수 없습니다.")
+
+    return target, review.file_org_name or review.file_name, review.file_ext or ""
 
 
 def increase_view(db: Session, post_id: int) -> int:

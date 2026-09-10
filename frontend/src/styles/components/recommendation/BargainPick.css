@@ -1,0 +1,113 @@
+/* "지금 싼 재료로" 카드.
+   날씨 카드가 답을 하나 정해주는 자리라면, 이쪽은 근거(싼 재료)를 먼저
+   보여주고 그에 맞는 메뉴를 늘어놓는 자리다. */
+
+.bargain__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.bargain__sub {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* ---- 싼 재료 칩 ---- */
+
+.bargain__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.bargain__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-soft);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* 내린 폭. 이 카드에서 제일 먼저 읽혀야 하는 숫자다. */
+.bargain__drop {
+  color: var(--color-ok);
+  font-weight: 700;
+}
+
+.bargain__price {
+  color: var(--color-subtle);
+  font-size: 0.92em;
+}
+
+/* ---- 메뉴 목록 ---- */
+
+.bargain__foods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bargain__food {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 12px);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color var(--dur, 160ms) var(--ease, ease),
+    box-shadow var(--dur, 160ms) var(--ease, ease);
+}
+
+.bargain__food:hover,
+.bargain__food:focus-visible {
+  border-color: var(--color-accent-soft);
+  box-shadow: var(--shadow-rest);
+}
+
+.bargain__food-body {
+  display: flex;
+  min-width: 0; /* 없으면 긴 이유 문구가 칸을 밀어낸다 */
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.bargain__food-name {
+  font-size: 0.92rem;
+}
+
+/* 이유는 두 줄까지만. 길이가 제각각이라 안 자르면 카드 높이가 들쭉날쭉해진다. */
+.bargain__food-reason {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.bargain__note {
+  margin: 0.9rem 0 0;
+  font-size: 0.76rem;
+}
+
+/* 좁은 화면에서는 한 줄에 하나씩 */
+@media (max-width: 560px) {
+  .bargain__foods {
+    grid-template-columns: 1fr;
+  }
+}

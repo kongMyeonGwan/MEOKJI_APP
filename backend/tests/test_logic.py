@@ -6,14 +6,22 @@ Oracle 을 안 켜도 돌아가므로, 로직을 고칠 때마다 부담 없이 
 
 from datetime import date, datetime, timedelta, timezone
 
+import time
+
 import httpx
 import pytest
 
+from fastapi import HTTPException
+
+from app.core.config import settings
 from app.core.kst import KST, day_end_utc, day_start_utc, to_kst_date
 from app.integrations import ai_api
 from app.integrations.weather_api import cache_key, join_address
 from app.integrations import ingredient_match
 from app.integrations import price_api
+from app.services import ai_service
+from app.services import bargain_service
+from app.services import file_service
 from app.services import unit_convert
 from app.services.history_service import count_streak
 from app.services.user_service import make_level, make_title
@@ -884,3 +892,384 @@ def test_별칭은_모두_실제_품목을_가리킨다():
 
 def test_프롬프트_어휘는_품목표와_같다():
     assert set(ingredient_match.vocabulary()) == set(ingredient_match.KAMIS_ITEM_CODES)
+
+
+# =========================================================
+# 레시피 캐시
+#
+# 같은 음식의 레시피는 달라질 이유가 없는데 AI 를 부르는 데 7~10초가 걸린다
+# (모델이 붐비면 30초를 넘기도 한다). 두 번째부터는 기억해둔 걸 준다.
+# =========================================================
+
+
+def make_cached_recipe(name="김치찌개"):
+    from app.schemas.recommend import RecipeResponse
+
+    return RecipeResponse(
+        food_name=name,
+        recipe_name=f"{name} 레시피",
+        recipe_json={"steps": ["끓인다"]},
+        ingredients_json=[{"name": "대파", "quantity": 1, "unit": "대", "grams": 100}],
+        substitutes_json=[],
+        estimated_cost=5000,
+    )
+
+
+def test_레시피를_기억했다가_다시_준다():
+    ai_service.recipe_cache.clear()
+
+    key = ai_service.recipe_cache_key("김치찌개", [], [])
+    ai_service.write_recipe_cache(key, make_cached_recipe())
+
+    found = ai_service.read_recipe_cache(key)
+
+    assert found is not None
+    assert found.recipe_name == "김치찌개 레시피"
+
+
+def test_가격은_캐시에_남지_않는다():
+    # 가격은 조회 시점의 값이다. 6시간 전 값을 오늘 값으로 보여주면 안 된다.
+    from app.schemas.recommend import PriceItem
+
+    ai_service.recipe_cache.clear()
+
+    recipe = make_cached_recipe()
+    recipe.prices = [PriceItem(name="대파 1대")]
+
+    key = ai_service.recipe_cache_key("김치찌개", [], [])
+    ai_service.write_recipe_cache(key, recipe)
+
+    assert ai_service.read_recipe_cache(key).prices == []
+
+
+def test_캐시를_고쳐도_원본은_그대로다():
+    # 부르는 쪽이 prices 를 채워 넣는다. 원본을 그대로 주면
+    # 다음 사람이 남의 조회 시점 가격을 보게 된다.
+    from app.schemas.recommend import PriceItem
+
+    ai_service.recipe_cache.clear()
+
+    key = ai_service.recipe_cache_key("김치찌개", [], [])
+    ai_service.write_recipe_cache(key, make_cached_recipe())
+
+    first = ai_service.read_recipe_cache(key)
+    first.prices = [PriceItem(name="대파 1대")]
+
+    assert ai_service.read_recipe_cache(key).prices == []
+
+
+def test_못먹는_재료가_다르면_다른_레시피다():
+    # 같은 김치찌개라도 돼지고기 알레르기가 있는 사람에게는 다른 레시피가 나간다.
+    # 이름만으로 묶으면 남의 알레르기 재료가 섞인 레시피를 보여주게 된다.
+    plain = ai_service.recipe_cache_key("김치찌개", [], [])
+    allergic = ai_service.recipe_cache_key("김치찌개", ["돼지고기"], [])
+
+    assert plain != allergic
+
+
+def test_못먹는_재료의_순서는_상관없다():
+    one = ai_service.recipe_cache_key("김치찌개", ["돼지고기", "계란"], [])
+    two = ai_service.recipe_cache_key("김치찌개", ["계란", "돼지고기"], [])
+
+    assert one == two
+
+
+def test_오래된_캐시는_쓰지_않는다():
+    ai_service.recipe_cache.clear()
+
+    key = ai_service.recipe_cache_key("김치찌개", [], [])
+    ai_service.write_recipe_cache(key, make_cached_recipe())
+
+    # 저장 시각을 유효기간 밖으로 되돌린다
+    _saved_at, recipe = ai_service.recipe_cache[key]
+    old = time.time() - ai_service.RECIPE_CACHE_SECONDS - 1
+    ai_service.recipe_cache[key] = (old, recipe)
+
+    assert ai_service.read_recipe_cache(key) is None
+
+
+def test_캐시가_너무_커지면_비운다():
+    ai_service.recipe_cache.clear()
+
+    for i in range(ai_service.RECIPE_CACHE_MAX_ENTRIES + 2):
+        key = ai_service.recipe_cache_key(f"음식{i}", [], [])
+        ai_service.write_recipe_cache(key, make_cached_recipe(f"음식{i}"))
+
+    assert len(ai_service.recipe_cache) <= ai_service.RECIPE_CACHE_MAX_ENTRIES + 1
+
+
+# =========================================================
+# 조사가격 캐시
+#
+# KAMIS 조사값은 하루 한 번만 바뀐다(같은 시장·같은 날의 값은 하나뿐).
+# 그래서 캐시가 오차를 늘리지 않는다 — 다시 물어도 같은 답이 온다.
+# =========================================================
+
+
+def sample_offers():
+    return [
+        {"shop": "서울 경동", "price": 1300, "unit": "1kg",
+         "link": "", "surveyed_at": "20260908"},
+    ]
+
+
+def test_조사가격을_기억했다가_다시_준다():
+    price_api.kamis_cache.clear()
+
+    key = ("200", "245", None)
+    price_api.write_kamis_cache(key, sample_offers(), None)
+
+    found = price_api.read_kamis_cache(key)
+
+    assert found is not None
+    offers, _trend = found
+    assert offers[0]["price"] == 1300
+
+
+def test_캐시를_고쳐도_원본은_그대로다():
+    # 부르는 쪽이 링크를 갈아끼운다. 원본을 그대로 주면 캐시가 망가진다.
+    price_api.kamis_cache.clear()
+
+    key = ("200", "245", None)
+    price_api.write_kamis_cache(key, sample_offers(), None)
+
+    first, _trend = price_api.read_kamis_cache(key)
+    first[0]["price"] = 99999
+
+    assert price_api.read_kamis_cache(key)[0][0]["price"] == 1300
+
+
+def test_오래된_캐시는_쓰지_않는다():
+    price_api.kamis_cache.clear()
+
+    key = ("200", "245", None)
+    price_api.write_kamis_cache(key, sample_offers(), None)
+
+    _saved_at, offers, trend = price_api.kamis_cache[key]
+    old = time.time() - price_api.KAMIS_CACHE_SECONDS - 1
+    price_api.kamis_cache[key] = (old, offers, trend)
+
+    assert price_api.read_kamis_cache(key) is None
+
+
+def test_빈_결과도_기억한다():
+    # KAMIS 에 없는 품목을 3초마다 다시 물어볼 이유가 없다.
+    # 없다는 사실도 다음 조사까지 바뀌지 않는다.
+    price_api.kamis_cache.clear()
+
+    key = ("999", "999", None)
+    price_api.write_kamis_cache(key, [], None)
+
+    assert price_api.read_kamis_cache(key) == ([], None)
+
+
+def test_캐시가_너무_커지면_비운다():
+    price_api.kamis_cache.clear()
+
+    for i in range(price_api.KAMIS_CACHE_MAX_ENTRIES + 2):
+        price_api.write_kamis_cache(("200", str(i), None), sample_offers(), None)
+
+    assert len(price_api.kamis_cache) <= price_api.KAMIS_CACHE_MAX_ENTRIES + 1
+
+
+def test_링크는_부른_재료명으로_붙는다():
+    # 품목이 같아도 확인 링크는 사용자가 본 이름으로 가야 한다.
+    # "다진 마늘" 을 눌렀는데 "마늘" 로 검색되면 어색하다.
+    offers = price_api.relabel(sample_offers(), "다진 마늘")
+
+    assert "%EB%8B%A4%EC%A7%84" in offers[0]["link"]  # '다진'
+
+
+# =========================================================
+# 가격 추이
+#
+# 일주일치를 이미 받아놓고 최근 하루만 쓰고 버리고 있었다.
+# 추이는 그 버려지던 데이터로 만든다 — 추가 호출이 없다.
+#
+# 쇼핑몰 API 로는 못 하는 일이다. 그쪽은 지금 값만 준다.
+# =========================================================
+
+
+def trend_row(day, price):
+    return {"exmn_ymd": day, "exmn_dd_prc": str(price)}
+
+
+def test_조사일자별로_평균을_낸다():
+    # 같은 날에도 시장마다 값이 다르다. 날짜끼리 비교하려면 하루를 하나로 줄인다.
+    rows = [
+        trend_row("20260901", 1000),
+        trend_row("20260901", 2000),
+        trend_row("20260908", 1500),
+    ]
+
+    assert price_api.daily_average(rows) == {"20260901": 1500, "20260908": 1500}
+
+
+def test_값이_내리면_음수로_알려준다():
+    rows = [trend_row("20260901", 2000), trend_row("20260908", 1700)]
+
+    trend = price_api.price_trend(rows)
+
+    assert trend is not None
+    assert trend["percent"] == -15.0
+    assert trend["from_price"] == 2000
+    assert trend["to_price"] == 1700
+    assert trend["to_day"] == "20260908"
+
+
+def test_값이_오르면_양수로_알려준다():
+    rows = [trend_row("20260901", 1000), trend_row("20260908", 1200)]
+
+    assert price_api.price_trend(rows)["percent"] == 20.0
+
+
+def test_조금_움직인_건_알리지_않는다():
+    # 시장 조사가격은 며칠 사이에도 1~2%씩 흔들린다. 그걸 다 알리면
+    # 배지가 늘 떠 있어서 아무 뜻이 없어진다.
+    rows = [trend_row("20260901", 1000), trend_row("20260908", 1020)]
+
+    assert price_api.price_trend(rows) is None
+
+
+def test_조사일이_하루뿐이면_추이가_없다():
+    assert price_api.price_trend([trend_row("20260908", 1000)]) is None
+    assert price_api.price_trend([]) is None
+
+
+def test_날짜_순서가_뒤섞여_와도_처음과_끝을_찾는다():
+    rows = [
+        trend_row("20260908", 1700),
+        trend_row("20260901", 2000),
+        trend_row("20260903", 1900),
+    ]
+
+    trend = price_api.price_trend(rows)
+
+    assert trend["from_day"] == "20260901"
+    assert trend["to_day"] == "20260908"
+
+
+# =========================================================
+# 요즘 싼 재료 고르기
+#
+# 쇼핑몰 API 로는 못 하는 일이다. 그쪽은 "지금 얼마" 만 준다.
+# KAMIS 가 일별 조사값이라 "요즘 싼지" 를 말할 수 있고, 그 목록을
+# AI 에게 넘겨 "싼 재료로 만드는 메뉴" 를 받는다.
+# =========================================================
+
+
+def bargain_row(name, percent):
+    return {"name": name, "percent": percent, "price": 1000, "unit": "1kg"}
+
+
+def test_많이_내린_재료만_고른다():
+    rows = [
+        bargain_row("고구마", -17.0),
+        bargain_row("대파", -12.0),
+        bargain_row("양파", -2.0),    # 조금 내렸다 — 장 볼 때 체감 안 된다
+        bargain_row("배추", 13.5),    # 올랐다
+    ]
+
+    picked = bargain_service.pick_cheap(rows, limit=10)
+
+    assert [row["name"] for row in picked] == ["고구마", "대파"]
+
+
+def test_개수를_넘겨서_주지_않는다():
+    # 너무 많으면 AI 가 아무거나 골라 오고, 화면도 읽히지 않는다
+    rows = [bargain_row(f"재료{i}", -10.0) for i in range(20)]
+
+    assert len(bargain_service.pick_cheap(rows, limit=8)) == 8
+
+
+def test_같은_품목을_두_번_묻지_않는다():
+    # 품목표에는 별칭이 함께 있다("소고기"와 "쇠고기"가 같은 코드).
+    # 그대로 훑으면 같은 품목을 두 번 물어보게 된다.
+    names = bargain_service.unique_items()
+
+    assert len(names) < len(ingredient_match.KAMIS_ITEM_CODES)
+    assert len(names) == len(set(names))
+
+    codes = [ingredient_match.KAMIS_ITEM_CODES[name] for name in names]
+    assert len(codes) == len(set(codes))
+
+
+def test_싼_재료가_없으면_빈_목록이다():
+    # 시세가 잔잔한 날. 화면은 이때 카드를 아예 띄우지 않는다.
+    rows = [bargain_row("양파", -1.0), bargain_row("배추", 3.0)]
+
+    assert bargain_service.pick_cheap(rows, limit=8) == []
+
+
+# =========================================================
+# 후기 첨부파일
+#
+# 사용자가 올린 파일명을 그대로 믿지 않는다는 것을 확인한다.
+# 이름이 겹치면 서로 덮어쓰고, 경로가 섞여 있으면 서버 파일을 건드린다.
+# =========================================================
+
+
+def test_허용한_확장자만_받는다():
+    assert file_service.check_ext("사진.JPG") == "jpg"
+    assert file_service.check_ext("a.png") == "png"
+
+
+def test_실행파일은_거부한다():
+    # 금지 목록이 아니라 허용 목록이라, 목록에 없는 건 전부 막힌다
+    for name in ("악성.exe", "스크립트.sh", "노트.txt", "확장자없음"):
+        with pytest.raises(HTTPException) as caught:
+            file_service.check_ext(name)
+
+        assert caught.value.status_code == 422
+
+
+def test_이름_없는_파일은_거부한다():
+    for name in (None, "", "   "):
+        with pytest.raises(HTTPException):
+            file_service.check_ext(name)
+
+
+def test_원본_파일명에서_경로를_떼어낸다():
+    # "../../.env" 를 그대로 두면 내려받기 이름에 경로가 섞인다
+    assert file_service.safe_org_name("../../.env") == ".env"
+    assert file_service.safe_org_name("C:\비밀\키.jpg") == "키.jpg"
+    assert file_service.safe_org_name("김치찌개.jpg") == "김치찌개.jpg"
+
+
+def test_원본_파일명은_255자를_넘지_않는다():
+    # FILE_ORG_NAME 이 VARCHAR2(255 CHAR) 다. 넘으면 ORA-12899 가 난다.
+    long_name = "가" * 400 + ".jpg"
+
+    assert len(file_service.safe_org_name(long_name)) == 255
+
+
+def test_저장_폴더는_월별로_나뉜다():
+    today = date.today()
+
+    assert file_service.month_path() == (
+        f"{settings.UPLOAD_DIR}/{today.year:04d}/{today.month:02d}"
+    )
+
+
+def test_업로드_폴더_밖으로_나가면_막는다():
+    # 지금은 경로도 파일명도 서버가 지어내지만, DB 값을 그대로 믿고
+    # 파일을 열어주는 코드는 언젠가 사고가 난다
+    with pytest.raises(HTTPException) as caught:
+        file_service.absolute_path("uploads/2026/09", "../../../.env")
+
+    assert caught.value.status_code == 404
+
+
+def test_정상_경로는_업로드_폴더_안을_가리킨다():
+    target = file_service.absolute_path(file_service.month_path(), "a1b2.jpg")
+
+    assert settings.upload_root.resolve() in target.parents
+
+
+def test_파일_크기를_사람이_읽는_말로_바꾼다():
+    assert file_service.human_size(512) == "512 B"
+    assert file_service.human_size(188_412) == "184 KB"
+    assert file_service.human_size(3 * 1024 * 1024) == "3.0 MB"
+
+    # 크기를 못 구한 파일도 정상이다 (DDL 이 file_size 를 필수에서 뺐다)
+    assert file_service.human_size(None) == ""

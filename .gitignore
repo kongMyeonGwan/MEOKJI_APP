@@ -28,3 +28,8 @@ Thumbs.db
 
 # 실수로 하위 폴더에 다시 클론된 중첩 저장소 (자체 .git 보유)
 MEOKJI_APP/
+
+# 후기 첨부파일 (backend/.env 의 UPLOAD_DIR)
+# 파일 본체는 DB 가 아니라 디스크에 저장한다. 사람이 올린 사진이라
+# 저장소에 넣을 것이 아니고, 팀원마다 내용이 달라 충돌만 난다.
+backend/uploads/
