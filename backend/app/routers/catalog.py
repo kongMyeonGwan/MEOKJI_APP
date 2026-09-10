@@ -1,13 +1,16 @@
 """화면이 쓰는 고정 목록 라우터.
 
 카테고리 칩 · 룰렛 조각 · 게임 목록 · 밸런스 질문 · 냉장고 재료 칩 ·
-예시 검색어 · 예산 프리셋 · 공지사항을 내려준다.
+예시 검색어 · 예산 프리셋을 내려준다.
 
 전부 로그인 없이 볼 수 있다. Guest 도 대시보드를 쓰기 때문이다.
 
 DB 가 아니라 파일(app/data/catalog.json)에서 읽는다.
-사용자가 만드는 값이 아니라서 테이블을 만들 이유가 없고,
-"테이블은 7개로 고정한다"는 설계 원칙도 지킬 수 있다.
+사용자가 만드는 값이 아니라서 테이블을 만들 이유가 없다.
+
+공지사항은 여기 없다. 운영하면서 계속 새로 쓰는 값이라 파일에 두면
+공지 하나 올릴 때마다 서버를 다시 배포해야 한다. NOTICES 표로 옮겼고
+주소도 /api/notices 로 옮겼다 (routers/notices.py).
 """
 
 from fastapi import APIRouter
@@ -19,7 +22,6 @@ from app.data import (
     CATEGORIES,
     FRIDGE_GROUPS,
     GAMES,
-    NOTICES,
     ROULETTE,
     SEARCH_SUGGESTIONS,
 )
@@ -54,18 +56,3 @@ def read_regions() -> list[dict]:
     이 목록이 필요한 화면은 회원가입과 마이페이지뿐이다.
     """
     return list_regions()
-
-
-@router.get("/notices", summary="공지사항 목록")
-def read_notices() -> list[dict]:
-    """공지는 운영자만 쓴다. 고정 · 최신 순으로 내려준다."""
-    pinned = []
-    normal = []
-
-    for notice in NOTICES:
-        if notice.get("pinned"):
-            pinned.append(notice)
-        else:
-            normal.append(notice)
-
-    return pinned + normal

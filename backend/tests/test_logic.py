@@ -22,6 +22,7 @@ from app.integrations import price_api
 from app.services import ai_service
 from app.services import bargain_service
 from app.services import file_service
+from app.services import game_service
 from app.services import unit_convert
 from app.services.history_service import count_streak
 from app.services.user_service import make_level, make_title
@@ -1273,3 +1274,47 @@ def test_파일_크기를_사람이_읽는_말로_바꾼다():
 
     # 크기를 못 구한 파일도 정상이다 (DDL 이 file_size 를 필수에서 뺐다)
     assert file_service.human_size(None) == ""
+
+
+# =========================================================
+# 미니게임 종류
+#
+# 화면의 게임 키를 DB 글자(A·B·C)로 바꾸는 표가 전부다.
+# 이 표와 DDL 의 ck_game_histories_type 이 어긋나면 INSERT 가 ORA-02290 으로
+# 막히는데, 그건 게임을 눌러봐야 알게 된다. 여기서 먼저 잡는다.
+# =========================================================
+
+
+def test_게임_세_개가_각각_다른_글자를_받는다():
+    types = game_service.GAME_TYPES
+
+    assert types["worldcup"] == "A"
+    assert types["balance"] == "B"
+    assert types["roulette"] == "C"
+
+    # 두 게임이 같은 글자를 쓰면 통계가 섞인다
+    assert len(set(types.values())) == len(types)
+
+
+def test_게임_키가_카탈로그와_같다():
+    # 화면이 catalog.json 의 games[].key 를 그대로 보내온다.
+    # 한쪽 이름만 바꾸면 기록이 통째로 비는데, 눈치채기가 매우 어렵다.
+    from app.data import GAMES
+
+    catalog_keys = {game["key"] for game in GAMES}
+
+    assert catalog_keys == set(game_service.GAME_TYPES)
+
+
+def test_모르는_게임은_404다():
+    # 조용히 넘기면 오타 하나로 기록이 안 쌓이는 걸 나중에 알게 된다
+    with pytest.raises(HTTPException) as caught:
+        game_service.to_game_type("worldcupp")
+
+    assert caught.value.status_code == 404
+
+
+def test_게임_글자는_한_글자다():
+    # DDL 이 CHAR(1) 이다. 두 글자를 넣으면 ORA-12899 가 난다.
+    for game_type in game_service.GAME_TYPES.values():
+        assert len(game_type) == 1

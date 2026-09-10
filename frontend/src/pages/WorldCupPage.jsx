@@ -4,6 +4,8 @@ import ErrorMessage from '../components/common/ErrorMessage'
 import FoodThumb from '../components/common/FoodThumb'
 import Loading from '../components/common/Loading'
 import { getRecommendations } from '../api/recommendations'
+import { GAME_KEYS } from '../api/games'
+import { useGamePlayLog } from '../hooks/useGamePlayLog'
 import { useAiLog } from '../contexts/AiLogContext'
 import { useLikes } from '../contexts/LikesContext'
 import { parseApiError } from '../utils/apiError'
@@ -32,6 +34,9 @@ const BRACKET_SIZE = 8
 const ROUND_NAME = { 8: '8강', 4: '4강', 2: '결승' }
 
 export default function WorldCupPage() {
+  // 이 게임을 시작했다고 서버에 한 번 남긴다 (로그인했을 때만)
+  useGamePlayLog(GAME_KEYS.WORLDCUP)
+
   // 이번 라운드에 남아있는 메뉴들 (8개 -> 4개 -> 2개 -> 1개)
   const [round, setRound] = useState([])
 

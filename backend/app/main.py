@@ -24,8 +24,10 @@ from app.routers import (
     auth,
     bans,
     catalog,
+    games,
     health,
     histories,
+    notices,
     posts,
     recommendations,
     users,
@@ -79,7 +81,9 @@ app.include_router(histories.router)        # 내 식사 기록
 app.include_router(posts.router)            # 후기 게시판 · 인기 레시피
 app.include_router(weather.router)          # 날씨
 app.include_router(recommendations.router)  # AI 추천 · 레시피 · 재료 가격
-app.include_router(catalog.router)          # 카테고리 · 게임 · 공지 같은 고정 목록
+app.include_router(catalog.router)          # 카테고리 · 룰렛 · 게임 같은 고정 목록
+app.include_router(notices.router)          # 공지사항 (NOTICES 표)
+app.include_router(games.router)            # 미니게임 플레이 기록 (GAME_HISTORIES 표)
 
 
 @app.get("/", include_in_schema=False)

@@ -1,8 +1,11 @@
 """화면이 필요로 하는 고정 목록 모음.
 
-카테고리 칩 · 룰렛 조각 · 밸런스 게임 질문 · 냉장고 재료 칩 · 공지사항처럼
-"사용자가 만들지 않는 값"들이다. 7개 테이블 안에 자리가 없고, 앞으로도
-DB 로 옮길 계획이 없어서 파일 하나(catalog.json)에 담아두고 API 로 내려준다.
+카테고리 칩 · 룰렛 조각 · 밸런스 게임 질문 · 냉장고 재료 칩처럼
+"사용자가 만들지 않는 값"들이다. 테이블을 만들 이유가 없어서 파일
+하나(catalog.json)에 담아두고 API 로 내려준다.
+
+공지사항은 여기 있다가 NOTICES 표로 옮겼다. 운영하면서 계속 새로 쓰는
+값이라, 파일에 두면 공지 하나 올릴 때마다 서버를 다시 배포해야 한다.
 
 왜 프론트엔드에 두지 않는가
 ---------------------------
@@ -44,7 +47,6 @@ BALANCE_QUESTIONS: list[dict] = CATALOG["balance_questions"]
 FRIDGE_GROUPS: list[dict] = CATALOG["fridge_groups"]
 SEARCH_SUGGESTIONS: list[str] = CATALOG["search_suggestions"]
 BUDGET_PRESETS: list[dict] = CATALOG["budget_presets"]
-NOTICES: list[dict] = CATALOG["notices"]
 
 # 더운 날에 먼저 보여줄 메뉴 이름들. mock 추천이 날씨를 반영하는 유일한 통로다.
 HOT_WEATHER_PICKS: list[str] = CATALOG["hot_weather_picks"]

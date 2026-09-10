@@ -35,6 +35,26 @@ def bearer(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
 
+def count_game_plays() -> int:
+    """테스트 계정이 남긴 게임 기록 수.
+
+    API 로는 셀 수 없어서 DB 를 직접 본다. GAME_HISTORIES 는 쌓기만 하는
+    로그라 조회 API 가 없고(만들 이유도 없었고), PK 도 없다.
+    """
+    from sqlalchemy import text
+
+    from app.database.database import engine
+
+    with engine.connect() as connection:
+        return connection.execute(
+            text(
+                "SELECT COUNT(*) FROM game_histories WHERE user_id = "
+                "(SELECT id FROM users WHERE email = :email AND use_yn = 'Y')"
+            ),
+            {"email": OWNER_EMAIL},
+        ).scalar()
+
+
 def signup_and_login(client, email: str, nickname: str) -> str:
     """가입하고 바로 로그인해서 토큰을 돌려준다."""
     response = client.post(
@@ -78,13 +98,6 @@ def test_카탈로그를_한_번에_내려준다(client):
         "budget_presets",
     ):
         assert len(body[key]) > 0
-
-
-def test_공지는_고정글이_위로_온다(client):
-    response = client.get("/api/catalog/notices")
-
-    assert response.status_code == 200
-    assert response.json()[0]["pinned"] is True
 
 
 def test_Guest도_날씨_추천을_받는다(client):
@@ -570,6 +583,114 @@ def test_받은_좋아요도_경험치가_된다(client):
     assert body["level"] == 2
     assert body["exp"] == 0
     assert body["exp_next"] == 150
+
+
+# =========================================================
+# 공지사항 (NOTICES 표)
+#
+# 전에는 catalog.json 에서 내려줬다. 운영하면서 계속 새로 쓰는 값이라
+# 파일에 두면 공지 하나 올릴 때마다 서버를 다시 배포해야 해서 DB 로 옮겼다.
+# =========================================================
+
+
+def test_공지는_로그인_없이_볼_수_있다(client):
+    response = client.get("/api/notices")
+
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+def test_공지는_고정이_먼저_최신순이다(client):
+    rows = client.get("/api/notices").json()
+
+    if not rows:
+        pytest.skip("공지가 없다 (db/05_seed_notices.sql 미실행)")
+
+    # 고정(pinned)이 전부 앞쪽에 몰려 있어야 한다
+    pinned = [row["pinned"] for row in rows]
+    assert pinned == sorted(pinned, reverse=True)
+
+    # 같은 고정 여부 안에서는 최신순
+    for group in (True, False):
+        days = [row["created_at"] for row in rows if row["pinned"] is group]
+        assert days == sorted(days, reverse=True)
+
+
+def test_공지는_pinned_를_불리언으로_준다(client):
+    # DB 는 'Y'/'N' 이지만 화면이 문자열을 비교하게 두면 오타가 날 자리가 생긴다
+    rows = client.get("/api/notices").json()
+
+    if not rows:
+        pytest.skip("공지가 없다")
+
+    for row in rows:
+        assert isinstance(row["pinned"], bool)
+        assert row["category"]  # 배지에 쓸 분류가 비어 있으면 안 된다
+
+
+def test_공지를_펼치면_조회수가_오른다(client):
+    rows = client.get("/api/notices").json()
+
+    if not rows:
+        pytest.skip("공지가 없다")
+
+    notice = rows[0]
+    response = client.post(f"/api/notices/{notice['id']}/view")
+
+    assert response.status_code == 200
+    assert response.json()["view_count"] == notice["view_count"] + 1
+
+
+def test_없는_공지는_404다(client):
+    assert client.post("/api/notices/99999999/view").status_code == 404
+
+
+# =========================================================
+# 미니게임 기록 (GAME_HISTORIES 표)
+#
+# 끝난 판이 아니라 시작한 판을 센다. 세 게임 모두 도중에 나가는 일이 흔해서,
+# 끝난 것만 세면 "이 게임을 얼마나 열어보는가" 를 알 수 없다.
+# =========================================================
+
+
+def test_게임_세_개를_각각_기록한다(client):
+    for game_key, game_type in (
+        ("worldcup", "A"),
+        ("balance", "B"),
+        ("roulette", "C"),
+    ):
+        response = client.post(
+            f"/api/games/{game_key}/plays", headers=STATE["owner"]
+        )
+        body = response.json()
+
+        assert response.status_code == 201, response.text
+        assert body["game_key"] == game_key
+        assert body["game_type"] == game_type
+
+
+def test_같은_게임을_여러_번_해도_다_쌓인다(client):
+    # 누적 로그다. UNIQUE 도 UPSERT 도 없다.
+    before = count_game_plays()
+
+    client.post("/api/games/roulette/plays", headers=STATE["owner"])
+    client.post("/api/games/roulette/plays", headers=STATE["owner"])
+
+    assert count_game_plays() == before + 2
+
+
+def test_모르는_게임은_404다(client):
+    response = client.post("/api/games/tetris/plays", headers=STATE["owner"])
+
+    assert response.status_code == 404
+
+
+def test_Guest는_게임을_기록할_수_없다(client):
+    # USER_ID 가 NOT NULL 이라 남길 자리가 없다.
+    # 게임 자체는 Guest 도 할 수 있고, 화면이 이 API 를 안 부를 뿐이다.
+    response = client.post("/api/games/worldcup/plays")
+
+    assert response.status_code == 401
 
 
 # =========================================================

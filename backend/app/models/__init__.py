@@ -16,7 +16,9 @@ SQLAlchemy 는 "지금까지 import 된 모델"만 알고 있다.
     from app.models import MealHistory, User
 """
 
+from app.models.game_history import game_histories
 from app.models.meal_history import MealHistory
+from app.models.notice import Notice
 from app.models.recipe_review import RecipeReview
 from app.models.review_comment import ReviewComment
 from app.models.review_like import ReviewLike
@@ -26,7 +28,9 @@ from app.models.verification_code import VerificationCode
 
 # from app.models import * 를 썼을 때 넘어갈 이름들
 __all__ = [
+    "game_histories",
     "MealHistory",
+    "Notice",
     "RecipeReview",
     "ReviewComment",
     "ReviewLike",

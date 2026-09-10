@@ -372,6 +372,7 @@ CREATE TABLE notices (
     user_id     NUMBER(19)          NOT NULL,                              -- 작성한 운영자 계정
     title       VARCHAR2(200 CHAR)  NOT NULL,                              -- 공지 제목
     content     CLOB                NOT NULL,                              -- 본문. VARCHAR2(4000)은 한글 1333자에서 막혀 CLOB 을 쓴다
+    category    VARCHAR2(20 CHAR)   DEFAULT '안내' NOT NULL,                -- 목록의 분류 배지. '점검'만 경고색으로 그린다
     view_count  NUMBER(10)          DEFAULT 0 NOT NULL,                    -- 조회수. 상세 조회 때 1 증가
     pinned_yn   CHAR(1)             DEFAULT 'N' NOT NULL,                  -- 'Y' = 목록 상단 고정. 삭제 플래그가 아니다
     use_yn      CHAR(1)             DEFAULT 'Y' NOT NULL,                  -- 'N' = 삭제된 공지. 목록·상세에서 걸러야 한다
@@ -383,6 +384,12 @@ CREATE TABLE notices (
     CONSTRAINT ck_notices_pinned_yn  CHECK (pinned_yn IN ('Y', 'N')),
     CONSTRAINT ck_notices_use_yn     CHECK (use_yn IN ('Y', 'N'))
 );
+-- category 에 CHECK 를 걸지 않았다.
+--   '점검' · '안내' · '업데이트' 로 시작하지만, 분류는 운영하면서 늘어난다.
+--   늘 때마다 DDL 을 고쳐야 하는 값은 제약으로 묶지 않는 편이 낫다.
+--   화면은 '점검'만 경고색으로 그리고 나머지는 기본색이라, 모르는 값이
+--   들어와도 배지가 깨지지 않는다.
+
 -- fk_notices_user 에만 ON DELETE CASCADE 가 없다 (fk_reviews_meal 과 함께 둘뿐).
 -- 운영자 계정이 사라진다고 공지가 같이 사라지면 안 되기 때문이다.
 -- 공지는 서비스 전체를 향한 글이라 작성자 계정보다 오래 남아야 한다.
@@ -411,15 +418,24 @@ COMMENT ON TABLE notices IS '공지사항. 운영자만 작성(서비스 계층�
 -- =========================================================
 CREATE TABLE game_histories (
     user_id     NUMBER(19)   NOT NULL,                                     -- 플레이한 회원. 회원 삭제 시 함께 삭제된다
-    game_type   CHAR(1)      DEFAULT 'A' NOT NULL,                        -- 게임 종류. 허용값은 ck_game_histories_type 참고
+    game_type   CHAR(1)      DEFAULT 'A' NOT NULL,                        -- 게임 종류. A=음식 월드컵 B=취향 밸런스 C=랜덤 돌림판
     game_point  NUMBER(10)   DEFAULT 0 NOT NULL,                           -- 이 판에서 획득한 점수
     created_at  TIMESTAMP(6) DEFAULT SYS_EXTRACT_UTC(SYSTIMESTAMP) NOT NULL,  -- 플레이 시각 (UTC 고정)
     CONSTRAINT fk_game_histories_user   FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    CONSTRAINT ck_game_histories_type   CHECK (game_type IN ('A')),
+    CONSTRAINT ck_game_histories_type   CHECK (game_type IN ('A', 'B', 'C')),
     CONSTRAINT ck_game_histories_point  CHECK (game_point >= 0)
 );
--- ck_game_histories_type 은 지금 'A' 하나만 허용한다.
--- 게임 종류가 늘어나면 이 CHECK 에 값을 추가해야 INSERT 가 통과한다.
+-- game_type 은 화면의 게임 세 개와 하나씩 짝이다.
+--
+--   A  음식 월드컵   (/game/worldcup)  후보를 둘씩 비교해 좁힌다
+--   B  취향 밸런스   (/game/balance)   질문 다섯 개로 조건을 만든다
+--   C  랜덤 돌림판   (/roulette)       운에 맡긴다
+--
+-- 글자 하나로 두는 이유는 이 표가 '누가 · 무엇을 · 언제' 만 남기는 로그라
+-- 종류 이름까지 매 행에 넣을 이유가 없어서다. 글자와 게임의 대응은
+-- backend/app/services/game_service.py 의 GAME_TYPES 한 곳에만 적어둔다.
+--
+-- 게임이 늘어나면 이 CHECK 에 글자를 추가해야 INSERT 가 통과한다.
 -- (제약을 빼면 아무 글자나 들어가므로, 값을 늘리는 쪽으로 관리한다)
 
 -- "내 게임 기록" 조회 전용. use_yn 이 없으므로 (user_id, created_at) 두 컬럼이면 된다

@@ -15,11 +15,15 @@
   localStorage 에 두고, 카테고리처럼 사용자가 만들지 않는 목록은
   서버 파일(`backend/app/data/catalog.json`)에서 내려준다
 
-  > 스키마는 지금 **9개**다. 핵심 7개(`users` · `verification_codes` ·
-  > `user_bans` · `meal_histories` · `recipe_reviews` · `review_likes` ·
-  > `review_comments`)에 `notices` · `game_histories` 가 나중에 붙었다.
-  > 다만 이 둘은 **DDL 에만 있고 백엔드가 아직 안 쓴다** — 모델도 없고,
-  > 공지는 여전히 `catalog.json` 에서 나간다. 붙일 때 이 문단을 지울 것.
+  > 테이블은 **9개**다.
+  > `users` · `verification_codes` · `user_bans` · `meal_histories` ·
+  > `recipe_reviews` · `review_likes` · `review_comments` · `notices` ·
+  > `game_histories`.
+  >
+  > 공지(`notices`)와 미니게임 기록(`game_histories`)은 파일에 둘 수 없어서
+  > 테이블이 됐다. 공지는 운영하면서 계속 새로 쓰는 값이라 파일에 두면
+  > 공지 하나 올릴 때마다 서버를 다시 배포해야 하고, 게임 기록은 애초에
+  > 사용자가 만드는 값이다.
 - **외부 연동은 전부 `mock` 기본값**이다. API 키가 하나도 없어도
   회원가입부터 게시판까지 전 기능을 눌러볼 수 있다
 - **삭제는 물리 삭제가 아니라 `USE_YN='N'` 갱신이다.** UI의 "삭제" · "회원 탈퇴"
@@ -130,7 +134,9 @@ MEOKJI_APP/
 │   ├── 00_drop_all.sql
 │   ├── 01_schema.sql              9개 테이블 (단일 소스)
 │   ├── 02_migrate_v2.sql          v1 -> v2 마이그레이션 (1회성)
-│   └── 03_add_review_attachments.sql  후기 첨부파일 컬럼 추가 (1회성)
+│   ├── 03_add_review_attachments.sql  후기 첨부파일 컬럼 추가 (1회성)
+│   ├── 04_notices_and_games.sql   공지 분류 컬럼 · 게임 종류 A~C (1회성)
+│   └── 05_seed_notices.sql        초기 공지 5건 (선택)
 ├── backend/
 │   ├── requirements.txt
 │   ├── pytest.ini
@@ -147,7 +153,7 @@ MEOKJI_APP/
 │       ├── services/          비즈니스 로직
 │       ├── routers/           API 엔드포인트
 │       ├── data/              테이블이 필요 없는 고정 목록
-│       │   └── catalog.json       카테고리 · 룰렛 · 게임 · 공지 · mock 음식 39종
+│       │   └── catalog.json       카테고리 · 룰렛 · 게임 · 질문 · mock 음식 39종
 │       └── integrations/      외부 서비스 연동 (파일 하나 = 서비스 하나)
 │           ├── ai_api.py          AI 추천·레시피 (mock / gemini / claude)
 │           ├── weather_api.py     날씨 (mock / openweather)
@@ -204,7 +210,10 @@ MEOKJI_APP/
 | | `GET /api/posts/{id}/file` | | 사진 내려받기 (원본 파일명으로) |
 | weather | `GET /api/weather` | | 현재 날씨 |
 | catalog | `GET /api/catalog` | | 카테고리 · 룰렛 · 게임 · 질문 · 재료 칩 |
-| | `GET /api/catalog/notices` | | 공지사항 |
+| | `GET /api/catalog/regions` | | 시·도 · 시·군·구 (주소 드롭다운) |
+| notices | `GET /api/notices` | | 공지사항 (고정 먼저 · 최신순) |
+| | `POST /api/notices/{id}/view` | | 조회수 +1 (펼칠 때) |
+| games | `POST /api/games/{key}/plays` | ● | 게임 시작 기록 (worldcup·balance·roulette) |
 
 **로그인 없이 되는 것** — 추천 · 레시피 · 가격 · 게시판 조회 · 날씨 · 카탈로그.
 로그인하면 못 먹는 재료(Ban)가 추천과 레시피에 자동으로 반영된다.
@@ -217,8 +226,8 @@ MEOKJI_APP/
 cd backend
 .venv\Scripts\activate
 
-pytest                      # 전부 (157건)
-pytest tests/test_logic.py  # DB 없이 되는 것만 (113건)
+pytest                      # 전부 (169건)
+pytest tests/test_logic.py  # DB 없이 되는 것만 (117건)
 ```
 
 `tests/test_api.py` 는 실제 Oracle 에 붙는다. DB 가 꺼져 있으면 실패가 아니라

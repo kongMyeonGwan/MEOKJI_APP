@@ -82,6 +82,11 @@ CLEANUP_SQL = (
     "DELETE FROM review_likes WHERE user_id = :uid",
     "DELETE FROM recipe_reviews WHERE user_id = :uid",
     "DELETE FROM meal_histories WHERE user_id = :uid",
+    # 게임 기록에는 PK 가 없다. user_id 로만 지운다 — 테스트 계정의 판은
+    # 어차피 전부 이번 실행에서 만든 것이라 그걸로 충분하다.
+    "DELETE FROM game_histories WHERE user_id = :uid",
+    # 공지는 지우지 않는다. 테스트가 공지를 만들지 않고 읽기만 한다
+    # (쓰기 API 자체가 없다). 여기서 지우면 시드해둔 진짜 공지가 날아간다.
     "DELETE FROM user_bans WHERE user_id = :uid",
     "DELETE FROM verification_codes WHERE user_id = :uid",
     "DELETE FROM users WHERE id = :uid",
