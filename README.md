@@ -10,10 +10,16 @@
 - **AI**가 음식/레시피/재료/대체재료를 동적으로 생성한다 (음식 Master 테이블 없음)
 - **날씨와 가격은 실제 API**에서 가져온다. AI가 추측하지 않는다
 - **DB에는 사용자가 최종 확정한 것만** 저장한다 (검색·추천 후보는 저장 안 함)
-- 테이블은 **7개**로 고정한다.
+- **테이블을 함부로 늘리지 않는다.**
   찜 목록 · AI 추천 기록처럼 테이블이 필요해 보이는 것은 브라우저
-  localStorage 에 두고, 카테고리 · 공지처럼 사용자가 만들지 않는 목록은
+  localStorage 에 두고, 카테고리처럼 사용자가 만들지 않는 목록은
   서버 파일(`backend/app/data/catalog.json`)에서 내려준다
+
+  > 스키마는 지금 **9개**다. 핵심 7개(`users` · `verification_codes` ·
+  > `user_bans` · `meal_histories` · `recipe_reviews` · `review_likes` ·
+  > `review_comments`)에 `notices` · `game_histories` 가 나중에 붙었다.
+  > 다만 이 둘은 **DDL 에만 있고 백엔드가 아직 안 쓴다** — 모델도 없고,
+  > 공지는 여전히 `catalog.json` 에서 나간다. 붙일 때 이 문단을 지울 것.
 - **외부 연동은 전부 `mock` 기본값**이다. API 키가 하나도 없어도
   회원가입부터 게시판까지 전 기능을 눌러볼 수 있다
 - **삭제는 물리 삭제가 아니라 `USE_YN='N'` 갱신이다.** UI의 "삭제" · "회원 탈퇴"
@@ -85,17 +91,21 @@ npm run dev
 | 순서 | 파일 | 실행 계정 | 비고 |
 |:--:|---|---|---|
 | 1 | `db/00_drop_all.sql` | meokji_app | 기존 테이블이 있을 때만 |
-| 2 | `db/01_schema.sql` | meokji_app | 7개 테이블 생성 |
+| 2 | `db/01_schema.sql` | meokji_app | 9개 테이블 생성 |
 
 이미 구버전(v1) 테이블이 만들어져 있고 회원 데이터를 살리고 싶다면,
 위 두 개 대신 **`db/02_migrate_v2.sql`을 한 번만** 실행한다.
+
+이미 v2 테이블이 있는데 후기 첨부파일 컬럼(`FILE_*`)만 없다면
+**`db/03_add_review_attachments.sql`을 한 번만** 실행한다. 파일 맨 위의
+확인 쿼리가 `0`을 주면 실행 대상이고, `6`이면 이미 적용된 것이다.
 
 **개인 PC에 Oracle을 새로 설치한 경우** — 계정부터 만들어야 함
 
 | 순서 | 파일 | 실행 계정 | 비고 |
 |:--:|---|---|---|
 | 1 | `db/00_create_user_local.sql` | **SYS AS SYSDBA** | 파일 안의 비밀번호 자리를 먼저 수정 |
-| 2 | `db/01_schema.sql` | meokji_app | 7개 테이블 생성 |
+| 2 | `db/01_schema.sql` | meokji_app | 9개 테이블 생성 |
 
 그리고 `backend/.env`의 `DB_HOST`를 `localhost`로 바꾼다.
 
@@ -118,8 +128,9 @@ MEOKJI_APP/
 ├── db/                        Oracle DDL
 │   ├── 00_create_user_local.sql   로컬 Oracle 계정 생성 (SYS로 실행)
 │   ├── 00_drop_all.sql
-│   ├── 01_schema.sql              7개 테이블 (단일 소스)
-│   └── 02_migrate_v2.sql          v1 -> v2 마이그레이션 (1회성)
+│   ├── 01_schema.sql              9개 테이블 (단일 소스)
+│   ├── 02_migrate_v2.sql          v1 -> v2 마이그레이션 (1회성)
+│   └── 03_add_review_attachments.sql  후기 첨부파일 컬럼 추가 (1회성)
 ├── backend/
 │   ├── requirements.txt
 │   ├── pytest.ini
@@ -204,7 +215,7 @@ MEOKJI_APP/
 
 ```bash
 cd backend
-.venv\Scriptsctivate
+.venv\Scripts\activate
 
 pytest                      # 전부 (157건)
 pytest tests/test_logic.py  # DB 없이 되는 것만 (113건)
