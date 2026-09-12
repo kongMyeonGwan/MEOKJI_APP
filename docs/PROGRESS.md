@@ -4,7 +4,7 @@
 
 ---
 
-## 전체 로드맵 (STEP 1~33)
+## 전체 로드맵 (STEP 1~34)
 
 | STEP | 내용 | 상태 |
 |:--:|---|:--:|
@@ -38,6 +38,83 @@
 | 31 | 히스토리 · 공지 페이징 (목록 셋을 한 모양으로) | ✅ |
 | 32 | 가입되지 않은 이메일에 알려주기 | ✅ |
 | 33 | 인증번호 재발송 제한 (1분에 1회) | ✅ |
+| 34 | 공지 분류(카테고리) 제거 | ✅ |
+
+---
+
+## 공지 분류(카테고리) 제거 (2026-09-12)
+
+공지의 분류 배지('안내' · '점검' · '업데이트')를 통째로 없앴다.
+**공지는 공지 하나로 끝낸다.**
+
+### 왜 없애나
+
+값을 강제하는 장치가 처음부터 없었다.
+
+    DDL 의 CHECK          없음. 아무 문자열이나 들어간다
+    분류 목록을 담은 표    없음
+    서버의 Literal 검증    없음
+
+선택지 네 개는 **화면의 드롭다운에만** 적혀 있었고, 배지도 '점검' 하나만
+경고색이고 나머지 셋은 전부 같은 모양이었다. 즉 실제로 하는 일은 "제목 옆에
+글자 하나 더 붙이기" 였다.
+
+그 한 가지를 위해 컬럼 하나 · 스키마 필드 셋 · 폼의 select · 리스트의
+조건문 · CSS 두 덩어리를 유지하고 있었다. 분류를 늘릴 계획도 없다.
+
+### 지운 곳
+
+    DB       NOTICES.CATEGORY            07_drop_notice_category.sql
+    DDL      01_schema.sql               컬럼과 그 설명
+    모델     models/notice.py            category 필드
+    스키마   schemas/notice.py           응답 · 요청 · 검증기 · DEFAULT_CATEGORY
+    서비스   notice_service.py           to_response · create · update 세 군데
+    시드     05_seed_notices.sql         INSERT 의 컬럼과 값
+    스크립트 scripts/seed_demo.py        NOTICES 네 건의 category
+    화면     NoticeForm.jsx              CATEGORIES 배열 · state · select
+    화면     NoticeList.jsx              배지
+    CSS      NoticeList.css              .notice__cat · .notice__cat--warn
+
+응답이 이렇게 줄었다.
+
+    전:  { id, title, content, category, view_count, pinned, created_at }
+    후:  { id, title, content,           view_count, pinned, created_at }
+
+### 배지는 '고정' 하나만 남았다
+
+전에는 `notice__badges` 안에 고정 배지와 분류 배지가 함께 있었다. 분류가
+사라지면서 고정이 없는 공지는 빈 `<span>` 만 남으므로, 고정일 때만 감싸는
+쪽으로 바꿨다. 안 그러면 제목이 이유 없이 밀린다.
+
+### 마이그레이션이 하나 늘었다
+
+`04_notices_and_games.sql` 이 넣은 컬럼을 `07` 이 도로 뺀다. 04 를 아직
+안 돌린 사람은 **둘 다 건너뛰어도 된다** — 04 의 1번(CATEGORY 추가)만 빼고
+2번(GAME_HISTORIES)부터 실행하면 07 도 필요 없다. 그 안내를 04 파일 위쪽에
+달아뒀다. 빈 스키마는 01 에 이미 컬럼이 없다.
+
+값은 되살릴 수 없다. 컬럼을 되돌려도 전부 기본값 '안내' 가 된다.
+공지의 제목 · 본문 · 조회수 · 고정 여부는 그대로다.
+
+### 덤으로 잡은 것
+
+`scripts/seed_demo.py` 가 목록 API 세 곳을 아직 **배열로 읽고 있었다.**
+STEP 31 에서 페이징을 붙이면서 놓친 자리다. 테스트가 스크립트를 돌리지
+않아서 안 잡혔고, 이번에 직접 실행해보다 `TypeError` 로 드러났다.
+
+    client.get("/api/notices").json()          -> ...json()["items"]
+    client.get("/api/histories", ...).json()   -> ...json()["items"]
+
+### 검증
+
+테스트 216건 그대로 통과한다. 분류를 확인하던 자리 여섯 곳을 고쳤다.
+「분류를 안 적으면 안내다」 는 「고정을 안 적으면 꺼진 상태다」 가 됐다 —
+기본값을 확인한다는 뜻은 같고 대상만 바뀌었다.
+
+실제 DB 에서 컬럼을 빼고 시드 스크립트를 다시 돌려, 응답 필드에 category 가
+없고 공지 4건이 멀쩡한 것까지 확인했다.
+
+**216 통과 / 0 실패.**
 
 ---
 

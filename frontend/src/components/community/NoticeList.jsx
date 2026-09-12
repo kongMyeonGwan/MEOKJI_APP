@@ -82,18 +82,13 @@ export default function NoticeList({ notices, canManage = false, onEdit, onDelet
               onClick={() => toggle(notice)}
               aria-expanded={open}
             >
-              <span className="notice__badges">
-                {notice.pinned && <span className="tag notice__pin">고정</span>}
-                <span
-                  className={`tag ${
-                    notice.category === '점검'
-                      ? 'notice__cat notice__cat--warn'
-                      : 'notice__cat'
-                  }`}
-                >
-                  {notice.category}
+              {/* 배지는 '고정' 하나뿐이다. 분류(안내·점검·업데이트)는 없앴다 —
+                  공지는 공지 하나로 끝낸다 */}
+              {notice.pinned && (
+                <span className="notice__badges">
+                  <span className="tag notice__pin">고정</span>
                 </span>
-              </span>
+              )}
 
               <span className="notice__title">{notice.title}</span>
 

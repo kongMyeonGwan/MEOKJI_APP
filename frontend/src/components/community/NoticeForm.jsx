@@ -12,28 +12,16 @@ import '../../styles/components/community/NoticeForm.css'
  * 게시글은 /community/write 라는 페이지가 따로 있다. 글을 쓰려면 공유할 내
  * 기록을 골라야 하고, 사진도 붙고, 본문이 길어서 화면이 하나 필요하다.
  *
- * 공지는 항목이 넷뿐이다(제목 · 분류 · 고정 · 본문). 목록 위에 펴면 방금
+ * 공지는 항목이 셋뿐이다(제목 · 고정 · 본문). 목록 위에 펴면 방금
  * 쓴 공지가 어디에 끼는지 바로 보이고, 취소해도 돌아올 곳이 없다.
  * NoticeList 가 상세 페이지 없이 그 자리에서 펼치는 것과 같은 이유다.
  *
  * 작성과 수정을 한 컴포넌트로 둔 이유
  * -----------------------------------
- * 두 화면의 입력칸이 넷으로 똑같다. 다른 건 "처음 값이 비어 있나 채워져
+ * 두 화면의 입력칸이 똑같다. 다른 건 "처음 값이 비어 있나 채워져
  * 있나"와 "POST 냐 PUT 이냐" 둘뿐이라, 나누면 같은 폼을 두 벌 관리하게 된다.
  * notice 를 주면 수정, 안 주면 작성이다.
  */
-
-// 분류 선택지. 이 목록은 여기 한 곳에만 있다.
-//
-// 서버는 분류를 검사하지 않는다 — Literal 로 묶지도, DDL 에 CHECK 를 걸지도
-// 않았다. 운영하면서 늘어나는 값이라 제약을 걸면 늘 때마다 코드를 고쳐야 한다.
-// 그래서 이 목록은 "매번 손으로 치지 않게" 하는 편의일 뿐이고, 서버는 무엇이
-// 와도 그대로 저장한다.
-//
-// 새 분류가 필요하면 이 배열에 한 줄 더하면 된다. 다만 배지 색은 아래
-// NoticeList.jsx 가 '점검' 만 경고색으로 그리므로, 색까지 붙이려면 거기도
-// 같이 봐야 한다.
-const CATEGORIES = ['안내', '점검', '업데이트', '이벤트']
 
 export default function NoticeForm({ notice, onDone, onCancel }) {
   const editing = Boolean(notice)
@@ -42,7 +30,6 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
   // 폼을 닫았다 다시 열면(부모가 key 로 새로 만든다) 그때 값이 다시 잡힌다.
   const [title, setTitle] = useState(notice?.title ?? '')
   const [content, setContent] = useState(notice?.content ?? '')
-  const [category, setCategory] = useState(notice?.category ?? CATEGORIES[0])
   const [pinned, setPinned] = useState(notice?.pinned ?? false)
 
   const [errors, setErrors] = useState({})
@@ -66,7 +53,6 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
     const payload = {
       title: title.trim(),
       content: content.trim(),
-      category,
       pinned,
     }
 
@@ -90,7 +76,6 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
       setErrors({
         title: fieldErrors.title,
         content: fieldErrors.content,
-        category: fieldErrors.category,
       })
       setSubmitError(message)
       setSubmitting(false)
@@ -116,29 +101,15 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
         <ErrorMessage message={errors.title} />
       </label>
 
-      <div className="notice-form__row">
-        <label className="notice-form__field">
-          <span>분류</span>
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-          <ErrorMessage message={errors.category} />
-        </label>
-
-        {/* 고정은 체크박스다. 항목이 하나뿐이라 라벨을 따로 두지 않는다 */}
-        <label className="notice-form__check">
-          <input
-            type="checkbox"
-            checked={pinned}
-            onChange={(e) => setPinned(e.target.checked)}
-          />
-          <span>목록 맨 위에 고정</span>
-        </label>
-      </div>
+      {/* 고정은 체크박스다. 항목이 하나뿐이라 라벨을 따로 두지 않는다 */}
+      <label className="notice-form__check">
+        <input
+          type="checkbox"
+          checked={pinned}
+          onChange={(e) => setPinned(e.target.checked)}
+        />
+        <span>목록 맨 위에 고정</span>
+      </label>
 
       <label className="notice-form__field">
         <span>내용</span>

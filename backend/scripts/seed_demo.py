@@ -128,7 +128,6 @@ NOTICES = [
             "링크 및 홍보성 글은 사전 안내 없이 삭제될 수 있습니다.\n"
             "신고는 관리자 확인 후 조치됩니다."
         ),
-        "category": "안내",
         "pinned": True,
     },
     {
@@ -138,7 +137,6 @@ NOTICES = [
             "점검 시간 동안에는 로그인과 레시피 추천을 이용하실 수 없습니다.\n"
             "작성 중인 글은 미리 저장해두시길 권해드립니다."
         ),
-        "category": "점검",
         "pinned": True,
     },
     {
@@ -148,7 +146,6 @@ NOTICES = [
             "알레르기로 등록한 재료는 추천에서 완전히 제외되고,\n"
             "싫어하는 재료는 가능한 한 대체재료로 바꿔 제안합니다."
         ),
-        "category": "업데이트",
         "pinned": False,
     },
     {
@@ -157,7 +154,6 @@ NOTICES = [
             "재료 가격은 KAMIS 소매 조사가격을 기준으로 보여드립니다.\n"
             "실제 결제 금액은 구입처와 판매자 사정에 따라 달라질 수 있습니다."
         ),
-        "category": "안내",
         "pinned": False,
     },
 ]
@@ -314,7 +310,9 @@ def seed_notices(client: TestClient, headers: dict) -> None:
     공지에는 첨부파일이 없다. NOTICES 표에 파일 컬럼 자체가 없고 붙일 API 도
     없다 — 첨부는 후기(RECIPE_REVIEWS)에만 있다.
     """
-    existing = {row["title"] for row in client.get("/api/notices").json()}
+    # 목록 API 는 배열이 아니라 {items, total, ...} 로 온다 (STEP 31).
+    # 시드가 넣는 공지는 몇 건뿐이라 1페이지만 봐도 충분하다.
+    existing = {row["title"] for row in client.get("/api/notices").json()["items"]}
 
     for notice in NOTICES:
         if notice["title"] in existing:
@@ -326,7 +324,7 @@ def seed_notices(client: TestClient, headers: dict) -> None:
             raise SystemExit(f"공지 실패 {response.status_code}: {response.text}")
 
         body = response.json()
-        ok(f"[{body['category']}] {'고정 ' if body['pinned'] else ''}{body['title']}")
+        ok(f"{'고정 ' if body['pinned'] else ''}{body['title']}")
 
 
 def seed_histories(client: TestClient, headers: dict) -> dict:
@@ -337,7 +335,7 @@ def seed_histories(client: TestClient, headers: dict) -> dict:
     """
     histories = {
         row["food_name"]: row
-        for row in client.get("/api/histories", headers=headers).json()
+        for row in client.get("/api/histories", headers=headers).json()["items"]
     }
 
     for food in FOODS:
@@ -452,7 +450,7 @@ def main() -> None:
         seed_posts(client, member, histories)
 
         print("\n[결과]")
-        notices = client.get("/api/notices").json()
+        notices = client.get("/api/notices").json()["items"]
         page = client.get("/api/posts").json()
         stats = client.get("/api/histories/stats", headers=member).json()
 

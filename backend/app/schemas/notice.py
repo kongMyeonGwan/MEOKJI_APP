@@ -20,20 +20,6 @@ from app.schemas.page import Page
 # 500 이 난다. 같은 이유로 막는 일이라 규칙도 같아야 한다.
 from app.schemas.post import require_text
 
-# 카테고리를 안 적었을 때. DDL 의 DEFAULT '안내' 와 같은 값이어야 한다.
-DEFAULT_CATEGORY = "안내"
-
-# 분류 목록(안내 · 점검 · 업데이트 · 이벤트)은 여기 두지 않는다.
-#
-# 서버는 분류를 검사하지 않는다 — Literal 로 묶지도, DDL 에 CHECK 를 걸지도
-# 않았다. 운영하면서 늘어나는 값이라 늘 때마다 코드를 고쳐야 하는 제약은
-# 득보다 실이 크고, 화면도 '점검' 만 경고색이라 모르는 값이 와도 안 깨진다.
-#
-# 그래서 목록은 폼의 드롭다운을 채우는 데만 쓰이고, 화면이 들고 있다
-# (components/community/NoticeForm.jsx). 서버가 쓰지도 않는 목록을 한 벌 더
-# 두면 한쪽만 고쳐질 때 조용히 어긋난다.
-
-
 class NoticeResponse(BaseModel):
     """공지 한 건."""
 
@@ -42,9 +28,6 @@ class NoticeResponse(BaseModel):
     id: int
     title: str
     content: str
-
-    # 목록의 분류 배지. '점검' · '안내' · '업데이트' 등
-    category: str
 
     view_count: int
 
@@ -90,9 +73,6 @@ class NoticeCreateRequest(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     content: str = Field(..., min_length=1)
 
-    # 안 보내면 '안내'. 대부분의 공지가 '안내' 라서 매번 적게 하지 않는다.
-    category: str = Field(DEFAULT_CATEGORY, min_length=1, max_length=20)
-
     # 상단 고정. DB 는 'Y'/'N' 이지만 바깥에서는 bool 로 주고받는다.
     # 화면이 'Y' 문자열을 비교하게 두면 조건문마다 오타가 날 자리가 생긴다.
     pinned: bool = False
@@ -106,11 +86,6 @@ class NoticeCreateRequest(BaseModel):
     @classmethod
     def validate_content(cls, content: str) -> str:
         return require_text(content, "내용")
-
-    @field_validator("category")
-    @classmethod
-    def validate_category(cls, category: str) -> str:
-        return require_text(category, "분류")
 
 
 class NoticeUpdateRequest(NoticeCreateRequest):

@@ -92,7 +92,7 @@ def count_notice_view(
         401: ADMIN_401,
         403: ADMIN_403,
         423: ADMIN_423,
-        422: {"description": "빈 제목·내용·분류"},
+        422: {"description": "빈 제목·내용"},
     },
 )
 def write_notice(
@@ -116,7 +116,7 @@ def write_notice(
         403: ADMIN_403,
         423: ADMIN_423,
         404: NOT_FOUND,
-        422: {"description": "빈 제목·내용·분류"},
+        422: {"description": "빈 제목·내용"},
     },
 )
 def edit_notice(

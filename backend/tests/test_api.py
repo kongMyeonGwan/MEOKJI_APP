@@ -870,7 +870,6 @@ def test_공지는_pinned_를_불리언으로_준다(client):
 
     for row in rows:
         assert isinstance(row["pinned"], bool)
-        assert row["category"]  # 배지에 쓸 분류가 비어 있으면 안 된다
 
 
 def test_공지를_펼치면_조회수가_오른다(client):
@@ -991,9 +990,8 @@ def test_관리자는_공지를_쓴다(client):
         "/api/notices",
         headers=STATE["owner"],
         json={
-            "title": "pytest 점검 공지",
+            "title": "pytest 고정 공지",
             "content": "본문입니다",
-            "category": "점검",
             "pinned": True,
         },
     )
@@ -1001,8 +999,7 @@ def test_관리자는_공지를_쓴다(client):
     assert response.status_code == 201, response.text
     body = response.json()
 
-    assert body["title"] == "pytest 점검 공지"
-    assert body["category"] == "점검"
+    assert body["title"] == "pytest 고정 공지"
     assert body["pinned"] is True
 
     # 조회수는 요청으로 받지 않는다. 읽혀서 쌓이는 값이라 0 에서 시작한다.
@@ -1017,7 +1014,8 @@ def test_관리자는_is_admin_이_참이다(client):
     assert me["is_admin"] is True
 
 
-def test_분류를_안_적으면_안내다(client):
+def test_고정을_안_적으면_꺼진_상태다(client):
+    """쓸 때마다 맨 위에 붙으면 고정이 뜻을 잃는다."""
     response = client.post(
         "/api/notices",
         headers=STATE["owner"],
@@ -1025,9 +1023,6 @@ def test_분류를_안_적으면_안내다(client):
     )
 
     assert response.status_code == 201
-    assert response.json()["category"] == "안내"
-
-    # 고정도 기본이 꺼짐이다. 쓸 때마다 맨 위에 붙으면 고정이 뜻을 잃는다.
     assert response.json()["pinned"] is False
 
 
@@ -1061,7 +1056,6 @@ def test_공지를_고쳐도_조회수는_그대로다(client):
         json={
             "title": "pytest 고친 공지",
             "content": "고친 본문",
-            "category": "안내",
             "pinned": False,
         },
     )
@@ -1070,7 +1064,6 @@ def test_공지를_고쳐도_조회수는_그대로다(client):
     body = response.json()
 
     assert body["title"] == "pytest 고친 공지"
-    assert body["category"] == "안내"
     assert body["pinned"] is False
 
     # 오타 하나 고쳤다고 "몇 명이 읽었나" 가 0 으로 돌아가면 안 된다

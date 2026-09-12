@@ -137,7 +137,8 @@ MEOKJI_APP/
 │   ├── 03_add_review_attachments.sql  후기 첨부파일 컬럼 추가 (1회성)
 │   ├── 04_notices_and_games.sql   공지 분류 컬럼 · 게임 종류 A~C (1회성)
 │   ├── 05_seed_notices.sql        초기 공지 5건 (선택)
-│   └── 06_add_user_level.sql      회원 권한 등급 1=관리자 2=일반 (1회성)
+│   ├── 06_add_user_level.sql      회원 권한 등급 1=관리자 2=일반 (1회성)
+│   └── 07_drop_notice_category.sql  04 가 넣은 공지 분류 컬럼 제거 (1회성)
 ├── backend/
 │   ├── requirements.txt
 │   ├── pytest.ini

@@ -41,17 +41,6 @@
   font-weight: 600;
 }
 
-.notice__cat {
-  background: var(--color-surface);
-}
-
-.notice__cat--warn {
-  border-color: var(--color-warn);
-  background: #fdf4e5;
-  color: var(--color-warn);
-  font-weight: 600;
-}
-
 /* 제목이 길면 한 줄로 자른다. 남는 공간을 전부 차지한다 */
 .notice__title {
   flex: 1;

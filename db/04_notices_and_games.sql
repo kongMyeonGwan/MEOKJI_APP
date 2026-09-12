@@ -12,6 +12,9 @@
 --
 -- 무엇이 바뀌나요?
 --   1) NOTICES 에 CATEGORY 컬럼이 하나 늘어납니다.
+--      ※ 이 컬럼은 나중에 없앴습니다(07_drop_notice_category.sql).
+--        아직 이 파일을 안 돌렸다면 아래 "1. NOTICES.CATEGORY 추가" 는
+--        건너뛰고 "2. GAME_HISTORIES" 부터 실행하세요. 07 도 필요 없습니다.
 --      공지 목록의 분류 배지('점검' · '안내' · '업데이트')를 그리는 값입니다.
 --      화면(NoticeList.jsx)이 이미 이 값을 쓰고 있었는데, 공지를
 --      파일(catalog.json)에서 DB 로 옮기면서 컬럼이 필요해졌습니다.

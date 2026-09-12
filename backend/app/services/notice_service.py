@@ -56,7 +56,6 @@ def to_response(notice: Notice) -> NoticeResponse:
         id=notice.id,
         title=notice.title,
         content=notice.content,
-        category=notice.category,
         view_count=notice.view_count,
         pinned=notice.pinned_yn == USE_YN_YES,
         created_at=notice.created_at,
@@ -159,7 +158,6 @@ def create_notice(db: Session, user: User, payload: NoticeCreateRequest) -> Noti
         user_id=user.id,
         title=payload.title,
         content=payload.content,
-        category=payload.category,
         pinned_yn=to_pinned_yn(payload.pinned),
     )
     db.add(notice)
@@ -186,7 +184,6 @@ def update_notice(
 
     notice.title = payload.title
     notice.content = payload.content
-    notice.category = payload.category
     notice.pinned_yn = to_pinned_yn(payload.pinned)
     db.commit()
 

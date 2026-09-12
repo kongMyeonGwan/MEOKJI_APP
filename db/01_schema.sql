@@ -390,7 +390,6 @@ CREATE TABLE notices (
     user_id     NUMBER(19)          NOT NULL,                              -- 작성한 운영자 계정
     title       VARCHAR2(200 CHAR)  NOT NULL,                              -- 공지 제목
     content     CLOB                NOT NULL,                              -- 본문. VARCHAR2(4000)은 한글 1333자에서 막혀 CLOB 을 쓴다
-    category    VARCHAR2(20 CHAR)   DEFAULT '안내' NOT NULL,                -- 목록의 분류 배지. '점검'만 경고색으로 그린다
     view_count  NUMBER(10)          DEFAULT 0 NOT NULL,                    -- 조회수. 상세 조회 때 1 증가
     pinned_yn   CHAR(1)             DEFAULT 'N' NOT NULL,                  -- 'Y' = 목록 상단 고정. 삭제 플래그가 아니다
     use_yn      CHAR(1)             DEFAULT 'Y' NOT NULL,                  -- 'N' = 삭제된 공지. 목록·상세에서 걸러야 한다
@@ -402,11 +401,12 @@ CREATE TABLE notices (
     CONSTRAINT ck_notices_pinned_yn  CHECK (pinned_yn IN ('Y', 'N')),
     CONSTRAINT ck_notices_use_yn     CHECK (use_yn IN ('Y', 'N'))
 );
--- category 에 CHECK 를 걸지 않았다.
---   '점검' · '안내' · '업데이트' 로 시작하지만, 분류는 운영하면서 늘어난다.
---   늘 때마다 DDL 을 고쳐야 하는 값은 제약으로 묶지 않는 편이 낫다.
---   화면은 '점검'만 경고색으로 그리고 나머지는 기본색이라, 모르는 값이
---   들어와도 배지가 깨지지 않는다.
+-- 분류(카테고리) 컬럼을 두지 않는다.
+--   한때 '안내' · '점검' · '업데이트' 배지를 그리는 CATEGORY 가 있었다
+--   (04_notices_and_games.sql 로 추가 -> 07_drop_notice_category.sql 로 제거).
+--   값을 강제하는 장치가 없었고(CHECK 도, 분류 목록 표도 없음) 화면도 '점검'
+--   하나만 경고색이라, 그 한 가지를 위해 컬럼을 유지할 이유가 없었다.
+--   공지는 공지 하나로 끝낸다.
 
 -- fk_notices_user 에만 ON DELETE CASCADE 가 없다 (fk_reviews_meal 과 함께 둘뿐).
 -- 운영자 계정이 사라진다고 공지가 같이 사라지면 안 되기 때문이다.

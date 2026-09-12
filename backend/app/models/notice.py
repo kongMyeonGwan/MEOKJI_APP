@@ -33,13 +33,6 @@ class Notice(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
-    # 목록의 분류 배지. '점검' · '안내' · '업데이트' 처럼 운영하면서 늘어나는 값이라
-    # DDL 에 CHECK 를 걸지 않았다. 화면은 '점검' 만 경고색으로 그리고 나머지는
-    # 기본색이라, 모르는 값이 들어와도 배지가 깨지지 않는다.
-    category: Mapped[str] = mapped_column(
-        String(20), nullable=False, server_default=text("'안내'")
-    )
-
     view_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
 
     # 'Y' = 목록 상단 고정. 삭제 플래그(use_yn)와 헷갈리기 쉬우니 주의한다.
@@ -66,4 +59,4 @@ class Notice(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Notice id={self.id} category={self.category} title={self.title!r}>"
+        return f"<Notice id={self.id} title={self.title!r}>"
