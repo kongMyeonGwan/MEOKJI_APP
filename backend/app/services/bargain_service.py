@@ -239,7 +239,19 @@ async def get_bargains(limit: int = DEFAULT_BARGAIN_LIMIT) -> list[dict]:
 
         if rows is None:
             rows = await scan_bargains()
-            write_bargain_file(rows)
+
+            # 한 건도 못 건졌으면 파일을 건드리지 않는다.
+            #
+            # scan_bargains() 는 품목 하나가 실패해도 건너뛰고 계속 간다.
+            # 그래서 인증키가 막히거나 KAMIS 가 죽으면 101개가 모두 같은
+            # 이유로 실패해서 빈 목록이 돌아오는데, 그걸 그대로 쓰면
+            # 마지막으로 성공한 훑기 결과가 통째로 사라진다.
+            #
+            # 빈 목록이 "오늘은 값 내린 재료가 없다" 인지 "전부 실패했다"
+            # 인지 구분할 방법이 없으므로, 안전한 쪽으로 둔다 —
+            # 안 쓰고 넘어가면 다음 요청에서 다시 훑어본다.
+            if rows:
+                write_bargain_file(rows)
 
         bargain_cache = (time.time(), rows)
 

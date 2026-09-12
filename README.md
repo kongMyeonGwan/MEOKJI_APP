@@ -145,6 +145,9 @@ MEOKJI_APP/
 │   ├── tests/                 자동 테스트
 │   │   ├── test_logic.py          DB 없이 도는 계산 검증
 │   │   └── test_api.py            실제 Oracle 에 붙는 통합 검증
+│   ├── scripts/               손으로 한 번씩 돌리는 것들
+│   │   ├── check_email.py         .env 의 메일 설정으로 실제 발송 시도
+│   │   └── seed_demo.py           빈 DB 에 데모 데이터 채우기
 │   └── app/
 │       ├── main.py            FastAPI 진입점
 │       ├── core/              config(설정) · security(bcrypt/JWT) · deps(로그인) · kst(시간대)
@@ -224,14 +227,46 @@ MEOKJI_APP/
 
 ---
 
+## 데모 데이터 채우기
+
+빈 DB 로는 화면을 볼 수가 없다. 게시판도 공지도 비어 있고, 글을 쓰려면 식사를
+먼저 확정해야 해서 손으로 채우려면 한참 걸린다.
+
+```bash
+cd backend
+.venv\Scriptsctivate
+
+python -m scripts.seed_demo
+```
+
+회원 2명(운영자 · 일반) · 공지 4건 · 식사 기록 3건 · 후기 2건(첨부 1건)을
+**실제 API 를 거쳐** 만든다. DB 에 직접 INSERT 하지 않으므로 검증기 · FK ·
+UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지 않는다.
+
+여러 번 돌려도 안전하다 — 이미 있는 것은 건너뛴다.
+
+| 계정 | 등급 |
+|---|---|
+| `admin@meokji.com` | 관리자 (`user_level = 1`) — 공지를 쓸 수 있다 |
+| `minji@example.com` | 일반 회원 |
+
+비밀번호는 `db/02_seed.sql` 의 개발용 계정과 같다. 다른 값을 쓰려면 실행 전에
+`SEED_PASSWORD` 환경변수를 지정한다.
+
+> **`APP_ENV=local` 에서만 돈다.** 저장소에 적힌 개발용 비밀번호로 **관리자
+> 계정**을 만들기 때문이다. 운영이나 공용 DB 에서 돌면 README 를 읽은 누구나
+> 관리자로 로그인할 수 있게 된다. 다른 값이면 아무것도 하지 않고 멈춘다.
+
+---
+
 ## 테스트
 
 ```bash
 cd backend
 .venv\Scripts\activate
 
-pytest                      # 전부 (169건)
-pytest tests/test_logic.py  # DB 없이 되는 것만 (117건)
+pytest                      # 전부 (197건)
+pytest tests/test_logic.py  # DB 없이 되는 것만 (127건)
 ```
 
 `tests/test_api.py` 는 실제 Oracle 에 붙는다. DB 가 꺼져 있으면 실패가 아니라
