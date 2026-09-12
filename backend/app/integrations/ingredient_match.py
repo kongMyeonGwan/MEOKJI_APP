@@ -264,14 +264,30 @@ def normalize(name: str) -> str:
     text = "".join(words) if words else text.replace(" ", "")
 
     # 붙여 쓴 손질 표현도 뗀다 ("다진마늘" -> "마늘")
+    #
+    # 떼고 난 것이 품목표에 없으면 되돌린다
+    # -------------------------------------
+    # '생강' 은 '생' + '강' 이 아니라 그 자체가 품목이다. 그냥 떼면 '강' 이
+    # 되어 영영 못 찾는다. 실제로 116종 중 이 한 종이 그랬다.
+    #
+    # 그래서 "떼어낸 결과가 아는 품목일 때만" 뗀다. 아니면 원래대로 둔다.
+    # '다진마늘' 은 떼면 '마늘' 이라 품목표에 있으니 그대로 통과한다.
     changed = True
     while changed:
         changed = False
         for modifier in MODIFIERS:
-            if text.startswith(modifier) and len(text) > len(modifier):
-                text = text[len(modifier):]
-                changed = True
+            if not text.startswith(modifier) or len(text) <= len(modifier):
+                continue
+
+            stripped = text[len(modifier):]
+
+            # 떼기 전 이름이 이미 품목이면 건드리지 않는다 ('생강')
+            if text in KAMIS_ITEM_CODES:
                 break
+
+            text = stripped
+            changed = True
+            break
 
     return text
 
