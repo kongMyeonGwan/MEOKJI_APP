@@ -109,6 +109,16 @@ def login_user(db: Session, payload: LoginRequest) -> User:
     if user is None:
         # 가입되지 않았거나 탈퇴한 이메일. 실패 횟수를 셀 대상 자체가 없다.
         # 탈퇴 여부를 응답으로 구분해주지 않는다.
+        #
+        # 여기서 곧바로 돌아서므로 아래 verify_password() 를 거치지 않는다.
+        # bcrypt 가 일부러 무겁게 설계돼 있어서 응답 시간이 갈린다 —
+        # 실측으로 6.6ms 대 321ms 다. 시간만 재면 가입 여부를 알 수 있다.
+        #
+        # 버릴 해시 계산을 한 번 돌려 시간을 맞추는 방법이 있지만 넣지 않았다.
+        # 같은 정보를 재설정 API 가 404 로 대놓고 알려주고(STEP 32), 아래
+        # "(남은 시도 N회)" 문구도 존재하는 계정에만 붙는다. 혼자 막아봐야
+        # 앞문을 열어두고 뒷문에 자물쇠를 다는 셈이다.
+        # (PROGRESS 의 「로그인 응답 시간은 맞추지 않는다」 참고)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, INVALID_CREDENTIALS)
 
     # 이미 잠긴 계정은 비밀번호 검증까지 가지 않는다.
