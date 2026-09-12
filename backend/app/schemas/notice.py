@@ -13,6 +13,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.page import Page
+
 # 공백만 든 제목·본문을 422 로 끊는 검증기. 게시판 스키마에 있는 것을 그대로 쓴다.
 # Oracle 은 빈 문자열을 NULL 로 보기 때문에, 걸러내지 않으면 NOT NULL 위반으로
 # 500 이 난다. 같은 이유로 막는 일이라 규칙도 같아야 한다.
@@ -49,6 +51,21 @@ class NoticeResponse(BaseModel):
     pinned: bool
 
     created_at: datetime
+
+
+class NoticePage(Page):
+    """공지 한 페이지.
+
+    공지는 지금 몇 건뿐이라 페이징이 없어도 돌아간다. 그래도 붙여둔 이유는
+    공지가 사용자 수가 아니라 **운영 기간에 비례해 늘어나는** 값이기 때문이다.
+    점검 · 이벤트 안내가 한 달에 몇 건씩 쌓이면 몇 년 뒤에는 수백 건이 된다.
+    그때 본문(CLOB)까지 통째로 내려주게 된다 — 목록에서 그 자리에 펼치느라
+    본문을 같이 싣고 있어서 게시판보다 더 무겁다.
+
+    나머지 네 칸은 schemas/page.py 참고.
+    """
+
+    items: list[NoticeResponse]
 
 
 class NoticeViewResponse(BaseModel):

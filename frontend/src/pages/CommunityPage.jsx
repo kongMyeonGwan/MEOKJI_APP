@@ -51,6 +51,8 @@ export default function CommunityPage() {
   const [loadError, setLoadError] = useState('')
 
   const [notices, setNotices] = useState([])
+  const [noticePage, setNoticePage] = useState(1)
+  const [noticeTotalPages, setNoticeTotalPages] = useState(1)
   const [noticeError, setNoticeError] = useState('')
 
   // 열려 있는 공지 폼.
@@ -69,21 +71,23 @@ export default function CommunityPage() {
   // 403 만 받을 버튼을 보여주지 않기 위해서다.
   const canManage = Boolean(user?.is_admin)
 
-  // 공지는 검색도 페이징도 없어서 화면이 열릴 때 한 번만 받아온다.
+  // 공지는 검색이 없어서 페이지만 보면 된다.
   // 실패하면 빈 목록으로 둔다. 공지를 못 받았다고 게시판까지 막을 이유는 없다.
   useEffect(() => {
     let alive = true
 
-    getNotices()
+    getNotices({ page: noticePage })
       .then((data) => {
-        if (alive) setNotices(data)
+        if (!alive) return
+        setNotices(data.items)
+        setNoticeTotalPages(data.total_pages)
       })
       .catch(() => {})
 
     return () => {
       alive = false
     }
-  }, [])
+  }, [noticePage])
 
   /** 공지를 쓰거나 고친 뒤. 목록을 서버에서 다시 받아온다.
    *
@@ -91,19 +95,35 @@ export default function CommunityPage() {
    * 가야 하는데 그 정렬은 서버 규칙이라, 화면이 흉내 내면 새로고침한 순간
    * 순서가 달라진다. 공지는 몇 건뿐이라 다시 받아도 부담이 없다.
    */
-  async function reloadNotices() {
+  async function reloadNotices(targetPage = noticePage) {
     try {
-      setNotices(await getNotices())
+      const data = await getNotices({ page: targetPage })
+      setNotices(data.items)
+      setNoticeTotalPages(data.total_pages)
+
+      // 마지막 공지를 지워 페이지가 통째로 사라졌으면 한 장 앞으로
+      if (data.items.length === 0 && targetPage > 1) setNoticePage(targetPage - 1)
     } catch (err) {
       setNoticeError(parseApiError(err).message)
     }
   }
 
-  /** 폼이 저장을 마쳤을 때. */
-  function onNoticeSaved() {
+  /** 폼이 저장을 마쳤을 때.
+   *
+   * 새로 쓴 공지는 최신이라 1페이지에 있다. 3페이지를 보다가 공지를 쓰면
+   * 저장은 됐는데 화면에는 안 보이는 상태가 되므로 1페이지로 돌려준다.
+   * 수정은 그 공지가 있던 페이지에 그대로 남는다.
+   */
+  function onNoticeSaved(saved, wasEditing) {
     setEditing(null)
     setNoticeError('')
-    reloadNotices()
+
+    if (wasEditing) {
+      reloadNotices()
+    } else {
+      setNoticePage(1)
+      reloadNotices(1)
+    }
   }
 
   /** 공지 삭제. 확인창은 NoticeList 가 이미 띄웠다. */
@@ -174,6 +194,13 @@ export default function CommunityPage() {
   /** 페이지 버튼을 눌렀을 때. 목록이 바뀌므로 화면 맨 위로 올려준다. */
   function onPageChange(next) {
     setPage(next)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /** 공지 탭의 페이지 버튼. 탭마다 페이지를 따로 센다 —
+   *  게시판 3페이지를 보다 공지 탭으로 옮겼는데 공지도 3페이지면 이상하다. */
+  function onNoticePageChange(next) {
+    setNoticePage(next)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -296,6 +323,13 @@ export default function CommunityPage() {
             canManage={canManage}
             onEdit={setEditing}
             onDelete={onNoticeDelete}
+          />
+
+          {/* 한 페이지뿐이면 Pagination 이 스스로 아무것도 안 그린다 */}
+          <Pagination
+            page={noticePage}
+            totalPages={noticeTotalPages}
+            onChange={onNoticePageChange}
           />
         </>
       )}

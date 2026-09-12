@@ -11,6 +11,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.page import Page
+
 
 def require_text(value: str, label: str) -> str:
     """공백만 들어온 입력을 거르고, 앞뒤 공백을 떼어낸다.
@@ -145,31 +147,14 @@ class PostListItem(BaseModel):
     has_file: bool = False
 
 
-class PostPage(BaseModel):
-    """목록 한 페이지.
+class PostPage(Page):
+    """게시글 목록 한 페이지.
 
-    왜 목록(list)을 그대로 안 내려주고 한 겹 감쌌나
-    ------------------------------------------------
-    화면이 "3 / 12" 같은 페이지 번호를 그리려면 **전체가 몇 건인지** 알아야
-    한다. 20건짜리 배열만 오면 이게 마지막 페이지인지 알 방법이 없다.
-
-    개수를 헤더에 담는 방법도 있지만, 응답 본문에 같이 두면 /docs 에도
-    보이고 프론트에서도 data.total 로 그냥 읽힌다.
+    나머지 네 칸(total · page · size · total_pages)과 "왜 배열이 아니라
+    한 겹 감쌌나" 는 schemas/page.py 에 적혀 있다.
     """
 
-    model_config = ConfigDict(from_attributes=True)
-
     items: list[PostListItem]
-
-    # 검색어까지 반영한 전체 건수. 페이지 안의 개수가 아니다.
-    total: int
-
-    page: int
-    size: int
-
-    # 마지막 페이지 번호. 0건이면 0 이라서 화면은 이 값이 1 이하일 때
-    # 페이지 버튼을 통째로 숨기면 된다.
-    total_pages: int
 
 
 class PostDetailResponse(BaseModel):

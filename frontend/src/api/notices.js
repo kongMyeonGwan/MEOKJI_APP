@@ -14,15 +14,22 @@ import client from './client'
  */
 
 /**
- * 공지 목록. 고정(pinned) 공지가 위로, 그 안에서는 최신순으로 온다.
+ * 공지 목록 한 페이지. 고정(pinned) 공지가 위로, 그 안에서는 최신순으로 온다.
  *
  * 정렬은 서버가 한다. 고정이 위로 와야 한다는 건 화면 취향이 아니라
  * 공지의 규칙이라, 화면이 여럿 생겨도 같아야 하기 때문이다.
  *
- *   [{ id, title, content, category, view_count, pinned, created_at }, ...]
+ * 공지 배열이 아니라 이런 모양이 온다.
+ *
+ *     { items: [...], total: 4, page: 1, size: 20, total_pages: 1 }
+ *
+ * 고정 공지는 정렬상 앞쪽에 몰리므로 1페이지에만 보인다. 페이지마다 따라
+ * 다니면 2페이지의 절반이 이미 읽은 공지가 된다.
  */
-export async function getNotices() {
-  const { data } = await client.get('/api/notices')
+export async function getNotices({ page = 1, size } = {}) {
+  const { data } = await client.get('/api/notices', {
+    params: { page, size },
+  })
   return data
 }
 

@@ -4,6 +4,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.page import Page
+
 
 class MealHistoryCreateRequest(BaseModel):
     """'이걸로 먹을래요'를 눌렀을 때 보내는 값.
@@ -66,6 +68,15 @@ class MealHistoryResponse(BaseModel):
     art: str | None = None
 
     # user_id는 내려주지 않는다. "내 기록"만 조회되므로 불필요하다.
+
+
+class MealHistoryPage(Page):
+    """내 기록 한 페이지.
+
+    나머지 네 칸과 "왜 배열이 아니라 한 겹 감쌌나" 는 schemas/page.py 참고.
+    """
+
+    items: list[MealHistoryResponse]
 
 
 class MealHistoryStats(BaseModel):

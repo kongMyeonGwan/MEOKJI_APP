@@ -3,7 +3,7 @@
 전부 로그인이 필요하다. 남의 기록은 어떤 경로로도 조회·삭제할 수 없다.
 """
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user
@@ -11,9 +11,11 @@ from app.database.database import get_db
 from app.models.user import User
 from app.schemas.history import (
     MealHistoryCreateRequest,
+    MealHistoryPage,
     MealHistoryResponse,
     MealHistoryStats,
 )
+from app.schemas.page import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from app.services.history_service import (
     create_history,
     delete_history,
@@ -31,16 +33,32 @@ AUTH_423 = {"description": "잠긴 계정"}
 
 @router.get(
     "",
-    response_model=list[MealHistoryResponse],
-    summary="내 식사 기록 목록",
+    response_model=MealHistoryPage,
+    summary="내 식사 기록 목록 (페이징)",
     responses={401: AUTH_401, 423: AUTH_423},
 )
 def read_histories(
+    page: int = Query(1, ge=1, description="1부터 시작하는 페이지 번호"),
+    size: int = Query(
+        DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="한 페이지 개수"
+    ),
+    shared: bool | None = Query(
+        None, description="true=공유한 것만 · false=아직 안 한 것만 · 생략=전부"
+    ),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> list[MealHistoryResponse]:
-    """최신순. 이미 공유한 기록에는 shared_post_id 가 채워져 온다."""
-    return list_histories(db, current_user)
+) -> MealHistoryPage:
+    """최신순. 이미 공유한 기록에는 shared_post_id 가 채워져 온다.
+
+    기록 배열 대신 {items, total, page, size, total_pages} 가 온다.
+
+    shared 를 쓰는 곳
+    -----------------
+    글쓰기 화면은 아직 공유하지 않은 기록만 고르게 한다(shared=false).
+    전에는 전체를 받아다 화면에서 걸렀는데, 페이징이 붙으면 그 방법이 깨진다 —
+    1페이지 20건이 전부 공유된 기록이면 고를 것이 없는 화면이 된다.
+    """
+    return list_histories(db, current_user, page, size, shared)
 
 
 @router.get(

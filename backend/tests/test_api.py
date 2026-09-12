@@ -270,6 +270,57 @@ def test_기록_요약에_연속_방문일이_들어있다(client):
     assert body["streak_days"] == 1
 
 
+def test_기록_목록은_페이지_정보와_함께_온다(client):
+    body = client.get("/api/histories", headers=STATE["owner"]).json()
+
+    # 기록 배열이 아니라 {items, total, page, size, total_pages} 가 온다
+    assert body["items"][0]["food_name"] == "된장찌개"
+    assert body["total"] == 1
+    assert body["page"] == 1
+    assert body["total_pages"] == 1
+
+
+def test_기록_범위를_벗어난_페이지는_빈_목록이다(client):
+    body = client.get(
+        "/api/histories", headers=STATE["owner"], params={"page": 9999}
+    ).json()
+
+    assert body["items"] == []
+    assert body["total"] == 1          # 전체 건수는 그대로 알려준다
+
+
+def test_기록_한_페이지_크기에는_상한이_있다(client):
+    headers = STATE["owner"]
+
+    assert client.get("/api/histories", headers=headers, params={"size": 51}).status_code == 422
+    assert client.get("/api/histories", headers=headers, params={"size": 50}).status_code == 200
+    assert client.get("/api/histories", headers=headers, params={"page": 0}).status_code == 422
+
+
+def test_아직_공유_안_한_기록만_고를_수_있다(client):
+    """글쓰기 화면이 쓰는 필터. 아직 후기를 안 썼으므로 이 기록이 잡혀야 한다.
+
+    화면에서 거르지 않고 서버에 맡긴 이유는 페이징 때문이다. 전체를 받아
+    화면에서 걸렀다면 1페이지 20건이 전부 공유된 기록일 때 고를 것이 없다.
+    """
+    headers = STATE["owner"]
+
+    not_shared = client.get(
+        "/api/histories", headers=headers, params={"shared": "false"}
+    ).json()
+    shared = client.get(
+        "/api/histories", headers=headers, params={"shared": "true"}
+    ).json()
+
+    assert not_shared["total"] == 1
+    assert not_shared["items"][0]["shared_post_id"] is None
+    assert shared["total"] == 0
+
+    # 거르지 않으면 둘을 합친 만큼이다
+    everything = client.get("/api/histories", headers=headers).json()
+    assert everything["total"] == not_shared["total"] + shared["total"]
+
+
 # =========================================================
 # 게시판
 # =========================================================
@@ -661,11 +712,16 @@ def test_공지는_로그인_없이_볼_수_있다(client):
     response = client.get("/api/notices")
 
     assert response.status_code == 200
-    assert isinstance(response.json(), list)
+
+    # 공지 배열이 아니라 페이지 정보와 함께 온다
+    body = response.json()
+    assert isinstance(body["items"], list)
+    assert body["page"] == 1
+    assert body["total_pages"] == (body["total"] + body["size"] - 1) // body["size"]
 
 
 def test_공지는_고정이_먼저_최신순이다(client):
-    rows = client.get("/api/notices").json()
+    rows = client.get("/api/notices").json()["items"]
 
     if not rows:
         pytest.skip("공지가 없다 (db/05_seed_notices.sql 미실행)")
@@ -682,7 +738,7 @@ def test_공지는_고정이_먼저_최신순이다(client):
 
 def test_공지는_pinned_를_불리언으로_준다(client):
     # DB 는 'Y'/'N' 이지만 화면이 문자열을 비교하게 두면 오타가 날 자리가 생긴다
-    rows = client.get("/api/notices").json()
+    rows = client.get("/api/notices").json()["items"]
 
     if not rows:
         pytest.skip("공지가 없다")
@@ -693,7 +749,7 @@ def test_공지는_pinned_를_불리언으로_준다(client):
 
 
 def test_공지를_펼치면_조회수가_오른다(client):
-    rows = client.get("/api/notices").json()
+    rows = client.get("/api/notices").json()["items"]
 
     if not rows:
         pytest.skip("공지가 없다")
@@ -707,6 +763,44 @@ def test_공지를_펼치면_조회수가_오른다(client):
 
 def test_없는_공지는_404다(client):
     assert client.post("/api/notices/99999999/view").status_code == 404
+
+
+def test_공지_한_페이지_크기를_줄이면_그만큼만_온다(client):
+    body = client.get("/api/notices", params={"size": 1}).json()
+
+    if body["total"] == 0:
+        pytest.skip("공지가 없다")
+
+    assert len(body["items"]) == 1
+    assert body["size"] == 1
+    assert body["total_pages"] == body["total"]
+
+
+def test_공지_다음_페이지는_앞_페이지와_겹치지_않는다(client):
+    first = client.get("/api/notices", params={"size": 1, "page": 1}).json()
+
+    if first["total"] < 2:
+        pytest.skip("공지가 2건 미만이다")
+
+    second = client.get("/api/notices", params={"size": 1, "page": 2}).json()
+
+    # 정렬에 id 가 들어가 있어야 순서가 고정된다.
+    # 안 들어가면 같은 공지가 두 페이지에 다 나오거나 어디에도 안 나온다.
+    assert first["items"][0]["id"] != second["items"][0]["id"]
+
+
+def test_공지_범위를_벗어난_페이지는_빈_목록이다(client):
+    body = client.get("/api/notices", params={"page": 9999}).json()
+
+    # 404 가 아니다. 화면이 total_pages 를 보고 되돌리면 된다.
+    assert body["items"] == []
+    assert body["page"] == 9999
+
+
+def test_공지_한_페이지_크기에는_상한이_있다(client):
+    assert client.get("/api/notices", params={"size": 51}).status_code == 422
+    assert client.get("/api/notices", params={"size": 50}).status_code == 200
+    assert client.get("/api/notices", params={"page": 0}).status_code == 422
 
 
 # =========================================================
@@ -825,7 +919,7 @@ def test_공백만_든_제목은_거른다(client):
 
 
 def test_고정한_공지가_목록_맨_위에_온다(client):
-    rows = client.get("/api/notices").json()
+    rows = client.get("/api/notices").json()["items"]
 
     assert rows[0]["id"] == STATE["notice_id"]
 
@@ -876,7 +970,7 @@ def test_관리자는_공지를_지운다(client):
     assert client.delete(f"/api/notices/{notice_id}", headers=STATE["owner"]).status_code == 204
 
     # 목록에서 사라진다
-    ids = [row["id"] for row in client.get("/api/notices").json()]
+    ids = [row["id"] for row in client.get("/api/notices").json()["items"]]
     assert notice_id not in ids
 
     # 행은 남아 있지만(use_yn='N') 조회에서는 없는 것과 같다.
@@ -1080,7 +1174,7 @@ def test_탈퇴해도_내가_쓴_공지는_남는다(client):
 
     앞에서 이 계정이 관리자로 올라갔을 때 공지를 썼다.
     """
-    titles = [row["title"] for row in client.get("/api/notices").json()]
+    titles = [row["title"] for row in client.get("/api/notices").json()["items"]]
 
     assert "pytest 분류 생략" in titles
 

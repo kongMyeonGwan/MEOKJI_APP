@@ -29,7 +29,7 @@ USERS.USER_LEVEL (1=관리자) 이 생기면서 그 조건이 풀렸다. 등급 
 """
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.notice import Notice
@@ -37,10 +37,12 @@ from app.models.types import USE_YN_NO, USE_YN_YES
 from app.models.user import User
 from app.schemas.notice import (
     NoticeCreateRequest,
+    NoticePage,
     NoticeResponse,
     NoticeUpdateRequest,
     NoticeViewResponse,
 )
+from app.schemas.page import DEFAULT_PAGE_SIZE, count_pages
 
 
 def to_pinned_yn(pinned: bool) -> str:
@@ -61,15 +63,30 @@ def to_response(notice: Notice) -> NoticeResponse:
     )
 
 
-def list_notices(db: Session) -> list[NoticeResponse]:
-    """살아있는 공지를 고정 · 최신 순으로 돌려준다. 로그인 없이 볼 수 있다.
+def list_notices(
+    db: Session, page: int = 1, size: int = DEFAULT_PAGE_SIZE
+) -> NoticePage:
+    """살아있는 공지를 고정 · 최신 순으로 한 페이지씩 돌려준다.
+
+    로그인 없이 볼 수 있다.
 
     정렬을 화면에 맡기지 않고 서버가 한다. 고정 공지가 위로 와야 한다는 건
     화면 취향이 아니라 공지의 규칙이라, 화면이 여럿 생겨도 같아야 한다.
 
     본문(CLOB)을 목록에서도 읽어온다. 게시판과 달리 화면이 그 자리에서
-    펼치기 때문이다. 공지는 몇 건뿐이라 CLOB 을 다 읽어도 부담이 없다.
+    펼치기 때문이다. 한 페이지 몫만 읽으므로 건수가 늘어도 그대로다.
+
+    고정 공지는 1페이지에만 보인다
+    ------------------------------
+    정렬이 pinned 먼저라 고정은 전부 앞쪽에 몰린다. 2페이지로 넘어가면
+    화면에서 사라지는데, 그게 맞다 — 고정은 "목록의 맨 위" 라는 뜻이지
+    "모든 페이지의 맨 위" 가 아니다. 페이지마다 따라다니면 2페이지의 절반이
+    이미 읽은 공지가 된다.
     """
+    total = db.execute(
+        select(func.count(Notice.id)).where(Notice.use_yn == USE_YN_YES)
+    ).scalar_one()
+
     rows = db.execute(
         select(Notice)
         .where(Notice.use_yn == USE_YN_YES)
@@ -77,11 +94,21 @@ def list_notices(db: Session) -> list[NoticeResponse]:
             # 'Y' > 'N' 이라 내림차순이면 고정이 위로 온다
             Notice.pinned_yn.desc(),
             Notice.created_at.desc(),
+            # created_at 이 같은 공지 둘의 순서를 DB 가 마음대로 정하면
+            # 같은 공지가 두 페이지에 다 나오거나 어디에도 안 나온다
             Notice.id.desc(),
         )
+        .offset((page - 1) * size)
+        .limit(size)
     ).scalars()
 
-    return [to_response(notice) for notice in rows]
+    return NoticePage(
+        items=[to_response(notice) for notice in rows],
+        total=total,
+        page=page,
+        size=size,
+        total_pages=count_pages(total, size),
+    )
 
 
 def get_live_notice(db: Session, notice_id: int) -> Notice:

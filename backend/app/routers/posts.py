@@ -21,6 +21,7 @@ from app.core.deps import get_current_user, get_optional_user
 from app.core.kst import today_kst
 from app.database.database import get_db
 from app.models.user import User
+from app.schemas.page import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from app.schemas.post import (
     CommentCreateRequest,
     CommentResponse,
@@ -32,7 +33,6 @@ from app.schemas.post import (
     PostUpdateRequest,
 )
 from app.services.post_service import (
-    DEFAULT_PAGE_SIZE,
     attach_file,
     create_comment,
     create_post,
@@ -61,10 +61,6 @@ NOT_FOUND = {"description": "없는 게시글"}
 # 인기 레시피 기본 기간: 오늘 포함 최근 30일
 DEFAULT_POPULAR_DAYS = 29
 
-# 한 페이지 상한. 기본값(DEFAULT_PAGE_SIZE)은 post_service 에 있는 것을 쓴다.
-MAX_PAGE_SIZE = 50
-
-
 @router.get(
     "",
     response_model=PostPage,
@@ -87,10 +83,7 @@ def read_posts(
     있지도 않은 9999 페이지를 열었다고 화면이 에러로 바뀔 일은 아니고,
     total_pages 를 보면 화면이 알아서 1페이지로 되돌릴 수 있다.
 
-    size 에 상한(MAX_PAGE_SIZE)을 두는 이유
-    ---------------------------------------
-    안 두면 ?size=100000 한 번으로 글 전체를 CLOB 까지 끌어오게 만들 수 있다.
-    페이징을 붙여놓고 우회로를 열어두는 셈이라 상한이 있어야 한다.
+    size 상한(MAX_PAGE_SIZE)을 두는 이유는 schemas/page.py 에 적어뒀다.
     """
     return list_posts(db, keyword, page, size)
 

@@ -73,7 +73,11 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
       // 저장된 공지를 부모에게 넘긴다. 부모가 목록을 다시 받아온다 —
       // 고정 여부가 바뀌면 순서가 달라지는데, 그 정렬은 서버 규칙이라
       // 화면이 배열을 직접 끼워 넣으면 서버와 다른 순서가 된다.
-      onDone(saved)
+      //
+      // editing 을 같이 넘기는 이유: 새로 쓴 공지는 최신이라 1페이지에 있고,
+      // 고친 공지는 원래 있던 페이지에 그대로 있다. 부모가 어디로 갈지
+      // 정하려면 둘을 구분해야 한다.
+      onDone(saved, editing)
     } catch (err) {
       const { fieldErrors, message } = parseApiError(err)
 

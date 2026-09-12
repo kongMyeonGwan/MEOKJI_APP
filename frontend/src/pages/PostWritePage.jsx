@@ -44,9 +44,18 @@ export default function PostWritePage() {
   useEffect(() => {
     let alive = true
 
-    getHistories()
+    // 아직 공유하지 않은 기록만 서버가 걸러준다.
+    //
+    // 전에는 전체를 받아 화면에서 걸렀는데(!h.shared_post_id), 기록에 페이징이
+    // 붙으면서 그 방법이 깨졌다 — 1페이지 20건이 전부 공유된 기록이면 고를 것이
+    // 하나도 없는 화면이 된다.
+    //
+    // size 를 최대로 받는다. 드롭다운이라 한 번에 다 보여줘야 하는데, 그렇다고
+    // 수백 개짜리 드롭다운이 쓸 만한 것도 아니라서 최신 50건이면 충분하다.
+    // 사람은 보통 방금 먹은 것을 공유한다.
+    getHistories({ shared: false, size: 50 })
       .then((data) => {
-        if (alive) setHistories(data)
+        if (alive) setHistories(data.items)
       })
       .catch((err) => {
         if (alive) setLoadError(parseApiError(err).message)
@@ -60,8 +69,8 @@ export default function PostWritePage() {
     }
   }, [])
 
-  // 이미 공유한 기록은 uq_posts_meal(UNIQUE)에 걸려 다시 올릴 수 없으므로 목록에서 뺀다.
-  const sharableHistories = histories.filter((h) => !h.shared_post_id)
+  // 서버가 shared=false 로 이미 걸러줬다. 이름만 남겨 아래 JSX 를 그대로 둔다.
+  const sharableHistories = histories
 
   /** 사진을 골랐을 때. 확장자와 크기를 여기서 한 번 본다. */
   function onPickFile(e) {

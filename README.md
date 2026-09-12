@@ -201,8 +201,8 @@ MEOKJI_APP/
 | 추천 | `POST /api/recommendations` | | 날씨·예산·검색어·냉장고 조건 추천 |
 | | `GET /api/recipes/{음식이름}` | | 레시피 생성 + 재료 가격 |
 | | `POST /api/prices` | | 재료별 시장 조사가격 |
-| histories | `GET /api/histories` | ● | 내 식사 기록 |
-| | `GET /api/histories/stats` | ● | 건수 · 누적 비용 · 연속 방문일 |
+| histories | `GET /api/histories` | ● | 내 기록 · 페이징 (`?page=1&size=20&shared=false`) |
+| | `GET /api/histories/stats` | ● | 건수 · 누적 비용 · 연속 방문일 (전체 기준) |
 | | `POST /api/histories` | ● | 식사 확정 (이걸로 먹을래요) |
 | | `DELETE /api/histories/{id}` | ● | 기록 삭제 (공유했으면 409) |
 | posts | `GET /api/posts` | | 목록 · 검색 · 페이징 (`?page=1&size=20`) |
@@ -217,7 +217,7 @@ MEOKJI_APP/
 | weather | `GET /api/weather` | | 현재 날씨 |
 | catalog | `GET /api/catalog` | | 카테고리 · 룰렛 · 게임 · 질문 · 재료 칩 |
 | | `GET /api/catalog/regions` | | 시·도 · 시·군·구 (주소 드롭다운) |
-| notices | `GET /api/notices` | | 공지사항 (고정 먼저 · 최신순) |
+| notices | `GET /api/notices` | | 공지사항 (고정 먼저 · 최신순, `?page=1&size=20`) |
 | | `POST /api/notices/{id}/view` | | 조회수 +1 (펼칠 때) |
 | | `POST·PUT·DELETE /api/notices[/{id}]` | ▲ | 공지 작성 · 수정 · 삭제 |
 | games | `POST /api/games/{key}/plays` | ● | 게임 시작 기록 (worldcup·balance·roulette) |
@@ -265,7 +265,7 @@ UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지
 cd backend
 .venv\Scripts\activate
 
-pytest                      # 전부 (197건)
+pytest                      # 전부 (208건)
 pytest tests/test_logic.py  # DB 없이 되는 것만 (127건)
 ```
 

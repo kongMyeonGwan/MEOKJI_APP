@@ -12,7 +12,7 @@
 고정 주소가 없어서 /{notice_id} 와 부딪힐 것이 없다.
 """
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_admin_user
@@ -20,10 +20,12 @@ from app.database.database import get_db
 from app.models.user import User
 from app.schemas.notice import (
     NoticeCreateRequest,
+    NoticePage,
     NoticeResponse,
     NoticeUpdateRequest,
     NoticeViewResponse,
 )
+from app.schemas.page import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from app.services.notice_service import (
     create_notice,
     delete_notice,
@@ -44,12 +46,22 @@ NOT_FOUND = {"description": "없는 공지"}
 
 @router.get(
     "",
-    response_model=list[NoticeResponse],
-    summary="공지사항 목록 (Guest 가능)",
+    response_model=NoticePage,
+    summary="공지사항 목록 (Guest 가능, 페이징)",
 )
-def read_notices(db: Session = Depends(get_db)) -> list[NoticeResponse]:
-    """고정 공지가 위로, 그 안에서는 최신순이다."""
-    return list_notices(db)
+def read_notices(
+    page: int = Query(1, ge=1, description="1부터 시작하는 페이지 번호"),
+    size: int = Query(
+        DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE, description="한 페이지 개수"
+    ),
+    db: Session = Depends(get_db),
+) -> NoticePage:
+    """고정 공지가 위로, 그 안에서는 최신순이다.
+
+    공지 배열 대신 {items, total, page, size, total_pages} 가 온다.
+    고정 공지는 정렬상 앞쪽에 몰리므로 1페이지에만 보인다.
+    """
+    return list_notices(db, page, size)
 
 
 @router.post(

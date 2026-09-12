@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import ErrorMessage from '../components/common/ErrorMessage'
 import Loading from '../components/common/Loading'
 import RecipeView from '../components/recipe/RecipeView'
-import { getHistories, removeHistory } from '../api/histories'
+import Pagination from '../components/common/Pagination'
+import { getHistories, getHistoryStats, removeHistory } from '../api/histories'
 import { useProfile } from '../contexts/ProfileContext'
 import { parseApiError } from '../utils/apiError'
 import { formatDate, formatPrice } from '../utils/format'
@@ -28,6 +29,14 @@ export default function HistoryPage() {
   const [openId, setOpenId] = useState(null)
 
   const [histories, setHistories] = useState([])
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
+  // 요약줄(총 N건 · 누적 M원)은 화면에 뜬 기록만 세면 안 된다.
+  // 페이징이 붙은 뒤로 histories 는 한 페이지 몫뿐이라, 전체를 세는 건
+  // 서버의 /api/histories/stats 가 한다.
+  const [stats, setStats] = useState(null)
+
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
@@ -37,14 +46,45 @@ export default function HistoryPage() {
 
   const { reload } = useProfile()
 
-  // 화면이 처음 열릴 때 내 기록을 불러온다.
-  // 의존성이 [] 라서 딱 한 번만 실행된다.
+  // 페이지가 바뀔 때마다 그 페이지를 불러온다.
+  //
+  // alive 플래그가 필요한 이유는 게시판과 같다 — 2페이지를 눌렀다 3페이지를
+  // 눌렀는데 2페이지 응답이 더 늦게 오면, 3페이지를 보면서 목록만 2페이지
+  // 것으로 덮인다.
   useEffect(() => {
-    getHistories()
-      .then((data) => setHistories(data))
-      .catch((err) => setLoadError(parseApiError(err).message))
-      .finally(() => setLoading(false))
+    let alive = true
+
+    getHistories({ page })
+      .then((data) => {
+        if (!alive) return
+        setHistories(data.items)
+        setTotalPages(data.total_pages)
+      })
+      .catch((err) => {
+        if (alive) setLoadError(parseApiError(err).message)
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [page])
+
+  // 요약줄용 전체 집계. 목록과 따로 부른다.
+  // 실패해도 요약줄만 비워둔다 — 기록을 못 보게 막을 이유가 없다.
+  useEffect(() => {
+    getHistoryStats()
+      .then(setStats)
+      .catch(() => {})
   }, [])
+
+  /** 페이지 버튼. 목록이 바뀌므로 화면 맨 위로 올려준다. */
+  function onPageChange(next) {
+    setPage(next)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   /** 삭제 버튼. 한 번 지우면 되돌릴 수 없어서 먼저 물어본다. */
   async function onRemove(item) {
@@ -59,9 +99,19 @@ export default function HistoryPage() {
 
       // 낙관적으로 먼저 지우지 않는다. 실패했는데 화면에서만 사라지면
       // 새로고침할 때 되살아나 사용자가 혼란스럽다.
-      setHistories(histories.filter((row) => row.id !== item.id))
+      //
+      // 화면에서 한 줄만 빼지 않고 그 페이지를 다시 받아온다. 한 건이 빠지면
+      // 뒷 페이지의 첫 기록이 이 페이지로 당겨져 와야 하는데, 배열만 자르면
+      // 19건짜리 페이지가 되고 그 기록은 어느 페이지에도 안 나온다.
+      const data = await getHistories({ page })
+      setHistories(data.items)
+      setTotalPages(data.total_pages)
 
-      // 요리 횟수가 줄었으니 레벨 카드도 다시 맞춘다
+      // 마지막 기록을 지워 페이지가 통째로 사라졌으면 한 장 앞으로
+      if (data.items.length === 0 && page > 1) setPage(page - 1)
+
+      // 요약줄과 레벨 카드도 다시 맞춘다
+      getHistoryStats().then(setStats).catch(() => {})
       reload()
     } catch (err) {
       setActionError(parseApiError(err).message)
@@ -88,7 +138,7 @@ export default function HistoryPage() {
     )
   }
 
-  if (histories.length === 0) {
+  if (histories.length === 0 && page === 1) {
     return (
       <div className="card">
         <h2 className="section-title">내 History</h2>
@@ -101,13 +151,6 @@ export default function HistoryPage() {
     )
   }
 
-  // 지금까지 먹은 것들의 예상 비용을 전부 더한다.
-  // estimated_cost 가 없는(null) 기록도 있어서 ?? 0 으로 0 취급한다.
-  let totalCost = 0
-  for (const history of histories) {
-    totalCost += history.estimated_cost ?? 0
-  }
-
   return (
     <div className="history">
       <div className="card">
@@ -115,9 +158,13 @@ export default function HistoryPage() {
           <h2 className="section-title" style={{ margin: 0 }}>
             내 History
           </h2>
-          <span className="muted history__summary">
-            총 {histories.length}건 · 누적 {formatPrice(totalCost)}
-          </span>
+          {/* 화면에 뜬 기록이 아니라 전체를 센 값이다 (GET /api/histories/stats).
+              stats 가 아직 안 왔으면 자리만 비워둔다 */}
+          {stats && (
+            <span className="muted history__summary">
+              총 {stats.count}건 · 누적 {formatPrice(stats.total_cost)}
+            </span>
+          )}
         </div>
 
         <ErrorMessage message={actionError} />
@@ -186,6 +233,9 @@ export default function HistoryPage() {
             )
           })}
         </ul>
+
+        {/* 한 페이지뿐이면 Pagination 이 스스로 아무것도 안 그린다 */}
+        <Pagination page={page} totalPages={totalPages} onChange={onPageChange} />
       </div>
     </div>
   )

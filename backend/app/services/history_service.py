@@ -20,13 +20,21 @@ from app.models.types import USE_YN_NO, USE_YN_YES
 from app.models.user import User
 from app.schemas.history import (
     MealHistoryCreateRequest,
+    MealHistoryPage,
     MealHistoryResponse,
     MealHistoryStats,
 )
+from app.schemas.page import DEFAULT_PAGE_SIZE, count_pages
 
 
-def list_histories(db: Session, user: User) -> list[MealHistoryResponse]:
-    """내 기록 전체를 최신순으로 돌려준다.
+def list_histories(
+    db: Session,
+    user: User,
+    page: int = 1,
+    size: int = DEFAULT_PAGE_SIZE,
+    shared: bool | None = None,
+) -> MealHistoryPage:
+    """내 기록을 최신순으로 한 페이지씩 돌려준다.
 
     recipe_reviews 를 OUTER JOIN 해서 "이미 후기를 쓴 기록인지"를 함께 계산한다.
     uq_reviews_meal 인덱스가 use_yn='Y' 인 행만 유일하게 잡으므로,
@@ -36,24 +44,63 @@ def list_histories(db: Session, user: User) -> list[MealHistoryResponse]:
     후기를 지우면 shared_post_id 가 다시 None 이 되어 같은 기록으로 또 쓸 수 있다.
 
     idx_meal_user_selected(user_id, use_yn, selected_at DESC)를 그대로 타는 정렬이다.
-    개수가 많아야 수백 건이라 아직 페이징하지 않는다.
+    id 를 같이 넣는 이유는 게시판과 같다 — selected_at 이 같은 기록 둘의 순서를
+    DB 가 마음대로 정하면 같은 기록이 두 페이지에 다 나오거나 어디에도 안 나온다.
+
+    shared 로 걸러낸다
+    ------------------
+    글쓰기 화면은 "아직 공유하지 않은 기록" 만 고르게 한다. 전에는 전체를
+    받아다 화면에서 걸렀는데, 페이징이 붙으면 그 방법이 깨진다 — 1페이지 20건이
+    전부 공유된 기록이면 고를 것이 하나도 없는 화면이 된다.
+
+        shared=False   아직 공유 안 한 것만
+        shared=True    이미 공유한 것만
+        None           전부 (기록 화면)
     """
-    rows = db.execute(
-        select(MealHistory, RecipeReview.id.label("shared_post_id"))
-        .outerjoin(
-            RecipeReview,
-            (RecipeReview.meal_history_id == MealHistory.id)
-            & (RecipeReview.use_yn == USE_YN_YES),
+    # COUNT 와 목록이 같은 조건 · 같은 JOIN 을 봐야 한다.
+    # 한쪽에만 필터를 붙이면 "3페이지가 있다는데 열면 비어 있는" 일이 생긴다.
+    shared_join = (RecipeReview.meal_history_id == MealHistory.id) & (
+        RecipeReview.use_yn == USE_YN_YES
+    )
+    mine = (MealHistory.user_id == user.id, MealHistory.use_yn == USE_YN_YES)
+
+    def with_filter(query):
+        if shared is True:
+            return query.where(RecipeReview.id.is_not(None))
+        if shared is False:
+            return query.where(RecipeReview.id.is_(None))
+        return query
+
+    total = db.execute(
+        with_filter(
+            select(func.count(MealHistory.id))
+            .outerjoin(RecipeReview, shared_join)
+            .where(*mine)
         )
-        .where(MealHistory.user_id == user.id, MealHistory.use_yn == USE_YN_YES)
-        .order_by(MealHistory.selected_at.desc(), MealHistory.id.desc())
+    ).scalar_one()
+
+    rows = db.execute(
+        with_filter(
+            select(MealHistory, RecipeReview.id.label("shared_post_id"))
+            .outerjoin(RecipeReview, shared_join)
+            .where(*mine)
+            .order_by(MealHistory.selected_at.desc(), MealHistory.id.desc())
+        )
+        .offset((page - 1) * size)
+        .limit(size)
     ).all()
 
     items = []
     for history, shared_post_id in rows:
         items.append(to_response(history, shared_post_id))
 
-    return items
+    return MealHistoryPage(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
+        total_pages=count_pages(total, size),
+    )
 
 
 def to_response(history: MealHistory, shared_post_id: int | None) -> MealHistoryResponse:

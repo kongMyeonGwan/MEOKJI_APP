@@ -36,6 +36,7 @@ from app.models.review_comment import ReviewComment
 from app.models.review_like import ReviewLike
 from app.models.types import USE_YN_NO, USE_YN_YES
 from app.models.user import User
+from app.schemas.page import DEFAULT_PAGE_SIZE, count_pages
 from app.schemas.post import (
     CommentCreateRequest,
     CommentResponse,
@@ -53,10 +54,6 @@ from app.services import file_service
 # 목록에 내려줄 본문 미리보기 길이.
 # 화면은 CSS 로 2줄까지만 보여주므로 200자면 넉넉하다.
 EXCERPT_LENGTH = 200
-
-# 한 페이지에 보여줄 글 개수. 라우터가 ?size= 로 덮어쓸 수 있다.
-DEFAULT_PAGE_SIZE = 20
-
 
 # ==========================================================
 # 도우미 함수들
@@ -306,9 +303,7 @@ def list_posts(
         total=total,
         page=page,
         size=size,
-        # 45건을 20개씩 보면 3페이지다. 남는 5건도 한 페이지를 차지하므로
-        # 나누기 전에 (size - 1) 을 더해서 올림으로 만든다.
-        total_pages=(total + size - 1) // size,
+        total_pages=count_pages(total, size),
     )
 
 
