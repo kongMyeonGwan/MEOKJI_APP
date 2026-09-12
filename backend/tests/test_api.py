@@ -427,8 +427,9 @@ def test_내_글에_사진을_붙인다(client):
 
 def test_목록에_사진_있음_표시가_붙는다(client):
     # 목록은 파일 정보를 통째로 싣지 않는다. 붙었는지 여부만 내려준다.
+    # 방금 쓴 글이라 최신순 1페이지에 있다.
     response = client.get("/api/posts")
-    row = next(r for r in response.json() if r["id"] == STATE["post_id"])
+    row = next(r for r in response.json()["items"] if r["id"] == STATE["post_id"])
 
     assert row["has_file"] is True
 
@@ -480,9 +481,72 @@ def test_없는_첨부를_떼도_에러가_아니다(client):
 
 def test_제목_본문으로_검색된다(client):
     response = client.get("/api/posts", params={"keyword": "테스트 후기"})
+    body = response.json()
 
     assert response.status_code == 200
-    assert len(response.json()) == 1
+    assert len(body["items"]) == 1
+
+    # 전체 건수도 검색어를 반영해야 한다.
+    # COUNT 에 검색 조건을 빼먹으면 결과는 1건인데 "12페이지" 라고 나온다.
+    assert body["total"] == 1
+    assert body["total_pages"] == 1
+
+
+def test_목록은_페이지_정보와_함께_온다(client):
+    response = client.get("/api/posts")
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["page"] == 1
+    assert body["size"] == 20  # DEFAULT_PAGE_SIZE
+    assert len(body["items"]) <= body["size"]
+
+    # 45건을 20개씩 보면 3페이지. 올림이 맞는지 본다
+    assert body["total_pages"] == -(-body["total"] // body["size"])
+
+
+def test_한_페이지_크기를_줄이면_그만큼만_온다(client):
+    # 위에서 글을 최소 한 건 써뒀으므로 1건은 반드시 있다
+    response = client.get("/api/posts", params={"size": 1})
+    body = response.json()
+
+    assert len(body["items"]) == 1
+    assert body["size"] == 1
+    assert body["total_pages"] == body["total"]
+
+
+def test_다음_페이지는_앞_페이지와_겹치지_않는다(client):
+    # 정렬이 흔들리면 같은 글이 1페이지와 2페이지에 다 나온다.
+    # created_at 이 같은 글이 있어도 id 로 순서가 고정되는지 보는 것이다.
+    first = client.get("/api/posts", params={"size": 1, "page": 1}).json()
+    second = client.get("/api/posts", params={"size": 1, "page": 2}).json()
+
+    first_ids = {row["id"] for row in first["items"]}
+    second_ids = {row["id"] for row in second["items"]}
+
+    assert first_ids & second_ids == set()
+
+
+def test_범위를_벗어난_페이지는_빈_목록이다(client):
+    # 404 가 아니다. 화면이 total_pages 를 보고 1페이지로 되돌리면 되는 일이라
+    # 에러 페이지로 바꿀 이유가 없다.
+    response = client.get("/api/posts", params={"page": 9999})
+    body = response.json()
+
+    assert response.status_code == 200
+    assert body["items"] == []
+    assert body["total"] > 0  # 글이 없어진 게 아니라 그 페이지가 없는 것뿐이다
+
+
+def test_페이지_번호는_1부터다(client):
+    # 0 이나 음수를 받으면 OFFSET 이 음수가 된다
+    assert client.get("/api/posts", params={"page": 0}).status_code == 422
+
+
+def test_한_페이지_크기에는_상한이_있다(client):
+    # 상한이 없으면 ?size=100000 한 번으로 글 전체를 끌어올 수 있다
+    assert client.get("/api/posts", params={"size": 51}).status_code == 422
+    assert client.get("/api/posts", params={"size": 50}).status_code == 200
 
 
 def test_인기_레시피는_기간_안의_좋아요만_센다(client):

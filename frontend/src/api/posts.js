@@ -8,14 +8,30 @@ import client from './client'
  */
 
 /**
- * 게시글 목록. 최신순으로 온다.
+ * 게시글 목록 한 페이지. 최신순으로 온다.
  *
  * content 는 목록용으로 잘린 미리보기이고, 레시피(recipe_json)는 들어있지 않다.
  * 목록에서 쓰지 않는 CLOB을 건당 읽어오지 않기 위해서다.
+ *
+ * 글 배열이 아니라 이런 모양이 온다.
+ *
+ *     { items: [...], total: 137, page: 3, size: 20, total_pages: 7 }
+ *
+ * 화면이 "3 / 7" 을 그리려면 전체가 몇 건인지 알아야 하는데, 20건짜리
+ * 배열만으로는 이게 마지막 페이지인지 알 방법이 없다.
+ *
+ * page 는 1부터다. 범위를 벗어난 페이지는 에러가 아니라 빈 items 로 온다.
  */
-export async function getPosts(keyword) {
+export async function getPosts(keyword, page = 1) {
+  const trimmed = keyword?.trim()
+
   const { data } = await client.get('/api/posts', {
-    params: keyword?.trim() ? { keyword: keyword.trim() } : undefined,
+    params: {
+      page,
+      // 검색어가 비었으면 아예 안 보낸다. ?keyword= 로 빈 값을 보내면
+      // 서버가 "빈 문자열로 검색" 인지 "검색 안 함" 인지 헷갈릴 여지가 생긴다.
+      ...(trimmed ? { keyword: trimmed } : {}),
+    },
   })
   return data
 }

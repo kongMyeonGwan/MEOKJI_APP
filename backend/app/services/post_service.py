@@ -45,6 +45,7 @@ from app.schemas.post import (
     PostDetailResponse,
     PostFileInfo,
     PostListItem,
+    PostPage,
     PostUpdateRequest,
 )
 from app.services import file_service
@@ -53,26 +54,39 @@ from app.services import file_service
 # 화면은 CSS 로 2줄까지만 보여주므로 200자면 넉넉하다.
 EXCERPT_LENGTH = 200
 
+# 한 페이지에 보여줄 글 개수. 라우터가 ?size= 로 덮어쓸 수 있다.
+DEFAULT_PAGE_SIZE = 20
+
 
 # ==========================================================
 # 도우미 함수들
 # ==========================================================
 
 
-def count_likes_by_post(db: Session) -> dict[int, int]:
-    """게시글별 좋아요 개수를 한 번에 세서 {글 id: 개수} 로 돌려준다.
+def count_likes_by_post(db: Session, post_ids: list[int]) -> dict[int, int]:
+    """주어진 글들의 좋아요 개수를 한 번에 세서 {글 id: 개수} 로 돌려준다.
 
         {1: 5, 2: 0, 3: 12}
 
     글 하나마다 COUNT 쿼리를 날리면 글이 20개일 때 쿼리가 21번 나간다(N+1 문제).
     GROUP BY 로 한 번에 세면 쿼리 한 번으로 끝난다.
 
+    post_ids 는 **지금 페이지에 실제로 나가는 글들** 이다.
+    이 조건이 없으면 1페이지를 보여주려고 전체 글의 좋아요를 다 세게 된다.
+    글이 수천 건이 돼도 세는 양이 20건어치로 고정된다.
+
     use_yn == 'Y' 조건을 빠뜨리면 취소한 좋아요까지 세어서
     좋아요를 눌렀다 껐는데도 숫자가 안 줄어든다.
     """
+    if not post_ids:
+        return {}
+
     rows = db.execute(
         select(ReviewLike.review_id, func.count(ReviewLike.id))
-        .where(ReviewLike.use_yn == USE_YN_YES)
+        .where(
+            ReviewLike.review_id.in_(post_ids),
+            ReviewLike.use_yn == USE_YN_YES,
+        )
         .group_by(ReviewLike.review_id)
     ).all()
 
@@ -82,11 +96,17 @@ def count_likes_by_post(db: Session) -> dict[int, int]:
     return counts
 
 
-def count_comments_by_post(db: Session) -> dict[int, int]:
-    """게시글별 댓글 개수를 한 번에 세서 {글 id: 개수} 로 돌려준다."""
+def count_comments_by_post(db: Session, post_ids: list[int]) -> dict[int, int]:
+    """주어진 글들의 댓글 개수를 한 번에 세서 {글 id: 개수} 로 돌려준다."""
+    if not post_ids:
+        return {}
+
     rows = db.execute(
         select(ReviewComment.review_id, func.count(ReviewComment.id))
-        .where(ReviewComment.use_yn == USE_YN_YES)
+        .where(
+            ReviewComment.review_id.in_(post_ids),
+            ReviewComment.use_yn == USE_YN_YES,
+        )
         .group_by(ReviewComment.review_id)
     ).all()
 
@@ -190,8 +210,13 @@ def make_file_info(review: RecipeReview) -> PostFileInfo | None:
 # ==========================================================
 
 
-def list_posts(db: Session, keyword: str | None = None) -> list[PostListItem]:
-    """게시글 목록을 최신순으로 돌려준다. 로그인 안 해도 볼 수 있다.
+def list_posts(
+    db: Session,
+    keyword: str | None = None,
+    page: int = 1,
+    size: int = DEFAULT_PAGE_SIZE,
+) -> PostPage:
+    """게시글 목록을 최신순으로 한 페이지씩 돌려준다. 로그인 안 해도 볼 수 있다.
 
     음식명은 MEAL_HISTORIES 에서 JOIN 해서 가져온다.
     레시피 · 재료(CLOB)는 select 하지 않는다. 목록 화면에서는 안 쓰는데
@@ -202,8 +227,34 @@ def list_posts(db: Session, keyword: str | None = None) -> list[PostListItem]:
     글쓴이가 나중에 자기 기록을 정리했다고 해서 남의 화면에서 음식명만
     사라진 게시글이 되면 안 되기 때문이다.
     글이 보일지 말지는 글 자신의 use_yn 이 정한다.
+
+    쿼리가 두 번 나간다
+    -------------------
+    1) COUNT — 조건에 맞는 글이 전부 몇 건인지. 화면의 페이지 번호에 쓴다
+    2) 목록   — 그중 이 페이지 몫만
+
+    한 번에 다 읽어서 파이썬에서 잘라도 결과는 같지만, 그러면 글이 천 건일 때
+    천 건을 전부 읽어놓고 20건만 쓰게 된다. 자르는 일은 DB 가 해야 한다.
+
+    정렬에 id 를 같이 넣는 이유
+    ---------------------------
+    created_at 이 같은 글이 둘 있으면 DB 가 순서를 마음대로 정한다. 그러면
+    같은 글이 1페이지와 2페이지에 다 나오거나 아예 안 나오는 일이 생긴다.
+    id 는 겹치지 않으므로 순서가 항상 똑같이 정해진다.
     """
-    query = (
+    # COUNT 와 목록이 **같은 조건 · 같은 JOIN** 을 봐야 한다.
+    # 한쪽에만 검색어를 붙이면 "3페이지가 있다는데 열면 비어 있는" 일이 생긴다.
+    total = db.execute(
+        add_keyword_filter(
+            select(func.count(RecipeReview.id))
+            .join(User, User.id == RecipeReview.user_id)
+            .join(MealHistory, MealHistory.id == RecipeReview.meal_history_id)
+            .where(RecipeReview.use_yn == USE_YN_YES),
+            keyword,
+        )
+    ).scalar_one()
+
+    query = add_keyword_filter(
         select(
             RecipeReview.id,
             RecipeReview.title,
@@ -218,19 +269,22 @@ def list_posts(db: Session, keyword: str | None = None) -> list[PostListItem]:
         .join(User, User.id == RecipeReview.user_id)
         .join(MealHistory, MealHistory.id == RecipeReview.meal_history_id)
         .where(RecipeReview.use_yn == USE_YN_YES)
-        .order_by(RecipeReview.created_at.desc(), RecipeReview.id.desc())
+        .order_by(RecipeReview.created_at.desc(), RecipeReview.id.desc()),
+        keyword,
     )
-    query = add_keyword_filter(query, keyword)
 
-    rows = db.execute(query).all()
+    # SQLAlchemy 가 Oracle 용 OFFSET ... FETCH NEXT ... ROWS ONLY 로 바꿔준다.
+    # (Oracle 12c 부터 되는 문법이다. XE 18c 인 우리 DB 는 문제없다)
+    rows = db.execute(query.offset((page - 1) * size).limit(size)).all()
 
-    # 좋아요 · 댓글 개수는 미리 한 번에 세어둔다
-    like_counts = count_likes_by_post(db)
-    comment_counts = count_comments_by_post(db)
+    # 좋아요 · 댓글 개수는 이 페이지에 나갈 글들만 한 번에 세어둔다
+    post_ids = [row.id for row in rows]
+    like_counts = count_likes_by_post(db, post_ids)
+    comment_counts = count_comments_by_post(db, post_ids)
 
-    posts = []
+    items = []
     for row in rows:
-        posts.append(
+        items.append(
             PostListItem(
                 id=row.id,
                 title=row.title,
@@ -247,7 +301,15 @@ def list_posts(db: Session, keyword: str | None = None) -> list[PostListItem]:
             )
         )
 
-    return posts
+    return PostPage(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
+        # 45건을 20개씩 보면 3페이지다. 남는 5건도 한 페이지를 차지하므로
+        # 나누기 전에 (size - 1) 을 더해서 올림으로 만든다.
+        total_pages=(total + size - 1) // size,
+    )
 
 
 def get_post(db: Session, post_id: int, user: User | None) -> PostDetailResponse:

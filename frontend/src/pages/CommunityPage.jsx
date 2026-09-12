@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PostCard from '../components/community/PostCard'
 import NoticeList from '../components/community/NoticeList'
+import Pagination from '../components/common/Pagination'
 import Icon from '../components/common/Icon'
 import ErrorMessage from '../components/common/ErrorMessage'
 import Loading from '../components/common/Loading'
@@ -30,7 +31,18 @@ const TABS = [
 export default function CommunityPage() {
   const { isAuthenticated } = useAuth()
   const [tab, setTab] = useState('recipe')
+
+  // 검색어가 둘인 이유
+  // ------------------
+  //   keyword  입력칸에 지금 찍혀 있는 글자. 타이핑할 때마다 바뀐다
+  //   query    실제로 서버에 보낸 검색어. 타이핑이 멎은 뒤에 따라온다
+  //
+  // 하나로 두면 "김치찌개" 를 칠 때 글자마다 요청이 나가서 5번 나간다.
   const [keyword, setKeyword] = useState('')
+  const [query, setQuery] = useState('')
+
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -56,45 +68,59 @@ export default function CommunityPage() {
     }
   }, [])
 
-  // 검색은 서버가 한다 (백엔드의 post_service.add_keyword_filter).
+  // 타이핑이 멎으면 0.3초 뒤에 검색어를 query 로 옮긴다.
   //
-  // 의존성이 [keyword] 라서 검색어를 고칠 때마다 이 effect 가 다시 실행된다.
+  // 0.3초 안에 또 치면 아래 정리 함수가 앞의 타이머를 취소하고 새로 잡는다.
+  // 그래서 "김치찌개" 를 쳐도 요청은 마지막에 한 번만 나간다.
   //
-  // 여기 두 가지 장치가 있는데 둘 다 필요하다.
+  // 검색어가 바뀌면 1페이지로 되돌린다. 3페이지를 보다가 검색하면
+  // "검색 결과 2건" 인데 3페이지를 달라고 해서 빈 화면이 뜬다.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQuery(keyword)
+      setPage(1)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [keyword])
+
+  // 검색은 서버가 하고(post_service.add_keyword_filter), 자르는 것도 서버가 한다.
   //
-  // 1) setTimeout 300ms — "김치찌개" 를 치면 글자마다 요청이 나가서 5번 나간다.
-  //    0.3초 안에 다시 치면 앞의 타이머를 취소하고 새로 잡는다(아래 clearTimeout).
-  //    타이핑을 멈춘 뒤에야 한 번 나간다.
-  //
-  // 2) alive 플래그 — 요청은 보낸 순서대로 도착하지 않는다.
-  //    "김" 을 검색한 응답이 "김치" 응답보다 늦게 올 수 있는데,
-  //    그러면 화면에 "김치" 결과가 떴다가 "김" 결과로 덮여버린다.
-  //    effect 가 다시 실행되기 직전에 아래 정리 함수가 alive 를 false 로 바꾸므로,
-  //    낡은 응답이 도착해도 setPosts 를 부르지 않는다.
+  // alive 플래그가 필요한 이유
+  // --------------------------
+  // 요청은 보낸 순서대로 도착하지 않는다. 2페이지를 눌렀다가 3페이지를 눌렀는데
+  // 2페이지 응답이 더 늦게 올 수 있고, 그러면 3페이지를 보고 있는데 목록만
+  // 2페이지 것으로 덮인다. effect 가 다시 실행되기 직전에 아래 정리 함수가
+  // alive 를 false 로 바꾸므로, 낡은 응답이 도착해도 setPosts 를 부르지 않는다.
   useEffect(() => {
     let alive = true
 
-    const timer = setTimeout(() => {
-      setLoadError('')
+    setLoadError('')
 
-      getPosts(keyword)
-        .then((data) => {
-          if (alive) setPosts(data)
-        })
-        .catch((err) => {
-          if (alive) setLoadError(parseApiError(err).message)
-        })
-        .finally(() => {
-          if (alive) setLoading(false)
-        })
-    }, 300)
+    getPosts(query, page)
+      .then((data) => {
+        if (!alive) return
 
-    // 검색어가 또 바뀌거나 화면을 떠날 때 실행된다
+        setPosts(data.items)
+        setTotalPages(data.total_pages)
+      })
+      .catch((err) => {
+        if (alive) setLoadError(parseApiError(err).message)
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+
     return () => {
-      alive = false        // 이미 보낸 요청의 응답을 무시한다
-      clearTimeout(timer)  // 아직 안 보낸 요청은 취소한다
+      alive = false
     }
-  }, [keyword])
+  }, [query, page])
+
+  /** 페이지 버튼을 눌렀을 때. 목록이 바뀌므로 화면 맨 위로 올려준다. */
+  function onPageChange(next) {
+    setPage(next)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <div className="card">
@@ -159,14 +185,23 @@ export default function CommunityPage() {
             <Loading message="게시글을 불러오는 중..." />
           ) : posts.length === 0 ? (
             <p className="empty">
-              {keyword.trim() ? '검색 결과가 없습니다.' : '아직 게시글이 없습니다.'}
+              {query.trim() ? '검색 결과가 없습니다.' : '아직 게시글이 없습니다.'}
             </p>
           ) : (
-            <div className="divided community__list">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
+            <>
+              <div className="divided community__list">
+                {posts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+
+              {/* 한 페이지뿐이면 Pagination 이 스스로 아무것도 안 그린다 */}
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onChange={onPageChange}
+              />
+            </>
           )}
         </>
       ) : (

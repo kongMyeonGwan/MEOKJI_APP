@@ -199,7 +199,7 @@ MEOKJI_APP/
 | | `GET /api/histories/stats` | ● | 건수 · 누적 비용 · 연속 방문일 |
 | | `POST /api/histories` | ● | 식사 확정 (이걸로 먹을래요) |
 | | `DELETE /api/histories/{id}` | ● | 기록 삭제 (공유했으면 409) |
-| posts | `GET /api/posts` | | 목록 · 검색 |
+| posts | `GET /api/posts` | | 목록 · 검색 · 페이징 (`?page=1&size=20`) |
 | | `GET /api/posts/popular` | | 기간 내 좋아요 순위 |
 | | `GET /api/posts/{id}` | | 상세 + 댓글 |
 | | `POST·PUT·DELETE /api/posts[/{id}]` | ● | 글쓰기 · 수정 · 삭제 |
