@@ -55,6 +55,27 @@ def count_game_plays() -> int:
         ).scalar()
 
 
+def count_reset_codes(email: str) -> int:
+    """그 계정에 살아있는 비밀번호 재설정 코드 수.
+
+    API 로는 셀 수 없어서 DB 를 직접 본다. 코드는 이메일로만 나가고
+    응답에는 담기지 않는다(담으면 메일 없이도 비밀번호를 바꿀 수 있다).
+    """
+    from sqlalchemy import text
+
+    from app.database.database import engine
+
+    with engine.connect() as connection:
+        return connection.execute(
+            text(
+                "SELECT COUNT(*) FROM verification_codes WHERE purpose = "
+                "'PASSWORD_RESET' AND user_id = "
+                "(SELECT id FROM users WHERE email = :email AND use_yn = 'Y')"
+            ),
+            {"email": email},
+        ).scalar()
+
+
 def signup_and_login(client, email: str, nickname: str) -> str:
     """가입하고 바로 로그인해서 토큰을 돌려준다."""
     response = client.post(
@@ -176,6 +197,69 @@ def test_로그인하면_토큰과_사용자가_함께_온다(client):
     assert body["user"]["email"] == OWNER_EMAIL
 
     STATE["owner"] = bearer(body["access_token"])
+
+
+# =========================================================
+# 비밀번호 재설정 — 인증번호 발송
+#
+# 가입되지 않은 이메일에는 메일을 보내지 않고 404 로 알려준다.
+# 원래는 200 으로 조용히 끝냈는데(계정 열거 방지), 오타를 쳐도 "보냈습니다"
+# 가 떠서 오지 않는 메일을 기다리게 되는 문제가 더 컸다.
+# =========================================================
+
+
+def test_가입되지_않은_이메일에는_인증번호를_안_보낸다(client):
+    response = client.post(
+        "/api/auth/password-reset/send",
+        json={"email": "pytest_nobody@example.com"},
+    )
+
+    assert response.status_code == 404
+    assert "가입되지 않은" in response.json()["detail"]
+
+
+def test_가입된_이메일에는_인증번호를_보낸다(client):
+    response = client.post(
+        "/api/auth/password-reset/send", json={"email": OWNER_EMAIL}
+    )
+
+    assert response.status_code == 200
+
+    # 코드가 실제로 발급됐는지 DB 로 확인한다. 200 만 보면 메일을 안 보내도
+    # 통과해버린다 — 이 테스트가 잡아야 하는 게 바로 그 경우다.
+    assert count_reset_codes(OWNER_EMAIL) == 1
+
+
+def test_인증번호를_다시_받으면_옛_코드는_버려진다(client):
+    """남겨두면 옛 코드로도 인증이 되어 유효 코드가 여러 개 살아있게 된다."""
+    client.post("/api/auth/password-reset/send", json={"email": OWNER_EMAIL})
+
+    assert count_reset_codes(OWNER_EMAIL) == 1
+
+
+def test_틀린_인증번호는_거부된다(client):
+    response = client.post(
+        "/api/auth/password-reset/verify",
+        json={"email": OWNER_EMAIL, "code": "000000"},
+    )
+
+    assert response.status_code == 400
+
+
+def test_가입되지_않은_이메일의_인증_확인도_거부된다(client):
+    """여기서는 가입 여부를 알려주지 않는다.
+
+    send 에서 이미 알려주므로 숨길 것이 없어 보이지만, verify 의 400 문구는
+    "틀린 코드" · "만료된 코드" 와 하나로 통일돼 있다. 어느 쪽인지 구분해서
+    알려주면 공격자가 유효한 코드를 좁혀나가는 데 쓸 수 있다.
+    """
+    response = client.post(
+        "/api/auth/password-reset/verify",
+        json={"email": "pytest_nobody@example.com", "code": "000000"},
+    )
+
+    assert response.status_code == 400
+    assert "인증번호" in response.json()["detail"]
 
 
 def test_처음_가입하면_1레벨이다(client):

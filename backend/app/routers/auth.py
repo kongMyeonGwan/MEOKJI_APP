@@ -93,14 +93,16 @@ def read_me(current_user: User = Depends(get_current_user)) -> UserResponse:
     "/password-reset/send",
     response_model=MessageResponse,
     summary="비밀번호 재설정 — 인증번호 발송",
+    responses={404: {"description": "가입되지 않은 이메일 (탈퇴 회원 포함)"}},
 )
 def password_reset_send(
     payload: PasswordResetSendRequest, db: Session = Depends(get_db)
 ) -> MessageResponse:
     """이메일로 6자리 인증번호를 보낸다.
 
-    가입되지 않은 이메일이어도 200을 준다. 404를 주면 이 엔드포인트만으로
-    가입 여부를 조회할 수 있게 되기 때문이다.
+    가입되지 않은 이메일이면 404 로 알려준다. 오타를 쳐도 "보냈습니다" 가
+    뜨면 사용자는 오지 않는 메일을 5분씩 기다리게 되기 때문이다.
+    (가입 여부가 드러나는 트레이드오프는 password_reset_service 주석 참고)
     """
     send_reset_code(db, payload.email)
     return MessageResponse(

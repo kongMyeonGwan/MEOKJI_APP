@@ -37,6 +37,25 @@ from app.models.verification_code import PURPOSE_PASSWORD_RESET, VerificationCod
 # 공격자가 유효한 코드를 좁혀나가는 데 쓸 수 있다.
 INVALID_CODE = "인증번호가 올바르지 않거나 만료되었습니다."
 
+# send 단계에서 가입 여부를 알려준다.
+#
+# 원래는 가입되지 않은 이메일에도 200 을 주고 조용히 끝냈다. 계정 열거
+# (이 엔드포인트만으로 "이 주소가 가입돼 있는가" 를 조회하는 것)를 막으려는
+# 것이었는데, 두 가지 이유로 팀이 알려주는 쪽으로 정했다 (2026-09-12).
+#
+#   1) 사용성. 오타를 쳐도 "보냈습니다" 가 떠서, 사용자는 오지 않는 메일을
+#      5분씩 기다리다 받은편지함과 스팸함을 뒤진다. 원인이 오타라는 것을
+#      알 방법이 없다.
+#
+#   2) 이미 로그인에서 열려 있다. login_user() 가 "(남은 시도 N회)" 를
+#      존재하는 계정에만 붙인다. 없는 이메일과 응답을 비교하면 가입 여부를
+#      알 수 있으므로, 여기만 가려봐야 실효가 없다.
+#      (PROGRESS 의 「왜 로그인 실패 시 남은 횟수를 알려주나」 참고)
+#
+# 되돌리려면 send_reset_code() 의 raise 를 return 으로 바꾸면 된다.
+# 그때는 login_user() 의 문구도 같이 되돌려야 뜻이 있다.
+NOT_REGISTERED = "가입되지 않은 회원입니다."
+
 
 def find_active_user(db: Session, email: str) -> User | None:
     # 탈퇴한 회원에게는 재설정 메일을 보내지 않는다.
@@ -61,12 +80,16 @@ def find_latest_code(db: Session, user_id: int) -> VerificationCode | None:
 def send_reset_code(db: Session, email: str) -> None:
     """인증번호를 발급하고 이메일로 보낸다.
 
-    가입되지 않은 이메일이어도 아무 일 없었다는 듯 조용히 끝낸다.
-    404를 주면 로그인 폼을 거치지 않고도 가입 여부를 확인할 수 있게 된다.
+    가입되지 않은 이메일이면 404 로 알려준다. 왜 알려주기로 했는지는
+    위의 NOT_REGISTERED 주석에 적어뒀다.
+
+    탈퇴한 회원(use_yn='N')도 여기 걸린다. find_active_user 가 살아있는
+    회원만 찾기 때문이다 — 탈퇴한 사람에게 재설정 메일을 보낼 이유가 없고,
+    화면에는 "가입되지 않은 회원" 으로 보이는 편이 맞다.
     """
     user = find_active_user(db, email)
     if user is None:
-        return
+        raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_REGISTERED)
 
     # 이전에 발급한 코드는 전부 버린다.
     # 남겨두면 옛날 코드로도 인증이 되어 유효 코드가 여러 개 살아있게 된다.
