@@ -23,11 +23,16 @@ import '../../styles/components/community/NoticeForm.css'
  * notice 를 주면 수정, 안 주면 작성이다.
  */
 
-// 분류 선택지. 서버의 schemas/notice.py KNOWN_CATEGORIES 와 같은 값이다.
+// 분류 선택지. 이 목록은 여기 한 곳에만 있다.
 //
-// 서버는 이 넷만 받지는 않는다(DDL 에 CHECK 가 없다). 분류는 운영하면서
-// 늘어나는 값이라 제약을 걸지 않았고, 여기 목록은 "매번 손으로 치지 않게"
-// 하는 편의일 뿐이다. 새 분류가 필요하면 이 배열에 한 줄 더하면 된다.
+// 서버는 분류를 검사하지 않는다 — Literal 로 묶지도, DDL 에 CHECK 를 걸지도
+// 않았다. 운영하면서 늘어나는 값이라 제약을 걸면 늘 때마다 코드를 고쳐야 한다.
+// 그래서 이 목록은 "매번 손으로 치지 않게" 하는 편의일 뿐이고, 서버는 무엇이
+// 와도 그대로 저장한다.
+//
+// 새 분류가 필요하면 이 배열에 한 줄 더하면 된다. 다만 배지 색은 아래
+// NoticeList.jsx 가 '점검' 만 경고색으로 그리므로, 색까지 붙이려면 거기도
+// 같이 봐야 한다.
 const CATEGORIES = ['안내', '점검', '업데이트', '이벤트']
 
 export default function NoticeForm({ notice, onDone, onCancel }) {
