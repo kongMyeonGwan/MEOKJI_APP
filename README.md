@@ -11,14 +11,17 @@
 - **날씨와 가격은 실제 API**에서 가져온다. AI가 추측하지 않는다
 - **DB에는 사용자가 최종 확정한 것만** 저장한다 (검색·추천 후보는 저장 안 함)
 - **테이블을 함부로 늘리지 않는다.**
-  찜 목록 · AI 추천 기록처럼 테이블이 필요해 보이는 것은 브라우저
-  localStorage 에 두고, 카테고리처럼 사용자가 만들지 않는 목록은
-  서버 파일(`backend/app/data/catalog.json`)에서 내려준다
+  AI 추천 기록처럼 테이블이 필요해 보이는 것은 브라우저 localStorage 에 두고,
+  카테고리처럼 사용자가 만들지 않는 목록은 서버 파일
+  (`backend/app/data/catalog.json`)에서 내려준다
 
-  > 테이블은 **9개**다.
+  > 테이블은 **10개**다.
   > `users` · `verification_codes` · `user_bans` · `meal_histories` ·
   > `recipe_reviews` · `review_likes` · `review_comments` · `notices` ·
-  > `game_histories`.
+  > `game_histories` · `recipe_likes`.
+  >
+  > 찜(`recipe_likes`)은 원래 localStorage 에 있었다. 기기를 바꾸면 안 따라오고,
+  > 한 브라우저를 여러 사람이 쓰면 앞사람 찜이 보여서 표로 옮겼다.
   >
   > 공지(`notices`)와 미니게임 기록(`game_histories`)은 파일에 둘 수 없어서
   > 테이블이 됐다. 공지는 운영하면서 계속 새로 쓰는 값이라 파일에 두면
@@ -138,7 +141,8 @@ MEOKJI_APP/
 │   ├── 04_notices_and_games.sql   공지 분류 컬럼 · 게임 종류 A~C (1회성)
 │   ├── 05_seed_notices.sql        초기 공지 5건 (선택)
 │   ├── 06_add_user_level.sql      회원 권한 등급 1=관리자 2=일반 (1회성)
-│   └── 07_drop_notice_category.sql  04 가 넣은 공지 분류 컬럼 제거 (1회성)
+│   ├── 07_drop_notice_category.sql  04 가 넣은 공지 분류 컬럼 제거 (1회성)
+│   └── 08_add_recipe_likes.sql   찜한 레시피 표 (1회성)
 ├── backend/
 │   ├── requirements.txt
 │   ├── pytest.ini
@@ -222,6 +226,9 @@ MEOKJI_APP/
 | | `POST /api/notices/{id}/view` | | 조회수 +1 (펼칠 때) |
 | | `POST·PUT·DELETE /api/notices[/{id}]` | ▲ | 공지 작성 · 수정 · 삭제 |
 | games | `POST /api/games/{key}/plays` | ● | 게임 시작 기록 (worldcup·balance·roulette) |
+| likes | `GET /api/likes` | ● | 내 찜 목록 |
+| | `PUT /api/likes` | ● | 찜하기 · 해제 (누를 때마다 뒤집힘) |
+| | `DELETE /api/likes` | ● | 찜 전체 비우기 |
 
 **로그인 없이 되는 것** — 추천 · 레시피 · 가격 · 게시판 조회 · 날씨 · 카탈로그.
 로그인하면 못 먹는 재료(Ban)가 추천과 레시피에 자동으로 반영된다.
@@ -266,7 +273,7 @@ UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지
 cd backend
 .venv\Scripts\activate
 
-pytest                      # 전부 (216건)
+pytest                      # 전부 (223건)
 pytest tests/test_logic.py  # DB 없이 되는 것만 (127건)
 ```
 
