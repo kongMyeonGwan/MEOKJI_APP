@@ -44,3 +44,44 @@
   font-size: 14px;
   line-height: 1.7;
 }
+
+/* 시세를 못 구한 재료 표시.
+   KAMIS 는 농수산물만 조사해서 두부·밀가루·간장은 값이 아예 없다.
+   재료비 합계가 실제보다 적게 보이는 이유를 그 자리에서 알려준다 */
+.recipe__no-price {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* 특이사항 안내. 재료 목록 바로 밑에 둬서 표를 안 내려봐도 보이게 한다 */
+.recipe__note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.recipe__note strong {
+  margin-right: 6px;
+  color: var(--color-text);
+}
+
+.recipe__note-names {
+  margin-right: 4px;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.recipe__note-names::after {
+  content: ' —';
+}

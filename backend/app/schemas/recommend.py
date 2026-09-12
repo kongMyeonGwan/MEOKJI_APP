@@ -212,6 +212,19 @@ class PriceItem(BaseModel):
     low_cost: int | None = None    # 가장 싼 시장 기준 필요량 값(원)
     high_cost: int | None = None   # 가장 비싼 시장 기준 필요량 값(원)
 
+    # KAMIS 조사 품목인가.
+    #
+    # offers 가 비어 있는 이유는 두 가지고, 사용자에게는 완전히 다른 말이다.
+    #
+    #   조사 대상이 아니다   두부 · 밀가루 · 간장. 가공식품은 KAMIS 가 안 다룬다.
+    #                        앞으로도 값이 안 나온다 — 그렇다고 알려주면 된다.
+    #   이번에 못 가져왔다   호출 제한이나 통신 오류. 잠시 뒤엔 나온다.
+    #
+    # 이 값은 품목표(ingredient_match.find_codes)만 보고 정한다. API 응답과
+    # 무관하므로, 호출이 실패한 날에도 "조사 대상이 아니다" 라고 잘못 말하지
+    # 않는다. 화면은 이 값이 False 일 때만 '조사 대상 아님' 을 붙인다.
+    surveyed: bool = True
+
 
 class PriceRequest(BaseModel):
     """가격 조회 요청. 재료 이름만 보내면 된다."""

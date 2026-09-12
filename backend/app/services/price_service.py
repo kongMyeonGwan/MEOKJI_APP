@@ -10,6 +10,7 @@ integrations/price_api.py 가 "가격을 물어보는 일"을 하고,
 그래서 조회는 재료 이름으로 하고, 화면에 붙이는 이름만 분량을 더해 만든다.
 """
 
+from app.integrations.ingredient_match import find_codes
 from app.integrations.price_api import collect_offers
 from app.schemas.recommend import PriceItem
 from app.services.unit_convert import needed_ratio, scale_price
@@ -51,6 +52,10 @@ async def get_recipe_prices(ingredients_json: list) -> list[PriceItem]:
     items = []
     for row in rows:
         item = recipes.get(row["name"], {})
+
+        # 값이 없을 때 "조사 대상이 아니다" 와 "이번에 못 가져왔다" 를
+        # 가려주기 위한 표시. 품목표만 보므로 API 가 죽어도 값이 흔들리지 않는다.
+        row["surveyed"] = find_codes(row["name"]) is not None
 
         # 조회는 "돼지고기"로 했지만 화면에는 "돼지고기 200g"으로 보여준다
         row["name"] = make_label(row["name"], item)

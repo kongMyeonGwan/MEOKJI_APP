@@ -9,7 +9,7 @@ import { getRecipe } from '../api/recommendations'
 import { createHistory } from '../api/histories'
 import { useAiLog } from '../contexts/AiLogContext'
 import { useAuth } from '../contexts/AuthContext'
-import { useLikes } from '../contexts/LikesContext'
+import { useLikeButton } from '../hooks/useLikeButton'
 import { useProfile } from '../contexts/ProfileContext'
 import { parseApiError } from '../utils/apiError'
 import { formatPrice } from '../utils/format'
@@ -34,7 +34,8 @@ export default function RecipePage() {
 function Recipe({ foodName }) {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
-  const { has, toggle } = useLikes()
+  // 비로그인이면 하트를 눌렀을 때 로그인 화면으로 보낸다 (훅 안에서 처리).
+  const { isLiked, onLike } = useLikeButton()
   const { markPicked } = useAiLog()
   const { reload } = useProfile()
 
@@ -47,6 +48,7 @@ function Recipe({ foodName }) {
   const [saveError, setSaveError] = useState('')
 
   const name = decodeURIComponent(foodName ?? '')
+  const liked = isLiked(name)
 
   // 화면이 열릴 때 AI에게 레시피를 만들어달라고 한다.
   // 응답이 몇 초 걸릴 수 있어서 로딩 문구를 확실히 띄운다.
@@ -151,7 +153,6 @@ function Recipe({ foodName }) {
 
   // 찜은 로그인 없이도 된다. 이 브라우저에만 저장되는 값이고(LikesContext),
   // "이걸로 먹을래요"와 달리 기록으로 남지 않는다
-  const liked = has(recipe.food_name)
 
   return (
     <div className="recipe-page">
@@ -183,6 +184,8 @@ function Recipe({ foodName }) {
           recipe={recipe.recipe_json}
           ingredients={recipe.ingredients_json}
           substitutes={recipe.substitutes_json}
+          // 시세를 못 구한 재료에 표시를 붙이려면 가격 결과가 필요하다
+          prices={recipe.prices}
         />
       </section>
 
@@ -226,7 +229,7 @@ function Recipe({ foodName }) {
               <button
                 type="button"
                 className="btn btn--ghost recipe-page__like"
-                onClick={() => toggle(recipe.food_name)}
+                onClick={() => onLike(name)}
                 aria-pressed={liked}
               >
                 <Icon name={liked ? 'heart-fill' : 'heart'} size={17} />

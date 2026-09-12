@@ -20,6 +20,7 @@ from app.integrations import ai_api
 from app.integrations.weather_api import cache_key, join_address
 from app.integrations import ingredient_match
 from app.integrations import price_api
+from app.integrations import steps as steps_module
 from app.services import ai_service
 from app.services import bargain_service
 from app.services import file_service
@@ -1429,3 +1430,45 @@ def test_게임_글자는_한_글자다():
     # DDL 이 CHAR(1) 이다. 두 글자를 넣으면 ORA-12899 가 난다.
     for game_type in game_service.GAME_TYPES.values():
         assert len(game_type) == 1
+
+
+# ==========================================================
+# 조사 대상이 아닌 재료 (KAMIS 는 농수산물만 조사한다)
+# ==========================================================
+
+def test_가공식품은_원물_시세를_빌려_쓰지_않는다():
+    # 부분일치가 '고추장' 안에서 '고추' 를 찾아 고추 시세를 붙이고 있었다.
+    # 값이 틀리는 것도 문제지만, 상세페이지가 "이건 조사 대상이다" 라고
+    # 말하게 되는 게 더 나쁘다.
+    from app.integrations.ingredient_match import find_codes
+
+    assert find_codes("고추장") is None
+    assert find_codes("초고추장") is None
+    assert find_codes("배추김치") is None
+    assert find_codes("깨소금") is None
+
+    # 원물은 그대로 찾아져야 한다. 가공식품을 막다가 이걸 같이 막으면
+    # 재료비가 통째로 사라진다.
+    assert find_codes("고추") is not None
+    assert find_codes("배추") is not None
+    assert find_codes("소금") is not None
+
+
+def test_멸치액젓은_멸치가_아니라_액젓이다():
+    # 둘 다 두 글자라 길이로는 못 가린다. 별칭으로 못박아 둔 것을 지키는지 본다.
+    from app.integrations.ingredient_match import find_codes
+
+    assert find_codes("멸치액젓") == find_codes("액젓")
+    assert find_codes("멸치액젓") != find_codes("멸치")
+
+
+def test_카탈로그_재료는_모두_조사_대상이다():
+    # 100종의 재료가 전부 시세를 받아야 예상비용이 맞는다.
+    # 재료를 새로 추가했는데 KAMIS 품목명과 다르면 여기서 걸린다.
+    from app.data import FOODS
+    from app.integrations.ingredient_match import find_codes
+
+    names = {name for food in FOODS for name in food["ingredients"]}
+    missing = sorted(name for name in names if find_codes(name) is None)
+
+    assert missing == []

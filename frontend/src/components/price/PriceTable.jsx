@@ -89,6 +89,14 @@ export default function PriceTable({ prices }) {
   if (!prices?.length) return null
 
   const total = getPriceSummary(prices)
+
+  // 조사 대상이 아닌 재료 이름. 표 아래 안내에 이름을 밝히려고 모은다.
+  //
+  // "값이 안 왔다" 와 섞으면 안 된다. 호출 제한으로 그날 값이 빈 재료까지
+  // "가공식품이라 없다" 고 말하게 되기 때문이다.
+  const unsurveyed = prices
+    .filter((item) => item.surveyed === false)
+    .map((item) => item.name)
   const surveyedAt = pickSurveyDate(prices)
 
   return (
@@ -110,11 +118,18 @@ export default function PriceTable({ prices }) {
               // 줄째로 빼버리면 "이 재료는 왜 없지?" 가 되고,
               // 합계가 전체 재료비인 것처럼 보인다.
               if (!range) {
+                // 값이 없는 이유가 두 가지고, 사용자에게는 다른 말이다.
+                //
+                //   조사 대상 아님   두부 · 간장 같은 가공식품. 앞으로도 값이 없다
+                //   못 받음          호출 제한이나 통신 오류. 잠시 뒤엔 나온다
+                //
+                // 하나로 뭉뚱그리면 "이 값은 원래 없는 건가, 고장난 건가" 를
+                // 알 수 없다. 서버가 surveyed 로 갈라서 알려준다.
                 return (
                   <tr key={item.name} className="price-table__unknown">
                     <td>{item.name}</td>
                     <td className="num muted" colSpan={2}>
-                      가격 정보 없음
+                      {item.surveyed === false ? '조사 대상 아님' : '가격을 받지 못함'}
                     </td>
                   </tr>
                 )
@@ -202,8 +217,8 @@ export default function PriceTable({ prices }) {
         금액은 <strong>이 레시피에 필요한 만큼</strong>으로 환산한 값이고, 회색
         글씨가 시장의 판매 단위 가격입니다. 실제로는 그 단위로 사야 하므로
         구매 금액은 더 큽니다.
-        {total.counted < total.total &&
-          ' 가공식품은 농수산물 시세 조사 대상이 아니라 가격이 없습니다.'}
+        {unsurveyed.length > 0 &&
+          ` ${unsurveyed.join(' · ')} — 농수산물 시세 조사 대상이 아니라 값이 없고, 합계에서도 빠집니다.`}
         {' '}
         <strong className="price-table__trend is-down">▼</strong>
         {' · '}
