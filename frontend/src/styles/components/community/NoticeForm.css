@@ -1,0 +1,97 @@
+/* 공지 작성·수정 폼 (관리자만).
+   목록 위에 펴지므로, 목록과 섞이지 않게 배경을 한 겹 깔고 테두리를 둔다 */
+.notice-form {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+
+.notice-form__title {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.notice-form__field {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.notice-form__field > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.notice-form__field input[type='text'],
+.notice-form__field select,
+.notice-form__field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.6;
+  background: var(--color-surface);
+}
+
+.notice-form__field textarea { resize: vertical; }
+
+.notice-form__field input:focus,
+.notice-form__field select:focus,
+.notice-form__field textarea:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+/* 분류(좁게)와 고정 체크박스를 한 줄에 둔다.
+   분류는 선택지가 짧아서 한 줄을 다 쓰면 허전하다 */
+.notice-form__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.notice-form__row .notice-form__field {
+  flex: 0 0 160px;
+}
+
+/* 체크박스는 라벨 높이만큼 내려야 분류 select 와 같은 줄에 앉는다 */
+.notice-form__check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 30px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.notice-form__check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.notice-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 좁은 화면에서는 분류와 고정을 위아래로 쌓는다.
+   한 줄에 두면 select 가 글자 몇 개만 보일 만큼 좁아진다 */
+@media (max-width: 640px) {
+  .notice-form__row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .notice-form__row .notice-form__field { flex: none; width: 100%; }
+
+  .notice-form__check { margin: 0 0 16px; }
+}

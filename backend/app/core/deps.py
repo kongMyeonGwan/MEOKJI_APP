@@ -6,6 +6,7 @@
 
     get_current_user    로그인 필수. 토큰이 없거나 잘못됐으면 401 에러
     get_optional_user   로그인 선택. 없으면 None (게시판을 Guest 도 볼 수 있게)
+    get_admin_user      관리자 전용. 로그인은 했지만 관리자가 아니면 403
 
 Depends 가 뭔가요
 -----------------
@@ -95,6 +96,31 @@ def get_current_user(
 
     # credentials.credentials 안에 "Bearer " 를 뗀 토큰 문자열만 들어있다
     return find_user_by_token(credentials.credentials, db)
+
+
+def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """관리자만 들어올 수 있는 곳에서 쓴다 (공지 작성 · 수정 · 삭제).
+
+    get_current_user 를 Depends 로 받는다. 토큰 검사 · 탈퇴 확인 · 계정 잠금을
+    거기서 이미 다 하므로, 여기는 등급 한 줄만 더 본다.
+    그래서 로그인하지 않았으면 403 이 아니라 401 이 먼저 나간다 — 맞는 순서다.
+    "누구인지 모르겠다(401)" 와 "누구인지는 알지만 권한이 없다(403)" 는 다르다.
+
+    왜 404 가 아니라 403 인가
+    -------------------------
+    게시판의 '남의 글 수정' 은 404 로 돌려준다. 403 을 주면 "그 번호의 글은
+    존재한다" 는 사실이 새어나가기 때문이다.
+
+    공지는 그 걱정이 없다. 목록이 Guest 에게도 통째로 열려 있어서 몇 번
+    공지가 있는지는 이미 공개된 정보다. 숨길 것이 없으면 사실대로 알려주는
+    편이 낫다 — 404 로 받으면 화면이 "없는 공지" 라고 잘못 안내하게 된다.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "관리자만 할 수 있는 작업입니다."
+        )
+
+    return current_user
 
 
 def get_optional_user(

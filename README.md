@@ -136,7 +136,8 @@ MEOKJI_APP/
 │   ├── 02_migrate_v2.sql          v1 -> v2 마이그레이션 (1회성)
 │   ├── 03_add_review_attachments.sql  후기 첨부파일 컬럼 추가 (1회성)
 │   ├── 04_notices_and_games.sql   공지 분류 컬럼 · 게임 종류 A~C (1회성)
-│   └── 05_seed_notices.sql        초기 공지 5건 (선택)
+│   ├── 05_seed_notices.sql        초기 공지 5건 (선택)
+│   └── 06_add_user_level.sql      회원 권한 등급 1=관리자 2=일반 (1회성)
 ├── backend/
 │   ├── requirements.txt
 │   ├── pytest.ini
@@ -179,6 +180,8 @@ MEOKJI_APP/
 전체 목록과 요청/응답 모양은 서버를 켜고 <http://localhost:8000/docs> 에서
 직접 눌러볼 수 있다. 아래는 어떤 기능이 어디에 있는지 찾기 위한 지도다.
 
+로그인 칸의 ● 는 로그인 필수, ▲ 는 관리자(`users.user_level = 1`) 전용이다.
+
 | 그룹 | 엔드포인트 | 로그인 | 설명 |
 |---|---|:--:|---|
 | health | `GET /api/health` | | 서버 + DB 상태 |
@@ -213,6 +216,7 @@ MEOKJI_APP/
 | | `GET /api/catalog/regions` | | 시·도 · 시·군·구 (주소 드롭다운) |
 | notices | `GET /api/notices` | | 공지사항 (고정 먼저 · 최신순) |
 | | `POST /api/notices/{id}/view` | | 조회수 +1 (펼칠 때) |
+| | `POST·PUT·DELETE /api/notices[/{id}]` | ▲ | 공지 작성 · 수정 · 삭제 |
 | games | `POST /api/games/{key}/plays` | ● | 게임 시작 기록 (worldcup·balance·roulette) |
 
 **로그인 없이 되는 것** — 추천 · 레시피 · 가격 · 게시판 조회 · 날씨 · 카탈로그.

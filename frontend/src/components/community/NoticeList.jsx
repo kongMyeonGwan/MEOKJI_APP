@@ -13,8 +13,18 @@ import '../../styles/components/community/NoticeList.css'
  * 정렬은 서버(notice_service.list_notices)가 이미 해둔 것을 그대로 쓴다.
  * 고정 공지가 위로 와야 한다는 건 화면 취향이 아니라 공지의 규칙이라,
  * 화면이 여럿 생겨도 같은 순서여야 한다.
+ *
+ * 관리자에게만 수정·삭제 버튼이 붙는다(canManage). 버튼을 숨기는 것은 잠그는
+ * 것이 아니다 — 진짜 차단은 서버의 get_admin_user 가 한다. 여기서 숨기는 건
+ * 눌러봐야 403 만 받을 버튼을 보여주지 않기 위해서다.
+ *
+ * 버튼을 제목 줄이 아니라 펼친 본문 아래에 두는 이유가 둘 있다.
+ *   - 제목 줄 전체가 이미 <button>(아코디언 토글)이다. 그 안에 버튼을 또
+ *     넣으면 HTML 상 중첩 버튼이 되어 브라우저마다 다르게 동작한다
+ *   - 삭제는 되돌리기 번거로운 동작이라, 내용을 펼쳐 확인한 뒤에 누르는
+ *     자리에 있는 편이 낫다
  */
-export default function NoticeList({ notices }) {
+export default function NoticeList({ notices, canManage = false, onEdit, onDelete }) {
   // 열어둔 공지의 id. 한 번에 하나만 열린다(아코디언).
   const [openId, setOpenId] = useState(null)
 
@@ -40,6 +50,14 @@ export default function NoticeList({ notices }) {
     } catch {
       // 조회수는 숫자 하나다. 못 올렸다고 공지 읽는 걸 막을 이유가 없다.
     }
+  }
+
+  /** 삭제 버튼. 되돌리기 번거로운 동작이라 한 번 묻는다. */
+  function remove(notice) {
+    const ok = window.confirm(`'${notice.title}' 공지를 지울까요?`)
+    if (!ok) return
+
+    onDelete(notice)
   }
 
   if (notices.length === 0) {
@@ -93,6 +111,25 @@ export default function NoticeList({ notices }) {
               <div className="notice__body">
                 <p className="notice__content">{notice.content}</p>
                 <p className="muted notice__writer">— 뭐먹지? 운영팀</p>
+
+                {canManage && (
+                  <div className="notice__admin">
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => onEdit(notice)}
+                    >
+                      수정
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--sm"
+                      onClick={() => remove(notice)}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </li>

@@ -85,8 +85,15 @@ CLEANUP_SQL = (
     # 게임 기록에는 PK 가 없다. user_id 로만 지운다 — 테스트 계정의 판은
     # 어차피 전부 이번 실행에서 만든 것이라 그걸로 충분하다.
     "DELETE FROM game_histories WHERE user_id = :uid",
-    # 공지는 지우지 않는다. 테스트가 공지를 만들지 않고 읽기만 한다
-    # (쓰기 API 자체가 없다). 여기서 지우면 시드해둔 진짜 공지가 날아간다.
+    # 공지도 지운다. 쓰기 API 가 생기면서 테스트가 공지를 만들게 됐다.
+    #
+    # user_id 로 좁히는 것이 중요하다. 조건 없이 지우면 시드해둔 진짜 공지가
+    # 같이 날아간다. 테스트 계정이 쓴 것만 골라 지운다.
+    #
+    # 이 줄이 없으면 아래 users DELETE 가 ORA-02292 로 막힌다.
+    # fk_notices_user 에는 ON DELETE CASCADE 가 없다 — 운영자 계정이 사라진다고
+    # 공지가 같이 사라지면 안 되기 때문이다(models/notice.py 참고).
+    "DELETE FROM notices WHERE user_id = :uid",
     "DELETE FROM user_bans WHERE user_id = :uid",
     "DELETE FROM verification_codes WHERE user_id = :uid",
     "DELETE FROM users WHERE id = :uid",

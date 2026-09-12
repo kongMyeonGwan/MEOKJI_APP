@@ -85,6 +85,7 @@ CREATE TABLE users (
     email             VARCHAR2(255 CHAR)  NOT NULL,                                 -- 로그인 ID. 탈퇴하지 않은 회원끼리만 유일 (uq_users_email)
     password_hash     VARCHAR2(255 CHAR)  NOT NULL,                                 -- bcrypt 해시. 평문 비밀번호는 DB·로그 어디에도 남기지 않는다
     nickname          VARCHAR2(50 CHAR)   NOT NULL,                                 -- 게시판·댓글에 노출되는 이름. 이메일 대신 이 값만 보여준다
+    user_level        NUMBER(1)           DEFAULT 2 NOT NULL,                       -- 권한 등급. 1=관리자 2=일반 회원. 가입은 전부 2 — 1 은 DB 에서 직접 올린다
     gender            VARCHAR2(10 CHAR),                                            -- MALE / FEMALE / OTHER. NULL = "선택 안 함" (필수 입력 아님)
     address_sido      VARCHAR2(30 CHAR),                                            -- 시·도 표시용. "서울특별시" — 화면 출력에만 쓴다
     address_sigungu   VARCHAR2(30 CHAR),                                            -- 시·군·구 표시용. "강남구" — 화면 출력에만 쓴다
@@ -99,6 +100,7 @@ CREATE TABLE users (
     CONSTRAINT pk_users             PRIMARY KEY (id),
     CONSTRAINT ck_users_is_locked   CHECK (is_locked IN (0, 1)),
     CONSTRAINT ck_users_fail_count  CHECK (login_fail_count >= 0),
+    CONSTRAINT ck_users_user_level  CHECK (user_level IN (1, 2)),
     CONSTRAINT ck_users_use_yn      CHECK (use_yn IN ('Y', 'N')),
     CONSTRAINT ck_users_gender      CHECK (gender IS NULL OR gender IN ('MALE', 'FEMALE', 'OTHER')),
     CONSTRAINT ck_users_latitude    CHECK (latitude  IS NULL OR latitude  BETWEEN  -90 AND  90),
@@ -116,6 +118,22 @@ CREATE UNIQUE INDEX uq_users_nickname ON users (CASE WHEN use_yn = 'Y' THEN nick
 -- 로그인(email 조회) / 닉네임 중복 확인용. 위 인덱스는 이 조회에 쓰이지 않는다 ([3] 참고)
 CREATE INDEX idx_users_email    ON users (email, use_yn);
 CREATE INDEX idx_users_nickname ON users (nickname, use_yn);
+
+-- USER_LEVEL 은 '권한'이지 화면의 '요리 레벨'이 아니다
+--   화면 마이페이지에 나오는 레벨(1 → 2 → 3 …)은 이 컬럼과 아무 상관이 없다.
+--   그쪽은 식사 기록 · 후기로 쌓인 경험치에서 매번 계산하는 값이고
+--   (services/user_service.py 의 make_level), DB 에 저장하지 않는다.
+--   이름이 비슷해서 헷갈리기 쉬운데, 여기 숫자는 오직 관리자 여부만 가른다.
+--
+-- 왜 CHECK 로 1·2 만 허용하나
+--   등급이 늘어날 값이면 CHECK 가 방해가 되지만(NOTICES.CATEGORY 가 그래서 없다),
+--   이건 "관리자냐 아니냐" 두 갈래라 늘어날 여지가 없다. 오타로 0 이나 3 이
+--   들어가면 관리자 판정이 조용히 어긋나므로 DB 가 막아주는 편이 낫다.
+--
+-- 왜 DEFAULT 가 2 인가
+--   빠뜨렸을 때 일반 회원이 되는 쪽이 안전하다. DEFAULT 1 이면 컬럼을 모르는
+--   INSERT 하나가 관리자를 만들어낸다. 회원가입 코드는 이 컬럼을 쓰지 않는다.
+COMMENT ON COLUMN users.user_level IS '권한 등급. 1=관리자 2=일반 회원. 화면의 요리 레벨과 무관';
 
 COMMENT ON TABLE users IS '회원. 로그인 20회 실패 시 is_locked=1, 탈퇴 시 use_yn=N';
 

@@ -710,6 +710,196 @@ def test_없는_공지는_404다(client):
 
 
 # =========================================================
+# 공지 쓰기 (관리자만)
+#
+# 오래 "쓰기 API 가 없다" 였다. USERS 에 관리자 구분이 없어서 "운영자만" 을
+# 가릴 방법이 없었기 때문이다. USER_LEVEL(1=관리자)이 생기면서 풀렸다.
+#
+# 테스트 계정은 가입한 그대로라 일반 회원(2)이다. 관리자가 필요한 테스트는
+# set_user_level() 로 잠깐 올렸다가, 마지막 테스트가 도로 내린다.
+# =========================================================
+
+
+def set_user_level(email: str, level: int) -> None:
+    """테스트 계정의 권한 등급을 바꾼다.
+
+    API 로는 할 수 없어서 DB 를 직접 고친다. 관리자를 만드는 화면도 API 도
+    일부러 두지 않았다 — 아무나 자기를 관리자로 올릴 수 있으면 등급이 의미가
+    없어서, 운영에서도 DB 에서 직접 올린다(db/06_add_user_level.sql).
+    """
+    from sqlalchemy import text
+
+    from app.database.database import engine
+
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE users SET user_level = :level WHERE email = :email"),
+            {"level": level, "email": email},
+        )
+
+
+def test_로그인_없이는_공지를_못_쓴다(client):
+    response = client.post(
+        "/api/notices", json={"title": "몰래 쓴 공지", "content": "본문"}
+    )
+
+    # 403 이 아니라 401 이다. "권한이 없다" 가 아니라 "누구인지 모르겠다" 다.
+    assert response.status_code == 401
+
+
+def test_일반_회원은_공지를_못_쓴다(client):
+    response = client.post(
+        "/api/notices",
+        headers=STATE["owner"],
+        json={"title": "회원이 쓴 공지", "content": "본문"},
+    )
+
+    # 404 로 숨기지 않는다. 공지 목록은 Guest 에게도 통째로 열려 있어서
+    # 숨길 것이 없고, 404 를 주면 화면이 "없는 공지" 라고 잘못 안내하게 된다.
+    assert response.status_code == 403
+
+
+def test_일반_회원은_is_admin_이_거짓이다(client):
+    me = client.get("/api/auth/me", headers=STATE["owner"]).json()
+
+    assert me["is_admin"] is False
+
+
+def test_관리자는_공지를_쓴다(client):
+    set_user_level(OWNER_EMAIL, 1)
+
+    response = client.post(
+        "/api/notices",
+        headers=STATE["owner"],
+        json={
+            "title": "pytest 점검 공지",
+            "content": "본문입니다",
+            "category": "점검",
+            "pinned": True,
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    body = response.json()
+
+    assert body["title"] == "pytest 점검 공지"
+    assert body["category"] == "점검"
+    assert body["pinned"] is True
+
+    # 조회수는 요청으로 받지 않는다. 읽혀서 쌓이는 값이라 0 에서 시작한다.
+    assert body["view_count"] == 0
+
+    STATE["notice_id"] = body["id"]
+
+
+def test_관리자는_is_admin_이_참이다(client):
+    me = client.get("/api/auth/me", headers=STATE["owner"]).json()
+
+    assert me["is_admin"] is True
+
+
+def test_분류를_안_적으면_안내다(client):
+    response = client.post(
+        "/api/notices",
+        headers=STATE["owner"],
+        json={"title": "pytest 분류 생략", "content": "본문"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["category"] == "안내"
+
+    # 고정도 기본이 꺼짐이다. 쓸 때마다 맨 위에 붙으면 고정이 뜻을 잃는다.
+    assert response.json()["pinned"] is False
+
+
+def test_공백만_든_제목은_거른다(client):
+    response = client.post(
+        "/api/notices",
+        headers=STATE["owner"],
+        json={"title": "   ", "content": "본문"},
+    )
+
+    # min_length=1 은 통과해버린다. Oracle 이 빈 문자열을 NULL 로 보기 때문에
+    # 그냥 두면 NOT NULL 위반으로 500 이 난다. 그 전에 422 로 끊는다.
+    assert response.status_code == 422
+
+
+def test_고정한_공지가_목록_맨_위에_온다(client):
+    rows = client.get("/api/notices").json()
+
+    assert rows[0]["id"] == STATE["notice_id"]
+
+
+def test_공지를_고쳐도_조회수는_그대로다(client):
+    notice_id = STATE["notice_id"]
+
+    viewed = client.post(f"/api/notices/{notice_id}/view").json()["view_count"]
+    assert viewed == 1
+
+    response = client.put(
+        f"/api/notices/{notice_id}",
+        headers=STATE["owner"],
+        json={
+            "title": "pytest 고친 공지",
+            "content": "고친 본문",
+            "category": "안내",
+            "pinned": False,
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+
+    assert body["title"] == "pytest 고친 공지"
+    assert body["category"] == "안내"
+    assert body["pinned"] is False
+
+    # 오타 하나 고쳤다고 "몇 명이 읽었나" 가 0 으로 돌아가면 안 된다
+    assert body["view_count"] == viewed
+
+
+def test_없는_공지는_고칠_수도_지울_수도_없다(client):
+    payload = {"title": "제목", "content": "본문"}
+
+    assert (
+        client.put("/api/notices/99999999", headers=STATE["owner"], json=payload).status_code
+        == 404
+    )
+    assert (
+        client.delete("/api/notices/99999999", headers=STATE["owner"]).status_code == 404
+    )
+
+
+def test_관리자는_공지를_지운다(client):
+    notice_id = STATE["notice_id"]
+
+    assert client.delete(f"/api/notices/{notice_id}", headers=STATE["owner"]).status_code == 204
+
+    # 목록에서 사라진다
+    ids = [row["id"] for row in client.get("/api/notices").json()]
+    assert notice_id not in ids
+
+    # 행은 남아 있지만(use_yn='N') 조회에서는 없는 것과 같다.
+    # 두 번 지우면 404 여야 한다 — 여기가 200 이면 use_yn 조건이 빠진 것이다.
+    assert client.delete(f"/api/notices/{notice_id}", headers=STATE["owner"]).status_code == 404
+    assert client.post(f"/api/notices/{notice_id}/view").status_code == 404
+
+
+def test_관리자_자격을_잃으면_다시_못_쓴다(client):
+    # 토큰은 그대로인데 등급만 내린다. 이미 발급된 토큰으로 계속 쓸 수 있으면
+    # 권한을 회수할 방법이 없다 — deps 가 요청마다 DB 를 다시 본다.
+    set_user_level(OWNER_EMAIL, 2)
+
+    response = client.post(
+        "/api/notices",
+        headers=STATE["owner"],
+        json={"title": "강등 후 공지", "content": "본문"},
+    )
+
+    assert response.status_code == 403
+
+
+# =========================================================
 # 미니게임 기록 (GAME_HISTORIES 표)
 #
 # 끝난 판이 아니라 시작한 판을 센다. 세 게임 모두 도중에 나가는 일이 흔해서,
@@ -811,6 +1001,45 @@ def test_비밀번호를_바꾸면_새_값으로_로그인된다(client):
     STATE["owner"] = bearer(response.json()["access_token"])
 
 
+def test_탈퇴_직전에_살아있는_글을_하나_만들어_둔다(client):
+    """연쇄 UPDATE 를 확인하려면 탈퇴 시점에 'Y' 인 글이 있어야 한다.
+
+    앞의 테스트들이 만든 글과 기록은 이미 지웠다. 그 상태로 탈퇴하면
+    지울 것이 없어서, 연쇄 UPDATE 가 도는지 안 도는지 구분되지 않는다.
+    """
+    recipe = client.get("/api/recipes/김치찌개", headers=STATE["owner"]).json()
+
+    response = client.post(
+        "/api/histories",
+        headers=STATE["owner"],
+        json={
+            "food_name": recipe["food_name"],
+            "recipe_name": recipe["recipe_name"],
+            "recipe_json": recipe["recipe_json"],
+            "ingredients_json": recipe["ingredients_json"],
+            "substitutes_json": recipe["substitutes_json"],
+            "estimated_cost": recipe["estimated_cost"],
+        },
+    )
+    assert response.status_code == 201, response.text
+
+    response = client.post(
+        "/api/posts",
+        headers=STATE["owner"],
+        json={
+            "meal_history_id": response.json()["id"],
+            "title": "탈퇴 전에 남긴 글",
+            "content": "이 글은 글쓴이가 탈퇴하면 게시판에서 사라져야 한다.",
+        },
+    )
+    assert response.status_code == 201, response.text
+
+    STATE["farewell_post_id"] = response.json()["id"]
+
+    # 지금은 분명히 보인다. 이게 보여야 뒤의 "사라졌다" 가 뜻을 가진다.
+    assert client.get(f"/api/posts/{STATE['farewell_post_id']}").status_code == 200
+
+
 def test_탈퇴하면_토큰이_바로_막힌다(client):
     response = client.request(
         "DELETE",
@@ -823,6 +1052,37 @@ def test_탈퇴하면_토큰이_바로_막힌다(client):
     # JWT 는 취소할 수 없지만, deps 가 요청마다 use_yn 을 확인한다
     response = client.get("/api/users/me", headers=STATE["owner"])
     assert response.status_code == 401
+
+
+def test_탈퇴하면_내_글이_게시판에서_사라진다(client):
+    """회원 탈퇴는 하위 데이터까지 연쇄로 use_yn='N' 이어야 한다.
+
+    FK 의 ON DELETE CASCADE 는 진짜 DELETE 에만 작동한다. UPDATE use_yn='N'
+    은 DB 입장에서 그냥 값 수정이라 아무 반응도 없어서, 서비스 계층이
+    직접 하위 테이블을 훑어야 한다 (db/01_schema.sql 상단 [4]).
+
+    이걸 빠뜨리면 탈퇴한 사람의 글과 댓글이 게시판에 그대로 남는다.
+    """
+    post_id = STATE["farewell_post_id"]
+
+    assert client.get(f"/api/posts/{post_id}").status_code == 404
+
+    ids = [row["id"] for row in client.get("/api/posts").json()["items"]]
+    assert post_id not in ids
+
+
+def test_탈퇴해도_내가_쓴_공지는_남는다(client):
+    """공지는 연쇄 대상이 아니다. 일부러 뺀 것이지 빠뜨린 것이 아니다.
+
+    공지는 개인의 글이 아니라 운영팀이 서비스 이름으로 낸 글이라, 쓴 사람이
+    그만뒀다고 '서버 점검 안내' 가 같이 사라지면 곤란하다. DDL 도 같은
+    판단이라 fk_notices_user 에만 ON DELETE CASCADE 가 없다.
+
+    앞에서 이 계정이 관리자로 올라갔을 때 공지를 썼다.
+    """
+    titles = [row["title"] for row in client.get("/api/notices").json()]
+
+    assert "pytest 분류 생략" in titles
 
 
 def test_탈퇴한_이메일로_다시_가입할_수_있다(client):

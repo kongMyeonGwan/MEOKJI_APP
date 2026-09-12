@@ -110,6 +110,15 @@ class UserResponse(BaseModel):
     address_sido: str | None = None
     address_sigungu: str | None = None
 
+    # 관리자인지. User 모델의 is_admin 프로퍼티(user_level == 1)에서 온다.
+    #
+    # 등급 숫자(user_level)를 그대로 내리지 않는다. 화면이 필요한 건 "공지 쓰기
+    # 버튼을 그릴까" 하나뿐이라, 1 이 관리자라는 규칙까지 프론트에 퍼뜨릴 이유가 없다.
+    #
+    # 이 값은 화면을 그릴지 말지에만 쓴다. 진짜 차단은 서버의 get_admin_user 가 한다.
+    # 버튼을 숨기는 것은 잠그는 것이 아니다 — 주소를 직접 부르면 그만이다.
+    is_admin: bool = False
+
 
 class TokenResponse(BaseModel):
     """로그인 성공 응답.

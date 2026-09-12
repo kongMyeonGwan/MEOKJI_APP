@@ -9,11 +9,23 @@
 그래서 NOTICES 표로 옮겼다. catalog.json 에 남아 있던 다섯 건은
 db/05_seed_notices.sql 로 옮겼다.
 
-쓰기 API 는 없다
-----------------
-USERS 에 관리자 구분 컬럼이 없어서 "운영자만 작성" 을 가릴 방법이 지금은
-없다. 로그인만 하면 아무나 공지를 쓸 수 있는 API 는 만들지 않는 편이 낫다.
-공지는 DB 에 직접 넣는다. 관리자 구분이 생기면 그때 붙인다.
+쓰기는 관리자만
+---------------
+오래 "쓰기 API 를 만들지 않는다" 였다. USERS 에 관리자 구분 컬럼이 없어서
+"운영자만 작성" 을 가릴 방법이 없었고, 로그인만 하면 아무나 공지를 쓸 수 있는
+API 를 두느니 DB 에 직접 넣는 편이 나았기 때문이다.
+
+USERS.USER_LEVEL (1=관리자) 이 생기면서 그 조건이 풀렸다. 등급 확인은
+라우터의 get_admin_user 가 하고, 여기까지 온 요청은 이미 관리자다.
+이 계층에서 다시 등급을 보지 않는다 — 같은 검사를 두 군데서 하면 한쪽만
+고쳐질 때 조용히 어긋난다.
+
+작성자를 따지지 않는 이유
+-------------------------
+게시판은 '내 글만' 고칠 수 있다. 공지는 반대로, 관리자면 누가 쓴 공지든
+고치고 지울 수 있다. 공지는 개인의 글이 아니라 운영팀이 서비스 이름으로
+내는 글이라서, 쓴 사람이 자리를 비웠다고 아무도 못 고치면 곤란하다.
+화면도 작성자를 '뭐먹지? 운영팀' 하나로만 보여준다.
 """
 
 from fastapi import HTTPException, status
@@ -21,8 +33,19 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.notice import Notice
-from app.models.types import USE_YN_YES
-from app.schemas.notice import NoticeResponse, NoticeViewResponse
+from app.models.types import USE_YN_NO, USE_YN_YES
+from app.models.user import User
+from app.schemas.notice import (
+    NoticeCreateRequest,
+    NoticeResponse,
+    NoticeUpdateRequest,
+    NoticeViewResponse,
+)
+
+
+def to_pinned_yn(pinned: bool) -> str:
+    """화면이 쓰는 bool 을 DB 의 'Y'/'N' 으로. to_response 의 반대 방향이다."""
+    return USE_YN_YES if pinned else USE_YN_NO
 
 
 def to_response(notice: Notice) -> NoticeResponse:
@@ -61,6 +84,20 @@ def list_notices(db: Session) -> list[NoticeResponse]:
     return [to_response(notice) for notice in rows]
 
 
+def get_live_notice(db: Session, notice_id: int) -> Notice:
+    """살아있는 공지 하나를 찾는다. 없으면 404.
+
+    db.get() 만으로는 부족하다. 삭제가 행을 지우는 게 아니라 use_yn 을 'N' 으로
+    바꾸는 것이라서, 지운 공지도 db.get() 에는 그대로 잡힌다.
+    """
+    notice = db.get(Notice, notice_id)
+
+    if notice is None or notice.use_yn != USE_YN_YES:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "공지를 찾을 수 없습니다.")
+
+    return notice
+
+
 def increase_view(db: Session, notice_id: int) -> NoticeViewResponse:
     """조회수를 1 올린다.
 
@@ -68,12 +105,74 @@ def increase_view(db: Session, notice_id: int) -> NoticeViewResponse:
     하는데, 화면을 열 때마다 다섯 건이 한꺼번에 오르면 숫자가 뜻을 잃는다.
     화면이 공지를 펼칠 때 이 함수를 부른다 (게시판의 /view 와 같은 방식이다).
     """
-    notice = db.get(Notice, notice_id)
-
-    if notice is None or notice.use_yn != USE_YN_YES:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "공지를 찾을 수 없습니다.")
+    notice = get_live_notice(db, notice_id)
 
     notice.view_count += 1
     db.commit()
 
     return NoticeViewResponse(view_count=notice.view_count)
+
+
+# ==========================================================
+# 쓰기 (관리자 전용)
+#
+# 등급 확인은 라우터의 get_admin_user 가 끝냈다. 여기 오는 user 는 관리자다.
+# ==========================================================
+
+
+def create_notice(db: Session, user: User, payload: NoticeCreateRequest) -> NoticeResponse:
+    """공지를 새로 쓴다.
+
+    view_count 는 넣지 않는다. DDL 의 DEFAULT 0 이 채운다 — 새 공지가 0 회부터
+    시작하는 건 예외가 없는 규칙이라 코드가 매번 적을 이유가 없다.
+    """
+    notice = Notice(
+        # 작성자는 요청 본문이 아니라 토큰에서 나온 사람이다.
+        # 본문으로 받으면 남의 이름으로 공지를 쓸 수 있게 된다.
+        user_id=user.id,
+        title=payload.title,
+        content=payload.content,
+        category=payload.category,
+        pinned_yn=to_pinned_yn(payload.pinned),
+    )
+    db.add(notice)
+    db.commit()
+
+    db.refresh(notice)  # DB 가 채워준 id · view_count · created_at 을 읽어온다
+
+    return to_response(notice)
+
+
+def update_notice(
+    db: Session, notice_id: int, payload: NoticeUpdateRequest
+) -> NoticeResponse:
+    """공지를 고친다. 관리자면 누가 쓴 공지든 고칠 수 있다 (파일 상단 참고).
+
+    user_id 는 그대로 둔다. 처음 쓴 사람이 누구였는지는 기록이고, 고쳤다고
+    해서 바뀌는 값이 아니다. 화면도 작성자를 '운영팀' 으로만 보여주므로
+    바꿔봐야 보이는 것도 없다.
+
+    view_count 도 그대로 둔다. 오타 하나 고쳤다고 "이 공지를 몇 명이 읽었나"
+    가 0 으로 돌아가면 안 된다.
+    """
+    notice = get_live_notice(db, notice_id)
+
+    notice.title = payload.title
+    notice.content = payload.content
+    notice.category = payload.category
+    notice.pinned_yn = to_pinned_yn(payload.pinned)
+    db.commit()
+
+    return to_response(notice)
+
+
+def delete_notice(db: Session, notice_id: int) -> None:
+    """공지를 지운다. 행을 지우지 않고 use_yn='N' 으로 바꾼다.
+
+    잘못 지운 공지를 DB 에서 한 줄 되돌리면 조회수까지 그대로 살아난다.
+    진짜 DELETE 면 그 방법이 없다.
+    """
+    notice = get_live_notice(db, notice_id)
+
+    notice.use_yn = USE_YN_NO
+    db.commit()

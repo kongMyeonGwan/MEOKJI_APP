@@ -113,3 +113,12 @@
     margin-left: auto;
   }
 }
+
+/* 관리자에게만 보이는 수정·삭제. 펼친 본문 아래에 붙는다.
+   제목 줄은 그 자체가 아코디언 토글 <button> 이라 안에 버튼을 더 넣을 수 없다 */
+.notice__admin {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}

@@ -19,6 +19,16 @@ GENDER_MALE = "MALE"
 GENDER_FEMALE = "FEMALE"
 GENDER_OTHER = "OTHER"
 
+# 권한 등급. DDL의 ck_users_user_level CHECK 제약과 값이 일치해야 한다.
+#
+# 숫자를 코드에 그대로 쓰지 않는다. `if user.user_level == 1` 은 읽는 사람이
+# 1이 관리자인지 일반 회원인지 알 수 없고, 반대로 적어도 눈에 띄지 않는다.
+#
+# 화면의 '요리 레벨'과는 아무 상관이 없다. 그쪽은 경험치에서 매번 계산하는
+# 값이고(user_service.make_level) DB에 저장하지 않는다. 이름만 비슷하다.
+USER_LEVEL_ADMIN = 1
+USER_LEVEL_MEMBER = 2
+
 
 class User(Base):
     # 소문자로 쓴다. SQLAlchemy가 따옴표 없이 보내면 Oracle이 대문자 USERS로 해석한다.
@@ -33,6 +43,14 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     nickname: Mapped[str] = mapped_column(String(50), nullable=False)
+
+    # USER_LEVEL_* 상수만 넣는다. DB는 NUMBER(1) + CHECK(1,2).
+    #
+    # server_default="2" 라서 회원가입 코드가 이 값을 넘기지 않아도 일반 회원이
+    # 된다. 빠뜨렸을 때 권한이 없는 쪽으로 떨어지는 게 안전하다.
+    user_level: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=str(USER_LEVEL_MEMBER)
+    )
 
     # NULL = "선택 안 함". GENDER_* 상수만 넣는다.
     gender: Mapped[str | None] = mapped_column(String(10), nullable=True)
@@ -67,6 +85,11 @@ class User(Base):
         server_default=text('SYS_EXTRACT_UTC(SYSTIMESTAMP)'),
         onupdate=text('SYS_EXTRACT_UTC(SYSTIMESTAMP)'),
     )
+
+    @property
+    def is_admin(self) -> bool:
+        """관리자인지. 권한을 보는 코드는 숫자 대신 이걸 쓴다."""
+        return self.user_level == USER_LEVEL_ADMIN
 
     def __repr__(self) -> str:
         return (

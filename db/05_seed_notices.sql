@@ -13,10 +13,16 @@
 --   공지를 파일에서 DB 로 옮기면서 화면에 보이던 내용을 그대로 옮겼습니다.
 --
 -- 작성자(USER_ID)는 누구로 들어가나요?
---   USERS 에 관리자 구분 컬럼이 없어서, 아래 v_admin_email 에 적은
---   계정으로 넣습니다. 그 계정이 없으면 가장 먼저 가입한 회원으로
---   대신 넣고, 회원이 하나도 없으면 아무것도 넣지 않고 끝냅니다
---   (fk_notices_user 때문에 없는 회원으로는 INSERT 할 수 없습니다).
+--   아래 v_admin_email 에 적은 계정으로 넣습니다. 그 계정이 없으면 가장 먼저
+--   가입한 회원으로 대신 넣고, 회원이 하나도 없으면 아무것도 넣지 않고
+--   끝냅니다 (fk_notices_user 때문에 없는 회원으로는 INSERT 할 수 없습니다).
+--
+--   ※ 회원이 하나도 없는 빈 DB 에서는 이 파일이 아무 일도 하지 않습니다.
+--     가입을 한 번 한 뒤에 다시 실행하세요.
+--
+--   USERS.USER_LEVEL (1=관리자) 이 06_add_user_level.sql 로 생겼습니다.
+--   이메일 대신 등급으로 작성자를 찾고 싶으면 아래 SELECT 를
+--   WHERE user_level = 1 AND use_yn = 'Y' 로 바꾸면 됩니다.
 --
 -- 두 번 실행하면?
 --   제목이 같은 공지가 이미 있으면 건너뜁니다. 안전하게 다시 돌려도 됩니다.
@@ -26,7 +32,11 @@ SET SERVEROUTPUT ON
 
 DECLARE
     -- 공지 작성자로 쓸 계정. 팀 상황에 맞게 바꾸세요.
-    v_admin_email  VARCHAR2(255) := 'admin@meokji.local';
+    --
+    -- .local 같은 주소는 쓰지 마세요. 가입 API 의 EmailStr 이 예약 도메인이라며
+    -- 422 로 막아서 그 주소로는 계정이 아예 만들어지지 않습니다 — 여기 적어둬도
+    -- 영원히 못 찾고 '가장 먼저 가입한 회원' 으로 넘어갑니다.
+    v_admin_email  VARCHAR2(255) := 'admin@meokji.com';
 
     v_admin        NUMBER;
     v_exists       NUMBER;

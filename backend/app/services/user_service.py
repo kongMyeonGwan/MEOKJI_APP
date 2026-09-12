@@ -238,6 +238,16 @@ def withdraw(db: Session, user: User, password: str) -> None:
 
     # 자식부터 지운다. 순서가 중요한 건 아니지만, 중간에 실패했을 때
     # "회원은 살아있는데 글만 사라진" 상태가 낫기 때문이다.
+    #
+    # NOTICES 는 일부러 빠져 있다
+    # --------------------------
+    # 공지도 user_id 와 use_yn 을 가지고 있어서 여기 넣을 수 있게 생겼는데,
+    # 넣으면 안 된다. 공지는 개인의 글이 아니라 운영팀이 서비스 이름으로 낸
+    # 글이라, 쓴 사람이 그만뒀다고 "서버 점검 안내" 가 같이 사라지면 곤란하다.
+    #
+    # DDL 도 같은 판단이다 — fk_notices_user 에만 ON DELETE CASCADE 가 없다
+    # (models/notice.py 참고). 여기에 Notice 를 더하면 그 설계를 코드가
+    # 조용히 뒤집게 된다.
     for model in (ReviewLike, ReviewComment, RecipeReview, MealHistory, UserBan):
         db.execute(
             update(model)
