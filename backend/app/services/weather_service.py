@@ -44,6 +44,26 @@ PICK_LEADS = {
     "더운": "더운 날씨엔 시원한 한 그릇 어떠세요?",
 }
 
+# 비 · 눈이 오면 기온 문구 대신 이쪽을 쓴다.
+#
+# 왜 기온을 제치나
+# ----------------
+# 추천 점수(ai_api.score_sky)가 비 오는 날에 국물 · 튀김을 위로 올린다.
+# 그런데 문구가 기온만 보고 "선선한 날엔 든든한 한 끼" 라고 말하면,
+# 왼쪽 문구와 오른쪽 카드가 서로 다른 말을 하게 된다.
+#
+# 사람도 비가 오면 기온보다 비를 먼저 말한다.
+# "오늘 15도네" 가 아니라 "비 오네" 다.
+SKY_FOOD_HINTS = {
+    "RAIN": "따끈한 국물이나 바삭한 튀김이 당기는 날이에요",
+    "SNOW": "뜨끈한 국물 요리로 몸을 녹여보세요",
+}
+
+SKY_PICK_LEADS = {
+    "RAIN": "비 오는 날엔 뜨끈한 국물 어떠세요?",
+    "SNOW": "눈 오는 날엔 뜨끈한 한 그릇 어떠세요?",
+}
+
 
 def get_temp_feel(temp: int) -> str:
     """기온을 "추운 / 쌀쌀한 / 선선한 / 더운" 넷 중 하나로 바꾼다."""
@@ -56,8 +76,14 @@ def get_temp_feel(temp: int) -> str:
     return "더운"
 
 
-def make_pick_lead(temp: int) -> str:
-    """오른쪽 추천 칸의 머리말을 만든다."""
+def make_pick_lead(condition: str, temp: int) -> str:
+    """오른쪽 추천 칸의 머리말을 만든다.
+
+    비 · 눈이면 그쪽 문구를 쓰고, 아니면 기온으로 고른다.
+    """
+    if condition in SKY_PICK_LEADS:
+        return SKY_PICK_LEADS[condition]
+
     return PICK_LEADS[get_temp_feel(temp)]
 
 
@@ -66,6 +92,12 @@ def make_comment(condition: str, temp: int) -> str:
 
     예)  오늘은 맑고 더운 날씨에요!
          시원하고 담백한 메뉴가 잘 어울려요
+
+         오늘은 비 오고 선선한 날씨에요!
+         따끈한 국물이나 바삭한 튀김이 당기는 날이에요
+
+    첫 줄은 늘 하늘 + 기온을 다 말하고, 둘째 줄(어울리는 메뉴)만
+    비 · 눈일 때 갈린다. 추천 점수가 그때만 하늘을 보기 때문이다.
     """
     feel = get_temp_feel(temp)
     sky = SKY_TEXTS.get(condition, "")
@@ -76,7 +108,7 @@ def make_comment(condition: str, temp: int) -> str:
         # 표에 없는 날씨 코드면 하늘 상태는 빼고 온도만 말한다
         first_line = f"오늘은 {feel} 날씨에요!"
 
-    second_line = FOOD_HINTS[feel]
+    second_line = SKY_FOOD_HINTS.get(condition) or FOOD_HINTS[feel]
 
     return f"{first_line}\n{second_line}"
 
@@ -110,5 +142,5 @@ def get_current_weather(lat: float | None, lon: float | None) -> WeatherResponse
         condition=weather["condition"],
         condition_text=weather["condition_text"],
         comment=make_comment(weather["condition"], weather["temp"]),
-        pick_lead=make_pick_lead(weather["temp"]),
+        pick_lead=make_pick_lead(weather["condition"], weather["temp"]),
     )

@@ -15,6 +15,7 @@ from fastapi import HTTPException
 
 from app.core.config import settings
 from app.core.kst import KST, day_end_utc, day_start_utc, to_kst_date
+from app.data import find_food
 from app.integrations import ai_api
 from app.integrations.weather_api import cache_key, join_address
 from app.integrations import ingredient_match
@@ -24,6 +25,7 @@ from app.services import bargain_service
 from app.services import file_service
 from app.services import game_service
 from app.services import unit_convert
+from app.services import weather_service
 from app.services.history_service import count_streak
 from app.services.user_service import make_level, make_title
 
@@ -143,6 +145,9 @@ def test_KST는_9시간_앞선다():
 # =========================================================
 
 
+PICK_LEADS_HOT = "더운 날씨엔 시원한 한 그릇 어떠세요?"
+
+
 def context(**overrides) -> dict:
     """테스트용 기본 조건. 필요한 것만 덮어쓴다."""
     base = {
@@ -236,6 +241,112 @@ def test_추운_날에는_국물_메뉴가_먼저_나온다():
 
     tags = items[0].get("tags") or []
     assert "국물" in tags or "얼큰" in tags
+
+
+# 하늘 상태(비 · 눈)
+# ------------------
+# 기온만 보던 때는 28도 장마날에 냉면이 1등이었다.
+
+
+def test_같은_기온이어도_비가_오면_추천이_달라진다():
+    clear = names_of(
+        ai_api.mock_recommend_foods(
+            context(limit=4, weather={"temp": 28, "condition": "CLEAR"})
+        )
+    )
+    rain = names_of(
+        ai_api.mock_recommend_foods(
+            context(limit=4, weather={"temp": 28, "condition": "RAIN"})
+        )
+    )
+
+    assert clear != rain
+
+
+def test_비_오는_날에는_찬_음식이_위로_안_온다():
+    items = ai_api.mock_recommend_foods(
+        context(limit=4, weather={"temp": 28, "condition": "RAIN"})
+    )
+
+    # 28도라 기온만 보면 냉국 · 냉면이 올라올 자리다
+    for item in items:
+        assert not ai_api.is_cold_dish(item), item["food_name"]
+
+
+def test_비_오는_날에는_국물이나_튀김이_먼저_나온다():
+    items = ai_api.mock_recommend_foods(
+        context(limit=3, weather={"temp": 28, "condition": "RAIN"})
+    )
+
+    tags = items[0].get("tags") or []
+    assert "국물" in tags or "튀김" in tags
+
+
+def test_눈_오는_날은_같은_기온의_맑은_날보다_찬_음식을_더_민다():
+    cold_dish = find_food("물냉면")
+
+    clear = ai_api.score_weather(cold_dish, {"temp": 2, "condition": "CLEAR"})
+    snow = ai_api.score_weather(cold_dish, {"temp": 2, "condition": "SNOW"})
+
+    assert snow < clear
+
+
+def test_맑음과_흐림은_점수에_영향이_없다():
+    food = find_food("김치찌개")
+
+    assert ai_api.score_sky(food, "CLEAR") == 0
+    assert ai_api.score_sky(food, "CLOUDS") == 0
+
+    # 날씨 API 가 모르는 코드를 줘도 터지지 않고 0 이어야 한다
+    assert ai_api.score_sky(food, "TORNADO") == 0
+    assert ai_api.score_sky(food, None) == 0
+
+
+def test_condition_이_없는_날씨도_그대로_돈다():
+    # 예전 호출부와 테스트가 {"temp": 30} 만 넘긴다.
+    # 하늘 상태가 없으면 기온 점수만 나와야 한다.
+    food = find_food("콩국수")
+
+    assert ai_api.score_weather(food, {"temp": 30}) == ai_api.score_temperature(
+        food, 30
+    )
+
+
+def test_여름메뉴_태그만_있어도_찬_음식으로_친다():
+    # 회냉면 · 비빔국수는 '시원한음식' 태그가 없다.
+    # 태그 하나만 보면 눈 오는 날 추천에 그대로 남는다.
+    assert ai_api.is_cold_dish(find_food("회냉면"))
+    assert ai_api.is_cold_dish(find_food("비빔국수"))
+
+    assert not ai_api.is_cold_dish(find_food("김치찌개"))
+
+
+# 날씨 문구 — 왼쪽 문구와 오른쪽 카드가 같은 말을 해야 한다
+
+
+def test_비_오는_날_문구는_기온_대신_비를_말한다():
+    comment = weather_service.make_comment("RAIN", 18)
+
+    # 첫 줄은 하늘과 기온을 다 말한다
+    assert "비 오고 선선한" in comment
+
+    # 둘째 줄은 기온용 문구("가볍고 든든한")가 아니라 비 문구여야 한다
+    assert "튀김" in comment
+    assert "가볍고 든든한" not in comment
+
+
+def test_비_오는_날_머리말도_비를_말한다():
+    assert weather_service.make_pick_lead("RAIN", 18) == (
+        "비 오는 날엔 뜨끈한 국물 어떠세요?"
+    )
+    assert weather_service.make_pick_lead("SNOW", 2) == (
+        "눈 오는 날엔 뜨끈한 한 그릇 어떠세요?"
+    )
+
+
+def test_맑은_날_문구는_그대로_기온을_따른다():
+    assert weather_service.make_pick_lead("CLEAR", 30) == PICK_LEADS_HOT
+    assert "시원하고 담백한" in weather_service.make_comment("CLEAR", 30)
 
 
 def test_냉장고_재료가_많이_겹치는_메뉴가_먼저_나온다():

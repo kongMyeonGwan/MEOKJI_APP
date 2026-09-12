@@ -751,14 +751,47 @@ def score_fridge(food: dict, fridge: list[str]) -> int:
     return have * 3 - missing * 2
 
 
+def is_cold_dish(food: dict) -> bool:
+    """차게 먹는 음식인지.
+
+    태그 하나만 봐서는 새는 것이 있다. 회냉면 · 비빔국수는 '시원한음식'
+    태그가 없고 '여름메뉴' 만 달려 있어서, 태그만 보면 눈 오는 날 추천
+    목록에 그대로 남는다.
+
+    HOT_WEATHER_PICKS 는 "더운 날 먼저 보여줄 메뉴" 로 만든 목록인데,
+    들어있는 15건이 전부 차게 먹는 것이라 여기서도 그대로 쓸 수 있다.
+    """
+    tags = food.get("tags") or []
+
+    return (
+        food["food_name"] in HOT_WEATHER_PICKS
+        or "시원한음식" in tags
+        or "여름메뉴" in tags
+    )
+
+
 def score_weather(food: dict, weather: dict) -> int:
     """날씨에 어울리면 가산점.
+
+    기온과 하늘 상태를 따로 보고 더한다. 둘은 서로 독립이다 —
+    장마철에는 28도인데 비가 오고, 12월에는 5도인데 맑다.
+
+    더하는 쪽으로 겹치면 그만큼 더 세게 밀리고(눈 오는 추운 날의 국물),
+    반대로 겹치면 서로 깎는다(비 오는 더운 날의 냉면). 어느 쪽도
+    한쪽이 다른 쪽을 덮어쓰지 않는다.
+    """
+    return score_temperature(food, weather.get("temp")) + score_sky(
+        food, weather.get("condition")
+    )
+
+
+def score_temperature(food: dict, temp: int | None) -> int:
+    """기온에 어울리면 가산점.
 
     규칙은 두 가지뿐이다.
       더운 날(25도 이상)   시원한 메뉴
       추운 날(15도 미만)   국물 · 얼큰한 메뉴
     """
-    temp = weather.get("temp")
     if temp is None:
         return 0
 
@@ -776,8 +809,45 @@ def score_weather(food: dict, weather: dict) -> int:
     if temp < 15:
         if "국물" in tags or "얼큰" in tags:
             return 6
-        if "시원한음식" in tags:
+        if is_cold_dish(food):
             return -6
+        return 0
+
+    return 0
+
+
+def score_sky(food: dict, condition: str | None) -> int:
+    """하늘 상태(비 · 눈)에 어울리면 가산점.
+
+    맑음 · 흐림은 0 이다. 메뉴를 미는 근거가 되지 않는다.
+
+    비 오는 날에 튀김을 올리는 이유
+    -------------------------------
+    기온만 보면 비 오는 28도 장마날에 냉면이 1등으로 올라온다. 그 날
+    실제로 사람들이 찾는 건 부침개 · 칼국수 쪽이다. 온도가 놓치는 자리가
+    여기라서 하늘 상태를 따로 본다.
+
+    눈이 더 센 이유
+    ---------------
+    눈이 오면 기온도 낮아서 기온 점수와 겹친다. 겹치는 쪽으로 확실히
+    밀어주는 편이 맞다 — 눈 오는 날 냉면을 추천받고 싶은 사람은 없다.
+    """
+    if condition == "RAIN":
+        tags = food.get("tags") or []
+
+        if "국물" in tags:
+            return 6
+        if "튀김" in tags:
+            return 4
+        if is_cold_dish(food):
+            return -5
+        return 0
+
+    if condition == "SNOW":
+        if "국물" in (food.get("tags") or []):
+            return 7
+        if is_cold_dish(food):
+            return -8
         return 0
 
     return 0
