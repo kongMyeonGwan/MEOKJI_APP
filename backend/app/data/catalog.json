@@ -5,10 +5,10 @@
    "art": "stew",
    "image_url": null,
    "category": "한식",
-   "reason": "따뜻한 국물로 속을 든든하게 채워주는 한국인의 찌개",
+   "reason": "잘 익은 김치와 돼지고기로 깊고 얼큰하게 끓인 찌개",
    "cook_time_minutes": 25,
    "difficulty": "쉬움",
-   "estimated_cost": 7800,
+   "estimated_cost": 6900,
    "tags": [
     "국물",
     "얼큰",
@@ -16,113 +16,28 @@
    ],
    "ingredients": [
     "돼지고기",
-    "신김치",
-    "두부",
-    "대파"
-   ]
-  },
-  {
-   "food_name": "들깨 수제비",
-   "art": "soup",
-   "image_url": null,
-   "category": "한식",
-   "reason": "고소한 들깨와 쫄깃한 수제비의 부드럽고 든든한 한 끼",
-   "cook_time_minutes": 30,
-   "difficulty": "쉬움",
-   "estimated_cost": 6200,
-   "tags": [
-    "국물",
-    "한식"
-   ],
-   "ingredients": [
-    "밀가루",
-    "애호박",
-    "감자",
-    "대파"
-   ]
-  },
-  {
-   "food_name": "닭갈비",
-   "art": "stirfry",
-   "image_url": null,
-   "category": "한식",
-   "reason": "매콤한 양념과 닭고기의 조화로 밥도둑이 따로 없어요",
-   "cook_time_minutes": 30,
-   "difficulty": "보통",
-   "estimated_cost": 8000,
-   "tags": [
-    "매콤",
-    "볶음",
-    "한식",
-    "선선한"
-   ],
-   "ingredients": [
-    "닭고기",
-    "양배추",
-    "고구마",
-    "떡",
-    "깻잎"
-   ]
-  },
-  {
-   "food_name": "간단 돈까스",
-   "art": "donburi",
-   "image_url": null,
-   "category": "일식",
-   "reason": "바삭한 튀김옷과 촉촉한 고기의 완벽한 조화",
-   "cook_time_minutes": 20,
-   "difficulty": "보통",
-   "estimated_cost": 6900,
-   "tags": [
-    "튀김",
-    "간편",
-    "일식"
-   ],
-   "ingredients": [
-    "돼지고기",
-    "계란",
-    "밀가루",
-    "양배추"
+    "배추",
+    "대파",
+    "고춧가루"
    ]
   },
   {
    "food_name": "된장찌개",
    "art": "stew",
    "image_url": null,
-   "category": "국탕",
-   "reason": "구수한 된장 향으로 한국인의 소울푸드",
-   "cook_time_minutes": 20,
+   "category": "한식",
+   "reason": "구수한 된장에 애호박과 감자를 넣어 끓인 기본 찌개",
+   "cook_time_minutes": 25,
    "difficulty": "쉬움",
-   "estimated_cost": 5200,
+   "estimated_cost": 3100,
    "tags": [
     "국물",
-    "건강",
     "한식"
    ],
    "ingredients": [
-    "두부",
     "애호박",
     "감자",
-    "양파"
-   ]
-  },
-  {
-   "food_name": "콩나물국밥",
-   "art": "noodle",
-   "image_url": null,
-   "category": "국탕",
-   "reason": "가장 저렴하게 따뜻한 국물을 먹을 수 있어요. 재료가 3가지뿐",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 4200,
-   "tags": [
-    "국물",
-    "해장"
-   ],
-   "ingredients": [
-    "콩나물",
-    "밥",
-    "계란",
+    "양파",
     "대파"
    ]
   },
@@ -131,1352 +46,131 @@
    "art": "stew",
    "image_url": null,
    "category": "한식",
-   "reason": "부드럽고 자극이 적어 늦은 저녁에도 부담이 없어요",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 9800,
-   "tags": [
-    "국물",
-    "한식",
-    "얼큰"
-   ],
-   "ingredients": [
-    "두부",
-    "계란",
-    "대파",
-    "해물"
-   ]
-  },
-  {
-   "food_name": "소고기 미역국",
-   "art": "soup",
-   "image_url": null,
-   "category": "국탕",
-   "reason": "재료비는 높지만 한 번 끓이면 여러 끼를 먹을 수 있어요",
-   "cook_time_minutes": 50,
-   "difficulty": "보통",
-   "estimated_cost": 15400,
-   "tags": [
-    "국물",
-    "보양"
-   ],
-   "ingredients": [
-    "소고기",
-    "대파"
-   ]
-  },
-  {
-   "food_name": "마파두부",
-   "art": "stirfry",
-   "image_url": null,
-   "category": "중식",
-   "reason": "두부 한 모로 얼큰한 한 끼. 밥에 얹으면 덮밥이 돼요",
+   "reason": "보드라운 순두부에 얼큰한 국물이 배어드는 찌개",
    "cook_time_minutes": 20,
    "difficulty": "쉬움",
-   "estimated_cost": 6500,
-   "tags": [
-    "매콤",
-    "볶음",
-    "중식",
-    "선선한"
-   ],
-   "ingredients": [
-    "두부",
-    "돼지고기",
-    "대파",
-    "양파"
-   ]
-  },
-  {
-   "food_name": "간짜장",
-   "art": "noodle",
-   "image_url": null,
-   "category": "중식",
-   "reason": "춘장만 있으면 배달보다 싸게, 더 되직하게 만들 수 있어요",
-   "cook_time_minutes": 30,
-   "difficulty": "보통",
-   "estimated_cost": 5800,
-   "tags": [
-    "면",
-    "중식",
-    "선선한"
-   ],
-   "ingredients": [
-    "돼지고기",
-    "양파",
-    "감자",
-    "소면"
-   ]
-  },
-  {
-   "food_name": "연어 사케동",
-   "art": "donburi",
-   "image_url": null,
-   "category": "일식",
-   "reason": "불을 쓰지 않아요. 회 한 팩과 밥이면 완성됩니다",
-   "cook_time_minutes": 10,
-   "difficulty": "쉬움",
-   "estimated_cost": 13500,
-   "tags": [
-    "덮밥",
-    "노불",
-    "일식",
-    "선선한"
-   ],
-   "ingredients": [
-    "연어",
-    "밥",
-    "깻잎"
-   ]
-  },
-  {
-   "food_name": "크림 파스타",
-   "art": "noodle",
-   "image_url": null,
-   "category": "양식",
-   "reason": "생크림 대신 우유로도 충분히 진하게 나와요",
-   "cook_time_minutes": 25,
-   "difficulty": "보통",
-   "estimated_cost": 8900,
-   "tags": [
-    "면",
-    "양식",
-    "선선한"
-   ],
-   "ingredients": [
-    "스파게티면",
-    "우유",
-    "버섯",
-    "생크림",
-    "버터"
-   ]
-  },
-  {
-   "food_name": "함박스테이크",
-   "art": "pancake",
-   "image_url": null,
-   "category": "양식",
-   "reason": "다진 고기를 뭉쳐 굽기만 하면 되는데 근사해 보여요",
-   "cook_time_minutes": 35,
-   "difficulty": "보통",
-   "estimated_cost": 11200,
-   "tags": [
-    "고기",
-    "양식",
-    "선선한"
-   ],
-   "ingredients": [
-    "소고기",
-    "양파",
-    "계란",
-    "버터"
-   ]
-  },
-  {
-   "food_name": "채끝 스테이크",
-   "art": "pancake",
-   "image_url": null,
-   "category": "양식",
-   "reason": "재료비가 가장 높아요. 특별한 날에 어울립니다",
-   "cook_time_minutes": 25,
-   "difficulty": "어려움",
-   "estimated_cost": 24000,
-   "tags": [
-    "고기",
-    "양식",
-    "기념일",
-    "선선한"
-   ],
-   "ingredients": [
-    "소고기",
-    "버터",
-    "버섯"
-   ]
-  },
-  {
-   "food_name": "떡볶이",
-   "art": "stirfry",
-   "image_url": null,
-   "category": "분식",
-   "reason": "재료가 단순해서 실패할 구석이 거의 없어요",
-   "cook_time_minutes": 15,
-   "difficulty": "쉬움",
-   "estimated_cost": 4800,
-   "tags": [
-    "매콤",
-    "분식",
-    "선선한"
-   ],
-   "ingredients": [
-    "떡",
-    "어묵",
-    "대파",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "충무김밥",
-   "art": "donburi",
-   "image_url": null,
-   "category": "분식",
-   "reason": "속을 넣지 않아 김밥 중에 가장 빠르고 저렴해요",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 3500,
-   "tags": [
-    "간편",
-    "분식",
-    "선선한"
-   ],
-   "ingredients": [
-    "밥",
-    "어묵",
-    "오이"
-   ]
-  },
-  {
-   "food_name": "팟타이",
-   "art": "noodle",
-   "image_url": null,
-   "category": "아시안",
-   "reason": "새콤달콤한 소스가 입맛 없을 때 잘 들어가요",
-   "cook_time_minutes": 25,
-   "difficulty": "보통",
-   "estimated_cost": 9600,
-   "tags": [
-    "면",
-    "볶음",
-    "아시안",
-    "선선한"
-   ],
-   "ingredients": [
-    "소면",
-    "계란",
-    "닭고기",
-    "양파"
-   ]
-  },
-  {
-   "food_name": "소고기 쌀국수",
-   "art": "soup",
-   "image_url": null,
-   "category": "아시안",
-   "reason": "맑은 국물이라 속이 편해요. 해장으로도 좋습니다",
-   "cook_time_minutes": 40,
-   "difficulty": "보통",
-   "estimated_cost": 8200,
+   "estimated_cost": 4700,
    "tags": [
     "국물",
-    "면",
-    "아시안"
-   ],
-   "ingredients": [
-    "소고기",
-    "소면",
-    "양파",
-    "깻잎"
-   ]
-  },
-  {
-   "food_name": "닭가슴살 샐러드",
-   "art": "pancake",
-   "image_url": null,
-   "category": "샐러드",
-   "reason": "단백질을 챙기면서 조리는 10분이면 끝나요",
-   "cook_time_minutes": 10,
-   "difficulty": "쉬움",
-   "estimated_cost": 7400,
-   "tags": [
-    "건강",
-    "다이어트",
-    "샐러드",
-    "시원한음식"
-   ],
-   "ingredients": [
-    "닭고기",
-    "양배추",
-    "토마토",
-    "오이"
-   ]
-  },
-  {
-   "food_name": "리코타 치즈 샐러드",
-   "art": "pancake",
-   "image_url": null,
-   "category": "샐러드",
-   "reason": "치즈를 직접 만들면 밖에서 사 먹는 맛이 나요",
-   "cook_time_minutes": 45,
-   "difficulty": "보통",
-   "estimated_cost": 10800,
-   "tags": [
-    "치즈",
-    "샐러드",
-    "시원한음식"
-   ],
-   "ingredients": [
-    "우유",
-    "치즈",
-    "토마토",
-    "양배추"
-   ]
-  },
-  {
-   "food_name": "바나나 팬케이크",
-   "art": "pancake",
-   "image_url": null,
-   "category": "디저트",
-   "reason": "밀가루 없이 바나나와 계란만으로 부칠 수 있어요",
-   "cook_time_minutes": 15,
-   "difficulty": "쉬움",
-   "estimated_cost": 4900,
-   "tags": [
-    "간식",
-    "디저트",
-    "선선한"
-   ],
-   "ingredients": [
-    "바나나",
-    "계란",
-    "우유",
-    "버터"
-   ]
-  },
-  {
-   "food_name": "딸기 요거트볼",
-   "art": "pancake",
-   "image_url": null,
-   "category": "디저트",
-   "reason": "불 없이 담기만 하면 되고, 아침 대용으로도 괜찮아요",
-   "cook_time_minutes": 5,
-   "difficulty": "쉬움",
-   "estimated_cost": 6100,
-   "tags": [
-    "노불",
-    "간식",
-    "디저트",
-    "시원한음식",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "딸기",
-    "요거트",
-    "바나나"
-   ]
-  },
-  {
-   "food_name": "참치마요 덮밥",
-   "art": "donburi",
-   "image_url": null,
-   "category": "간편식",
-   "reason": "통조림 하나로 끝나요. 자취 첫 요리로 자주 꼽힙니다",
-   "cook_time_minutes": 10,
-   "difficulty": "쉬움",
-   "estimated_cost": 3800,
-   "tags": [
-    "덮밥",
-    "간편",
-    "선선한"
-   ],
-   "ingredients": [
-    "참치캔",
-    "밥",
-    "계란",
-    "양파"
-   ]
-  },
-  {
-   "food_name": "전자레인지 계란찜",
-   "art": "soup",
-   "image_url": null,
-   "category": "간편식",
-   "reason": "가장 저렴한 후보예요. 냄비도 필요 없습니다",
-   "cook_time_minutes": 8,
-   "difficulty": "쉬움",
-   "estimated_cost": 2600,
-   "tags": [
-    "간편",
-    "노불",
-    "선선한"
-   ],
-   "ingredients": [
-    "계란",
-    "대파"
-   ]
-  },
-  {
-   "food_name": "콩국수",
-   "art": "noodle",
-   "image_url": null,
-   "category": "한식",
-   "reason": "차가운 콩국물이 더위를 식혀줘요. 불은 면 삶을 때만 씁니다",
-   "cook_time_minutes": 25,
-   "difficulty": "보통",
-   "estimated_cost": 7200,
-   "rating": 4.8,
-   "rating_count": 256,
-   "tags": [
-    "더운날",
-    "시원한음식",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "소면",
-    "오이",
-    "두부"
-   ]
-  },
-  {
-   "food_name": "물냉면",
-   "art": "noodle",
-   "image_url": null,
-   "category": "한식",
-   "reason": "얼음 동동 띄운 육수 한 사발이면 더위가 가십니다",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 8500,
-   "rating": 4.6,
-   "rating_count": 412,
-   "tags": [
-    "더운날",
-    "시원한음식",
-    "면"
-   ],
-   "ingredients": [
-    "소면",
-    "오이",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "오이냉국",
-   "art": "soup",
-   "image_url": null,
-   "category": "국탕",
-   "reason": "새콤한 냉국은 입맛 없는 더운 날에 특히 잘 넘어가요",
-   "cook_time_minutes": 10,
-   "difficulty": "쉬움",
-   "estimated_cost": 3200,
-   "rating": 4.3,
-   "rating_count": 88,
-   "tags": [
-    "시원한음식",
-    "노불",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "오이",
-    "양파"
-   ]
-  },
-  {
-   "food_name": "비빔국수",
-   "art": "noodle",
-   "image_url": null,
-   "category": "분식",
-   "reason": "새콤달콤 매콤한 양념이 처진 입맛을 깨워줍니다",
-   "cook_time_minutes": 15,
-   "difficulty": "쉬움",
-   "estimated_cost": 5400,
-   "rating": 4.7,
-   "rating_count": 174,
-   "tags": [
-    "매콤",
-    "면",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "소면",
-    "오이",
-    "신김치",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "자루소바",
-   "art": "noodle",
-   "image_url": null,
-   "category": "일식",
-   "reason": "메밀면을 차게 헹궈 츠유에 찍어 먹어요. 속이 편합니다",
-   "cook_time_minutes": 15,
-   "difficulty": "쉬움",
-   "estimated_cost": 7600,
-   "rating": 4.5,
-   "rating_count": 131,
-   "tags": [
-    "시원한음식",
-    "면",
-    "일식"
-   ],
-   "ingredients": [
-    "소면",
-    "대파",
-    "깻잎"
-   ]
-  },
-  {
-   "food_name": "밀면",
-   "art": "noodle",
-   "image_url": null,
-   "category": "한식",
-   "reason": "부산식 밀면. 냉면보다 면이 부드럽고 육수가 달큰해요",
-   "cook_time_minutes": 25,
-   "difficulty": "보통",
-   "estimated_cost": 7900,
-   "rating": 4.5,
-   "rating_count": 203,
-   "tags": [
-    "시원한음식",
-    "면",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "소면",
-    "오이",
-    "계란",
-    "소고기"
-   ]
-  },
-  {
-   "food_name": "회냉면",
-   "art": "noodle",
-   "image_url": null,
-   "category": "한식",
-   "reason": "새콤한 회무침을 얹어 비벼 먹어요. 여름 별미로 꼽힙니다",
-   "cook_time_minutes": 25,
-   "difficulty": "보통",
-   "estimated_cost": 10500,
-   "rating": 4.6,
-   "rating_count": 241,
-   "tags": [
-    "매콤",
-    "면",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "소면",
-    "오이",
-    "연어",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "메밀막국수",
-   "art": "noodle",
-   "image_url": null,
-   "category": "한식",
-   "reason": "양념장에 슥슥 비벼 김가루만 뿌려도 충분해요",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 6800,
-   "rating": 4.5,
-   "rating_count": 152,
-   "tags": [
-    "시원한음식",
-    "면",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "소면",
-    "오이",
-    "깻잎",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "김치말이국수",
-   "art": "noodle",
-   "image_url": null,
-   "category": "한식",
-   "reason": "김치국물에 소면만 말면 끝. 재료도 거의 안 듭니다",
-   "cook_time_minutes": 15,
-   "difficulty": "쉬움",
-   "estimated_cost": 5100,
-   "rating": 4.3,
-   "rating_count": 77,
-   "tags": [
-    "시원한음식",
-    "면",
-    "간편"
-   ],
-   "ingredients": [
-    "소면",
-    "신김치",
-    "오이",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "초계국수",
-   "art": "soup",
-   "image_url": null,
-   "category": "한식",
-   "reason": "닭 육수를 차게 식혀 새콤하게. 더위에 지친 날 기운이 납니다",
-   "cook_time_minutes": 35,
-   "difficulty": "보통",
-   "estimated_cost": 9800,
-   "rating": 4.6,
-   "rating_count": 97,
-   "tags": [
-    "시원한음식",
-    "면",
-    "보양"
-   ],
-   "ingredients": [
-    "소면",
-    "닭고기",
-    "오이",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "열무국수",
-   "art": "noodle",
-   "image_url": null,
-   "category": "한식",
-   "reason": "열무김치 국물째 부어 먹어요. 가장 손이 덜 가는 여름 국수",
-   "cook_time_minutes": 15,
-   "difficulty": "쉬움",
-   "estimated_cost": 4600,
-   "rating": 4.2,
-   "rating_count": 64,
-   "tags": [
-    "시원한음식",
-    "면",
-    "여름메뉴"
-   ],
-   "ingredients": [
-    "소면",
-    "신김치",
-    "오이"
-   ]
-  },
-  {
-   "food_name": "냉우동",
-   "art": "noodle",
-   "image_url": null,
-   "category": "일식",
-   "reason": "쫄깃한 면을 차가운 츠유에. 12분이면 상에 올라옵니다",
-   "cook_time_minutes": 12,
-   "difficulty": "쉬움",
-   "estimated_cost": 6400,
-   "rating": 4.4,
-   "rating_count": 118,
-   "tags": [
-    "시원한음식",
-    "면",
-    "일식"
-   ],
-   "ingredients": [
-    "소면",
-    "대파",
-    "계란"
-   ]
-  },
-  {
-   "food_name": "토마토 냉파스타",
-   "art": "noodle",
-   "image_url": null,
-   "category": "양식",
-   "reason": "면을 얼음물에 헹궈 생토마토와 버무려요. 불 앞에 오래 안 서도 돼요",
-   "cook_time_minutes": 20,
-   "difficulty": "보통",
-   "estimated_cost": 9200,
-   "rating": 4.4,
-   "rating_count": 86,
-   "tags": [
-    "시원한음식",
-    "면",
-    "양식"
-   ],
-   "ingredients": [
-    "스파게티면",
-    "토마토",
-    "치즈",
-    "깻잎"
-   ]
-  },
-  {
-   "food_name": "수박화채",
-   "art": "soup",
-   "image_url": null,
-   "category": "디저트",
-   "reason": "썰어서 우유만 부으면 됩니다. 밥 대신 야식으로도 좋아요",
-   "cook_time_minutes": 10,
-   "difficulty": "쉬움",
-   "estimated_cost": 5600,
-   "rating": 4.1,
-   "rating_count": 45,
-   "tags": [
-    "시원한음식",
-    "노불",
-    "간식"
-   ],
-   "ingredients": [
-    "우유",
-    "딸기"
-   ]
-  },
-  {
-   "food_name": "미숫가루 셰이크",
-   "art": "soup",
-   "image_url": null,
-   "category": "간편식",
-   "reason": "입맛 없는 아침에. 얼음이랑 갈기만 하면 한 끼가 됩니다",
-   "cook_time_minutes": 5,
-   "difficulty": "쉬움",
-   "estimated_cost": 3400,
-   "rating": 4.0,
-   "rating_count": 38,
-   "tags": [
-    "시원한음식",
-    "노불",
-    "간편"
-   ],
-   "ingredients": [
-    "우유",
-    "바나나"
-   ]
-  },
-  {
-   "food_name": "김치부침개",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "비 오는 날 가장 먼저 떠오르는 바삭한 부침개",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 4800,
-   "tags": [
-    "튀김",
-    "간편",
-    "한식"
-   ],
-   "ingredients": [
-    "배추",
-    "밀가루",
-    "계란",
-    "대파",
-    "식용유"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "해물파전",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "쪽파와 오징어를 넉넉히 올려 부친 비 오는 날의 정석",
-   "cook_time_minutes": 30,
-   "difficulty": "보통",
-   "estimated_cost": 9200,
-   "tags": [
-    "튀김",
-    "한식"
-   ],
-   "ingredients": [
-    "오징어",
-    "쪽파",
-    "새우",
-    "계란",
-    "밀가루"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "감자전",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "감자만 갈아 부쳐도 쫀득하게 나오는 소박한 전",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 3600,
-   "tags": [
-    "튀김",
-    "간편",
-    "한식"
-   ],
-   "ingredients": [
-    "감자",
-    "양파",
-    "소금",
-    "식용유"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "부추전",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "부추 향이 살아있는 가볍고 바삭한 전",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 4200,
-   "tags": [
-    "튀김",
-    "간편",
-    "한식"
-   ],
-   "ingredients": [
-    "부추",
-    "밀가루",
-    "계란",
-    "붉은고추"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "호박전",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "애호박을 도톰하게 썰어 계란옷을 입힌 담백한 전",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 3800,
-   "tags": [
-    "튀김",
-    "간편",
-    "건강",
-    "한식"
-   ],
-   "ingredients": [
-    "애호박",
-    "계란",
-    "밀가루",
-    "소금"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "동태전",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "명태살에 계란옷을 입혀 부친 명절 밥상의 전",
-   "cook_time_minutes": 35,
-   "difficulty": "보통",
-   "estimated_cost": 8600,
-   "tags": [
-    "튀김",
-    "한식"
-   ],
-   "ingredients": [
-    "명태",
-    "계란",
-    "밀가루",
-    "쪽파"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "고추튀김",
-   "art": "pancake",
-   "category": "분식",
-   "reason": "풋고추 속을 채워 튀긴 분식집 단골 메뉴",
-   "cook_time_minutes": 30,
-   "difficulty": "보통",
-   "estimated_cost": 5400,
-   "tags": [
-    "튀김",
-    "매콤",
-    "분식"
-   ],
-   "ingredients": [
-    "풋고추",
-    "돼지고기",
-    "양파",
-    "밀가루"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "오징어튀김",
-   "art": "pancake",
-   "category": "분식",
-   "reason": "겉은 바삭 속은 쫄깃한 비 오는 날의 튀김",
-   "cook_time_minutes": 30,
-   "difficulty": "보통",
-   "estimated_cost": 8800,
-   "tags": [
-    "튀김",
-    "분식"
-   ],
-   "ingredients": [
-    "오징어",
-    "밀가루",
-    "계란",
-    "식용유"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "새우튀김",
-   "art": "pancake",
-   "category": "일식",
-   "reason": "튀김옷을 얇게 입혀 바삭하게 튀긴 새우",
-   "cook_time_minutes": 30,
-   "difficulty": "보통",
-   "estimated_cost": 11200,
-   "tags": [
-    "튀김",
-    "일식"
-   ],
-   "ingredients": [
-    "새우",
-    "계란",
-    "밀가루",
-    "식용유"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "야채튀김",
-   "art": "pancake",
-   "category": "분식",
-   "reason": "고구마와 당근을 채썰어 한 번에 튀겨낸 모듬 튀김",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 4600,
-   "tags": [
-    "튀김",
-    "간편",
-    "분식"
-   ],
-   "ingredients": [
-    "고구마",
-    "당근",
-    "양파",
-    "밀가루"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "닭강정",
-   "art": "stirfry",
-   "category": "분식",
-   "reason": "바삭하게 튀긴 닭에 매콤달콤한 양념을 입힌 간식",
-   "cook_time_minutes": 40,
-   "difficulty": "보통",
-   "estimated_cost": 9600,
-   "tags": [
-    "튀김",
-    "매콤",
-    "분식"
-   ],
-   "ingredients": [
-    "닭고기",
-    "마늘",
-    "고춧가루",
-    "땅콩"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "돈까스",
-   "art": "pancake",
-   "category": "일식",
-   "reason": "두툼한 등심을 튀겨낸 든든한 한 접시",
-   "cook_time_minutes": 35,
-   "difficulty": "보통",
-   "estimated_cost": 7400,
-   "tags": [
-    "튀김",
-    "고기",
-    "일식"
-   ],
-   "ingredients": [
-    "돼지고기",
-    "계란",
-    "밀가루",
-    "양배추"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "치즈감자전",
-   "art": "pancake",
-   "category": "양식",
-   "reason": "감자채에 치즈를 얹어 노릇하게 구운 간식",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 5200,
-   "tags": [
-    "튀김",
-    "치즈",
-    "간편",
-    "양식"
-   ],
-   "ingredients": [
-    "감자",
-    "양파",
-    "계란",
-    "치즈"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "버섯전",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "새송이버섯을 도톰하게 썰어 부친 쫄깃한 전",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 4900,
-   "tags": [
-    "튀김",
-    "건강",
-    "한식"
-   ],
-   "ingredients": [
-    "새송이버섯",
-    "계란",
-    "밀가루",
-    "쪽파"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "김치튀김만두",
-   "art": "pancake",
-   "category": "분식",
-   "reason": "김치소를 넣어 바삭하게 튀긴 군만두",
-   "cook_time_minutes": 30,
-   "difficulty": "보통",
-   "estimated_cost": 6100,
-   "tags": [
-    "튀김",
-    "매콤",
-    "분식"
-   ],
-   "ingredients": [
-    "배추",
-    "돼지고기",
-    "부추",
-    "두부"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "깻잎전",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "깻잎 향이 은은하게 도는 얇은 전",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 5600,
-   "tags": [
-    "튀김",
-    "한식"
-   ],
-   "ingredients": [
-    "깻잎",
-    "돼지고기",
-    "두부",
-    "계란"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "소고기무국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "무를 푹 끓여 시원하고 깊은 맛이 나는 맑은 국",
-   "cook_time_minutes": 40,
-   "difficulty": "쉬움",
-   "estimated_cost": 12800,
-   "tags": [
-    "국물",
-    "보양",
-    "한식"
-   ],
-   "ingredients": [
-    "소고기",
-    "무",
-    "대파",
-    "마늘"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "콩나물국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "맑고 시원한 국물로 속을 달래주는 기본 국",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 3400,
-   "tags": [
-    "국물",
-    "간편",
-    "해장",
-    "한식"
-   ],
-   "ingredients": [
-    "콩나물",
-    "대파",
-    "마늘",
-    "멸치"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "북엇국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "명태를 우려 뽀얗게 끓인 아침 해장국",
-   "cook_time_minutes": 30,
-   "difficulty": "쉬움",
-   "estimated_cost": 6800,
-   "tags": [
-    "국물",
-    "해장",
-    "보양",
-    "한식"
-   ],
-   "ingredients": [
-    "명태",
-    "무",
-    "계란",
-    "대파"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "미역국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "참기름에 볶아 끓여 고소함이 도는 미역국",
-   "cook_time_minutes": 35,
-   "difficulty": "쉬움",
-   "estimated_cost": 5100,
-   "tags": [
-    "국물",
-    "건강",
-    "한식"
-   ],
-   "ingredients": [
-    "미역",
-    "소고기",
-    "마늘",
-    "액젓"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "떡국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "맑은 육수에 떡을 넣어 끓인 든든한 한 그릇",
-   "cook_time_minutes": 30,
-   "difficulty": "쉬움",
-   "estimated_cost": 6400,
-   "tags": [
-    "국물",
-    "간편",
-    "한식"
-   ],
-   "ingredients": [
-    "소고기",
-    "계란",
-    "대파",
-    "구운김"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "만둣국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "만두를 넣어 끓여 한 그릇으로 충분한 국",
-   "cook_time_minutes": 30,
-   "difficulty": "쉬움",
-   "estimated_cost": 7200,
-   "tags": [
-    "국물",
-    "간편",
-    "한식"
-   ],
-   "ingredients": [
-    "돼지고기",
-    "부추",
-    "두부",
-    "계란"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "닭곰탕",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "닭을 푹 고아 국물까지 진하게 우려낸 보양식",
-   "cook_time_minutes": 60,
-   "difficulty": "보통",
-   "estimated_cost": 9800,
-   "tags": [
-    "국물",
-    "보양",
-    "한식"
-   ],
-   "ingredients": [
-    "닭고기",
-    "대파",
-    "마늘",
-    "생강"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "갈비탕",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "소갈비를 오래 끓여 진한 국물이 우러난 탕",
-   "cook_time_minutes": 90,
-   "difficulty": "어려움",
-   "estimated_cost": 21000,
-   "tags": [
-    "국물",
-    "보양",
-    "기념일",
-    "한식"
-   ],
-   "ingredients": [
-    "소갈비",
-    "무",
-    "대파",
-    "마늘"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "바지락 칼국수",
-   "art": "noodle",
-   "category": "국탕",
-   "reason": "바지락을 우려 시원한 국물에 면을 넣은 한 그릇",
-   "cook_time_minutes": 35,
-   "difficulty": "보통",
-   "estimated_cost": 7600,
-   "tags": [
-    "국물",
-    "면",
+    "얼큰",
     "한식"
    ],
    "ingredients": [
     "바지락",
-    "애호박",
+    "계란",
     "대파",
-    "마늘"
-   ],
-   "image_url": null
+    "고춧가루"
+   ]
   },
   {
-   "food_name": "들깨 버섯탕",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "들깨를 넉넉히 풀어 고소하고 걸쭉한 탕",
-   "cook_time_minutes": 30,
-   "difficulty": "쉬움",
-   "estimated_cost": 6600,
-   "tags": [
-    "국물",
-    "건강",
-    "한식"
-   ],
-   "ingredients": [
-    "느타리버섯",
-    "무",
-    "대파",
-    "부추"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "황태해장국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "황태를 우려 뽀얗고 시원한 국물의 해장국",
-   "cook_time_minutes": 40,
+   "food_name": "동태찌개",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "명태와 무를 넣어 시원하고 칼칼하게 끓인 찌개",
+   "cook_time_minutes": 35,
    "difficulty": "보통",
-   "estimated_cost": 8200,
+   "estimated_cost": 6800,
    "tags": [
     "국물",
-    "해장",
-    "보양",
+    "얼큰",
     "한식"
    ],
    "ingredients": [
     "명태",
     "무",
-    "두부",
-    "대파"
-   ],
-   "image_url": null
+    "미나리",
+    "고춧가루"
+   ]
   },
   {
-   "food_name": "조개 미역국",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "조개로 국물을 내 시원함이 도는 미역국",
+   "food_name": "부대찌개",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "여러 재료를 한 냄비에 넣어 얼큰하게 끓인 찌개",
    "cook_time_minutes": 30,
    "difficulty": "쉬움",
    "estimated_cost": 6900,
    "tags": [
     "국물",
-    "건강",
-    "한식"
-   ],
-   "ingredients": [
-    "조개",
-    "미역",
-    "마늘",
-    "액젓"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "육개장",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "고춧가루를 넉넉히 풀어 얼큰하게 끓인 소고기국",
-   "cook_time_minutes": 60,
-   "difficulty": "보통",
-   "estimated_cost": 14200,
-   "tags": [
-    "국물",
-    "얼큰",
-    "보양",
-    "한식"
-   ],
-   "ingredients": [
-    "소고기",
-    "대파",
-    "고춧가루",
-    "느타리버섯"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "부대찌개",
-   "art": "stew",
-   "category": "한식",
-   "reason": "여러 재료를 함께 끓여 얼큰하고 진한 찌개",
-   "cook_time_minutes": 30,
-   "difficulty": "쉬움",
-   "estimated_cost": 10500,
-   "tags": [
-    "국물",
     "얼큰",
     "한식"
    ],
    "ingredients": [
     "돼지고기",
     "배추",
-    "두부",
-    "대파"
-   ],
-   "image_url": null
+    "대파",
+    "고춧가루"
+   ]
   },
   {
-   "food_name": "동태찌개",
+   "food_name": "청국장찌개",
    "art": "stew",
+   "image_url": null,
    "category": "한식",
-   "reason": "명태와 무를 넣어 시원하고 얼큰하게 끓인 찌개",
-   "cook_time_minutes": 35,
+   "reason": "구수한 청국장에 애호박을 넣어 진하게 끓인 찌개",
+   "cook_time_minutes": 30,
+   "difficulty": "보통",
+   "estimated_cost": 6700,
+   "tags": [
+    "국물",
+    "한식"
+   ],
+   "ingredients": [
+    "돼지고기",
+    "애호박",
+    "양파",
+    "대파"
+   ]
+  },
+  {
+   "food_name": "소고기전골",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "소고기와 버섯을 국물에 자작하게 끓여 먹는 전골",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 16600,
+   "tags": [
+    "국물",
+    "한식"
+   ],
+   "ingredients": [
+    "소고기",
+    "팽이버섯",
+    "알배기배추",
+    "대파"
+   ]
+  },
+  {
+   "food_name": "버섯전골",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "여러 버섯을 넣어 향과 국물이 깊은 전골",
+   "cook_time_minutes": 30,
+   "difficulty": "쉬움",
+   "estimated_cost": 3400,
+   "tags": [
+    "국물",
+    "한식"
+   ],
+   "ingredients": [
+    "새송이버섯",
+    "팽이버섯",
+    "알배기배추",
+    "쪽파"
+   ]
+  },
+  {
+   "food_name": "해물순두부찌개",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "새우와 바지락을 넣어 시원함이 도는 순두부찌개",
+   "cook_time_minutes": 25,
    "difficulty": "보통",
    "estimated_cost": 9400,
    "tags": [
@@ -1485,90 +179,370 @@
     "한식"
    ],
    "ingredients": [
-    "명태",
-    "무",
-    "고춧가루",
-    "쪽파"
-   ],
-   "image_url": null
+    "새우",
+    "바지락",
+    "계란",
+    "고춧가루"
+   ]
   },
   {
-   "food_name": "꽃게탕",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "꽃게를 통째로 넣어 시원하고 칼칼하게 끓인 탕",
-   "cook_time_minutes": 40,
-   "difficulty": "보통",
-   "estimated_cost": 18600,
+   "food_name": "꽁치김치찌개",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "꽁치를 넣어 감칠맛이 진해진 김치찌개",
+   "cook_time_minutes": 30,
+   "difficulty": "쉬움",
+   "estimated_cost": 5200,
    "tags": [
     "국물",
     "얼큰",
-    "기념일",
     "한식"
    ],
    "ingredients": [
-    "꽃게",
-    "무",
-    "고춧가루",
-    "미나리"
+    "꽁치",
+    "배추",
+    "대파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "고추장찌개",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "고추장을 풀어 칼칼하게 끓인 돼지고기 찌개",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 6800,
+   "tags": [
+    "국물",
+    "얼큰",
+    "한식"
    ],
-   "image_url": null
+   "ingredients": [
+    "돼지고기",
+    "감자",
+    "양파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "바지락된장찌개",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "바지락으로 국물을 내 시원한 된장찌개",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 5300,
+   "tags": [
+    "국물",
+    "한식"
+   ],
+   "ingredients": [
+    "바지락",
+    "애호박",
+    "양파",
+    "대파"
+   ]
+  },
+  {
+   "food_name": "소고기미역국",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "참기름에 볶아 끓여 고소함이 도는 미역국",
+   "cook_time_minutes": 40,
+   "difficulty": "쉬움",
+   "estimated_cost": 15300,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "소고기",
+    "미역",
+    "마늘",
+    "액젓"
+   ]
+  },
+  {
+   "food_name": "소고기무국",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "무를 푹 끓여 시원하고 깊은 맛이 나는 맑은 국",
+   "cook_time_minutes": 40,
+   "difficulty": "쉬움",
+   "estimated_cost": 15400,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "소고기",
+    "무",
+    "대파",
+    "마늘"
+   ]
+  },
+  {
+   "food_name": "북엇국",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "명태를 우려 뽀얗게 끓인 아침 해장국",
+   "cook_time_minutes": 30,
+   "difficulty": "쉬움",
+   "estimated_cost": 5200,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "명태",
+    "무",
+    "계란",
+    "대파"
+   ]
+  },
+  {
+   "food_name": "황태해장국",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "황태를 우려 시원하고 칼칼하게 끓인 해장국",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 5000,
+   "tags": [
+    "국물",
+    "얼큰",
+    "국탕"
+   ],
+   "ingredients": [
+    "명태",
+    "무",
+    "대파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "육개장",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "고춧가루를 넉넉히 풀어 얼큰하게 끓인 소고기국",
+   "cook_time_minutes": 60,
+   "difficulty": "보통",
+   "estimated_cost": 15500,
+   "tags": [
+    "국물",
+    "얼큰",
+    "국탕"
+   ],
+   "ingredients": [
+    "소고기",
+    "대파",
+    "새송이버섯",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "갈비탕",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "소갈비를 오래 끓여 진한 국물이 우러난 탕",
+   "cook_time_minutes": 90,
+   "difficulty": "어려움",
+   "estimated_cost": 57500,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "소갈비",
+    "무",
+    "대파",
+    "마늘"
+   ]
+  },
+  {
+   "food_name": "닭곰탕",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "닭을 푹 고아 국물까지 진하게 우려낸 보양식",
+   "cook_time_minutes": 60,
+   "difficulty": "보통",
+   "estimated_cost": 6300,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "닭",
+    "대파",
+    "마늘",
+    "생강"
+   ]
+  },
+  {
+   "food_name": "삼계탕",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "찹쌀을 채워 넣고 푹 고아낸 여름·겨울 보양식",
+   "cook_time_minutes": 70,
+   "difficulty": "보통",
+   "estimated_cost": 6600,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "닭",
+    "찹쌀",
+    "마늘",
+    "생강"
+   ]
   },
   {
    "food_name": "알탕",
    "art": "soup",
+   "image_url": null,
    "category": "국탕",
-   "reason": "알과 곤이를 넣어 얼큰하게 끓인 겨울 탕",
+   "reason": "명태와 무를 넣어 얼큰하게 끓인 겨울 탕",
    "cook_time_minutes": 35,
    "difficulty": "보통",
-   "estimated_cost": 12400,
+   "estimated_cost": 6800,
    "tags": [
     "국물",
     "얼큰",
-    "해장",
-    "한식"
+    "국탕"
    ],
    "ingredients": [
     "명태",
     "무",
     "미나리",
     "고춧가루"
+   ]
+  },
+  {
+   "food_name": "꽃게탕",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "꽃게를 통째로 넣어 시원하고 칼칼하게 끓인 탕",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 11000,
+   "tags": [
+    "국물",
+    "얼큰",
+    "국탕"
    ],
-   "image_url": null
+   "ingredients": [
+    "꽃게",
+    "무",
+    "미나리",
+    "고춧가루"
+   ]
   },
   {
    "food_name": "오징어국",
    "art": "soup",
+   "image_url": null,
    "category": "국탕",
    "reason": "오징어를 넣어 시원하고 칼칼하게 끓인 국",
    "cook_time_minutes": 25,
    "difficulty": "쉬움",
-   "estimated_cost": 8400,
+   "estimated_cost": 6600,
    "tags": [
     "국물",
     "얼큰",
-    "한식"
+    "국탕"
    ],
    "ingredients": [
     "오징어",
     "무",
     "대파",
     "고춧가루"
-   ],
-   "image_url": null
+   ]
   },
   {
-   "food_name": "돼지고기 김치찜",
-   "art": "stew",
+   "food_name": "홍합탕",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "홍합만으로 국물을 낸 맑고 시원한 탕",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 11100,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "홍합",
+    "무",
+    "대파",
+    "마늘"
+   ]
+  },
+  {
+   "food_name": "바지락국밥",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "바지락을 우려 시원하게 끓여낸 국밥",
+   "cook_time_minutes": 30,
+   "difficulty": "쉬움",
+   "estimated_cost": 5700,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "바지락",
+    "무",
+    "쪽파",
+    "구운김"
+   ]
+  },
+  {
+   "food_name": "전복죽",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "전복을 넣고 쌀을 오래 끓여 부드럽게 낸 죽",
+   "cook_time_minutes": 45,
+   "difficulty": "보통",
+   "estimated_cost": 11000,
+   "tags": [
+    "국물",
+    "국탕"
+   ],
+   "ingredients": [
+    "전복",
+    "쌀",
+    "당근",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "김치찜",
+   "art": "soup",
+   "image_url": null,
    "category": "한식",
    "reason": "묵은지와 돼지고기를 오래 쪄내 깊은 맛이 나는 찜",
    "cook_time_minutes": 70,
    "difficulty": "보통",
-   "estimated_cost": 11800,
+   "estimated_cost": 6600,
    "tags": [
     "국물",
-    "얼큰",
-    "고기",
     "한식"
    ],
    "ingredients": [
@@ -1576,86 +550,447 @@
     "배추",
     "대파",
     "마늘"
-   ],
-   "image_url": null
+   ]
   },
   {
-   "food_name": "짬뽕",
-   "art": "noodle",
-   "category": "중식",
-   "reason": "해물을 볶아 끓인 얼큰한 국물의 중식 면요리",
-   "cook_time_minutes": 30,
+   "food_name": "닭볶음탕",
+   "art": "soup",
+   "image_url": null,
+   "category": "한식",
+   "reason": "닭과 감자를 넣어 얼큰하게 끓여낸 한 냄비 요리",
+   "cook_time_minutes": 45,
    "difficulty": "보통",
-   "estimated_cost": 9800,
+   "estimated_cost": 7800,
    "tags": [
     "국물",
     "얼큰",
-    "면",
-    "중식"
-   ],
-   "ingredients": [
-    "오징어",
-    "홍합",
-    "양배추",
-    "고춧가루"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "어묵탕",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "무를 우린 맑은 국물에 어묵을 넣어 끓인 겨울 간식",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 5400,
-   "tags": [
-    "국물",
-    "간편",
-    "분식"
-   ],
-   "ingredients": [
-    "무",
-    "대파",
-    "다시마",
-    "멸치"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "굴국밥",
-   "art": "soup",
-   "category": "국탕",
-   "reason": "굴을 넣어 시원하게 끓여낸 겨울 국밥",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 9200,
-   "tags": [
-    "국물",
-    "보양",
     "한식"
    ],
    "ingredients": [
-    "조개",
-    "무",
-    "쪽파",
-    "구운김"
+    "닭",
+    "감자",
+    "당근",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "갈비찜",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "소갈비를 간장 양념에 오래 조려 부드럽게 낸 찜",
+   "cook_time_minutes": 90,
+   "difficulty": "어려움",
+   "estimated_cost": 57700,
+   "tags": [
+    "조림",
+    "국물",
+    "한식"
    ],
-   "image_url": null
+   "ingredients": [
+    "소갈비",
+    "무",
+    "당근",
+    "마늘"
+   ]
+  },
+  {
+   "food_name": "해물찜",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "여러 해물을 매콤한 양념에 쪄낸 한 접시",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 20400,
+   "tags": [
+    "조림",
+    "국물",
+    "얼큰",
+    "한식"
+   ],
+   "ingredients": [
+    "오징어",
+    "새우",
+    "홍합",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "감자탕",
+   "art": "soup",
+   "image_url": null,
+   "category": "국탕",
+   "reason": "돼지고기와 감자를 푹 끓여 진하게 우려낸 탕",
+   "cook_time_minutes": 70,
+   "difficulty": "보통",
+   "estimated_cost": 7900,
+   "tags": [
+    "국물",
+    "얼큰",
+    "국탕"
+   ],
+   "ingredients": [
+    "돼지고기",
+    "감자",
+    "배추",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "명태수육",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "명태를 미나리와 함께 쪄내 매콤하게 즐기는 수육",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 6400,
+   "tags": [
+    "조림",
+    "국물",
+    "얼큰",
+    "한식"
+   ],
+   "ingredients": [
+    "명태",
+    "미나리",
+    "양파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "김치부침개",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "비 오는 날 가장 먼저 떠오르는 바삭한 부침개",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 2500,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "배추",
+    "계란",
+    "대파",
+    "붉은고추"
+   ]
+  },
+  {
+   "food_name": "해물파전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "쪽파와 해물을 넉넉히 올려 부친 비 오는 날의 정석",
+   "cook_time_minutes": 30,
+   "difficulty": "보통",
+   "estimated_cost": 11300,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "오징어",
+    "새우",
+    "쪽파",
+    "계란"
+   ]
+  },
+  {
+   "food_name": "감자전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "감자만 갈아 부쳐도 쫀득하게 나오는 소박한 전",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 1600,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "감자",
+    "양파",
+    "소금"
+   ]
+  },
+  {
+   "food_name": "부추전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "부추 향이 살아있는 가볍고 바삭한 전",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 1900,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "부추",
+    "계란",
+    "붉은고추"
+   ]
+  },
+  {
+   "food_name": "애호박전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "애호박을 도톰하게 썰어 계란옷을 입힌 담백한 전",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 2000,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "애호박",
+    "계란",
+    "소금"
+   ]
+  },
+  {
+   "food_name": "동태전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "명태살에 계란옷을 입혀 부친 명절 밥상의 전",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 4900,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "명태",
+    "계란",
+    "쪽파"
+   ]
+  },
+  {
+   "food_name": "버섯전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "새송이버섯을 도톰하게 썰어 부친 쫄깃한 전",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 1900,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "새송이버섯",
+    "계란",
+    "쪽파"
+   ]
+  },
+  {
+   "food_name": "깻잎전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "깻잎 향이 은은하게 도는 얇은 전",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 6100,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "깻잎",
+    "돼지고기",
+    "계란"
+   ]
+  },
+  {
+   "food_name": "녹두빈대떡",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "녹두를 갈아 도톰하게 부쳐낸 묵직한 전",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 10600,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "녹두",
+    "돼지고기",
+    "배추",
+    "쪽파"
+   ]
+  },
+  {
+   "food_name": "육전",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "소고기를 얇게 저며 계란옷을 입혀 부친 전",
+   "cook_time_minutes": 30,
+   "difficulty": "보통",
+   "estimated_cost": 12000,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "소고기설도",
+    "계란",
+    "쪽파"
+   ]
+  },
+  {
+   "food_name": "오징어튀김",
+   "art": "pancake",
+   "image_url": null,
+   "category": "분식",
+   "reason": "겉은 바삭 속은 쫄깃한 비 오는 날의 튀김",
+   "cook_time_minutes": 30,
+   "difficulty": "보통",
+   "estimated_cost": 5800,
+   "tags": [
+    "튀김",
+    "분식"
+   ],
+   "ingredients": [
+    "오징어",
+    "계란",
+    "소금"
+   ]
+  },
+  {
+   "food_name": "새우튀김",
+   "art": "pancake",
+   "image_url": null,
+   "category": "일식",
+   "reason": "튀김옷을 얇게 입혀 바삭하게 튀긴 새우",
+   "cook_time_minutes": 30,
+   "difficulty": "보통",
+   "estimated_cost": 5600,
+   "tags": [
+    "튀김",
+    "일식"
+   ],
+   "ingredients": [
+    "새우",
+    "계란",
+    "소금"
+   ]
+  },
+  {
+   "food_name": "야채튀김",
+   "art": "pancake",
+   "image_url": null,
+   "category": "분식",
+   "reason": "고구마와 당근을 채썰어 한 번에 튀겨낸 모듬 튀김",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 1800,
+   "tags": [
+    "튀김",
+    "분식"
+   ],
+   "ingredients": [
+    "고구마",
+    "당근",
+    "양파"
+   ]
+  },
+  {
+   "food_name": "고추튀김",
+   "art": "pancake",
+   "image_url": null,
+   "category": "분식",
+   "reason": "고추 속을 채워 튀긴 분식집 단골 메뉴",
+   "cook_time_minutes": 30,
+   "difficulty": "보통",
+   "estimated_cost": 5400,
+   "tags": [
+    "튀김",
+    "분식"
+   ],
+   "ingredients": [
+    "고추",
+    "돼지고기",
+    "양파"
+   ]
+  },
+  {
+   "food_name": "닭강정",
+   "art": "pancake",
+   "image_url": null,
+   "category": "분식",
+   "reason": "바삭하게 튀긴 닭에 매콤달콤한 양념을 입힌 간식",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 7500,
+   "tags": [
+    "튀김",
+    "분식"
+   ],
+   "ingredients": [
+    "닭",
+    "마늘",
+    "고춧가루",
+    "땅콩"
+   ]
+  },
+  {
+   "food_name": "동그랑땡",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "다진 고기와 채소를 동글게 빚어 부친 반찬",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 6200,
+   "tags": [
+    "부침",
+    "튀김",
+    "한식"
+   ],
+   "ingredients": [
+    "돼지고기",
+    "양파",
+    "당근",
+    "계란"
+   ]
   },
   {
    "food_name": "제육볶음",
    "art": "stirfry",
+   "image_url": null,
    "category": "한식",
    "reason": "매콤한 양념에 볶아낸 든든한 국민 반찬",
    "cook_time_minutes": 25,
    "difficulty": "쉬움",
-   "estimated_cost": 8600,
+   "estimated_cost": 5800,
    "tags": [
-    "선선한",
     "볶음",
-    "매콤",
-    "고기",
+    "선선한",
     "한식"
    ],
    "ingredients": [
@@ -1663,193 +998,104 @@
     "양파",
     "대파",
     "고춧가루"
-   ],
-   "image_url": null
+   ]
   },
   {
-   "food_name": "소불고기",
+   "food_name": "오징어볶음",
    "art": "stirfry",
+   "image_url": null,
    "category": "한식",
-   "reason": "달콤짭짤한 양념에 재워 구운 소고기 요리",
-   "cook_time_minutes": 30,
-   "difficulty": "쉬움",
-   "estimated_cost": 16800,
-   "tags": [
-    "선선한",
-    "고기",
-    "기념일",
-    "한식"
-   ],
-   "ingredients": [
-    "소고기",
-    "양파",
-    "당근",
-    "대파"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "간장 계란밥",
-   "art": "donburi",
-   "category": "간편식",
-   "reason": "계란 하나로 끝나는 가장 빠른 한 끼",
-   "cook_time_minutes": 10,
-   "difficulty": "쉬움",
-   "estimated_cost": 2600,
-   "tags": [
-    "선선한",
-    "간편",
-    "덮밥"
-   ],
-   "ingredients": [
-    "계란",
-    "쌀",
-    "구운김",
-    "참깨"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "새우볶음밥",
-   "art": "stirfry",
-   "category": "중식",
-   "reason": "센 불에 빠르게 볶아 고슬고슬하게 낸 볶음밥",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 7800,
-   "tags": [
-    "선선한",
-    "볶음",
-    "간편",
-    "중식"
-   ],
-   "ingredients": [
-    "새우",
-    "계란",
-    "쌀",
-    "대파"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "오므라이스",
-   "art": "donburi",
-   "category": "양식",
-   "reason": "볶음밥을 계란으로 감싼 부드러운 한 접시",
+   "reason": "센 불에 매콤하게 볶아낸 쫄깃한 오징어",
    "cook_time_minutes": 25,
    "difficulty": "보통",
    "estimated_cost": 6200,
    "tags": [
+    "볶음",
     "선선한",
-    "덮밥",
-    "간편",
-    "양식"
-   ],
-   "ingredients": [
-    "계란",
-    "양파",
-    "당근",
-    "쌀"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "연어 스테이크",
-   "art": "donburi",
-   "category": "양식",
-   "reason": "겉만 노릇하게 구워 속은 촉촉한 연어 한 조각",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 13800,
-   "tags": [
-    "선선한",
-    "건강",
-    "양식"
-   ],
-   "ingredients": [
-    "연어",
-    "레몬",
-    "브로콜리",
-    "마늘"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "고등어구이",
-   "art": "donburi",
-   "category": "한식",
-   "reason": "소금만 뿌려 구워도 기름진 맛이 도는 생선구이",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 6400,
-   "tags": [
-    "선선한",
-    "건강",
     "한식"
    ],
    "ingredients": [
-    "고등어",
-    "소금",
-    "레몬",
-    "무"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "버섯 크림 파스타",
-   "art": "noodle",
-   "category": "양식",
-   "reason": "버섯을 볶아 우유로 농도를 잡은 부드러운 파스타",
-   "cook_time_minutes": 25,
-   "difficulty": "보통",
-   "estimated_cost": 8900,
-   "tags": [
-    "선선한",
-    "면",
-    "치즈",
-    "양식"
-   ],
-   "ingredients": [
-    "새송이버섯",
-    "우유",
+    "오징어",
     "양파",
-    "마늘"
-   ],
-   "image_url": null
+    "대파",
+    "고춧가루"
+   ]
   },
   {
-   "food_name": "토마토 파스타",
-   "art": "noodle",
-   "category": "양식",
-   "reason": "토마토를 졸여 산뜻하게 낸 기본 파스타",
-   "cook_time_minutes": 25,
+   "food_name": "돼지고기두루치기",
+   "art": "stirfry",
+   "image_url": null,
+   "category": "한식",
+   "reason": "고기와 배추를 함께 볶아 자작하게 낸 한 접시",
+   "cook_time_minutes": 30,
    "difficulty": "쉬움",
-   "estimated_cost": 7200,
+   "estimated_cost": 7100,
    "tags": [
+    "볶음",
     "선선한",
-    "면",
-    "양식"
+    "한식"
    ],
    "ingredients": [
-    "토마토",
+    "돼지고기",
+    "배추",
     "양파",
-    "마늘",
-    "브로콜리"
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "가지볶음",
+   "art": "stirfry",
+   "image_url": null,
+   "category": "한식",
+   "reason": "가지를 기름에 볶아 부드럽게 낸 반찬",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 6300,
+   "tags": [
+    "볶음",
+    "선선한",
+    "한식"
    ],
-   "image_url": null
+   "ingredients": [
+    "가지",
+    "돼지고기",
+    "대파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "야채볶음",
+   "art": "stirfry",
+   "image_url": null,
+   "category": "한식",
+   "reason": "피망과 당근을 센 불에 빠르게 볶아낸 반찬",
+   "cook_time_minutes": 15,
+   "difficulty": "쉬움",
+   "estimated_cost": 3600,
+   "tags": [
+    "볶음",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "피망",
+    "양파",
+    "당근",
+    "참깨"
+   ]
   },
   {
    "food_name": "잡채",
    "art": "stirfry",
+   "image_url": null,
    "category": "한식",
    "reason": "당면과 채소를 각각 볶아 무쳐낸 잔칫상 메뉴",
    "cook_time_minutes": 45,
    "difficulty": "보통",
-   "estimated_cost": 9600,
+   "estimated_cost": 19000,
    "tags": [
+    "볶음",
     "선선한",
-    "면",
-    "기념일",
     "한식"
    ],
    "ingredients": [
@@ -1857,20 +1103,354 @@
     "시금치",
     "당근",
     "양파"
+   ]
+  },
+  {
+   "food_name": "멸치볶음",
+   "art": "stirfry",
+   "image_url": null,
+   "category": "한식",
+   "reason": "멸치와 꽈리고추를 간장에 볶아낸 밑반찬",
+   "cook_time_minutes": 15,
+   "difficulty": "쉬움",
+   "estimated_cost": 2400,
+   "tags": [
+    "볶음",
+    "선선한",
+    "한식"
    ],
-   "image_url": null
+   "ingredients": [
+    "멸치",
+    "꽈리고추",
+    "마늘",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "새우볶음밥",
+   "art": "stirfry",
+   "image_url": null,
+   "category": "중식",
+   "reason": "센 불에 빠르게 볶아 고슬고슬하게 낸 볶음밥",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 7200,
+   "tags": [
+    "볶음",
+    "선선한",
+    "중식"
+   ],
+   "ingredients": [
+    "새우",
+    "계란",
+    "쌀",
+    "대파"
+   ]
+  },
+  {
+   "food_name": "소불고기",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "달콤짭짤한 양념에 재워 구운 소고기 요리",
+   "cook_time_minutes": 30,
+   "difficulty": "쉬움",
+   "estimated_cost": 15300,
+   "tags": [
+    "구이",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "소고기",
+    "양파",
+    "당근",
+    "대파"
+   ]
+  },
+  {
+   "food_name": "삼겹살구이",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "두툼하게 썰어 노릇하게 구워 상추에 싸 먹는 한 끼",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 14300,
+   "tags": [
+    "구이",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "삼겹살",
+    "상추",
+    "마늘",
+    "쪽파"
+   ]
+  },
+  {
+   "food_name": "목살구이",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "기름이 적어 담백하게 즐기는 돼지고기 구이",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 15700,
+   "tags": [
+    "구이",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "목살",
+    "상추",
+    "마늘",
+    "파프리카"
+   ]
+  },
+  {
+   "food_name": "돼지갈비구이",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "양념에 재워 구워 달콤짭짤한 돼지갈비",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 9400,
+   "tags": [
+    "구이",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "돼지갈비",
+    "양파",
+    "마늘",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "닭갈비",
+   "art": "stirfry",
+   "image_url": null,
+   "category": "한식",
+   "reason": "양배추와 함께 볶아 매콤하게 즐기는 한 판",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 8000,
+   "tags": [
+    "볶음",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "닭",
+    "양배추",
+    "고구마",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "고등어구이",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "소금만 뿌려 구워도 기름진 맛이 도는 생선구이",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 5200,
+   "tags": [
+    "구이",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "고등어",
+    "무",
+    "레몬",
+    "소금"
+   ]
+  },
+  {
+   "food_name": "갈치구이",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "두툼한 갈치를 소금 간만 해서 구운 생선구이",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 5400,
+   "tags": [
+    "구이",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "갈치",
+    "레몬",
+    "소금"
+   ]
+  },
+  {
+   "food_name": "굴비구이",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "꾸덕하게 말린 굴비를 노릇하게 구워낸 한 마리",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 6100,
+   "tags": [
+    "구이",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "굴비",
+    "무",
+    "소금"
+   ]
+  },
+  {
+   "food_name": "갈치조림",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "갈치와 무를 매콤한 양념에 자작하게 조린 요리",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 6400,
+   "tags": [
+    "조림",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "갈치",
+    "무",
+    "대파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "조기조림",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "조기를 무와 함께 칼칼하게 조려낸 생선조림",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 7400,
+   "tags": [
+    "조림",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "조기",
+    "무",
+    "대파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "고등어조림",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "고등어를 무 위에 얹어 매콤하게 조린 요리",
+   "cook_time_minutes": 35,
+   "difficulty": "쉬움",
+   "estimated_cost": 5400,
+   "tags": [
+    "조림",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "고등어",
+    "무",
+    "대파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "삼치조림",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "삼치를 양파와 함께 달콤짭짤하게 조린 요리",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 12600,
+   "tags": [
+    "조림",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "삼치",
+    "무",
+    "양파",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "명태조림",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "명태와 미나리를 넣어 칼칼하게 조린 요리",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 6800,
+   "tags": [
+    "조림",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "명태",
+    "무",
+    "미나리",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "돼지고기장조림",
+   "art": "stew",
+   "image_url": null,
+   "category": "한식",
+   "reason": "간장에 오래 조려 짭조름하게 낸 밑반찬",
+   "cook_time_minutes": 50,
+   "difficulty": "쉬움",
+   "estimated_cost": 6200,
+   "tags": [
+    "조림",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "돼지고기",
+    "꽈리고추",
+    "마늘",
+    "계란"
+   ]
   },
   {
    "food_name": "감자조림",
-   "art": "stirfry",
+   "art": "stew",
+   "image_url": null,
    "category": "한식",
    "reason": "간장에 조려 윤기가 도는 밑반찬 겸 한 끼",
    "cook_time_minutes": 25,
    "difficulty": "쉬움",
-   "estimated_cost": 3200,
+   "estimated_cost": 2600,
    "tags": [
+    "조림",
     "선선한",
-    "간편",
     "한식"
    ],
    "ingredients": [
@@ -1878,152 +1458,531 @@
     "양파",
     "당근",
     "참깨"
-   ],
-   "image_url": null
+   ]
   },
   {
-   "food_name": "두부조림",
+   "food_name": "코다리조림",
    "art": "stew",
+   "image_url": null,
    "category": "한식",
-   "reason": "두부를 노릇하게 구워 양념에 조린 담백한 반찬",
-   "cook_time_minutes": 25,
-   "difficulty": "쉬움",
-   "estimated_cost": 4400,
+   "reason": "반건조 명태를 양념에 조려 쫄깃하게 낸 요리",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 5500,
    "tags": [
+    "조림",
     "선선한",
-    "건강",
     "한식"
    ],
    "ingredients": [
-    "두부",
-    "대파",
+    "명태",
+    "무",
     "고춧가루",
-    "마늘"
-   ],
-   "image_url": null
+    "쪽파"
+   ]
   },
   {
-   "food_name": "치킨 카레",
+   "food_name": "육회비빔밥",
    "art": "donburi",
-   "category": "아시안",
-   "reason": "닭고기와 채소를 넣어 푹 끓인 진한 카레",
-   "cook_time_minutes": 40,
-   "difficulty": "쉬움",
-   "estimated_cost": 8200,
-   "tags": [
-    "선선한",
-    "덮밥",
-    "아시안"
-   ],
-   "ingredients": [
-    "닭고기",
-    "감자",
-    "당근",
-    "양파"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "가지덮밥",
-   "art": "donburi",
-   "category": "일식",
-   "reason": "가지를 기름에 볶아 밥 위에 올린 덮밥",
-   "cook_time_minutes": 20,
-   "difficulty": "쉬움",
-   "estimated_cost": 5200,
-   "tags": [
-    "선선한",
-    "덮밥",
-    "건강",
-    "일식"
-   ],
-   "ingredients": [
-    "가지",
-    "돼지고기",
-    "양파",
-    "쌀"
-   ],
-   "image_url": null
-  },
-  {
-   "food_name": "주꾸미볶음",
-   "art": "stirfry",
+   "image_url": null,
    "category": "한식",
-   "reason": "센 불에 매콤하게 볶아낸 쫄깃한 해물 요리",
+   "reason": "신선한 소고기 육회를 올려 고소하게 비벼 먹는 밥",
    "cook_time_minutes": 25,
    "difficulty": "보통",
-   "estimated_cost": 12600,
+   "estimated_cost": 39200,
    "tags": [
+    "덮밥",
     "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "소고기안심",
+    "배",
+    "계란",
+    "상추"
+   ]
+  },
+  {
+   "food_name": "전주비빔밥",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "여러 나물을 색색이 올려 고루 비벼 먹는 한 그릇",
+   "cook_time_minutes": 40,
+   "difficulty": "보통",
+   "estimated_cost": 19200,
+   "tags": [
+    "덮밥",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "소고기",
+    "시금치",
+    "당근",
+    "계란"
+   ]
+  },
+  {
+   "food_name": "돌솥비빔밥",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "뜨거운 돌솥에 담아 누룽지까지 즐기는 비빔밥",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 15600,
+   "tags": [
+    "덮밥",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "소고기설도",
+    "시금치",
+    "당근",
+    "계란"
+   ]
+  },
+  {
+   "food_name": "김치볶음밥",
+   "art": "stirfry",
+   "image_url": null,
+   "category": "한식",
+   "reason": "잘 익은 김치를 볶아 밥과 함께 낸 한 그릇",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 8300,
+   "tags": [
     "볶음",
-    "매콤",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "배추",
+    "돼지고기",
+    "계란",
+    "쌀"
+   ]
+  },
+  {
+   "food_name": "무밥",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "무를 채썰어 밥과 함께 지어 양념장에 비벼 먹는 밥",
+   "cook_time_minutes": 35,
+   "difficulty": "쉬움",
+   "estimated_cost": 17100,
+   "tags": [
+    "덮밥",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "무",
+    "소고기",
+    "쌀",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "열무비빔밥",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "아삭한 열무김치를 올려 고추장에 비벼 먹는 밥",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 3500,
+   "tags": [
+    "덮밥",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "열무",
+    "계란",
+    "고춧가루",
+    "쌀"
+   ]
+  },
+  {
+   "food_name": "제육덮밥",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "매콤하게 볶은 제육을 밥 위에 얹은 한 그릇",
+   "cook_time_minutes": 25,
+   "difficulty": "쉬움",
+   "estimated_cost": 7100,
+   "tags": [
+    "덮밥",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "돼지고기",
+    "양파",
+    "쌀",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "오징어덮밥",
+   "art": "donburi",
+   "image_url": null,
+   "category": "한식",
+   "reason": "매콤하게 볶은 오징어를 밥 위에 얹은 덮밥",
+   "cook_time_minutes": 25,
+   "difficulty": "보통",
+   "estimated_cost": 7800,
+   "tags": [
+    "덮밥",
+    "선선한",
     "한식"
    ],
    "ingredients": [
     "오징어",
+    "양배추",
     "양파",
-    "대파",
-    "고춧가루"
-   ],
-   "image_url": null
+    "쌀"
+   ]
   },
   {
-   "food_name": "메밀국수",
+   "food_name": "바지락칼국수",
    "art": "noodle",
-   "category": "일식",
-   "reason": "차가운 육수에 메밀면을 말아 시원하게 먹는 한 그릇",
-   "cook_time_minutes": 15,
-   "difficulty": "쉬움",
-   "estimated_cost": 5800,
+   "image_url": null,
+   "category": "한식",
+   "reason": "바지락을 우려 시원한 국물에 면을 넣은 한 그릇",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 5100,
    "tags": [
+    "면",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "바지락",
+    "애호박",
+    "대파",
+    "마늘"
+   ]
+  },
+  {
+   "food_name": "들깨수제비",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "들깨를 풀어 고소하고 걸쭉하게 끓인 수제비",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 2900,
+   "tags": [
+    "면",
+    "선선한",
+    "한식"
+   ],
+   "ingredients": [
+    "감자",
+    "애호박",
+    "대파",
+    "마늘"
+   ]
+  },
+  {
+   "food_name": "콩국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "곱게 간 콩물에 면을 말아 고소하게 먹는 여름 국수",
+   "cook_time_minutes": 30,
+   "difficulty": "보통",
+   "estimated_cost": 3600,
+   "tags": [
+    "면",
     "시원한음식",
     "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "콩",
+    "오이",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "물냉면",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "살얼음 낀 육수에 면을 말아 시원하게 먹는 냉면",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 3500,
+   "tags": [
     "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "무",
+    "오이",
+    "계란",
+    "배"
+   ]
+  },
+  {
+   "food_name": "밀면",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "쫄깃한 면에 새콤달콤한 육수를 부어낸 부산식 면",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 3200,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "무",
+    "오이",
+    "계란",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "회냉면",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "매콤한 양념에 회를 올려 비벼 먹는 냉면",
+   "cook_time_minutes": 25,
+   "difficulty": "보통",
+   "estimated_cost": 7700,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "오징어",
+    "무",
+    "오이",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "비빔국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "분식",
+   "reason": "새콤달콤한 양념에 슥슥 비벼 먹는 여름 국수",
+   "cook_time_minutes": 15,
+   "difficulty": "쉬움",
+   "estimated_cost": 3400,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "분식"
+   ],
+   "ingredients": [
+    "오이",
+    "계란",
+    "상추",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "열무국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "열무김치 국물에 면을 말아 시원하게 먹는 국수",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 2700,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "열무",
+    "오이",
+    "고춧가루"
+   ]
+  },
+  {
+   "food_name": "김치말이국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "김치 국물에 면을 말아 얼음을 띄운 여름 국수",
+   "cook_time_minutes": 15,
+   "difficulty": "쉬움",
+   "estimated_cost": 3500,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "배추",
+    "오이",
+    "계란"
+   ]
+  },
+  {
+   "food_name": "초계국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "닭 육수를 차게 식혀 새콤하게 말아낸 국수",
+   "cook_time_minutes": 35,
+   "difficulty": "보통",
+   "estimated_cost": 8400,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "닭",
+    "오이",
+    "계란",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "메밀막국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "메밀면을 새콤달콤한 양념에 비벼 먹는 국수",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 3600,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "무",
+    "오이",
+    "구운김",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "자루소바",
+   "art": "noodle",
+   "image_url": null,
+   "category": "일식",
+   "reason": "차가운 메밀면을 장국에 찍어 먹는 일식 면요리",
+   "cook_time_minutes": 15,
+   "difficulty": "쉬움",
+   "estimated_cost": 2300,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
     "일식"
    ],
    "ingredients": [
     "무",
     "쪽파",
-    "구운김",
-    "계란"
-   ],
-   "image_url": null
+    "구운김"
+   ]
   },
   {
-   "food_name": "오이무침",
-   "art": "pancake",
-   "category": "한식",
-   "reason": "아삭한 오이를 새콤하게 무쳐낸 여름 반찬",
-   "cook_time_minutes": 10,
+   "food_name": "냉우동",
+   "art": "noodle",
+   "image_url": null,
+   "category": "일식",
+   "reason": "굵은 면을 차갑게 헹궈 시원한 장국에 말아낸 우동",
+   "cook_time_minutes": 15,
    "difficulty": "쉬움",
-   "estimated_cost": 2800,
+   "estimated_cost": 2100,
    "tags": [
+    "면",
     "시원한음식",
     "여름메뉴",
-    "간편",
-    "건강",
+    "일식"
+   ],
+   "ingredients": [
+    "무",
+    "쪽파",
+    "계란"
+   ]
+  },
+  {
+   "food_name": "얼갈이배추국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "얼갈이김치 국물에 면을 말아 아삭하게 먹는 국수",
+   "cook_time_minutes": 20,
+   "difficulty": "쉬움",
+   "estimated_cost": 2600,
+   "tags": [
+    "면",
+    "시원한음식",
+    "여름메뉴",
+    "한식"
+   ],
+   "ingredients": [
+    "얼갈이배추",
+    "오이",
+    "참깨"
+   ]
+  },
+  {
+   "food_name": "오이냉국",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "새콤한 국물에 오이를 띄운 여름 냉국",
+   "cook_time_minutes": 10,
+   "difficulty": "쉬움",
+   "estimated_cost": 2500,
+   "tags": [
+    "무침",
+    "시원한음식",
+    "여름메뉴",
     "한식"
    ],
    "ingredients": [
     "오이",
-    "양파",
-    "고춧가루",
+    "쪽파",
     "참깨"
-   ],
-   "image_url": null
+   ]
   },
   {
    "food_name": "가지냉국",
-   "art": "soup",
+   "art": "pancake",
+   "image_url": null,
    "category": "한식",
    "reason": "쪄낸 가지를 차가운 국물에 띄운 여름 냉국",
    "cook_time_minutes": 20,
    "difficulty": "쉬움",
-   "estimated_cost": 3600,
+   "estimated_cost": 3500,
    "tags": [
+    "무침",
     "시원한음식",
     "여름메뉴",
-    "건강",
     "한식"
    ],
    "ingredients": [
@@ -2031,93 +1990,95 @@
     "오이",
     "쪽파",
     "참깨"
-   ],
-   "image_url": null
+   ]
   },
   {
-   "food_name": "참치 포케",
-   "art": "donburi",
-   "category": "샐러드",
-   "reason": "생선과 채소를 차갑게 올린 가벼운 덮밥",
+   "food_name": "미역냉국",
+   "art": "pancake",
+   "image_url": null,
+   "category": "한식",
+   "reason": "미역을 불려 새콤하게 무쳐낸 시원한 냉국",
    "cook_time_minutes": 15,
    "difficulty": "쉬움",
-   "estimated_cost": 11400,
+   "estimated_cost": 3300,
    "tags": [
+    "무침",
     "시원한음식",
     "여름메뉴",
-    "샐러드",
-    "건강"
+    "한식"
    ],
    "ingredients": [
-    "아보카도",
+    "미역",
     "오이",
-    "쌀",
-    "구운김"
-   ],
-   "image_url": null
+    "쪽파",
+    "참깨"
+   ]
   },
   {
-   "food_name": "토마토 모짜렐라 샐러드",
+   "food_name": "물회",
    "art": "pancake",
-   "category": "샐러드",
-   "reason": "토마토와 치즈만으로 완성되는 산뜻한 샐러드",
-   "cook_time_minutes": 10,
-   "difficulty": "쉬움",
-   "estimated_cost": 8600,
+   "image_url": null,
+   "category": "한식",
+   "reason": "해산물과 채소를 차가운 육수에 말아 먹는 회",
+   "cook_time_minutes": 25,
+   "difficulty": "보통",
+   "estimated_cost": 7700,
    "tags": [
+    "무침",
     "시원한음식",
     "여름메뉴",
-    "샐러드",
-    "치즈",
-    "양식"
+    "한식"
    ],
    "ingredients": [
-    "토마토",
-    "상추",
-    "레몬",
-    "치즈"
-   ],
-   "image_url": null
+    "오징어",
+    "오이",
+    "배",
+    "고춧가루"
+   ]
   },
   {
-   "food_name": "수박 주스",
+   "food_name": "육회",
    "art": "pancake",
-   "category": "디저트",
-   "reason": "수박만 갈아 시원하게 마시는 여름 음료",
-   "cook_time_minutes": 5,
-   "difficulty": "쉬움",
-   "estimated_cost": 6800,
+   "image_url": null,
+   "category": "한식",
+   "reason": "신선한 소고기를 참기름에 무쳐낸 별미",
+   "cook_time_minutes": 20,
+   "difficulty": "보통",
+   "estimated_cost": 38900,
    "tags": [
+    "무침",
     "시원한음식",
     "여름메뉴",
-    "디저트",
-    "간편"
+    "한식"
    ],
    "ingredients": [
-    "수박",
-    "레몬"
-   ],
-   "image_url": null
+    "소고기안심",
+    "배",
+    "계란",
+    "참깨"
+   ]
   },
   {
-   "food_name": "참외 화채",
-   "art": "pancake",
-   "category": "디저트",
-   "reason": "참외를 썰어 시원한 국물에 띄운 여름 디저트",
-   "cook_time_minutes": 10,
+   "food_name": "열무비빔국수",
+   "art": "noodle",
+   "image_url": null,
+   "category": "한식",
+   "reason": "열무김치를 넣어 아삭하게 비벼 먹는 국수",
+   "cook_time_minutes": 20,
    "difficulty": "쉬움",
-   "estimated_cost": 7200,
+   "estimated_cost": 3400,
    "tags": [
+    "면",
     "시원한음식",
     "여름메뉴",
-    "디저트"
+    "한식"
    ],
    "ingredients": [
-    "참외",
-    "우유",
-    "블루베리"
-   ],
-   "image_url": null
+    "열무",
+    "오이",
+    "계란",
+    "고춧가루"
+   ]
   }
  ],
  "categories": [
@@ -2436,23 +2397,22 @@
  ],
  "hot_weather_picks": [
   "콩국수",
-  "밀면",
   "물냉면",
-  "비빔국수",
-  "자루소바",
-  "메밀막국수",
-  "초계국수",
-  "냉우동",
-  "오이냉국",
-  "김치말이국수",
+  "밀면",
   "회냉면",
+  "비빔국수",
   "열무국수",
-  "토마토 냉파스타",
-  "수박화채",
-  "미숫가루 셰이크",
-  "메밀국수",
+  "김치말이국수",
+  "초계국수",
+  "메밀막국수",
+  "자루소바",
+  "냉우동",
+  "얼갈이배추국수",
+  "오이냉국",
   "가지냉국",
-  "수박 주스",
-  "참외 화채"
+  "미역냉국",
+  "물회",
+  "육회",
+  "열무비빔국수"
  ]
 }

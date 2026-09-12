@@ -46,6 +46,7 @@ import time
 from app.core.config import settings
 from app.integrations.ingredient_match import vocabulary
 from app.data import FOODS, HOT_WEATHER_PICKS, category_labels
+from app.integrations.portion import grams_for, portion_for
 
 # AI 응답을 기다리는 최대 시간(초).
 # 프론트의 axios timeout 이 30초라, 그보다 짧게 잡아야 우리 에러 메시지가 나간다.
@@ -1025,13 +1026,16 @@ def mock_build_recipe(food_name: str, context: dict) -> dict:
                 {"original": name, "substitute": replacement, "reason": reason}
             )
 
-        quantity, unit = make_quantity(name)
+        # 분량은 integrations/portion.py 의 표에서 가져온다.
+        # 전에는 이름에서 지어냈는데(make_quantity) 참깨 90g 처럼 말이 안 되는
+        # 값이 나왔고, 그 분량이 재료비 계산에 그대로 들어갔다.
+        quantity, unit = portion_for(name)
         ingredients.append(
             {
                 "name": name,
                 "quantity": quantity,
                 "unit": unit,
-                "grams": mock_grams(quantity, unit),
+                "grams": grams_for(name, quantity, unit),
             }
         )
 

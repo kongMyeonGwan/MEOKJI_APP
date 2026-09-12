@@ -77,6 +77,8 @@ def scale_offers(offers: list[dict], item: dict) -> dict:
         item.get("quantity"),
         item.get("unit"),
         offers[0].get("unit"),
+        # 세는 단위("1마리")는 품목마다 무게가 달라서 이름이 있어야 푼다
+        item.get("name") or "",
     )
     if ratio is None:
         return {"need_text": need_text}

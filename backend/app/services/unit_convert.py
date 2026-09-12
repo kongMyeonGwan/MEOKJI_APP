@@ -29,6 +29,8 @@ KAMIS 단위는 두 종류다 (90개 품목 기준).
 
 import re
 
+from app.integrations.portion import COUNT_GRAMS
+
 # 무게·부피 단위를 그램으로 바꾸는 배수.
 # 요리에서 물 1ml 는 1g 으로 봐도 무방하다.
 GRAM_PER_UNIT = {
@@ -112,15 +114,23 @@ def to_count(size: float, unit: str) -> tuple[str, float] | None:
     return name, size * per
 
 
-def needed_ratio(need_grams, need_quantity, need_unit, sale_unit: str) -> float | None:
+def needed_ratio(
+    need_grams, need_quantity, need_unit, sale_unit: str, name: str = ""
+) -> float | None:
     """판매 단위 하나를 1 로 볼 때, 필요한 양이 몇 배인지 돌려준다.
 
-        고춧가루 1큰술(7g) 이 필요하고 KAMIS 가 "1kg" 이면  ->  0.007
-        애호박 0.5개 가 필요하고 KAMIS 가 "1개" 이면        ->  0.5
-        계란 2개 가 필요하고 KAMIS 가 "30구" 이면           ->  0.0666
+        고춧가루 1큰술(15g) 이 필요하고 KAMIS 가 "1kg" 이면  ->  0.015
+        애호박 0.5개 가 필요하고 KAMIS 가 "1개" 이면         ->  0.5
+        계란 2개 가 필요하고 KAMIS 가 "30구" 이면            ->  0.0666
+        고등어 1마리 가 필요하고 KAMIS 가 "1마리" 이면        ->  1.0
 
     환산할 수 없으면 None. 화면은 그때 가격을 합계에서 빼고
     "환산 불가" 로 표시한다.
+
+    name 을 받는 이유
+    -----------------
+    세는 단위는 품목마다 무게가 다르다. "1마리" 가 고등어면 400g, 조기면
+    150g 이다. 이름을 알아야 그 표(portion.COUNT_GRAMS)를 볼 수 있다.
     """
     sale = parse_unit(sale_unit)
     if sale is None:
@@ -128,7 +138,7 @@ def needed_ratio(need_grams, need_quantity, need_unit, sale_unit: str) -> float 
 
     sale_size, sale_token = sale
 
-    # 1) 판매 단위가 무게·부피면 AI 가 준 grams 를 쓴다
+    # 1) 판매 단위가 무게·부피면 grams 로 나눈다
     sale_grams = to_grams(sale_size, sale_token)
     if sale_grams is not None:
         grams = positive_number(need_grams)
@@ -142,18 +152,27 @@ def needed_ratio(need_grams, need_quantity, need_unit, sale_unit: str) -> float 
         return None
 
     need = parse_unit(f"{need_quantity}{need_unit}")
-    if need is None:
+    need_count = to_count(*need) if need else None
+
+    # 같은 것을 세는 단위끼리만 맞춘다. "개" 를 "마리" 로 나누면 안 된다
+    if need_count is not None and need_count[0] == sale_count[0]:
+        return need_count[1] / sale_count[1]
+
+    # 3) 단위가 서로 다르면 무게로 돌아간다
+    #
+    # 레시피는 "고등어 120g" 인데 KAMIS 는 "1마리" 로 파는 경우다. 전에는
+    # 여기서 포기해서, 생선이 든 요리는 재료 넷 중 하나만 값이 붙고 합계가
+    # 100원이 됐다. 한 마리가 몇 그램인지 적어두면 g 쪽으로 맞출 수 있다.
+    per = COUNT_GRAMS.get(name)
+    if per is None:
         return None
 
-    need_count = to_count(need[0], need[1])
-    if need_count is None:
+    grams = positive_number(need_grams)
+    if grams is None:
         return None
 
-    # "개" 짜리를 "마리" 로 나누면 안 된다
-    if need_count[0] != sale_count[0]:
-        return None
-
-    return need_count[1] / sale_count[1]
+    # 판매 단위가 "10마리" 면 sale_count[1] 이 10 이다
+    return grams / (per * sale_count[1])
 
 
 def positive_number(value) -> float | None:
