@@ -119,26 +119,40 @@ export default function SettingsPage() {
       <section className="card settings">
         <h3 className="settings__title">내 데이터</h3>
 
+        {/* 찜은 서버(RECIPE_LIKES)에 회원별로 저장된다.
+            로그인하지 않았으면 보여줄 것도 지울 것도 없다 */}
         <div className="settings__row">
           <div>
-            <p className="settings__label">찜한 레시피 {count}건</p>
+            <p className="settings__label">
+              찜한 레시피 {isAuthenticated ? `${count}건` : ''}
+            </p>
             <p className="settings__desc muted">
-              이 브라우저에 저장돼요. 지우면 되돌릴 수 없습니다.
+              {isAuthenticated
+                ? '계정에 저장돼요. 지우면 되돌릴 수 없습니다.'
+                : '로그인하면 찜한 레시피를 기기와 상관없이 볼 수 있어요.'}
             </p>
           </div>
 
           <div className="settings__actions">
-            <Link to="/liked" className="btn btn--ghost btn--sm">
-              목록 보기
-            </Link>
-            <button
-              type="button"
-              className="btn btn--ghost btn--sm settings__danger"
-              onClick={clearLikes}
-              disabled={count === 0}
-            >
-              전체 삭제
-            </button>
+            {isAuthenticated ? (
+              <>
+                <Link to="/liked" className="btn btn--ghost btn--sm">
+                  목록 보기
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--sm settings__danger"
+                  onClick={clearLikes}
+                  disabled={count === 0}
+                >
+                  전체 삭제
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="btn btn--ghost btn--sm">
+                로그인
+              </Link>
+            )}
           </div>
         </div>
 

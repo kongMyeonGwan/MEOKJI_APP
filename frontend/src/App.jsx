@@ -44,8 +44,8 @@ import NotFoundPage from './pages/NotFoundPage'
  *   CatalogProvider  카테고리·게임 같은 고정 목록. 서버에서 한 번만 받아온다
  *   AuthProvider     로그인 상태
  *   ProfileProvider  요리 레벨·알림. useAuth를 쓰므로 반드시 Auth 안쪽이다
- *   LikesProvider    찜 목록. 지금은 브라우저에만 저장하지만 서버에 붙으면
- *                    로그인 사용자별로 불러와야 해서 Auth 안쪽에 둔다
+ *   LikesProvider    찜 목록. 서버(RECIPE_LIKES)에서 받아온다. useAuth 로 로그인
+ *                    상태를 보므로 반드시 Auth 안쪽이다
  *   AiLogProvider    AI 추천 기록. 브라우저에만 저장한다
  */
 export default function App() {
@@ -80,7 +80,6 @@ export default function App() {
                       <Route path="roulette" element={<RoulettePage />} />
 
                       {/* 커뮤니티 — 조회는 Guest 허용 */}
-                      <Route path="liked" element={<LikedPage />} />
                       <Route path="popular" element={<PopularPage />} />
                       <Route path="community" element={<CommunityPage />} />
                       <Route path="community/:postId" element={<PostDetailPage />} />
@@ -90,6 +89,9 @@ export default function App() {
 
                       {/* 로그인 필수 */}
                       <Route element={<ProtectedRoute />}>
+                        {/* 찜은 서버(RECIPE_LIKES)에 회원별로 저장된다.
+                            Guest 에게는 보여줄 것이 없으므로 목록도 로그인 필수다 */}
+                        <Route path="liked" element={<LikedPage />} />
                         <Route path="community/write" element={<PostWritePage />} />
                         <Route path="history" element={<HistoryPage />} />
                         <Route path="ai-history" element={<AiHistoryPage />} />

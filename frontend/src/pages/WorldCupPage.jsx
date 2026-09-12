@@ -7,7 +7,7 @@ import { getRecommendations } from '../api/recommendations'
 import { GAME_KEYS } from '../api/games'
 import { useGamePlayLog } from '../hooks/useGamePlayLog'
 import { useAiLog } from '../contexts/AiLogContext'
-import { useLikes } from '../contexts/LikesContext'
+import { useLikeButton } from '../hooks/useLikeButton'
 import { parseApiError } from '../utils/apiError'
 import { formatMinutes, formatPrice } from '../utils/format'
 import '../styles/pages/ListPage.css'
@@ -49,7 +49,9 @@ export default function WorldCupPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
 
-  const { has, toggle } = useLikes()
+  // 비로그인이면 하트를 눌렀을 때 로그인 화면으로 보낸다 (훅 안에서 처리).
+  // 우승자는 판이 끝나야 정해지므로 이름은 누를 때 넘긴다.
+  const { isLiked, onLike } = useLikeButton()
   const { add, markPicked } = useAiLog()
 
   /** 후보를 새로 받아와 대진표를 짠다. */
@@ -131,7 +133,7 @@ export default function WorldCupPage() {
   // ===== 우승 =====
   if (round.length === 1) {
     const champion = round[0]
-    const liked = has(champion.food_name)
+    const liked = isLiked(champion.food_name)
 
     return (
       <div className="list-page list-page--narrow">
@@ -165,7 +167,7 @@ export default function WorldCupPage() {
             <button
               type="button"
               className="btn btn--ghost"
-              onClick={() => toggle(champion.food_name)}
+              onClick={() => onLike(champion.food_name)}
               aria-pressed={liked}
             >
               {liked ? '♥ 찜 해제' : '♡ 찜하기'}

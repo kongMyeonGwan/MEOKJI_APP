@@ -27,6 +27,7 @@ from app.routers import (
     games,
     health,
     histories,
+    likes,
     notices,
     posts,
     recommendations,
@@ -84,6 +85,7 @@ app.include_router(recommendations.router)  # AI 추천 · 레시피 · 재료 �
 app.include_router(catalog.router)          # 카테고리 · 룰렛 · 게임 같은 고정 목록
 app.include_router(notices.router)          # 공지사항 (NOTICES 표)
 app.include_router(games.router)            # 미니게임 플레이 기록 (GAME_HISTORIES 표)
+app.include_router(likes.router)             # 찜한 레시피 (RECIPE_LIKES 표)
 
 
 @app.get("/", include_in_schema=False)

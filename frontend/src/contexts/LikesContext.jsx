@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { clearLikes, getLikes, toggleLike } from '../api/likes'
+import { useAuth } from './AuthContext'
 
 /**
  * 찜한 레시피 목록.
@@ -7,88 +9,124 @@ import { createContext, useContext, useEffect, useState } from 'react'
  * 화면마다 따로 들고 있으면 한 곳에서 찜했을 때 다른 곳이 안 바뀐다.
  * 그래서 여기 한 곳에 모아두고 필요한 화면이 꺼내 쓴다.
  *
- * 무엇을 저장하나
+ * 어디에 저장하나
  * ---------------
- * 음식 이름(food_name)만 저장한다. 추천 결과는 아직 DB 에 저장하지 않아서
- * 서버가 만들어준 id 가 없고, 화면들도 이미 이름으로 레시피를 연다(/recipe/김치찌개).
+ * 서버(RECIPE_LIKES 표)다. 전에는 localStorage 였는데 두 가지가 문제였다.
  *
- * 나중에 서버에 찜 테이블이 생기면 아래 toggle 안쪽만 API 호출로 바꾸면 된다.
- * 화면 코드는 하나도 안 고쳐도 된다 — 이게 Context 로 묶어둔 이유다.
+ *   기기를 바꾸면 안 따라온다
+ *   한 브라우저를 여러 사람이 쓰면 앞사람 찜이 보인다  <- 저장 키에 회원 구분이 없었다
+ *
+ * 로그인해야 찜할 수 있다
+ * ----------------------
+ * 비로그인 상태에서 하트를 누르면 화면이 로그인으로 보낸다(FoodCard 등).
+ * 그래서 '회원 없는 찜' 이라는 상태 자체가 없고, 합칠 것도 없다.
+ * 여기서는 로그인하지 않았으면 빈 목록을 들고 있으면 된다.
  *
  * 쓰는 법
  * -------
- *   const { names, count, has, toggle, clear } = useLikes()
+ *   const { names, count, has, toggle, clear, ready } = useLikes()
  */
-
-const STORAGE_KEY = 'meokji.likes'
 
 const LikesContext = createContext(null)
 
-/**
- * localStorage 에 저장해둔 찜 목록을 읽어온다.
- *
- * try/catch 로 감싼 이유: localStorage 에는 사용자가 직접 아무 값이나 넣을 수 있고,
- * 예전 버전이 다른 모양으로 저장해뒀을 수도 있다.
- * 그때 JSON.parse 가 에러를 내면서 앱 전체가 하얀 화면이 되면 안 된다.
- */
-function readSavedNames() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-
-    if (!saved) {
-      return []
-    }
-
-    const parsed = JSON.parse(saved)
-
-    // 배열이 아니면 우리가 저장한 값이 아니다
-    if (!Array.isArray(parsed)) {
-      return []
-    }
-
-    // 문자열만 남긴다 (숫자나 객체가 섞여 있으면 화면이 깨진다)
-    return parsed.filter((item) => typeof item === 'string')
-  } catch {
-    // 형식이 깨진 값. 조용히 빈 목록으로 시작한다
-    return []
-  }
-}
-
 export function LikesProvider({ children }) {
-  // useState 에 함수를 넘기면 "첫 렌더에서 한 번만 실행" 이라는 뜻이다.
-  // readSavedNames() 처럼 괄호를 붙이면 렌더할 때마다 localStorage 를 읽는다.
-  const [names, setNames] = useState(readSavedNames)
+  const { isAuthenticated, user } = useAuth()
 
-  // names 가 바뀔 때마다 localStorage 에 다시 저장한다.
-  // 두 번째 인자 [names] 가 "names 가 바뀌면 실행" 이라는 뜻이다.
+  const [names, setNames] = useState([])
+
+  // 서버에서 받아오기 전인지. 목록이 비었을 때 "없음" 과 "아직 안 옴" 을 가른다.
+  // 이게 없으면 /liked 화면이 열리자마자 "찜한 레시피가 없어요" 를 잠깐 보여준다.
+  const [ready, setReady] = useState(false)
+
+  // 로그인 상태가 바뀔 때마다 다시 받아온다.
+  //
+  // user?.id 를 의존성에 넣는 이유
+  // -----------------------------
+  // 로그아웃했다가 다른 계정으로 들어오면 isAuthenticated 는 true -> false ->
+  // true 로 돌아오지만, 중간을 놓치면 앞사람 목록이 그대로 남는다.
+  // id 가 바뀌는 것을 보면 계정이 바뀐 것을 확실히 잡는다.
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(names))
+    let alive = true
+
+    if (!isAuthenticated) {
+      // 로그아웃 상태에서는 들고 있을 것이 없다. 앞사람 목록도 여기서 지워진다.
+      setNames([])
+      setReady(true)
+      return
+    }
+
+    setReady(false)
+
+    getLikes()
+      .then((data) => {
+        if (alive) setNames(data.names)
+      })
+      .catch(() => {
+        // 못 받아왔다고 화면을 막지 않는다. 하트가 빈 채로 보일 뿐이고,
+        // 누르면 그때 서버가 진짜 상태를 알려준다.
+        if (alive) setNames([])
+      })
+      .finally(() => {
+        if (alive) setReady(true)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [isAuthenticated, user?.id])
+
+  /**
+   * 하트를 눌렀을 때. 이미 찜했으면 빼고, 아니면 넣는다.
+   *
+   * 먼저 화면을 바꾸고 서버에 보낸다(낙관적 반영). 하트는 누르자마자 칠해져야
+   * 누른 것 같다. 실패하면 되돌린다.
+   *
+   * 로그인 확인은 부르는 쪽(FoodCard 등)이 한다. 여기서 하면 Context 가
+   * 화면 이동까지 알아야 하는데, 그건 이 파일이 할 일이 아니다.
+   */
+  const toggle = useCallback(async (name) => {
+    const before = names
+    const liked = before.includes(name)
+
+    // 방금 찜한 것이 목록 맨 앞에 오도록 앞쪽에 넣는다 (서버 정렬과 같다)
+    setNames(liked ? before.filter((item) => item !== name) : [name, ...before])
+
+    try {
+      const result = await toggleLike(name)
+
+      // 서버가 최종 상태를 알려준다. 탭 두 개에서 같은 하트를 눌렀을 때처럼
+      // 화면이 먼저 바꾼 값과 다를 수 있어서, 서버 쪽을 따른다.
+      setNames((current) => {
+        const has = current.includes(name)
+        if (result.liked === has) return current
+        return result.liked
+          ? [name, ...current.filter((item) => item !== name)]
+          : current.filter((item) => item !== name)
+      })
+    } catch {
+      setNames(before)
+    }
   }, [names])
 
-  /** 이미 찜했으면 빼고, 안 찜했으면 넣는다. */
-  function toggle(name) {
-    setNames((prev) => {
-      if (prev.includes(name)) {
-        return prev.filter((item) => item !== name)
-      }
-      // 방금 찜한 것이 목록 맨 앞에 오도록 앞쪽에 넣는다
-      return [name, ...prev]
-    })
-  }
-
   /** 이 음식을 찜해뒀는지 확인한다. */
-  function has(name) {
-    return names.includes(name)
-  }
+  const has = useCallback((name) => names.includes(name), [names])
 
   /** 찜을 전부 비운다. (설정 화면에서 쓴다) */
-  function clear() {
+  const clear = useCallback(async () => {
+    const before = names
     setNames([])
-  }
+
+    try {
+      await clearLikes()
+    } catch {
+      setNames(before)
+    }
+  }, [names])
 
   const value = {
     names,
     count: names.length,
+    ready,
     has,
     toggle,
     clear,

@@ -77,6 +77,27 @@ def count_reset_codes(email: str) -> int:
         ).scalar()
 
 
+def like_rows(email: str) -> list[tuple]:
+    """그 계정의 찜 행을 (음식이름, use_yn) 으로 그대로 돌려준다.
+
+    개수만 세면 "해제했다" 와 "지우고 다시 만들었다" 가 구분되지 않는다.
+    둘 다 살아있는 행 수가 같기 때문이다. use_yn 까지 봐야 잡힌다.
+    """
+    from sqlalchemy import text
+
+    from app.database.database import engine
+
+    with engine.connect() as connection:
+        return connection.execute(
+            text(
+                "SELECT food_name, use_yn FROM recipe_likes WHERE user_id = "
+                "(SELECT id FROM users WHERE email = :email AND use_yn = 'Y') "
+                "ORDER BY id"
+            ),
+            {"email": email},
+        ).all()
+
+
 def signup_and_login(client, email: str, nickname: str) -> str:
     """가입하고 바로 로그인해서 토큰을 돌려준다."""
     response = client.post(
@@ -447,6 +468,95 @@ def test_아직_공유_안_한_기록만_고를_수_있다(client):
 
 
 # =========================================================
+# 찜한 레시피 (RECIPE_LIKES 표)
+#
+# 전에는 브라우저(localStorage)에만 있었다. 기기를 바꾸면 안 따라오고,
+# 한 브라우저를 여러 사람이 쓰면 앞사람 찜이 보였다 — 저장 키에 회원 구분이
+# 없었기 때문이다. 이제 로그인한 회원만, 서버에 저장한다.
+# =========================================================
+
+
+def test_Guest는_찜할_수_없다(client):
+    """화면은 하트를 누르면 로그인으로 보내지만, 서버도 막아야 한다.
+
+    버튼을 숨기는 것은 잠그는 것이 아니다.
+    """
+    assert client.get("/api/likes").status_code == 401
+    assert client.put("/api/likes", json={"food_name": "김치찌개"}).status_code == 401
+    assert client.delete("/api/likes").status_code == 401
+
+
+def test_찜하면_목록에_들어간다(client):
+    response = client.put(
+        "/api/likes", headers=STATE["owner"], json={"food_name": "김치찌개"}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["liked"] is True
+    assert body["count"] == 1
+
+    assert client.get("/api/likes", headers=STATE["owner"]).json()["names"] == ["김치찌개"]
+
+
+def test_최근_찜한_것이_앞에_온다(client):
+    """화면이 목록 순서를 그대로 그린다. 방금 찜한 것이 위에 있어야 한다."""
+    client.put("/api/likes", headers=STATE["owner"], json={"food_name": "갈비탕"})
+
+    names = client.get("/api/likes", headers=STATE["owner"]).json()["names"]
+    assert names[0] == "갈비탕"
+
+
+def test_같은_것을_또_누르면_해제된다(client):
+    response = client.put(
+        "/api/likes", headers=STATE["owner"], json={"food_name": "갈비탕"}
+    )
+
+    assert response.json()["liked"] is False
+    assert response.json()["count"] == 1
+
+    # 행을 지우지 않고 use_yn 만 뒤집어야 한다.
+    # 지웠다 다시 만들면 created_at 이 바뀌어 "언제 찜했는지" 가 사라진다.
+    assert ("갈비탕", "N") in like_rows(OWNER_EMAIL)
+
+
+def test_해제한_것을_다시_찜할_수_있다(client):
+    """행을 지우지 않고 use_yn 만 뒤집는다.
+
+    평범한 UNIQUE 였다면 'N' 으로 남은 행이 자리를 차지해 ORA-00001 이 난다.
+    uq_recipe_likes 가 use_yn='Y' 인 행만 보기 때문에 통과한다.
+    """
+    response = client.put(
+        "/api/likes", headers=STATE["owner"], json={"food_name": "갈비탕"}
+    )
+
+    assert response.json()["liked"] is True
+    assert response.json()["count"] == 2
+
+    # 껐다 켜도 행이 늘지 않는다 — 있던 행을 되살린 것이다
+    assert like_rows(OWNER_EMAIL) == [("김치찌개", "Y"), ("갈비탕", "Y")]
+
+
+def test_빈_음식_이름은_거른다(client):
+    response = client.put(
+        "/api/likes", headers=STATE["owner"], json={"food_name": "   "}
+    )
+
+    assert response.status_code == 422
+
+
+def test_찜을_전부_비운다(client):
+    response = client.delete("/api/likes", headers=STATE["owner"])
+
+    assert response.status_code == 200
+    assert response.json() == {"names": [], "count": 0}
+
+    # 행은 남아 있어야 한다. 실수로 눌렀을 때 DB 에서 되돌릴 수 있어야 하고,
+    # 되살리면 찜한 시각도 그대로다.
+    assert like_rows(OWNER_EMAIL) == [("김치찌개", "N"), ("갈비탕", "N")]
+
+
+# =========================================================
 # 게시판
 # =========================================================
 
@@ -745,10 +855,26 @@ def test_인기_레시피는_기간_안의_좋아요만_센다(client):
 # =========================================================
 
 
-def test_남이_댓글과_좋아요를_달면_알림이_생긴다(client):
+def test_남의_찜은_안_보인다(client):
+    """찜은 회원별이다. 한 브라우저를 여러 사람이 쓰던 문제를 막는 지점이다.
+
+    이 테스트는 두 번째 사람이 필요해서 알림 절에 둔다 — STATE["guest"] 가
+    아래 테스트에서 만들어지므로 그보다 앞에 두면 KeyError 가 난다.
+    """
     guest_token = signup_and_login(client, GUEST_EMAIL, "테스트구경꾼")
     STATE["guest"] = bearer(guest_token)
 
+    client.put("/api/likes", headers=STATE["owner"], json={"food_name": "된장찌개"})
+
+    assert client.get("/api/likes", headers=STATE["owner"]).json()["names"] == ["된장찌개"]
+    assert client.get("/api/likes", headers=STATE["guest"]).json()["names"] == []
+
+    # 뒷정리 — 다음 테스트가 깨끗한 상태에서 시작하게 한다
+    client.delete("/api/likes", headers=STATE["owner"])
+
+
+def test_남이_댓글과_좋아요를_달면_알림이_생긴다(client):
+    # 게스트 계정은 위 찜 테스트가 이미 만들었다
     post_id = STATE["post_id"]
     client.put(f"/api/posts/{post_id}/like", headers=STATE["guest"])
     client.post(

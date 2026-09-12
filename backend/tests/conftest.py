@@ -94,6 +94,7 @@ CLEANUP_SQL = (
     # fk_notices_user 에는 ON DELETE CASCADE 가 없다 — 운영자 계정이 사라진다고
     # 공지가 같이 사라지면 안 되기 때문이다(models/notice.py 참고).
     "DELETE FROM notices WHERE user_id = :uid",
+    "DELETE FROM recipe_likes WHERE user_id = :uid",
     "DELETE FROM user_bans WHERE user_id = :uid",
     "DELETE FROM verification_codes WHERE user_id = :uid",
     "DELETE FROM users WHERE id = :uid",

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import Icon from '../common/Icon'
 import FoodThumb from '../common/FoodThumb'
-import { useLikes } from '../../contexts/LikesContext'
+import { useLikeButton } from '../../hooks/useLikeButton'
 import { formatMinutes, formatPrice } from '../../utils/format'
 import '../../styles/components/recommendation/FoodCard.css'
 
@@ -14,8 +14,9 @@ import '../../styles/components/recommendation/FoodCard.css'
  */
 export default function FoodCard({ food }) {
   const to = `/recipe/${encodeURIComponent(food.food_name)}`
-  const { has, toggle } = useLikes()
-  const liked = has(food.food_name)
+  // 비로그인이면 하트를 눌렀을 때 로그인 화면으로 보낸다 (훅 안에서 처리)
+  const { isLiked, onLike } = useLikeButton()
+  const liked = isLiked(food.food_name)
 
   return (
     <article className="food-card">
@@ -27,7 +28,7 @@ export default function FoodCard({ food }) {
         <button
           type="button"
           className={`food-card__like${liked ? ' is-on' : ''}`}
-          onClick={() => toggle(food.food_name)}
+          onClick={() => onLike(food.food_name)}
           aria-pressed={liked}
           aria-label={liked ? `${food.food_name} 찜 해제` : `${food.food_name} 찜하기`}
         >
