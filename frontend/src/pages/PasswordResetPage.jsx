@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { changePassword, sendResetCode, verifyResetCode } from '../api/auth'
 import { parseApiError } from '../utils/apiError'
@@ -30,7 +30,22 @@ export default function PasswordResetPage() {
   const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  // 인증번호를 다시 받기까지 남은 초. 0이면 지금 받을 수 있다.
+  //
+  // 서버가 Retry-After 헤더로 알려준다. 문구에도 초가 들어 있지만, 문구는
+  // "안 된다고 말하는" 것이고 이 값은 "버튼을 못 누르게 하는" 것이다.
+  // 누를 수 있게 두면 사용자는 10초마다 눌러보게 된다.
+  const [cooldown, setCooldown] = useState(0)
+
   const navigate = useNavigate()
+
+  // 1초마다 줄인다. 0이 되면 타이머를 걸지 않는다.
+  useEffect(() => {
+    if (cooldown <= 0) return
+
+    const timer = setTimeout(() => setCooldown((left) => left - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [cooldown])
 
   /** 요청을 보내기 전에 이전 에러 메시지를 지우고 버튼을 잠근다. */
   function startSubmit() {
@@ -44,6 +59,9 @@ export default function PasswordResetPage() {
     const parsed = parseApiError(err)
     setFieldErrors(parsed.fieldErrors)
     setMessage(parsed.message)
+
+    // 429 면 남은 시간만큼 버튼을 잠근다
+    if (err?.retryAfter) setCooldown(err.retryAfter)
   }
 
   // --- 1단계. 이메일로 인증번호 받기 ---
@@ -163,8 +181,17 @@ export default function PasswordResetPage() {
             <ErrorMessage message={fieldErrors.email} />
           </label>
           <ErrorMessage message={message} />
-          <button type="submit" disabled={submitting} className="reset__submit">
-            {submitting ? '보내는 중...' : '인증번호 받기'}
+          {/* 쿨다운 중에는 못 누른다. 문구로 말리는 것보다 확실하다 */}
+          <button
+            type="submit"
+            disabled={submitting || cooldown > 0}
+            className="reset__submit"
+          >
+            {submitting
+              ? '보내는 중...'
+              : cooldown > 0
+                ? `${cooldown}초 후에 다시 받기`
+                : '인증번호 받기'}
           </button>
         </form>
       )}

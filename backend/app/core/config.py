@@ -59,6 +59,16 @@ class Settings(BaseSettings):
     OTP_EXPIRE_MINUTES: int = 5
     OTP_MAX_ATTEMPT: int = 5
 
+    # 인증번호를 다시 보내기까지 기다려야 하는 시간(초).
+    #
+    # 없으면 누르는 만큼 메일이 나간다. 남의 주소를 넣고 연타하면 그 사람
+    # 받은편지함이 채워지고, 우리 쪽에서는 발송 한도가 깎인다
+    # (개인 Gmail 은 하루 500통이다).
+    #
+    # 만료 시간(5분)보다 짧아야 한다. 길면 코드가 만료된 뒤에도 새로 못 받아
+    # 아무것도 할 수 없는 구간이 생긴다.
+    OTP_RESEND_COOLDOWN_SECONDS: int = 60
+
     # ===== CORS =====
     CORS_ORIGINS: str = "http://localhost:5173"
 

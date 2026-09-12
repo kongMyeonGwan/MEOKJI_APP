@@ -82,10 +82,16 @@ function onFailure(error) {
       message = detail
     }
 
+    // 429 에 붙는 표준 헤더. 몇 초 뒤에 다시 되는지 서버가 알려준다.
+    // 화면이 문구에서 숫자를 긁어내지 않고 이 값으로 버튼을 잠글 수 있다.
+    // (axios 는 헤더 이름을 소문자로 준다)
+    const retryAfter = Number(error.response.headers?.['retry-after'])
+
     return Promise.reject({
       status,
       message,
       raw: error.response.data,
+      retryAfter: Number.isFinite(retryAfter) ? retryAfter : undefined,
     })
   }
 

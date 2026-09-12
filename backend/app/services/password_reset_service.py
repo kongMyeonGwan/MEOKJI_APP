@@ -77,6 +77,51 @@ def find_latest_code(db: Session, user_id: int) -> VerificationCode | None:
     ).scalar_one_or_none()
 
 
+def raise_if_too_soon(db: Session, user_id: int) -> None:
+    """방금 보냈으면 429 로 끊는다.
+
+    왜 필요한가
+    -----------
+    없으면 버튼을 누르는 만큼 메일이 나간다. 남의 주소를 넣고 연타하면 그 사람
+    받은편지함이 채워지고, 우리 쪽에서는 발송 한도가 깎인다 (개인 Gmail 은
+    하루 500통이다). 요청 한 번이 바깥으로 메일 한 통을 내보내는 엔드포인트는
+    반드시 간격이 있어야 한다.
+
+    왜 따로 세는 표를 만들지 않았나
+    -------------------------------
+    verification_codes.created_at 이 곧 마지막 발송 시각이다. send 가 옛 코드를
+    지우고 하나만 새로 넣으므로, 가장 최근 행의 created_at 이 그 값이다.
+
+    메모리에 담아두는 방법도 있지만 서버를 다시 켜면 사라진다. 재시작만 하면
+    제한이 풀리는 장치는 없는 것과 비슷하다.
+
+    남은 시간을 알려주는 이유
+    -------------------------
+    "잠시 후 다시 시도하세요" 는 얼마나 기다려야 하는지 알려주지 않아서,
+    사용자가 10초마다 눌러보게 만든다. 막으려던 것을 오히려 부른다.
+    """
+    latest = find_latest_code(db, user_id)
+    if latest is None:
+        return
+
+    cooldown = timedelta(seconds=settings.OTP_RESEND_COOLDOWN_SECONDS)
+    ready_at = latest.created_at + cooldown
+    remain = ready_at - datetime.now(timezone.utc)
+
+    if remain <= timedelta(0):
+        return
+
+    seconds = max(1, int(remain.total_seconds()))
+
+    raise HTTPException(
+        status.HTTP_429_TOO_MANY_REQUESTS,
+        f"인증번호를 방금 보냈습니다. {seconds}초 후에 다시 요청해주세요.",
+        # 429 에 붙이게 되어 있는 표준 헤더다. 화면이 문구를 파싱하지 않고
+        # 이 값으로 남은 시간을 셀 수 있다.
+        headers={"Retry-After": str(seconds)},
+    )
+
+
 def send_reset_code(db: Session, email: str) -> None:
     """인증번호를 발급하고 이메일로 보낸다.
 
@@ -90,6 +135,8 @@ def send_reset_code(db: Session, email: str) -> None:
     user = find_active_user(db, email)
     if user is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_REGISTERED)
+
+    raise_if_too_soon(db, user.id)
 
     # 이전에 발급한 코드는 전부 버린다.
     # 남겨두면 옛날 코드로도 인증이 되어 유효 코드가 여러 개 살아있게 된다.

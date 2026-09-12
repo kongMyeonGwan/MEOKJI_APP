@@ -17,6 +17,7 @@ import base64
 
 import pytest
 
+from app.core.config import settings
 from tests.conftest import TEST_EMAILS, TEST_PASSWORD, database_is_up
 
 # DB 가 없으면 이 파일의 모든 테스트를 건너뛴다
@@ -230,10 +231,50 @@ def test_가입된_이메일에는_인증번호를_보낸다(client):
     assert count_reset_codes(OWNER_EMAIL) == 1
 
 
-def test_인증번호를_다시_받으면_옛_코드는_버려진다(client):
-    """남겨두면 옛 코드로도 인증이 되어 유효 코드가 여러 개 살아있게 된다."""
-    client.post("/api/auth/password-reset/send", json={"email": OWNER_EMAIL})
+def test_연달아_요청하면_막힌다(client):
+    """요청 한 번이 바깥으로 메일 한 통을 내보내는 엔드포인트다.
 
+    간격이 없으면 남의 주소를 넣고 연타해 그 사람 받은편지함을 채울 수 있고,
+    우리 쪽 발송 한도도 깎인다(개인 Gmail 은 하루 500통).
+    """
+    response = client.post(
+        "/api/auth/password-reset/send", json={"email": OWNER_EMAIL}
+    )
+
+    assert response.status_code == 429
+
+    # 얼마나 기다려야 하는지 알려줘야 한다. 안 알려주면 10초마다 눌러보게 되어
+    # 막으려던 것을 오히려 부른다.
+    assert "초 후에" in response.json()["detail"]
+
+    # 429 에 붙이게 되어 있는 표준 헤더. 화면이 문구를 파싱하지 않아도 된다.
+    retry_after = int(response.headers["retry-after"])
+    assert 0 < retry_after <= settings.OTP_RESEND_COOLDOWN_SECONDS
+
+
+def test_막혔을_때는_코드가_새로_발급되지_않는다(client):
+    """429 를 내면서 옛 코드를 지워버리면, 메일은 안 왔는데 받아둔 코드도
+    못 쓰는 상태가 된다. 429 는 아무것도 바꾸지 않아야 한다."""
+    assert count_reset_codes(OWNER_EMAIL) == 1
+
+
+def test_간격이_지나면_다시_받을_수_있다(client):
+    """쿨다운을 잠깐 0 으로 낮춰 시간이 흐른 상황을 만든다.
+
+    실제로 60초를 기다리면 테스트 한 건이 1분을 잡아먹는다.
+    """
+    original = settings.OTP_RESEND_COOLDOWN_SECONDS
+    settings.OTP_RESEND_COOLDOWN_SECONDS = 0
+    try:
+        response = client.post(
+            "/api/auth/password-reset/send", json={"email": OWNER_EMAIL}
+        )
+        assert response.status_code == 200
+    finally:
+        settings.OTP_RESEND_COOLDOWN_SECONDS = original
+
+    # 다시 받아도 살아있는 코드는 하나다.
+    # 남겨두면 옛 코드로도 인증이 되어 유효 코드가 여러 개 살아있게 된다.
     assert count_reset_codes(OWNER_EMAIL) == 1
 
 

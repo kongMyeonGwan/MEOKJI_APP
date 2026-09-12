@@ -191,7 +191,7 @@ MEOKJI_APP/
 | auth | `POST /api/auth/register` | | 회원가입 (성별·주소 선택) |
 | | `POST /api/auth/login` | | Access Token 발급 |
 | | `GET /api/auth/me` | ● | 토큰 유효성 확인용 (가볍다) |
-| | `POST /api/auth/password-reset/{send,verify,change}` | | 이메일 OTP 재설정 (없는 이메일은 404) |
+| | `POST /api/auth/password-reset/{send,verify,change}` | | 이메일 OTP 재설정 (없는 이메일 404 · 재발송 60초 제한) |
 | users | `GET /api/users/me` | ● | 내 정보 + 요리 레벨 |
 | | `PATCH /api/users/me` | ● | 닉네임 · 성별 · 주소 수정 |
 | | `POST /api/users/me/password` | ● | 비밀번호 변경 |
@@ -265,7 +265,7 @@ UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지
 cd backend
 .venv\Scripts\activate
 
-pytest                      # 전부 (213건)
+pytest                      # 전부 (216건)
 pytest tests/test_logic.py  # DB 없이 되는 것만 (127건)
 ```
 
