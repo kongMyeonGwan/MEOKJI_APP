@@ -26,16 +26,25 @@ import '../../styles/components/recommendation/WeatherPick.css'
  * 날씨와 추천을 따로 부르면 화면이 두 번 나뉘어 뜨고, 서버와 화면이
  * 서로 다른 날씨를 보게 될 수도 있다.
  *
- * 버튼이 두 종류인데 하는 일이 다르다
- * -----------------------------------
- *   넘기기 (‹ › · 점)     받아온 5개 안에서 이동 (요청 없음)
- *   다른 메뉴 추천 (우상단) 서버에 새 후보 5개를 다시 요청
+ * 5개가 쉬지 않고 흐른다
+ * ---------------------
+ * 전에는 5초마다 한 장씩 뛰었다. 뛰는 순간에만 움직임이 보여서, 그 사이에는
+ * 멈춘 화면처럼 보였다. 지금은 CSS 애니메이션으로 계속 천천히 흐른다.
  *
- * 한 버튼이 둘 다 하면 "다음 거"인지 "새로 뽑기"인지 알 수 없다.
- * 자리도 갈라놨다. 넘기기는 내용 아래, 새로 뽑기는 카드 모서리다.
+ * 끊기지 않게 하려고 같은 5개를 한 벌 더 그린다. 줄 전체를 왼쪽으로 정확히
+ * 절반(-50%) 옮기면 두 번째 벌의 첫 장이 첫 번째 벌의 첫 장 자리에 딱 온다.
+ * 그 순간 처음으로 되돌려도 눈에는 이어져 보인다.
  *
- * 5개를 한꺼번에 늘어놓지 않고 하나씩 보여주는 이유:
- * 여러 개를 나란히 깔면 "골라보세요"가 되어버려서 정해줬다는 인상이 사라진다.
+ * 마우스를 올리면 멈춘다. 흐르는 것을 누르려다 놓치면 화가 난다.
+ *
+ * 5개를 가로로 늘어놓는다
+ * ----------------------
+ * 처음에는 하나씩만 보여줬다. "정해줬다" 는 인상을 지키려던 것인데, 넓은
+ * 화면에서 오른쪽이 크게 비어 보였다. 그래서 가로로 깔고 스크롤한다.
+ *
+ * 대신 첫 장이 카드 폭을 거의 다 쓰도록 잡았다. 둘째 장이 오른쪽 끝에
+ * 살짝 걸쳐 보이면 "옆에 더 있다" 는 것만 알려주고, 여전히 눈에 들어오는
+ * 것은 하나다. scroll-snap 이 항상 한 장에 맞춰 세운다.
  */
 
 /** 날씨 코드별 배경 CSS 클래스. condition_text(한글)가 아니라 코드로 나눈다 */
@@ -58,20 +67,6 @@ const PAGE_SIZE = 5
 
 /** 위치 권한 응답을 기다리는 시간(밀리초). 넘으면 좌표 없이 요청한다 */
 const GEO_TIMEOUT = 5000
-
-/**
- * 자동으로 다음 후보로 넘어가는 간격 (밀리초).
- *
- * 3초면 설명을 다 읽기 전에 넘어가고, 10초면 넘어가는 줄도 모른다.
- * 카드에 마우스를 올리거나 안쪽 버튼에 포커스가 있으면 멈춘다 —
- * 읽고 있거나 뭔가 고르는 중이라는 뜻이기 때문이다.
- */
-const AUTO_MS = 5000
-
-/** 사용자가 "화면 움직임 줄이기"를 켜뒀는지 확인한다 */
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
 
 /**
  * 브라우저에서 현재 좌표를 받아온다. 실패하면 null.
@@ -103,13 +98,10 @@ export default function WeatherPick() {
   const [weather, setWeather] = useState(null)
   const [picks, setPicks] = useState([])
 
-  // 지금 보여주는 후보가 picks 배열의 몇 번째인가
-  const [index, setIndex] = useState(0)
-
   // 새 후보를 받아오는 중이면 버튼을 잠근다
   const [loading, setLoading] = useState(true)
 
-  // 자동 넘김을 잠시 멈춘 상태 (마우스를 올렸거나 버튼에 포커스가 있을 때)
+  // 흐름을 잠시 멈춘 상태 (마우스를 올렸거나 카드 안에 포커스가 있을 때)
   const [paused, setPaused] = useState(false)
 
   const { add } = useAiLog()
@@ -147,8 +139,6 @@ export default function WeatherPick() {
 
         setWeather(data.weather)
         setPicks(data.items)
-        setIndex(0)
-
         const names = []
         for (const item of data.items) {
           names.push(item.food_name)
@@ -182,56 +172,13 @@ export default function WeatherPick() {
     // 실행되어야 한다. load 를 넣으면 렌더할 때마다 다시 요청이 나간다.
   }, [])
 
-  // --- 자동으로 다음 후보 보여주기 ---
-  //
-  // setInterval 이 아니라 setTimeout 을 index 에 걸어둔다.
-  // 손으로 넘기면 index 가 바뀌면서 이 effect 가 다시 실행되고,
-  // 타이머도 처음부터 다시 시작한다.
-  // 그래서 방금 손으로 넘긴 화면이 1초 만에 또 넘어가는 일이 없다.
-  useEffect(() => {
-    if (paused) return
-    if (picks.length < 2) return
-
-    // 움직임을 줄여달라고 설정한 사용자에게는 자동으로 바꾸지 않는다.
-    // 어지럼증이나 주의력 문제로 켜두는 설정이라 무시하면 안 된다.
-    if (prefersReducedMotion()) return
-
-    const timer = setTimeout(() => {
-      // % picks.length 로 나눈 나머지를 쓰면 마지막 다음에 0번으로 돌아온다
-      setIndex((prev) => (prev + 1) % picks.length)
-    }, AUTO_MS)
-
-    // effect 가 다시 실행되기 전이나 화면을 떠날 때 타이머를 정리한다.
-    // 안 하면 타이머가 계속 쌓여서 점점 빨리 넘어간다.
-    return () => clearTimeout(timer)
-  }, [index, paused, picks.length])
-
-  const pick = picks[index]
-
   // 데이터가 없을 때는 카드가 깨지느니 통째로 안 보이는 편이 낫다
-  if (!weather || !pick) {
+  if (!weather || picks.length === 0) {
     return null
   }
 
   const emoji = CONDITION_EMOJI[weather.condition] ?? '🌤️'
   const backgroundClass = CONDITION_CLASS[weather.condition] ?? ''
-  const recipeHref = `/recipe/${encodeURIComponent(pick.food_name)}`
-
-  /** 이전(-1) 또는 다음(+1) 후보로 넘어간다 */
-  function move(step) {
-    setIndex((prev) => {
-      // 0번에서 이전으로 가면 마지막으로 가야 하는데,
-      // -1 % 5 는 -1 이라서 그냥 나머지만 쓰면 안 된다.
-      // picks.length 를 한 번 더해주면 항상 0 이상이 된다.
-      return (prev + step + picks.length) % picks.length
-    })
-  }
-
-  // 가격은 바로 위 줄에 원 단위로 적혀 있어서,
-  // 해시태그에는 "7천원대" 같은 대략의 구간만 넣는다.
-  const band = priceBand(pick.estimated_cost)
-  const tags = pick.tags ?? []
-  const allTags = band ? [...tags, band] : tags
 
   return (
     <section
@@ -288,87 +235,68 @@ export default function WeatherPick() {
       </div>
 
       {/* ===== 오른쪽 : 답 =====
-          key 를 걸어두면 후보가 바뀔 때마다 리액트가 이 부분을 새로 그린다.
-          그래서 살짝 떠오르는 CSS 효과가 다시 실행되고, "넘어갔다"가 눈에 보인다 */}
-      <div className="wpick__pick" key={pick.food_name}>
-        <Link to={recipeHref} className="wpick__thumb" tabIndex={-1} aria-hidden="true">
-          <FoodThumb item={pick} size="lg" />
-        </Link>
+          같은 5개를 한 벌 더 그린다. 줄 전체를 -50% 옮기면 두 번째 벌의
+          첫 장이 첫 번째 벌의 첫 장 자리에 정확히 온다. 그 순간 처음으로
+          되돌려도 눈에는 끊김 없이 이어진다.
+          두 번째 벌은 화면낭독기와 탭 이동에서 건너뛴다 — 같은 내용이 두 번
+          읽히면 메뉴가 열 개인 줄 안다 */}
+      <div className={`wpick__viewport${paused ? ' is-paused' : ''}`}>
+        <ul className="wpick__track">
+          {[...picks, ...picks].map((food, i) => {
+            const copy = i >= picks.length
+            const href = `/recipe/${encodeURIComponent(food.food_name)}`
+            const priceTag = priceBand(food.estimated_cost)
+            const cardTags = priceTag
+              ? [...(food.tags ?? []), priceTag]
+              : food.tags ?? []
 
-        <div className="wpick__body">
-          <span className="wpick__badge">AI가 추천했어요! ✨</span>
+            return (
+              <li
+                className="wpick__pick"
+                key={`${food.food_name}-${i}`}
+                aria-hidden={copy}
+                inert={copy ? '' : undefined}
+              >
+                <Link to={href} className="wpick__thumb" tabIndex={-1} aria-hidden="true">
+                  <FoodThumb item={food} size="lg" />
+                </Link>
 
-          <p className="wpick__lead">{weather.pick_lead}</p>
-          <h1 className="wpick__name">{pick.food_name}</h1>
+                <div className="wpick__body">
+                  <span className="wpick__badge">AI가 추천했어요! ✨</span>
 
-          <p className="wpick__meta-line">
-            예상 비용 <span className="price">{formatPrice(pick.estimated_cost)}</span>
-            <span className="wpick__dot" aria-hidden="true" />
-            <Icon name="clock" size={15} className="wpick__meta-icon" />
-            {formatMinutes(pick.cook_time_minutes)}
-            <span className="wpick__dot" aria-hidden="true" />
-            난이도 {pick.difficulty}
-          </p>
+                  <p className="wpick__lead">{weather.pick_lead}</p>
+                  <h1 className="wpick__name">{food.food_name}</h1>
 
-          {/* 왜 이 메뉴인지 한 줄. AI가 만들어준 문장이다 */}
-          {pick.reason && <p className="muted wpick__reason">{pick.reason}</p>}
+                  <p className="wpick__meta-line">
+                    예상 비용 <span className="price">{formatPrice(food.estimated_cost)}</span>
+                    <span className="wpick__dot" aria-hidden="true" />
+                    <Icon name="clock" size={15} className="wpick__meta-icon" />
+                    {formatMinutes(food.cook_time_minutes)}
+                    <span className="wpick__dot" aria-hidden="true" />
+                    난이도 {food.difficulty}
+                  </p>
 
-          <div className="wpick__actions">
-            <Link to={recipeHref} className="btn">
-              레시피 보기
-            </Link>
-          </div>
+                  {/* 왜 이 메뉴인지 한 줄 */}
+                  {food.reason && <p className="muted wpick__reason">{food.reason}</p>}
 
-          {allTags.length > 0 && (
-            <ul className="wpick__tags">
-              {allTags.map((tag) => (
-                <li key={tag}>#{tag}</li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+                  <div className="wpick__actions">
+                    <Link to={href} className="btn">
+                      레시피 보기
+                    </Link>
+                  </div>
 
-      {/* ===== 넘기기 ===== */}
-      <div className="wpick__nav">
-        <button
-          type="button"
-          className="wpick__arrow"
-          onClick={() => move(-1)}
-          aria-label="이전 메뉴"
-        >
-          ‹
-        </button>
-
-        <ul className="wpick__dots">
-          {picks.map((food, i) => (
-            <li key={food.food_name}>
-              <button
-                type="button"
-                className={`wpick__dot-btn${i === index ? ' is-on' : ''}`}
-                onClick={() => setIndex(i)}
-                aria-current={i === index}
-                // 점만 있으면 어디로 가는지 모른다. 이름을 붙여두면
-                // 마우스를 올렸을 때와 스크린리더 양쪽에서 읽힌다
-                aria-label={food.food_name}
-                title={food.food_name}
-              />
-            </li>
-          ))}
+                  {cardTags.length > 0 && (
+                    <ul className="wpick__tags">
+                      {cardTags.map((tag) => (
+                        <li key={tag}>#{tag}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </li>
+            )
+          })}
         </ul>
-
-        <button
-          type="button"
-          className="wpick__arrow"
-          onClick={() => move(1)}
-          aria-label="다음 메뉴"
-        >
-          ›
-        </button>
-
-        <span className="wpick__count muted">
-          {index + 1} / {picks.length}
-        </span>
       </div>
     </section>
   )
