@@ -1472,3 +1472,110 @@ def test_카탈로그_재료는_모두_조사_대상이다():
     missing = sorted(name for name in names if find_codes(name) is None)
 
     assert missing == []
+
+
+# ==========================================================
+# 조리 순서
+# ==========================================================
+
+def test_조리_순서에_재료_분량이_들어간다():
+    # 전에는 "돼지고기를 넣고 7분간 끓인다" 가 한계였다. 얼마나 넣는지가
+    # 안 적혀 있으면 레시피를 보고도 다시 찾아봐야 한다.
+    recipe = ai_api.mock_build_recipe("김치찌개", {})
+    text = " ".join(recipe["steps"])
+
+    for item in recipe["ingredients"]:
+        assert f"{item['name']} {item['quantity']:g}{item['unit']}" in text
+
+
+def test_재료마다_손질_단계가_따로_있다():
+    # "재료를 먹기 좋은 크기로 썬다" 한 줄로 뭉뚱그리면 어느 재료를 어떻게
+    # 다뤄야 하는지가 사라진다.
+    recipe = ai_api.mock_build_recipe("김치찌개", {})
+
+    for item in recipe["ingredients"]:
+        assert any(step.startswith(item["name"]) for step in recipe["steps"])
+
+
+def test_향채는_조리_마지막에_들어간다():
+    # 대파를 처음부터 끓이면 향이 다 날아간다. 순서 자체가 레시피의 내용이라
+    # 손질 단계를 뺀 나머지에서 대파가 마지막 쪽에 있어야 한다.
+    recipe = ai_api.mock_build_recipe("김치찌개", {})
+    steps = recipe["steps"]
+
+    cooking = [i for i, step in enumerate(steps) if "끓인다" in step or "끓어오르면" in step]
+    파 = next(i for i, step in enumerate(steps) if "대파" in step and "넣고" in step)
+
+    assert 파 == max(cooking)
+
+
+def test_알레르기로_뺀_재료는_조리_순서에도_안_나온다():
+    # 재료 목록에서만 지우고 순서에 남겨두면 "없는 재료를 넣으라" 가 된다.
+    recipe = ai_api.mock_build_recipe("김치찌개", {"allergies": ["돼지고기"]})
+    text = " ".join(recipe["steps"])
+
+    assert "돼지고기" not in text
+
+
+def test_칼국수와_비빔국수는_만드는_법이_다르다():
+    # 둘 다 '면' 태그 하나로 묶여 있다. 같은 뼈대를 쓰면 칼국수를 찬물에
+    # 헹궈 양념에 무치라는 글이 나온다.
+    칼국수 = " ".join(ai_api.mock_build_recipe("바지락칼국수", {})["steps"])
+    비빔국수 = " ".join(ai_api.mock_build_recipe("비빔국수", {})["steps"])
+
+    assert "뜨거운 국물을 부어" in 칼국수
+    assert "무친다" in 비빔국수
+    assert "뜨거운 국물" not in 비빔국수
+
+
+def test_육회는_익히지_않는다():
+    # '무침' 태그를 그대로 따르면 절여서 무치라고 나오고, 고기를 볶는
+    # 뼈대로 떨어지면 생고기를 익히라고 나온다.
+    steps = " ".join(ai_api.mock_build_recipe("육회", {})["steps"])
+
+    assert "익히지 않는" in steps
+    for 익힘 in ("볶는다", "끓인다", "굽는다", "튀긴다"):
+        assert 익힘 not in steps
+
+
+def test_비빔밥은_한_팬에_섞지_않는다():
+    # 재료를 같이 볶아 얹으면 그건 덮밥이다.
+    steps = " ".join(ai_api.mock_build_recipe("전주비빔밥", {})["steps"])
+
+    assert "비빈다" in steps
+    assert "따로 볶아" in steps
+
+
+def test_양념이_하나뿐이면_양념장이라_부르지_않는다():
+    # "소금 1작은술을 계량해 둔다" 고 해놓고 "양념장을 풀고" 라고 하면,
+    # 만들지도 않은 것을 넣으라는 말이 된다.
+    recipe = ai_api.mock_build_recipe("고등어구이", {})
+    seasonings = [i["name"] for i in recipe["ingredients"] if i["name"] in steps_module.SEASONINGS]
+    text = " ".join(recipe["steps"])
+
+    assert len(seasonings) == 1
+    assert "양념장" not in text
+
+
+def test_로마자_단위_뒤에도_조사가_맞는다():
+    # "300g" 은 "삼백그램" 이라 받침이 있고, "200ml" 는 "밀리리터" 라 없다.
+    # 글자 코드만 보면 둘 다 받침 없음으로 떨어져 "300g를" 이 된다.
+    assert steps_module.eul("돼지고기 300g") == "돼지고기 300g을"
+    assert steps_module.eul("우유 200ml") == "우유 200ml를"
+    assert steps_module.eun("돼지고기 300g") == "돼지고기 300g은"
+    assert steps_module.eul("배추 0.25포기") == "배추 0.25포기를"
+    assert steps_module.eul("갈치 2토막") == "갈치 2토막을"
+
+
+def test_모든_요리가_충분히_자세한_순서를_갖는다():
+    # 다섯 줄짜리 뼈대로 돌아가는 것을 막는다. 카탈로그에 요리를 추가했을 때
+    # 뼈대가 없어 기본값으로 떨어지면 단계가 확 줄어든다.
+    from app.data import FOODS
+
+    for food in FOODS:
+        steps = ai_api.mock_build_recipe(food["food_name"], {})["steps"]
+
+        assert len(steps) >= 7, f"{food['food_name']} 의 조리 순서가 {len(steps)}단계뿐입니다"
+        assert all(step.endswith(".") for step in steps)
+        # 서식 자리표시자가 그대로 남으면 화면에 중괄호가 보인다
+        assert not any("{" in step for step in steps)

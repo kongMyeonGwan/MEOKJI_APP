@@ -47,6 +47,7 @@ from app.core.config import settings
 from app.integrations.ingredient_match import vocabulary
 from app.data import FOODS, HOT_WEATHER_PICKS, category_labels
 from app.integrations.portion import grams_for, portion_for
+from app.integrations.steps import build_steps
 
 # AI 응답을 기다리는 최대 시간(초).
 # 프론트의 axios timeout 이 30초라, 그보다 짧게 잡아야 우리 에러 메시지가 나간다.
@@ -926,51 +927,6 @@ MOCK_GRAMS_PER_UNIT = {
     "개": 100, "대": 100, "모": 300, "장": 3, "마리": 300, "포기": 2500,
 }
 
-# 태그별 조리 순서 뼈대. 없는 태그면 BASIC_STEPS 를 쓴다.
-STEP_TEMPLATES = {
-    "국물": [
-        "재료를 먹기 좋은 크기로 썬다.",
-        "냄비에 물 {water}ml 를 붓고 센 불로 끓인다.",
-        "{main}{을를} 먼저 넣고 {half}분간 끓인다.",
-        "나머지 재료를 넣고 {rest}분 더 끓인다.",
-        "간을 보고 소금으로 맞춘 뒤 불을 끈다.",
-    ],
-    "볶음": [
-        "재료를 먹기 좋은 크기로 썬다.",
-        "팬을 달구고 기름을 두른다.",
-        "{main}{을를} 넣고 센 불에서 {half}분간 볶는다.",
-        "나머지 재료와 양념을 넣고 {rest}분 더 볶는다.",
-        "불을 끄고 그릇에 담는다.",
-    ],
-    "면": [
-        "물을 넉넉히 올려 끓인다.",
-        "면을 넣고 봉지에 적힌 시간만큼 삶는다.",
-        "그동안 {main}{을를} 손질해 둔다.",
-        "삶은 면을 건져 찬물에 헹구거나 물기를 뺀다.",
-        "재료와 양념을 넣고 고루 버무린다.",
-    ],
-    "튀김": [
-        "재료를 먹기 좋은 크기로 썬다.",
-        "밑간을 하고 {half}분간 재워둔다.",
-        "튀김옷을 입힌다.",
-        "기름을 170도로 달궈 노릇하게 튀긴다.",
-        "기름을 빼고 그릇에 담는다.",
-    ],
-    "덮밥": [
-        "재료를 먹기 좋은 크기로 썬다.",
-        "{main}{을를} 양념과 함께 {half}분간 익힌다.",
-        "밥을 그릇에 담는다.",
-        "익힌 재료를 밥 위에 얹는다.",
-    ],
-}
-
-BASIC_STEPS = [
-    "재료를 먹기 좋은 크기로 썬다.",
-    "{main}{을를} 먼저 손질해 준비한다.",
-    "재료를 모두 넣고 {half}분간 조리한다.",
-    "간을 맞추고 {rest}분 더 익힌 뒤 마무리한다.",
-]
-
 # 싫어하는 재료를 뺄 때 제안할 대체재료.
 SUBSTITUTES = {
     "오이": ("애호박", "아삭한 식감을 살리면서 향은 약합니다"),
@@ -1046,7 +1002,7 @@ def mock_build_recipe(food_name: str, context: dict) -> dict:
         "cook_time_minutes": minutes,
         "servings": 2,
         "difficulty": food["difficulty"],
-        "steps": make_steps(food, names, minutes),
+        "steps": make_steps(food, ingredients),
         "ingredients": ingredients,
         "substitutes": substitutes,
         "estimated_cost": food["estimated_cost"],
@@ -1119,48 +1075,60 @@ def make_quantity(name: str) -> tuple[float, str]:
     return value, unit
 
 
+# 레시피 이름 앞에 붙이지 않는 재료.
+#
+# 양념과 기본 재료다. '소금 오이무침' 이나 '밀가루 부침개' 는 주재료를
+# 말해주지 않는다.
+NOT_A_HEADLINE = {
+    "소금", "설탕", "밥", "밀가루", "식용유", "참깨", "고춧가루",
+    "마늘", "생강", "대파", "쪽파", "양파", "레몬", "액젓", "천일염",
+}
+
+
 def make_recipe_name(food: dict) -> str:
     """레시피 이름을 만든다. 주재료를 앞에 붙인다.
 
     '김치찌개' -> '돼지고기 김치찌개'
+
+    앞에 안 붙이는 경우가 둘 있다.
+      - 양념·기본 재료뿐일 때      '소금 오이무침' 은 말이 안 된다
+      - 이미 이름에 들어 있을 때    '닭고기 닭가슴살 샐러드' 가 된다
+
+    둘 중 하나라도 걸리면 원래 이름을 그대로 쓴다. 억지로 앞에 뭔가 붙이는
+    것보다 '수박 주스' 로 두는 편이 낫다.
     """
-    names = food.get("ingredients") or []
+    food_name = food["food_name"]
 
-    for name in names:
-        # 주재료로 삼을 만한 것이 앞에 있으면 그것을 쓴다
-        if name not in ("소금", "설탕", "밥", "밀가루") and name not in food["food_name"]:
-            return f"{name} {food['food_name']}"
+    for name in food.get("ingredients") or []:
+        if name in NOT_A_HEADLINE:
+            continue
 
-    return food["food_name"]
+        # 이미 이름에 들어 있으면 겹쳐 쓰지 않는다.
+        # '닭가슴살 샐러드' 의 '닭고기' 처럼 글자가 겹치는 경우도 막는다.
+        if name in food_name or food_name[:2] in name:
+            continue
+
+        return f"{name} {food_name}"
+
+    return food_name
 
 
-def make_steps(food: dict, names: list[str], minutes: int) -> list[str]:
-    """태그를 보고 조리 순서를 만든다."""
-    template = BASIC_STEPS
+def make_steps(food: dict, ingredients: list[dict]) -> list[str]:
+    """조리 순서를 만든다.
 
-    for tag in food.get("tags") or []:
-        if tag in STEP_TEMPLATES:
-            template = STEP_TEMPLATES[tag]
-            break
+    실제 문장은 integrations/steps.py 가 만든다. 여기서는 어떤 요리인지
+    (tags)와 무엇이 얼마나 들어가는지(ingredients)만 넘긴다.
 
-    main = names[0]
-    half = max(3, minutes // 3)
-    rest = max(2, minutes // 4)
-    water = 400 + (minutes % 5) * 50
-
-    steps = []
-    for line in template:
-        steps.append(
-            line.format(
-                main=main,
-                을를=pick_josa(main, "을", "를"),
-                half=half,
-                rest=rest,
-                water=water,
-            )
-        )
-
-    return steps
+    이름 목록이 아니라 재료 dict 를 넘기는 이유
+    -------------------------------------------
+    전에는 이름만 넘겨서 "돼지고기를 넣고 7분간 끓인다" 까지가 한계였다.
+    분량을 같이 넘기면 "돼지고기 300g 을 넣고" 라고 쓸 수 있고, 재료마다
+    손질법도 붙일 수 있다. 알레르기로 빠진 재료가 조리 순서에도 안 나오는
+    효과는 덤이다 — ingredients 는 이미 걸러진 목록이다.
+    """
+    return build_steps(
+        food["food_name"], food.get("tags") or [], ingredients, food["cook_time_minutes"]
+    )
 
 
 def pick_josa(word: str, with_final: str, without_final: str) -> str:
