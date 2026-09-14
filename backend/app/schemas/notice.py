@@ -20,6 +20,11 @@ from app.schemas.page import Page
 # 500 이 난다. 같은 이유로 막는 일이라 규칙도 같아야 한다.
 from app.schemas.post import require_text
 
+# 본문 상한. DDL 이 VARCHAR2(4000) 이고 4000 은 바이트 기준이다.
+# 글자 수가 아니라 바이트로 재야 하는 이유는 validate_content 참고.
+NOTICE_CONTENT_MAX_BYTES = 4000
+
+
 class NoticeResponse(BaseModel):
     """공지 한 건."""
 
@@ -44,7 +49,7 @@ class NoticePage(Page):
     공지는 지금 몇 건뿐이라 페이징이 없어도 돌아간다. 그래도 붙여둔 이유는
     공지가 사용자 수가 아니라 **운영 기간에 비례해 늘어나는** 값이기 때문이다.
     점검 · 이벤트 안내가 한 달에 몇 건씩 쌓이면 몇 년 뒤에는 수백 건이 된다.
-    그때 본문(CLOB)까지 통째로 내려주게 된다 — 목록에서 그 자리에 펼치느라
+    그때 본문까지 통째로 내려주게 된다 — 목록에서 그 자리에 펼치느라
     본문을 같이 싣고 있어서 게시판보다 더 무겁다.
 
     나머지 네 칸은 schemas/page.py 참고.
@@ -71,7 +76,11 @@ class NoticeCreateRequest(BaseModel):
 
     # DDL 이 VARCHAR2(200 CHAR) 라 그 이상은 받지 않는다.
     title: str = Field(..., min_length=1, max_length=200)
-    content: str = Field(..., min_length=1)
+
+    # max_length 는 바이트가 아니라 글자 수라 이것만으로는 모자란다.
+    # 실제 상한은 아래 validate_content 가 바이트로 잰다. 여기 4000 은
+    # "어떤 글자든 이보다 길면 볼 것도 없다" 는 1차 거름망이다.
+    content: str = Field(..., min_length=1, max_length=NOTICE_CONTENT_MAX_BYTES)
 
     # 상단 고정. DB 는 'Y'/'N' 이지만 바깥에서는 bool 로 주고받는다.
     # 화면이 'Y' 문자열을 비교하게 두면 조건문마다 오타가 날 자리가 생긴다.
@@ -85,7 +94,16 @@ class NoticeCreateRequest(BaseModel):
     @field_validator("content")
     @classmethod
     def validate_content(cls, content: str) -> str:
-        return require_text(content, "내용")
+        content = require_text(content, "내용")
+
+        # 글자 수가 아니라 바이트로 잰다. DDL 의 VARCHAR2(4000) 이 바이트 기준인데
+        # UTF-8 에서 한글은 한 자에 3바이트, 이모지는 4바이트를 쓴다. 글자 수로만
+        # 막으면 한글 1400자가 검증을 통과한 뒤 INSERT 에서 ORA-12899 로 500 이 난다.
+        # 422 로 끊어서 "너무 길다" 를 사용자에게 알려주는 편이 낫다.
+        if len(content.encode("utf-8")) > NOTICE_CONTENT_MAX_BYTES:
+            raise ValueError("내용이 너무 깁니다 (한글 기준 약 1300자까지)")
+
+        return content
 
 
 class NoticeUpdateRequest(NoticeCreateRequest):

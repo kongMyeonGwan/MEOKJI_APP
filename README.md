@@ -98,7 +98,7 @@ npm run dev
 | 순서 | 파일 | 실행 계정 | 비고 |
 |:--:|---|---|---|
 | 1 | `db/00_drop_all.sql` | meokji_app | 기존 테이블이 있을 때만 |
-| 2 | `db/01_schema.sql` | meokji_app | 9개 테이블 생성 |
+| 2 | `db/01_schema.sql` | meokji_app | 10개 테이블 생성 |
 
 이미 구버전(v1) 테이블이 만들어져 있고 회원 데이터를 살리고 싶다면,
 위 두 개 대신 **`db/02_migrate_v2.sql`을 한 번만** 실행한다.
@@ -107,12 +107,24 @@ npm run dev
 **`db/03_add_review_attachments.sql`을 한 번만** 실행한다. 파일 맨 위의
 확인 쿼리가 `0`을 주면 실행 대상이고, `6`이면 이미 적용된 것이다.
 
+그 뒤에 붙은 것이 셋 더 있다. 이미 돌아가는 DB 라면 **번호 순서대로**
+한 번씩 실행한다 (새로 만드는 DB 는 `01_schema.sql` 에 다 들어 있으니 불필요).
+
+| 파일 | 하는 일 | 안 돌리면 |
+|---|---|---|
+| `db/06_add_user_level.sql` | `USERS.USER_LEVEL` 추가 (1=관리자 2=일반) | 로그인·내정보에서 `ORA-00904` |
+| `db/07_drop_notice_category.sql` | 04 가 넣은 `NOTICES.CATEGORY` 제거 | 스키마만 어긋남 (동작은 함) |
+| `db/08_add_recipe_likes.sql` | `RECIPE_LIKES` 표 생성 | 찜하기에서 `ORA-00942` |
+
+`06` 은 기존 회원을 전부 `user_level=2`(일반)로 만든다. 관리자로 쓸 계정은
+`UPDATE users SET user_level = 1 WHERE email = '...';` 로 따로 올려야 한다.
+
 **개인 PC에 Oracle을 새로 설치한 경우** — 계정부터 만들어야 함
 
 | 순서 | 파일 | 실행 계정 | 비고 |
 |:--:|---|---|---|
 | 1 | `db/00_create_user_local.sql` | **SYS AS SYSDBA** | 파일 안의 비밀번호 자리를 먼저 수정 |
-| 2 | `db/01_schema.sql` | meokji_app | 9개 테이블 생성 |
+| 2 | `db/01_schema.sql` | meokji_app | 10개 테이블 생성 |
 
 그리고 `backend/.env`의 `DB_HOST`를 `localhost`로 바꾼다.
 
@@ -135,7 +147,7 @@ MEOKJI_APP/
 ├── db/                        Oracle DDL
 │   ├── 00_create_user_local.sql   로컬 Oracle 계정 생성 (SYS로 실행)
 │   ├── 00_drop_all.sql
-│   ├── 01_schema.sql              9개 테이블 (단일 소스)
+│   ├── 01_schema.sql              10개 테이블 (단일 소스)
 │   ├── 02_migrate_v2.sql          v1 -> v2 마이그레이션 (1회성)
 │   ├── 03_add_review_attachments.sql  후기 첨부파일 컬럼 추가 (1회성)
 │   ├── 04_notices_and_games.sql   공지 분류 컬럼 · 게임 종류 A~C (1회성)
@@ -302,13 +314,17 @@ JWT_SECRET_KEY=         # 아무 랜덤 문자열
 
 ### 외부 연동 켜기 (전부 선택)
 
-키가 없어도 전 기능이 `mock` 으로 동작한다. 진짜 서비스를 붙이려면
+키가 없어도 전 기능이 동작한다. 진짜 서비스를 붙이려면
 아래 값만 바꾸면 되고, **코드는 한 줄도 고치지 않는다.**
+
+음식 추천과 레시피는 기본값 `AI_PROVIDER=catalog` 에서 AI 를 부르지 않는다.
+추천은 카탈로그 100종에 날씨·예산·Ban 점수를 매겨 고르고, 레시피는 미리
+써둔 100종(`app/data/recipes.json`)에서 꺼낸다. 아래로 바꾸면 AI 가 대신한다.
 
 | 하고 싶은 것 | `.env` 에 넣을 값 |
 |---|---|
-| AI 로 진짜 추천/레시피 생성 (무료) | `AI_PROVIDER=gemini` + `GEMINI_API_KEY=...` |
-| AI 로 진짜 추천/레시피 생성 (유료) | `AI_PROVIDER=claude` + `ANTHROPIC_API_KEY=...` |
+| AI 로 추천/레시피 생성 (무료) | `AI_PROVIDER=gemini` + `GEMINI_API_KEY=...` |
+| AI 로 추천/레시피 생성 (유료) | `AI_PROVIDER=claude` + `ANTHROPIC_API_KEY=...` |
 | 실제 날씨 | `WEATHER_PROVIDER=openweather` + `OPENWEATHER_API_KEY=...` |
 | 실제 재료 최저가 | `PRICE_PROVIDERS=kamis` + `DATA_GO_KR_SERVICE_KEY=...` |
 | 실제 인증 메일 발송 | `EMAIL_PROVIDER=smtp` + `SMTP_*` |

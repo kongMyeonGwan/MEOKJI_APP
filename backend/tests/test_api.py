@@ -1164,6 +1164,32 @@ def test_공백만_든_제목은_거른다(client):
     assert response.status_code == 422
 
 
+def test_본문이_4000바이트를_넘으면_거른다(client):
+    """DDL 이 VARCHAR2(4000) 이고 4000 은 바이트 기준이다.
+
+    한글은 UTF-8 에서 한 자에 3바이트라 1334자면 4002바이트가 된다.
+    글자 수로만 막으면 여기를 통과한 뒤 INSERT 에서 ORA-12899 로 500 이 난다.
+    """
+    response = client.post(
+        "/api/notices",
+        headers=STATE["owner"],
+        json={"title": "pytest 긴 본문", "content": "가" * 1334},
+    )
+
+    assert response.status_code == 422
+
+    # 1333자(3999바이트)는 들어가야 한다. 상한을 너무 깎으면 쓸 수 있는 공지가
+    # 짧아지므로, 막히는 쪽과 통과하는 쪽을 같이 본다.
+    ok = client.post(
+        "/api/notices",
+        headers=STATE["owner"],
+        json={"title": "pytest 긴 본문", "content": "가" * 1333},
+    )
+
+    assert ok.status_code == 201, ok.text
+    client.delete(f"/api/notices/{ok.json()['id']}", headers=STATE["owner"])
+
+
 def test_고정한_공지가_목록_맨_위에_온다(client):
     rows = client.get("/api/notices").json()["items"]
 

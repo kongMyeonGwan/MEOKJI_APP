@@ -61,15 +61,21 @@ async def create_recommendations(
 @router.get(
     "/recipes/{food_name}",
     response_model=RecipeResponse,
-    summary="AI 레시피 생성 + 재료 가격 (Guest 가능)",
-    responses={503: AI_503},
+    summary="레시피 + 재료 가격 (Guest 가능)",
+    responses={
+        404: {"description": "카탈로그에 없는 음식이라 준비된 레시피가 없음"},
+        503: AI_503,
+    },
 )
 async def read_recipe(
     food_name: str = Path(..., min_length=1, max_length=150),
     current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> RecipeResponse:
-    """레시피를 만들고, 그 재료의 시장 조사가격까지 함께 담아 돌려준다.
+    """레시피를 꺼내고, 그 재료의 시장 조사가격까지 함께 담아 돌려준다.
+
+    카탈로그 100종은 미리 써둔 레시피(app/data/recipes.json)에서 꺼낸다.
+    거기 없는 이름이면 404 다 — 지어내지 않는다(services/ai_service.py 참고).
 
     가격 조회를 따로 부르지 않는 이유는 화면이 둘을 같이 쓰기 때문이다.
     나눠 두면 레시피가 먼저 뜨고 가격표가 나중에 나타나 화면이 한 번 튄다.

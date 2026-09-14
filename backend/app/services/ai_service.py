@@ -20,8 +20,16 @@ import time
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.data import find_food
-from app.integrations.ai_api import build_recipe, recommend_foods, uses_any
+from app.integrations import recipe_book
+from app.integrations.ai_api import (
+    CATALOG_PROVIDER,
+    build_recipe,
+    pick_josa,
+    recommend_foods,
+    uses_any,
+)
 from app.models.user import User
 from app.models.user_ban import BAN_TYPE_ALLERGY
 from app.schemas.recommend import (
@@ -331,6 +339,40 @@ def describe_budget(payload: RecommendRequest) -> str:
     return f"{low:,}원 ~ {high:,}원"
 
 
+def raise_or_ask_ai(food_name: str) -> None:
+    """미리 써둔 레시피가 없는 음식을 어떻게 할지 정한다.
+
+    AI_PROVIDER=catalog 면 404 로 끝낸다. 그 외(gemini · claude)면 아무것도
+    하지 않고 돌아가서, 부르는 쪽이 AI 에게 묻게 둔다.
+
+    왜 지어내지 않는가
+    ------------------
+    전에는 카탈로그에 없는 이름이 오면 이름을 md5 로 흩어서 재료와 순서를
+    만들어냈다(ai_api.catalog_build_recipe). 그러면 '마라탕' 을 검색했을 때
+    계란과 대파로 만드는 11단계짜리 '계란 마라탕' 이 나온다. 화면은 멀쩡해
+    보이지만 그 요리가 아니다.
+
+    빈 화면보다 틀린 레시피가 나쁘다. 요리는 따라 만드는 글이라, 사실이
+    아닌 순서는 재료와 시간을 실제로 버리게 만든다. 모르면 모른다고 한다.
+
+    404 를 쓰는 이유
+    ----------------
+    서버도 앱도 멀쩡하고, 그냥 그 이름의 레시피가 없는 것이다. 500 이나
+    503 으로 답하면 화면이 "잠시 후 다시 시도" 를 띄우는데, 다시 시도해도
+    영영 나오지 않는다.
+    """
+    if settings.AI_PROVIDER.lower() not in CATALOG_PROVIDER:
+        return
+
+    josa = pick_josa(food_name, "은", "는")
+
+    raise HTTPException(
+        status.HTTP_404_NOT_FOUND,
+        f"'{food_name}'{josa} 준비된 레시피가 없는 메뉴입니다. "
+        "추천이나 검색에서 고른 메뉴로 다시 시도해주세요.",
+    )
+
+
 def make_recipe(db: Session, user: User | None, food_name: str) -> RecipeResponse:
     """음식 하나의 레시피를 만든다 (아직 저장하지 않는다).
 
@@ -355,10 +397,16 @@ def make_recipe(db: Session, user: User | None, food_name: str) -> RecipeRespons
         "dislikes": dislikes,
     }
 
-    try:
-        raw = build_recipe(food_name, context)
-    except RuntimeError as exc:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
+    # 카탈로그 100종은 레시피를 미리 써뒀다(app/data/recipes.json).
+    raw = recipe_book.build_recipe(food_name, context)
+
+    if raw is None:
+        raise_or_ask_ai(food_name)
+
+        try:
+            raw = build_recipe(food_name, context)
+        except RuntimeError as exc:
+            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc))
 
     known = find_food(food_name)
 

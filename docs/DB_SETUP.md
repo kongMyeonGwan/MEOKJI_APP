@@ -12,7 +12,7 @@
 
 - 내 PC에 Oracle DB가 돌아가고
 - `meokji_app` 이라는 DB 계정이 생기고
-- 테이블 7개가 만들어지고
+- 테이블 10개가 만들어지고
 - 백엔드가 그 DB에 붙어서 `{"status":"ok","database":"ok"}` 를 응답합니다
 
 **소요 시간**: Oracle 설치 30분 + 나머지 15분 정도.
@@ -247,19 +247,22 @@ sqlplus meokji_app/meokji1234@localhost:1521/XEPDB1
 @D:\workspace\Python_Camp\projectTest\meokji\db\01_schema.sql
 ```
 
-### 확인 — 테이블 7개
+### 확인 — 테이블 10개
 
 ```sql
 SELECT table_name FROM user_tables ORDER BY table_name;
 ```
 
-이 7개가 나와야 합니다.
+이 10개가 나와야 합니다.
 
 ```
-COMMENTS
+GAME_HISTORIES
 MEAL_HISTORIES
-POSTS
-POST_LIKES
+NOTICES
+RECIPE_LIKES
+RECIPE_REVIEWS
+REVIEW_COMMENTS
+REVIEW_LIKES
 USERS
 USER_BANS
 VERIFICATION_CODES
@@ -281,6 +284,9 @@ VERIFICATION_CODES
 @D:\workspace\Python_Camp\projectTest\meokji\db\02_seed.sql
 ```
 
+공지 5건은 따로입니다 — [`db/05_seed_notices.sql`](../db/05_seed_notices.sql) 을
+이어서 실행하세요. 공지가 없으면 공지 화면이 빈 채로 뜹니다.
+
 넣는 내용은 이렇습니다.
 
 | 테이블 | 건수 | 내용 |
@@ -288,12 +294,12 @@ VERIFICATION_CODES
 | `users` | 1 | 시드 계정 (`kmg8585@naver.com` / `meokji1234!`) |
 | `user_bans` | 2 | 오이 · 양파 |
 | `meal_histories` | 4 | 김치찌개 · 들깨 수제비 · 닭갈비 · 계란밥 |
-| `posts` | 3 | 앞의 3건에서 공유 |
-| `comments` | 3 | |
-| `post_likes` | 2 | |
+| `recipe_reviews` | 3 | 앞의 3건에서 공유 |
+| `review_comments` | 3 | |
+| `review_likes` | 2 | |
 
-**계란밥은 일부러 공유하지 않은 채로 둡니다.** `posts.meal_history_id` 에
-`uq_posts_meal(UNIQUE)` 이 걸려 있어 한 기록은 한 번만 공유할 수 있는데,
+**계란밥은 일부러 공유하지 않은 채로 둡니다.** `recipe_reviews.meal_history_id` 에
+`uq_reviews_meal(UNIQUE)` 이 걸려 있어 한 기록은 한 번만 공유할 수 있는데,
 공유 가능한 기록이 하나도 없으면 글쓰기 화면을 테스트할 수 없기 때문입니다.
 
 > **재실행해도 안전합니다.** 시드 계정의 데이터만 지우고 다시 넣으므로
@@ -308,10 +314,10 @@ VERIFICATION_CODES
 ```sql
 -- 4 / 3 / 3 / 2 가 나와야 정상
 SELECT
-    (SELECT COUNT(*) FROM meal_histories) AS histories,
-    (SELECT COUNT(*) FROM posts)          AS posts,
-    (SELECT COUNT(*) FROM comments)       AS comments,
-    (SELECT COUNT(*) FROM post_likes)     AS likes
+    (SELECT COUNT(*) FROM meal_histories)  AS histories,
+    (SELECT COUNT(*) FROM recipe_reviews)  AS reviews,
+    (SELECT COUNT(*) FROM review_comments) AS comments,
+    (SELECT COUNT(*) FROM review_likes)    AS likes
 FROM dual;
 ```
 
@@ -447,7 +453,7 @@ SELECT username, account_status FROM dba_users WHERE username = 'MEOKJI_APP';
 SELECT COUNT(*) FROM dba_tables WHERE owner = 'MEOKJI_APP';
 ```
 
-기대값: PDB가 `READ WRITE`, 계정이 `OPEN`, 테이블 개수 `7`.
+기대값: PDB가 `READ WRITE`, 계정이 `OPEN`, 테이블 개수 `10`.
 
 ---
 
@@ -508,7 +514,7 @@ sqlplus meokji_app/비번@localhost:1521/XEPDB1
 
 ```sql
 @경로\db\01_schema.sql
-SELECT table_name FROM user_tables;           -- 7개 확인
+SELECT table_name FROM user_tables;           -- 10개 확인
 exit
 ```
 
@@ -531,5 +537,5 @@ uvicorn app.main:app --reload --port 8000
 - [README.md](../README.md) — 프로젝트 전체 실행 방법
 - [docs/PROGRESS.md](PROGRESS.md) — 진행 상황과 설계 결정 이유
 - [db/00_create_user_local.sql](../db/00_create_user_local.sql) — 계정 생성 스크립트
-- [db/01_schema.sql](../db/01_schema.sql) — 테이블 7개 DDL
+- [db/01_schema.sql](../db/01_schema.sql) — 테이블 10개 DDL
 - [db/00_drop_all.sql](../db/00_drop_all.sql) — 테이블 전체 삭제

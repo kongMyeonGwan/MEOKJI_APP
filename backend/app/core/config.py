@@ -84,7 +84,7 @@ class Settings(BaseSettings):
     # mock   : API 키 없이 카탈로그에서 골라준다 (개발용)
     # gemini : Google Gemini
     # claude : Anthropic Claude
-    AI_PROVIDER: str = "mock"
+    AI_PROVIDER: str = "catalog"
 
     # Gemini (https://aistudio.google.com 에서 발급)
     GEMINI_API_KEY: str = ""

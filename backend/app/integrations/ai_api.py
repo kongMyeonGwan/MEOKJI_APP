@@ -2,10 +2,20 @@
 
 .env 의 AI_PROVIDER 값에 따라 세 가지로 동작한다.
 
-    mock     API 키 없이도 화면 전체를 눌러볼 수 있게, 카탈로그(app/data)에서
-             조건에 맞는 후보를 골라준다. 진짜 AI 는 아니지만 응답 모양이 같다
+    catalog  AI 를 부르지 않는다. 카탈로그(app/data/catalog.json)의 음식 100종에서
+             오늘 날씨 · 예산 · 냉장고 재료 · Ban 재료에 맞는 것을 골라준다.
+             응답 모양은 AI 와 똑같아서 바깥에서는 구분할 필요가 없다
     gemini   Google Gemini 를 부른다
     claude   Anthropic Claude 를 부른다
+
+catalog 가 기본값인 이유
+------------------------
+추천이 카탈로그 안에서만 나오면, 추천받은 메뉴는 반드시 미리 써둔 레시피
+(app/data/recipes.json)가 있다. AI 에게 물으면 카탈로그 밖의 이름이 나올 수
+있고, 그 메뉴를 누르면 레시피를 만들려고 AI 를 한 번 더 불러야 한다.
+
+'mock' 이라고 부르던 것이다. 가짜 응답을 흉내 내는 코드가 아니라 실제 추천
+규칙이라서 이름을 바꿨다. 팀원 .env 가 아직 mock 이어도 동작하게 둘 다 받는다.
 
 프로바이더가 달라도 프롬프트와 응답 스키마는 **똑같은 것을 쓴다**.
 바꿔 끼웠을 때 추천의 성격까지 달라지면 비교가 불가능해지기 때문이다.
@@ -49,6 +59,13 @@ from app.data import FOODS, HOT_WEATHER_PICKS, category_labels
 from app.integrations.portion import grams_for, portion_for
 from app.integrations.steps import build_steps
 
+# AI 를 부르지 않고 카탈로그에서 고르는 모드의 이름.
+#
+# 'mock' 은 예전 이름이다. 계속 받아주는 이유는 .env 가 팀원마다 따로 있어서,
+# 이름을 바꾼 순간 남의 로컬 서버가 "지원하지 않는 AI_PROVIDER" 로 안 뜨기
+# 때문이다. 새로 적을 때는 catalog 를 쓴다.
+CATALOG_PROVIDER = ("catalog", "mock")
+
 # AI 응답을 기다리는 최대 시간(초).
 # 프론트의 axios timeout 이 30초라, 그보다 짧게 잡아야 우리 에러 메시지가 나간다.
 AI_TIMEOUT_SECONDS = 25.0
@@ -70,7 +87,7 @@ DIFFICULTIES = ("쉬움", "보통", "어려움")
 
 
 # =========================================================
-# 응답 스키마 — claude 와 mock 이 똑같은 모양을 만든다
+# 응답 스키마 — claude 와 catalog 가 똑같은 모양을 만든다
 # =========================================================
 
 FOODS_SCHEMA = {
@@ -205,8 +222,8 @@ def recommend_foods(context: dict) -> list[dict]:
     """조건에 맞는 음식 후보를 만든다."""
     provider = settings.AI_PROVIDER.lower()
 
-    if provider == "mock":
-        return mock_recommend_foods(context)
+    if provider in CATALOG_PROVIDER:
+        return catalog_recommend_foods(context)
 
     if provider == "gemini":
         raw_items = gemini_generate(build_foods_prompt(context), FOODS_SCHEMA)
@@ -216,11 +233,11 @@ def recommend_foods(context: dict) -> list[dict]:
         require_api_key()
         return claude_recommend_foods(context)
 
-    # 모르는 값이면 조용히 mock 으로 넘어가지 않고 에러를 낸다.
+    # 모르는 값이면 조용히 catalog 로 넘어가지 않고 에러를 낸다.
     # 조용히 넘어가면 "AI 를 붙였는데 추천이 늘 똑같다"가 된다.
     raise RuntimeError(
         f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
-        "사용 가능한 값: mock, gemini, claude"
+        "사용 가능한 값: catalog, gemini, claude"
     )
 
 
@@ -241,8 +258,8 @@ def build_recipe(food_name: str, context: dict) -> dict:
     """음식 하나의 레시피를 만든다."""
     provider = settings.AI_PROVIDER.lower()
 
-    if provider == "mock":
-        return mock_build_recipe(food_name, context)
+    if provider in CATALOG_PROVIDER:
+        return catalog_build_recipe(food_name, context)
 
     if provider == "gemini":
         return gemini_generate(build_recipe_prompt(food_name, context), RECIPE_SCHEMA)
@@ -253,7 +270,7 @@ def build_recipe(food_name: str, context: dict) -> dict:
 
     raise RuntimeError(
         f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
-        "사용 가능한 값: mock, gemini, claude"
+        "사용 가능한 값: catalog, gemini, claude"
     )
 
 
@@ -279,7 +296,7 @@ def gemini_generate(prompt: str, schema: dict) -> dict:
 
     같은 FOODS_SCHEMA / RECIPE_SCHEMA 를 두 회사가 그대로 쓴다.
     """
-    # import 를 함수 안에서 한다. AI_PROVIDER=mock 으로 쓰는 팀원이
+    # import 를 함수 안에서 한다. AI_PROVIDER=catalog 로 쓰는 팀원이
     # google-genai 를 안 깔았어도 서버가 뜨게 하기 위함이다.
     from google import genai
     from google.genai import errors, types
@@ -397,7 +414,7 @@ def call_claude(prompt: str, tool_name: str, schema: dict) -> dict:
     tools 에 함수 하나를 알려주고 tool_choice 로 "반드시 이걸 써서 답해라" 고
     시킨다. 그러면 답이 문장이 아니라 schema 모양의 JSON 으로 온다.
     """
-    # import 를 함수 안에서 한다. AI_PROVIDER=mock 으로 쓰는 팀원이
+    # import 를 함수 안에서 한다. AI_PROVIDER=catalog 로 쓰는 팀원이
     # anthropic 패키지를 안 깔았어도 서버가 뜨게 하기 위함이다.
     import anthropic
 
@@ -567,7 +584,7 @@ def describe_conditions(context: dict) -> list[str]:
 
 
 # =========================================================
-# mock — API 키 없이 쓰는 가짜 AI
+# catalog — AI 를 부르지 않고 카탈로그에서 고른다
 #
 # 카탈로그(app/data/catalog.json)에서 조건에 맞는 것을 골라 점수를 매긴다.
 # 랜덤을 쓰지 않는다. 같은 조건이면 늘 같은 결과가 나와야 화면 버그를 잡을 수 있다.
@@ -584,7 +601,7 @@ def get_limit(context: dict) -> int:
     return min(limit, MAX_FOODS)
 
 
-def mock_recommend_foods(context: dict) -> list[dict]:
+def catalog_recommend_foods(context: dict) -> list[dict]:
     """카탈로그에서 조건에 맞는 후보를 골라준다."""
     allergies = context.get("allergies") or []
     dislikes = context.get("dislikes") or []
@@ -893,7 +910,7 @@ def to_food_response(food: dict) -> dict:
 
 
 # ---------------------------------------------------------
-# mock 레시피 만들기
+# 카탈로그 레시피 만들기
 #
 # 카탈로그에는 주재료 이름만 있고 분량과 조리 순서가 없다.
 # 여기서 재료명을 숫자로 바꿔 분량을 만들고, 태그를 보고 조리 순서를 만든다.
@@ -918,10 +935,10 @@ QUANTITY_RULES = [
 # 위 표에 없는 재료에 쓸 기본값
 DEFAULT_QUANTITY = (50, 200, "g")
 
-# mock 레시피의 grams 를 채울 때 쓰는 단위별 대표 무게.
+# 카탈로그 레시피의 grams 를 채울 때 쓰는 단위별 대표 무게.
 # 진짜 AI 는 재료마다 다르게 답한다. 이건 화면과 계산 경로가 도는지만
 # 확인하려고 두는 값이라 정확할 필요가 없다.
-MOCK_GRAMS_PER_UNIT = {
+CATALOG_GRAMS_PER_UNIT = {
     "g": 1, "ml": 1,
     "큰술": 15, "작은술": 5, "컵": 180, "공기": 210,
     "개": 100, "대": 100, "모": 300, "장": 3, "마리": 300, "포기": 2500,
@@ -946,7 +963,7 @@ SUBSTITUTES = {
 DEFAULT_SUBSTITUTE = ("생략", "빼고 만들어도 맛이 크게 달라지지 않습니다")
 
 
-def mock_build_recipe(food_name: str, context: dict) -> dict:
+def catalog_build_recipe(food_name: str, context: dict) -> dict:
     """카탈로그를 바탕으로 레시피 한 건을 만든다.
 
     카탈로그에 없는 음식(사용자가 직접 검색한 이름)이면 재료를 모르므로,
@@ -1036,13 +1053,13 @@ def matches_any(name: str, names: list[str]) -> bool:
     return False
 
 
-def mock_grams(quantity: float, unit: str) -> float:
-    """mock 레시피의 grams 를 대충 채운다.
+def catalog_grams(quantity: float, unit: str) -> float:
+    """카탈로그 레시피의 grams 를 대충 채운다.
 
-    진짜 AI 는 재료마다 다르게 답하지만, mock 은 화면과 계산 경로가
+    진짜 AI 는 재료마다 다르게 답하지만, 여기서는 화면과 계산 경로가
     도는지만 보면 되므로 단위별 대표값 하나로 곱한다.
     """
-    per = MOCK_GRAMS_PER_UNIT.get(unit, 100)
+    per = CATALOG_GRAMS_PER_UNIT.get(unit, 100)
     return round(quantity * per, 1)
 
 

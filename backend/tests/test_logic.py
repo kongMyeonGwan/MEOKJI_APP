@@ -1,6 +1,6 @@
 """DB 없이 도는 검증.
 
-계산만 하는 코드(요리 레벨 · mock AI · 가격 응답 파싱 · KST 변환)를 확인한다.
+계산만 하는 코드(요리 레벨 · 카탈로그 추천 · 가격 응답 파싱 · KST 변환)를 확인한다.
 Oracle 을 안 켜도 돌아가므로, 로직을 고칠 때마다 부담 없이 실행할 수 있다.
 """
 
@@ -17,6 +17,7 @@ from app.core.config import settings
 from app.core.kst import KST, day_end_utc, day_start_utc, to_kst_date
 from app.data import find_food
 from app.integrations import ai_api
+from app.integrations import recipe_book
 from app.integrations.weather_api import cache_key, join_address
 from app.integrations import ingredient_match
 from app.integrations import price_api
@@ -138,9 +139,9 @@ def test_KST는_9시간_앞선다():
 
 
 # =========================================================
-# mock AI — 추천
+# 카탈로그 추천
 #
-# 분기 함수(recommend_foods)가 아니라 mock 구현(mock_recommend_foods)을
+# 분기 함수(recommend_foods)가 아니라 카탈로그 구현(catalog_recommend_foods)을
 # 직접 부른다. 분기 함수를 부르면 .env 의 AI_PROVIDER 를 따라가서,
 # gemini 로 켜둔 사람의 컴퓨터에서는 이 테스트가 진짜 API 를 호출한다.
 # =========================================================
@@ -175,35 +176,35 @@ def names_of(items) -> list[str]:
 
 
 def test_요청한_개수만큼_돌려준다():
-    items = ai_api.mock_recommend_foods(context(limit=3))
+    items = ai_api.catalog_recommend_foods(context(limit=3))
 
     assert len(items) == 3
 
 
 def test_같은_조건이면_같은_결과가_나온다():
     # 랜덤을 쓰면 새로고침할 때마다 순서가 바뀌어 화면 버그를 못 잡는다
-    first = ai_api.mock_recommend_foods(context(limit=5))
-    second = ai_api.mock_recommend_foods(context(limit=5))
+    first = ai_api.catalog_recommend_foods(context(limit=5))
+    second = ai_api.catalog_recommend_foods(context(limit=5))
 
     assert names_of(first) == names_of(second)
 
 
 def test_알레르기_재료가_든_메뉴는_빠진다():
-    items = ai_api.mock_recommend_foods(context(limit=12, allergies=["돼지고기"]))
+    items = ai_api.catalog_recommend_foods(context(limit=12, allergies=["돼지고기"]))
 
     assert "김치찌개" not in names_of(items)
     assert "마파두부" not in names_of(items)
 
 
 def test_예산_상한을_넘는_메뉴는_빠진다():
-    items = ai_api.mock_recommend_foods(context(limit=12, budget_max=5000))
+    items = ai_api.catalog_recommend_foods(context(limit=12, budget_max=5000))
 
     for item in items:
         assert item["estimated_cost"] <= 5000
 
 
 def test_분류를_주면_그_분류만_나온다():
-    items = ai_api.mock_recommend_foods(context(limit=12, category="중식"))
+    items = ai_api.catalog_recommend_foods(context(limit=12, category="중식"))
 
     assert len(items) > 0
     for item in items:
@@ -211,10 +212,10 @@ def test_분류를_주면_그_분류만_나온다():
 
 
 def test_이미_본_메뉴는_다시_안_나온다():
-    first = ai_api.mock_recommend_foods(context(limit=5))
+    first = ai_api.catalog_recommend_foods(context(limit=5))
     shown = names_of(first)
 
-    second = ai_api.mock_recommend_foods(context(limit=5, exclude=shown))
+    second = ai_api.catalog_recommend_foods(context(limit=5, exclude=shown))
 
     for name in names_of(second):
         assert name not in shown
@@ -223,7 +224,7 @@ def test_이미_본_메뉴는_다시_안_나온다():
 def test_검색어가_있으면_날씨보다_검색어가_우선이다():
     # '매운 국물요리'를 찾았는데 더운 날이라고 냉면이 위로 오면
     # 검색이 고장 난 것처럼 보인다
-    items = ai_api.mock_recommend_foods(
+    items = ai_api.catalog_recommend_foods(
         context(limit=3, query="매운 국물요리", weather={"temp": 30})
     )
 
@@ -232,13 +233,13 @@ def test_검색어가_있으면_날씨보다_검색어가_우선이다():
 
 
 def test_더운_날에는_시원한_메뉴가_먼저_나온다():
-    items = ai_api.mock_recommend_foods(context(limit=3, weather={"temp": 30}))
+    items = ai_api.catalog_recommend_foods(context(limit=3, weather={"temp": 30}))
 
     assert "시원한음식" in (items[0].get("tags") or [])
 
 
 def test_추운_날에는_국물_메뉴가_먼저_나온다():
-    items = ai_api.mock_recommend_foods(context(limit=3, weather={"temp": 0}))
+    items = ai_api.catalog_recommend_foods(context(limit=3, weather={"temp": 0}))
 
     tags = items[0].get("tags") or []
     assert "국물" in tags or "얼큰" in tags
@@ -251,12 +252,12 @@ def test_추운_날에는_국물_메뉴가_먼저_나온다():
 
 def test_같은_기온이어도_비가_오면_추천이_달라진다():
     clear = names_of(
-        ai_api.mock_recommend_foods(
+        ai_api.catalog_recommend_foods(
             context(limit=4, weather={"temp": 28, "condition": "CLEAR"})
         )
     )
     rain = names_of(
-        ai_api.mock_recommend_foods(
+        ai_api.catalog_recommend_foods(
             context(limit=4, weather={"temp": 28, "condition": "RAIN"})
         )
     )
@@ -265,7 +266,7 @@ def test_같은_기온이어도_비가_오면_추천이_달라진다():
 
 
 def test_비_오는_날에는_찬_음식이_위로_안_온다():
-    items = ai_api.mock_recommend_foods(
+    items = ai_api.catalog_recommend_foods(
         context(limit=4, weather={"temp": 28, "condition": "RAIN"})
     )
 
@@ -275,7 +276,7 @@ def test_비_오는_날에는_찬_음식이_위로_안_온다():
 
 
 def test_비_오는_날에는_국물이나_튀김이_먼저_나온다():
-    items = ai_api.mock_recommend_foods(
+    items = ai_api.catalog_recommend_foods(
         context(limit=3, weather={"temp": 28, "condition": "RAIN"})
     )
 
@@ -351,7 +352,7 @@ def test_맑은_날_문구는_그대로_기온을_따른다():
 
 
 def test_냉장고_재료가_많이_겹치는_메뉴가_먼저_나온다():
-    items = ai_api.mock_recommend_foods(
+    items = ai_api.catalog_recommend_foods(
         context(limit=3, ingredients=["계란", "대파", "밥"])
     )
 
@@ -370,7 +371,7 @@ def test_냉장고_재료가_많이_겹치는_메뉴가_먼저_나온다():
 
 
 def test_레시피_모양이_스키마와_맞는다():
-    recipe = ai_api.mock_build_recipe("김치찌개", {})
+    recipe = ai_api.catalog_build_recipe("김치찌개", {})
 
     assert recipe["recipe_name"]
     assert recipe["servings"] == 2
@@ -384,7 +385,7 @@ def test_레시피_모양이_스키마와_맞는다():
 
 
 def test_알레르기_재료는_레시피에서_아예_빠진다():
-    recipe = ai_api.mock_build_recipe("김치찌개", {"allergies": ["돼지고기"]})
+    recipe = ai_api.catalog_build_recipe("김치찌개", {"allergies": ["돼지고기"]})
 
     names = []
     for item in recipe["ingredients"]:
@@ -394,7 +395,7 @@ def test_알레르기_재료는_레시피에서_아예_빠진다():
 
 
 def test_싫어하는_재료는_두되_대체안을_붙인다():
-    recipe = ai_api.mock_build_recipe("김치찌개", {"dislikes": ["돼지고기"]})
+    recipe = ai_api.catalog_build_recipe("김치찌개", {"dislikes": ["돼지고기"]})
 
     names = []
     for item in recipe["ingredients"]:
@@ -405,8 +406,88 @@ def test_싫어하는_재료는_두되_대체안을_붙인다():
     assert recipe["substitutes"][0]["substitute"]
 
 
-def test_카탈로그에_없는_음식도_레시피가_나온다():
-    recipe = ai_api.mock_build_recipe("할머니표 비밀 국수", {})
+# =========================================================
+# 레시피 — 미리 써둔 100종 (app/data/recipes.json)
+# =========================================================
+
+
+def test_카탈로그_100종은_모두_레시피가_있다():
+    from app.data import FOODS
+
+    for food in FOODS:
+        assert recipe_book.has_recipe(food["food_name"]), food["food_name"]
+
+
+def test_미리_써둔_레시피가_스키마와_맞는다():
+    recipe = recipe_book.build_recipe("김치찌개", {})
+
+    assert recipe["recipe_name"]
+    assert recipe["servings"] == 2
+    assert len(recipe["steps"]) >= 10
+    assert len(recipe["ingredients"]) > 0
+
+    first = recipe["ingredients"][0]
+    # grams 는 가격 환산에 쓴다. 파일에 안 적고 portion.py 표에서 채운다.
+    assert set(first.keys()) == {"name", "quantity", "unit", "grams"}
+    assert first["grams"] > 0
+
+
+def test_미리_써둔_레시피도_알레르기_재료를_뺀다():
+    recipe = recipe_book.build_recipe("김치찌개", {"allergies": ["돼지고기"]})
+
+    names = [item["name"] for item in recipe["ingredients"]]
+    assert "돼지고기" not in names
+
+    # 순서는 사람이 쓴 글이라 다시 만들 수 없다. 그래서 지우지 않고
+    # 맨 앞에 뺐다고 알린다 — 안 알리면 "돼지고기를 볶는다" 가 그냥 남는다.
+    assert "돼지고기" in recipe["steps"][0]
+
+
+def test_미리_써둔_레시피도_싫어하는_재료에_대체안을_붙인다():
+    recipe = recipe_book.build_recipe("김치찌개", {"dislikes": ["돼지고기"]})
+
+    names = [item["name"] for item in recipe["ingredients"]]
+    assert "돼지고기" in names
+    assert recipe["substitutes"][0]["original"] == "돼지고기"
+
+
+def test_카탈로그에_없는_음식은_레시피가_없다():
+    assert recipe_book.build_recipe("할머니표 비밀 국수", {}) is None
+
+
+def test_카탈로그에_없는_음식은_404다():
+    # 지어내지 않는다. 빈 화면보다 틀린 레시피가 나쁘다 —
+    # 요리는 따라 만드는 글이라 사실이 아닌 순서는 재료를 실제로 버리게 한다.
+    original = settings.AI_PROVIDER
+    settings.AI_PROVIDER = "catalog"
+    try:
+        with pytest.raises(HTTPException) as caught:
+            ai_service.make_recipe(None, None, "할머니표 비밀 국수")
+    finally:
+        settings.AI_PROVIDER = original
+
+    assert caught.value.status_code == 404
+    assert "할머니표 비밀 국수" in caught.value.detail
+
+
+def test_AI_를_쓰면_카탈로그_밖도_물어본다():
+    # catalog 가 아닐 때는 404 로 끊지 않고 AI 에게 넘긴다.
+    # 여기서는 넘어가는지만 본다(키가 없으므로 503 으로 끝난다).
+    original = settings.AI_PROVIDER
+    settings.AI_PROVIDER = "gemini"
+    try:
+        with pytest.raises(HTTPException) as caught:
+            ai_service.make_recipe(None, None, "할머니표 비밀 국수")
+    finally:
+        settings.AI_PROVIDER = original
+
+    assert caught.value.status_code != 404
+
+
+def test_AI_폴백용_레시피_생성기는_그대로_있다():
+    # catalog 모드에서는 더 이상 불리지 않지만, gemini · claude 로 바꿨을 때
+    # 쓰던 코드라 그대로 둔다.
+    recipe = ai_api.catalog_build_recipe("할머니표 비밀 국수", {})
 
     assert recipe["recipe_name"]
     assert len(recipe["steps"]) > 0
@@ -1481,7 +1562,7 @@ def test_카탈로그_재료는_모두_조사_대상이다():
 def test_조리_순서에_재료_분량이_들어간다():
     # 전에는 "돼지고기를 넣고 7분간 끓인다" 가 한계였다. 얼마나 넣는지가
     # 안 적혀 있으면 레시피를 보고도 다시 찾아봐야 한다.
-    recipe = ai_api.mock_build_recipe("김치찌개", {})
+    recipe = ai_api.catalog_build_recipe("김치찌개", {})
     text = " ".join(recipe["steps"])
 
     for item in recipe["ingredients"]:
@@ -1491,7 +1572,7 @@ def test_조리_순서에_재료_분량이_들어간다():
 def test_재료마다_손질_단계가_따로_있다():
     # "재료를 먹기 좋은 크기로 썬다" 한 줄로 뭉뚱그리면 어느 재료를 어떻게
     # 다뤄야 하는지가 사라진다.
-    recipe = ai_api.mock_build_recipe("김치찌개", {})
+    recipe = ai_api.catalog_build_recipe("김치찌개", {})
 
     for item in recipe["ingredients"]:
         assert any(step.startswith(item["name"]) for step in recipe["steps"])
@@ -1500,7 +1581,7 @@ def test_재료마다_손질_단계가_따로_있다():
 def test_향채는_조리_마지막에_들어간다():
     # 대파를 처음부터 끓이면 향이 다 날아간다. 순서 자체가 레시피의 내용이라
     # 손질 단계를 뺀 나머지에서 대파가 마지막 쪽에 있어야 한다.
-    recipe = ai_api.mock_build_recipe("김치찌개", {})
+    recipe = ai_api.catalog_build_recipe("김치찌개", {})
     steps = recipe["steps"]
 
     cooking = [i for i, step in enumerate(steps) if "끓인다" in step or "끓어오르면" in step]
@@ -1511,7 +1592,7 @@ def test_향채는_조리_마지막에_들어간다():
 
 def test_알레르기로_뺀_재료는_조리_순서에도_안_나온다():
     # 재료 목록에서만 지우고 순서에 남겨두면 "없는 재료를 넣으라" 가 된다.
-    recipe = ai_api.mock_build_recipe("김치찌개", {"allergies": ["돼지고기"]})
+    recipe = ai_api.catalog_build_recipe("김치찌개", {"allergies": ["돼지고기"]})
     text = " ".join(recipe["steps"])
 
     assert "돼지고기" not in text
@@ -1520,8 +1601,8 @@ def test_알레르기로_뺀_재료는_조리_순서에도_안_나온다():
 def test_칼국수와_비빔국수는_만드는_법이_다르다():
     # 둘 다 '면' 태그 하나로 묶여 있다. 같은 뼈대를 쓰면 칼국수를 찬물에
     # 헹궈 양념에 무치라는 글이 나온다.
-    칼국수 = " ".join(ai_api.mock_build_recipe("바지락칼국수", {})["steps"])
-    비빔국수 = " ".join(ai_api.mock_build_recipe("비빔국수", {})["steps"])
+    칼국수 = " ".join(ai_api.catalog_build_recipe("바지락칼국수", {})["steps"])
+    비빔국수 = " ".join(ai_api.catalog_build_recipe("비빔국수", {})["steps"])
 
     assert "뜨거운 국물을 부어" in 칼국수
     assert "무친다" in 비빔국수
@@ -1531,7 +1612,7 @@ def test_칼국수와_비빔국수는_만드는_법이_다르다():
 def test_육회는_익히지_않는다():
     # '무침' 태그를 그대로 따르면 절여서 무치라고 나오고, 고기를 볶는
     # 뼈대로 떨어지면 생고기를 익히라고 나온다.
-    steps = " ".join(ai_api.mock_build_recipe("육회", {})["steps"])
+    steps = " ".join(ai_api.catalog_build_recipe("육회", {})["steps"])
 
     assert "익히지 않는" in steps
     for 익힘 in ("볶는다", "끓인다", "굽는다", "튀긴다"):
@@ -1540,7 +1621,7 @@ def test_육회는_익히지_않는다():
 
 def test_비빔밥은_한_팬에_섞지_않는다():
     # 재료를 같이 볶아 얹으면 그건 덮밥이다.
-    steps = " ".join(ai_api.mock_build_recipe("전주비빔밥", {})["steps"])
+    steps = " ".join(ai_api.catalog_build_recipe("전주비빔밥", {})["steps"])
 
     assert "비빈다" in steps
     assert "따로 볶아" in steps
@@ -1549,7 +1630,7 @@ def test_비빔밥은_한_팬에_섞지_않는다():
 def test_양념이_하나뿐이면_양념장이라_부르지_않는다():
     # "소금 1작은술을 계량해 둔다" 고 해놓고 "양념장을 풀고" 라고 하면,
     # 만들지도 않은 것을 넣으라는 말이 된다.
-    recipe = ai_api.mock_build_recipe("고등어구이", {})
+    recipe = ai_api.catalog_build_recipe("고등어구이", {})
     seasonings = [i["name"] for i in recipe["ingredients"] if i["name"] in steps_module.SEASONINGS]
     text = " ".join(recipe["steps"])
 
@@ -1573,7 +1654,7 @@ def test_모든_요리가_충분히_자세한_순서를_갖는다():
     from app.data import FOODS
 
     for food in FOODS:
-        steps = ai_api.mock_build_recipe(food["food_name"], {})["steps"]
+        steps = ai_api.catalog_build_recipe(food["food_name"], {})["steps"]
 
         assert len(steps) >= 7, f"{food['food_name']} 의 조리 순서가 {len(steps)}단계뿐입니다"
         assert all(step.endswith(".") for step in steps)

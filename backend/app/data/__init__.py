@@ -16,7 +16,7 @@
 
 foods 목록의 쓰임
 -----------------
-AI_PROVIDER=mock 일 때 추천 후보로 쓰는 씨앗 데이터다.
+AI_PROVIDER=catalog 일 때 추천 후보로 쓰는 데이터다.
 API 키가 없어도 화면 전체를 눌러볼 수 있게 하기 위한 것이며,
 AI_PROVIDER=claude 로 바꾸면 이 목록 대신 AI 가 만든 후보가 나간다.
 

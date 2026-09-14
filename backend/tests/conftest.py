@@ -4,7 +4,7 @@
 
 DB 가 필요한 테스트와 아닌 테스트
 ---------------------------------
-    test_logic.py    DB 없이 도는 순수 계산 검증 (레벨 · 가격 · mock AI)
+    test_logic.py    DB 없이 도는 순수 계산 검증 (레벨 · 가격 · 카탈로그 추천)
     test_api.py      실제 Oracle 에 붙어서 도는 통합 검증
 
 DB 가 꺼져 있으면 test_api.py 는 통째로 건너뛴다(skip).
@@ -131,8 +131,8 @@ def remove_test_users() -> None:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def use_mock_providers():
-    """테스트가 도는 동안에는 AI 를 mock 으로 고정한다.
+def use_catalog_provider():
+    """테스트가 도는 동안에는 AI 를 catalog 로 고정한다.
 
     .env 가 gemini/claude 로 켜져 있어도 테스트는 바깥을 부르지 않는다.
     이유가 셋 있다.
@@ -146,7 +146,7 @@ def use_mock_providers():
     from app.core.config import settings
 
     original = settings.AI_PROVIDER
-    settings.AI_PROVIDER = "mock"
+    settings.AI_PROVIDER = "catalog"
     yield
     settings.AI_PROVIDER = original
 

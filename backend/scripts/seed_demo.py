@@ -41,7 +41,7 @@ from app.core.config import settings
 
 # AI 는 mock 으로 고정한다. .env 가 gemini 로 켜져 있어도 데모 데이터를
 # 만들자고 API 할당량과 돈을 쓸 이유가 없다. 레시피 모양은 어느 쪽이든 같다.
-settings.AI_PROVIDER = "mock"
+settings.AI_PROVIDER = "catalog"
 
 # 가격 조회도 막는다. DATA_GO_KR_SERVICE_KEY 가 비어 있으면
 # GET /api/recipes 가 재료마다 KAMIS 를 부르다 500 으로 죽는다.

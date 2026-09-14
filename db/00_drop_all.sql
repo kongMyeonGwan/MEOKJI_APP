@@ -18,6 +18,10 @@
 --
 -- 목록에 v1 이름(POSTS / POST_LIKES / COMMENTS)도 함께 넣어 두었습니다.
 -- 아직 마이그레이션하지 않은 DB에서도 이 스크립트 하나로 정리되게 하기 위함입니다.
+--
+-- ! 표를 새로 만들면 아래 목록에도 이름을 넣어야 합니다. 빠뜨리면 그 표만
+--   남은 채로 01_schema.sql 을 돌리게 되고, CREATE TABLE 이 ORA-00955 로 막힙니다.
+--   목록은 아래 두 군데(PL/SQL 블록 · 확인 쿼리)에 있습니다.
 -- =========================================================
 
 BEGIN
@@ -29,6 +33,9 @@ BEGIN
                    'REVIEW_COMMENTS',
                    'REVIEW_LIKES',
                    'RECIPE_REVIEWS',
+                   'RECIPE_LIKES',
+                   'NOTICES',
+                   'GAME_HISTORIES',
                    -- v1 (구버전 — 남아 있을 수 있어 함께 정리)
                    'COMMENTS',
                    'POST_LIKES',
@@ -52,5 +59,6 @@ END;
 SELECT COUNT(*) AS remaining_tables
 FROM   user_tables
 WHERE  table_name IN ('REVIEW_COMMENTS','REVIEW_LIKES','RECIPE_REVIEWS',
+                      'RECIPE_LIKES','NOTICES','GAME_HISTORIES',
                       'COMMENTS','POST_LIKES','POSTS','MEAL_HISTORIES',
                       'USER_BANS','VERIFICATION_CODES','USERS');
