@@ -26,6 +26,7 @@ from app.services import ai_service
 from app.services import bargain_service
 from app.services import file_service
 from app.services import game_service
+from app.services import price_service
 from app.services import unit_convert
 from app.services import weather_service
 from app.services.history_service import count_streak
@@ -1019,6 +1020,118 @@ def test_판매단위_문자열을_쪼갠다():
     assert unit_convert.parse_unit("100g") == (100.0, "g")
     assert unit_convert.parse_unit("30구") == (30.0, "구")
     assert unit_convert.parse_unit("") is None
+
+
+# =========================================================
+# 최소단위 구입 (STEP 42)
+#
+# 환산까지만 하면 "무 0.2개 640원" 이 나온다. 계산은 맞지만 무를 0.2개 파는
+# 가게가 없어서 장바구니에는 못 담는다. 쪼갤 수 없는 단위는 살 수 있는
+# 데까지 올려야 합계가 실제로 내는 돈이 된다.
+# =========================================================
+
+
+def test_세는_단위는_쪼갤_수_없다():
+    assert unit_convert.divisible("1개") is False
+    assert unit_convert.divisible("30구") is False
+    assert unit_convert.divisible("1마리") is False
+
+
+def test_무게_부피_단위는_달아_판다():
+    assert unit_convert.divisible("1kg") is True
+    assert unit_convert.divisible("100g") is True
+    assert unit_convert.divisible("1L") is True
+
+
+def test_못_읽는_단위는_쪼갤_수_없는_쪽으로_본다():
+    # 모르는 단위를 쪼갤 수 있다고 보면 살 수 없는 금액이 합계에 들어간다
+    assert unit_convert.divisible("") is False
+    assert unit_convert.divisible("한 다발") is False
+
+
+def test_무_02개는_한_개를_산다():
+    ratio = unit_convert.needed_ratio(200, 0.2, "개", "1개", "무")
+
+    assert ratio == pytest.approx(0.2)
+    assert unit_convert.buy_ratio(ratio, "1개") == 1.0
+
+
+def test_계란_2개는_한_판을_산다():
+    ratio = unit_convert.needed_ratio(110, 2, "개", "30구")
+
+    assert unit_convert.buy_ratio(ratio, "30구") == 1.0
+
+
+def test_배추_12포기는_두_포기를_산다():
+    assert unit_convert.buy_ratio(1.2, "1포기") == 2.0
+
+
+def test_딱_떨어지면_올리지_않는다():
+    # 2개/1개 가 float 로 2.0000000000000004 가 되는 경우가 있다.
+    # 그대로 올리면 두 개 살 걸 세 개 사게 된다.
+    assert unit_convert.buy_ratio(2.0000000000000004, "1개") == 2.0
+
+
+def test_무게로_파는_재료는_필요한_만큼만_산다():
+    # 여기서 올려버리면 고춧가루 1큰술이 1kg(25,200원)이 되어,
+    # 애초에 환산이 없애려던 문제로 되돌아간다.
+    ratio = unit_convert.needed_ratio(7, 1, "큰술", "1kg")
+
+    assert unit_convert.buy_ratio(ratio, "1kg") == pytest.approx(0.007)
+    assert unit_convert.scale_price(25_200, unit_convert.buy_ratio(ratio, "1kg")) == 176
+
+
+def test_환산이_안_되면_최소단위도_없다():
+    # 살 수 있는 양을 모르는데 "한 개는 사야 한다" 고 말할 수 없다
+    assert unit_convert.buy_ratio(None, "1개") is None
+    assert unit_convert.buy_ratio(0, "1개") is None
+
+
+def test_무_02개의_값은_한_개_값이다():
+    offers = [{"shop": "가락시장", "price": 3_200, "unit": "1개", "link": ""}]
+    item = {"name": "무", "quantity": 0.2, "unit": "개", "grams": 200}
+
+    result = price_service.scale_offers(offers, item)
+
+    assert result["low_cost"] == 3_200       # 0.2개 값 640원이 아니다
+    assert result["min_unit"] is True
+    assert result["need_text"] == "0.2개"
+    assert result["buy_text"] == "1개"
+
+
+def test_달아_파는_재료에는_최소단위_표시가_없다():
+    offers = [{"shop": "가락시장", "price": 1_573, "unit": "100g", "link": ""}]
+    item = {"name": "돼지고기", "quantity": 240, "unit": "g", "grams": 240}
+
+    result = price_service.scale_offers(offers, item)
+
+    assert result["low_cost"] == 3_775
+    assert result["min_unit"] is False
+    # 올림이 없었으니 '얼마를 더 샀다' 고 적을 게 없다
+    assert result["buy_text"] is None
+
+
+def test_딱_맞게_사면_최소단위_표시가_없다():
+    # 고등어 1마리가 필요하고 1마리 단위로 판다. 더 산 게 아니다
+    offers = [{"shop": "가락시장", "price": 4_000, "unit": "1마리", "link": ""}]
+    item = {"name": "고등어", "quantity": 1, "unit": "마리", "grams": 400}
+
+    result = price_service.scale_offers(offers, item)
+
+    assert result["low_cost"] == 4_000
+    assert result["min_unit"] is False
+
+
+def test_환산_불가면_값을_비워둔다():
+    # 최소단위 올림이 들어와도 "억지로 맞춘 숫자를 넣지 않는다" 는
+    # 원래 규칙은 그대로다
+    offers = [{"shop": "가락시장", "price": 4_000, "unit": "1마리", "link": ""}]
+    item = {"name": "없는생선", "quantity": 2, "unit": "개", "grams": None}
+
+    result = price_service.scale_offers(offers, item)
+
+    assert "low_cost" not in result
+    assert result["need_text"] == "2개"
 
 
 # =========================================================

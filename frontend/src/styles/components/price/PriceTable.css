@@ -70,3 +70,18 @@ a.price-table__best:hover { text-decoration: underline; }
   color: var(--color-warn);
   background: rgba(201, 130, 26, 0.1);
 }
+
+/* 재료명 옆의 "최소단위" 배지.
+   무 0.2개를 1개 값으로 올려 담은 줄에 붙는다. 이 표시가 없으면
+   값이 부풀어 보이는 게 계산 실수처럼 읽힌다. */
+.price-table__minunit {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72em;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-muted);
+  background: var(--color-border);
+  cursor: help;
+}

@@ -148,6 +148,10 @@ function Recipe({ foodName }) {
   // KAMIS 는 농수산물만 조사하므로 가공식품은 값이 없다. 그래서 이 합계는
   // 재료 전체가 아닐 수 있다. 몇 개 기준인지 밝히지 않으면 사용자가
   // 이 숫자를 '이 요리 만드는 총비용'으로 읽는다.
+  //
+  // 쪼개 팔지 않는 재료(무 0.2개)는 한 단위를 통째로 산 값으로 들어간다.
+  // 레시피가 요구하는 분량보다 큰 숫자라서, 왜 큰지 밝혀두지 않으면
+  // 계산이 틀린 것처럼 읽힌다.
   const priceRange = getPriceSummary(recipe.prices)
   const partial = priceRange.counted < priceRange.total
 
@@ -175,6 +179,11 @@ function Recipe({ foodName }) {
             {partial && (
               <span className="muted recipe-page__cost-note">
                 재료 {priceRange.total}개 중 {priceRange.counted}개 기준
+              </span>
+            )}
+            {priceRange.minUnit > 0 && (
+              <span className="muted recipe-page__cost-note">
+                {priceRange.minUnit}개는 최소단위로 구입
               </span>
             )}
           </span>

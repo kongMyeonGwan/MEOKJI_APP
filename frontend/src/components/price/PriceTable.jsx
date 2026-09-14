@@ -59,9 +59,11 @@ export function getPriceSummary(prices) {
   //   min: 전부 제일 싼 시장에서 샀을 때
   //   max: 전부 제일 비싼 시장에서 샀을 때
   //
-  // 더하는 건 판매 단위 가격이 아니라 **필요한 만큼의 값**(low_cost)이다.
+  // 더하는 건 판매 단위 가격이 아니라 **실제로 내는 돈**(low_cost)이다.
   // KAMIS 는 "고춧가루 1kg 25,200원" 으로 값을 주는데 레시피가 요구하는 건
   // 1큰술이라, 단위 가격을 그대로 더하면 재료비가 백 배 넘게 부풀려진다.
+  // 반대로 쪼개 팔지 않는 무 0.2개는 1개 값으로 올려서 더한다 — 그래야
+  // 합계가 계산상의 숫자가 아니라 장바구니 금액이 된다.
   let min = 0
   let max = 0
 
@@ -74,15 +76,20 @@ export function getPriceSummary(prices) {
   //   환산 불가    판매 단위와 레시피 단위를 맞출 수 없음
   let counted = 0
 
+  // 필요한 양보다 더 사게 된 재료 수. 합계가 왜 레시피 분량보다 큰지
+  // 표 아래에서 한 번에 설명하려고 센다.
+  let minUnit = 0
+
   for (const item of prices) {
     if (item.low_cost == null || item.high_cost == null) continue
 
     min += item.low_cost
     max += item.high_cost
     counted += 1
+    if (item.min_unit) minUnit += 1
   }
 
-  return { min, max, counted, total: prices.length }
+  return { min, max, counted, total: prices.length, minUnit }
 }
 
 export default function PriceTable({ prices }) {
@@ -147,6 +154,17 @@ export default function PriceTable({ prices }) {
                   <td>
                     {item.name}
                     <TrendBadge trend={item.trend} />
+                    {/* 쪼개 팔지 않아 더 산 재료. 값이 부풀어 보이는 이유를
+                        그 줄에서 바로 밝힌다. 표 아래 설명만 두면
+                        어느 재료 얘기인지 사용자가 짚어내지 못한다. */}
+                    {scaled && item.min_unit && (
+                      <span
+                        className="price-table__minunit"
+                        title={`이 레시피에 필요한 건 ${item.need_text}지만 ${item.buy_text} 단위로만 팔아서, ${item.buy_text} 값을 넣었습니다.`}
+                      >
+                        최소단위
+                      </span>
+                    )}
                   </td>
 
                   <td className="num">
@@ -163,6 +181,11 @@ export default function PriceTable({ prices }) {
                         <span className="price-table__shop">
                           {range.low.shop} · {range.low.unit} {formatPrice(range.low.price)}
                         </span>
+                        {item.min_unit && item.need_text && item.buy_text && (
+                          <span className="price-table__shop">
+                            {item.need_text} 필요 → {item.buy_text} 구입
+                          </span>
+                        )}
                       </>
                     ) : (
                       <>
@@ -198,6 +221,11 @@ export default function PriceTable({ prices }) {
                     재료 {total.total}개 중 {total.counted}개
                   </span>
                 )}
+                {total.minUnit > 0 && (
+                  <span className="price-table__unit">
+                    최소단위 구입 {total.minUnit}개 포함
+                  </span>
+                )}
               </td>
               <td className="num">
                 <strong className="price-table__best">{formatPrice(total.min)}</strong>
@@ -214,9 +242,16 @@ export default function PriceTable({ prices }) {
         {surveyedAt
           ? `${surveyedAt} 조사된 시장별 소매가격입니다(KAMIS). `
           : '시장별 소매가격입니다(KAMIS). '}
-        금액은 <strong>이 레시피에 필요한 만큼</strong>으로 환산한 값이고, 회색
-        글씨가 시장의 판매 단위 가격입니다. 실제로는 그 단위로 사야 하므로
-        구매 금액은 더 큽니다.
+        금액은 <strong>실제로 사게 되는 만큼</strong>의 값이고, 회색 글씨가
+        시장의 판매 단위 가격입니다.
+        {' '}
+        <strong className="price-table__minunit">최소단위</strong>
+        {' '}
+        표시가 붙은 재료는 <strong>최소단위로 구입</strong>한 값입니다 — 무
+        0.2개처럼 레시피가 요구하는 양이 판매 단위보다 적어도 쪼개 팔지 않아
+        한 단위를 통째로 사야 하므로, 필요한 양이 아니라 사야 하는 양으로
+        계산했습니다. 쌀 · 고춧가루처럼 무게를 달아 파는 재료는 필요한 만큼만
+        삽니다.
         {unsurveyed.length > 0 &&
           ` ${unsurveyed.join(' · ')} — 농수산물 시세 조사 대상이 아니라 값이 없고, 합계에서도 빠집니다.`}
         {' '}
