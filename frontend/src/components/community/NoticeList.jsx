@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { countNoticeView } from '../../api/notices'
 import { formatDate } from '../../utils/format'
 import '../../styles/components/community/NoticeList.css'
 
@@ -12,7 +11,9 @@ import '../../styles/components/community/NoticeList.css'
 //
 // 관리자한테만 수정/삭제 버튼이 보인다(canManage).
 // 버튼을 숨기는 건 잠그는 게 아니고 진짜 차단은 서버가 한다.
-// 여기서 숨기는 건 눌러봐야 403 만 받을 버튼을 안 보여주려는 것이다.
+//
+// ! 조회수 올리기는 아직 서버에 안 붙어 있다. 공지 담당자가 채운다.
+//   아래 toggle() 의 TODO 자리에 countNoticeView(notice.id) 를 넣으면 된다.
 export default function NoticeList({ notices, canManage, onEdit, onDelete }) {
   // 지금 열려 있는 공지의 id. 한 번에 하나만 열린다.
   const [openId, setOpenId] = useState(null)
@@ -25,7 +26,7 @@ export default function NoticeList({ notices, canManage, onEdit, onDelete }) {
   const [views, setViews] = useState({})
 
   // 제목 줄을 눌렀을 때. 펼치는 순간에만 조회수를 올린다.
-  async function toggle(notice) {
+  function toggle(notice) {
     const willOpen = openId !== notice.id
 
     if (willOpen) {
@@ -41,17 +42,9 @@ export default function NoticeList({ notices, canManage, onEdit, onDelete }) {
     // 먼저 표시해둔다. 응답을 기다리는 사이에 두 번 누르면 두 번 올라간다.
     setCounted(counted.concat([notice.id]))
 
-    try {
-      const result = await countNoticeView(notice.id)
-
-      setViews(function (prev) {
-        const next = Object.assign({}, prev)
-        next[notice.id] = result.view_count
-        return next
-      })
-    } catch (err) {
-      // 조회수는 숫자 하나다. 못 올렸다고 공지를 못 읽게 할 이유가 없다.
-    }
+    // TODO: countNoticeView(notice.id) 를 부르고 돌아온 view_count 를
+    //   setViews 에 넣는다. 조회수는 숫자 하나라서
+    //   실패해도 공지를 못 읽게 막을 필요는 없다(조용히 넘어간다).
   }
 
   // 삭제 버튼. 되돌리기 번거로워서 한 번 물어본다.

@@ -11,6 +11,10 @@ import '../../styles/components/community/PostAttachment.css'
 // 대신 GET /api/posts/{id}/file 이 use_yn 을 보고 내려준다.
 //
 // 내 글일 때만 바꾸기 / 지우기 버튼이 보인다.
+//
+// ! 사진 올리기·지우기는 아직 서버에 안 붙어 있다. 게시판 담당자가 채운다.
+//   이 컴포넌트는 props 로 받은 것만 그린다. 실제 업로드는
+//   부모(PostDetailPage)의 onPick · onRemove 에서 한다.
 export default function PostAttachment({
   file,
   isMine,

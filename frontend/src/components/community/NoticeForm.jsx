@@ -1,7 +1,5 @@
 import { useState } from 'react'
 import ErrorMessage from '../common/ErrorMessage'
-import { createNotice, updateNotice } from '../../api/notices'
-import { parseApiError } from '../../utils/apiError'
 import '../../styles/components/community/NoticeForm.css'
 
 // 공지 쓰기 / 고치기 폼 (관리자만 보인다).
@@ -12,6 +10,10 @@ import '../../styles/components/community/NoticeForm.css'
 // 쓰기랑 고치기를 한 컴포넌트로 만들었다. 입력칸이 똑같고 다른 건
 // 처음 값이 비어 있느냐랑 POST 냐 PUT 이냐 둘뿐이라서다.
 // notice 를 넘기면 고치기, 안 넘기면 새로 쓰기다.
+//
+// ! 아직 서버에 붙어 있지 않다. 공지 담당자가 채운다.
+//   아래 onSubmit 의 TODO 자리에서 createNotice / updateNotice 를 부르고,
+//   저장된 공지를 onDone(saved, editing) 으로 부모에게 넘기면 된다.
 
 export default function NoticeForm({ notice, onDone, onCancel }) {
   const editing = Boolean(notice)
@@ -32,10 +34,8 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
   const [pinned, setPinned] = useState(firstPinned)
 
   const [errors, setErrors] = useState({})
-  const [submitError, setSubmitError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
-  async function onSubmit(e) {
+  function onSubmit(e) {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
 
     // 서버도 똑같이 검사한다. 여기서 한 번 더 보는 건 서버까지 갔다 오지 않고
@@ -54,42 +54,18 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
       return
     }
 
-    setSubmitError('')
-    setSubmitting(true)
-
     const payload = {
       title: title.trim(),
       content: content.trim(),
-      pinned,
+      pinned: pinned,
     }
 
-    try {
-      let saved = null
-
-      if (editing) {
-        saved = await updateNotice(notice.id, payload)
-      } else {
-        saved = await createNotice(payload)
-      }
-
-      // 저장한 공지를 부모에게 넘긴다. 목록은 부모가 다시 받아온다.
-      // 고정 여부가 바뀌면 순서가 달라지는데 그 정렬은 서버가 정하는 거라
-      // 화면에서 배열에 직접 끼워 넣으면 서버랑 순서가 달라진다.
-      //
-      // editing 도 같이 넘긴다. 새로 쓴 공지는 1페이지에 있고 고친 공지는
-      // 원래 있던 페이지에 그대로 있어서 부모가 구분해야 한다.
-      onDone(saved, editing)
-    } catch (err) {
-      const parsed = parseApiError(err)
-
-      // 서버가 준 422 는 칸별로 나눠서 각 입력칸 아래에 붙인다
-      setErrors({
-        title: parsed.fieldErrors.title,
-        content: parsed.fieldErrors.content,
-      })
-      setSubmitError(parsed.message)
-      setSubmitting(false)
-    }
+    // TODO: 고치기면 updateNotice(notice.id, payload),
+    //   새로 쓰기면 createNotice(payload) 를 부른다.
+    //   그리고 서버가 돌려준 공지를 onDone(saved, editing) 으로 넘긴다.
+    //   editing 을 같이 넘기는 이유는 새 공지는 1페이지에 있고
+    //   고친 공지는 원래 페이지에 그대로 있어서 부모가 구분해야 하기 때문이다.
+    onDone(payload, editing)
   }
 
   let formTitle = '새 공지 작성'
@@ -97,9 +73,6 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
   if (editing) {
     formTitle = '공지 수정'
     submitLabel = '수정'
-  }
-  if (submitting) {
-    submitLabel = '저장하는 중...'
   }
 
   return (
@@ -140,18 +113,15 @@ export default function NoticeForm({ notice, onDone, onCancel }) {
         <ErrorMessage message={errors.content} />
       </label>
 
-      <ErrorMessage message={submitError} />
-
       <div className="notice-form__actions">
         <button
           type="button"
           className="btn btn--ghost btn--sm"
           onClick={onCancel}
-          disabled={submitting}
         >
           취소
         </button>
-        <button type="submit" className="btn btn--sm" disabled={submitting}>
+        <button type="submit" className="btn btn--sm">
           {submitLabel}
         </button>
       </div>

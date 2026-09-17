@@ -114,9 +114,9 @@ export default function SettingsPage() {
 
         <div className="settings__row">
           <div>
-            <p className="settings__label">추천 · 커뮤니티 알림</p>
+            <p className="settings__label">댓글 · 좋아요 알림</p>
             <p className="settings__desc muted">
-              오늘의 추천과 내 글에 달린 댓글을 알려드려요.
+              내 글에 달린 댓글과 좋아요를 상단 종 아이콘에 모아서 보여드려요.
             </p>
           </div>
 

@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import FoodThumb from '../common/FoodThumb'
 import DateRangeFilter from '../common/DateRangeFilter'
-import { getPopular } from '../../api/posts'
+import { SAMPLE_POPULAR } from '../../data/sampleBoard'
 import { shiftDays, toDateKey } from '../../utils/format'
 import '../../styles/components/recommendation/PopularRecipes.css'
 
@@ -12,8 +12,17 @@ import '../../styles/components/recommendation/PopularRecipes.css'
 // 기간을 바꿀 수 있게 한 이유는 좋아요가 오래된 글일수록 쌓이기만 해서
 // 기간을 안 자르면 몇 달째 같은 순위가 뜨기 때문이다.
 //
-// 집계는 서버가 한다. 그 기간에 "새로" 눌린 좋아요만 세야 하는데
-// 화면에서는 언제 눌렸는지 알 수 없다.
+// ! 아직 서버에 붙어 있지 않다. 게시판 담당자가 채운다.
+//
+// 인기 레시피는 게시글 좋아요(review_likes)를 기간으로 집계한 결과다.
+// 그 기간에 "새로" 눌린 좋아요만 세야 하는데 화면에서는 언제 눌렸는지
+// 알 수 없어서 서버가 집계해줘야 한다. 지금은 하드코딩 데이터를 그린다.
+//
+// 붙일 때 할 일
+// -------------
+//   1. useEffect 로 getPopular({ start, end, limit: TOP_N }) 를 부른다
+//   2. 기간이 바뀔 때마다 다시 부른다 (의존성 [start, end])
+//   3. alive 플래그로 늦게 온 응답이 새 결과를 덮지 않게 막는다
 
 // 여기 보여줄 순위 개수. 전체는 /popular 에서 본다.
 const TOP_N = 8
@@ -35,41 +44,8 @@ export default function PopularRecipes() {
   const [start, setStart] = useState(makeStart(29))
   const [end, setEnd] = useState(toDateKey(new Date()))
 
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  // 기간이 바뀔 때마다 서버에 다시 물어본다.
-  //
-  // alive 가 필요한 이유는 요청이 보낸 순서대로 도착하지 않기 때문이다.
-  // '30일' 응답이 '오늘' 응답보다 늦게 오면 화면에 엉뚱한 목록이 남는다.
-  // effect 가 다시 돌기 직전에 alive 가 false 가 되니까
-  // 늦게 온 응답은 setItems 를 안 부른다.
-  useEffect(() => {
-    let alive = true
-    setLoading(true)
-
-    getPopular({ start: start, end: end, limit: TOP_N })
-      .then(function (data) {
-        if (alive) {
-          setItems(data)
-        }
-      })
-      .catch(function () {
-        // 순위를 못 받았다고 첫 화면 전체가 에러가 되면 안 된다
-        if (alive) {
-          setItems([])
-        }
-      })
-      .finally(function () {
-        if (alive) {
-          setLoading(false)
-        }
-      })
-
-    return function () {
-      alive = false
-    }
-  }, [start, end])
+  // TODO: 서버에서 받아오게 바꾼다. 지금은 하드코딩 데이터다.
+  const items = SAMPLE_POPULAR
 
   // 오늘 / 7일 / 30일 탭을 눌렀을 때
   function choosePreset(item) {
@@ -148,13 +124,11 @@ export default function PopularRecipes() {
         * 선택한 기간 동안 새로 받은 좋아요 수 기준
       </p>
 
-      {loading && <p className="empty">불러오는 중…</p>}
-
-      {!loading && items.length === 0 && (
+      {items.length === 0 && (
         <p className="empty">이 기간에 좋아요를 받은 레시피가 없습니다.</p>
       )}
 
-      {!loading && items.length > 0 && (
+      {items.length > 0 && (
         <ol className="popular__list">
           {items.map(function (item, i) {
             let name = item.recipe_name

@@ -1,13 +1,27 @@
-"""게시판 라우터 (STEP 20~23)."""
+"""게시판 라우터 (STEP 20~23).
 
-from datetime import date, timedelta
+! 아직 만들지 않은 기능이다. 담당자가 채운다.
+  주소 · 요청/응답 스키마는 그대로 두었으니 함수 안만 구현하면 된다.
+  화면(frontend/src/pages/CommunityPage.jsx 등)은 지금 하드코딩한
+  더미 데이터로 그려지고 있다. 여기가 완성되면 그쪽도 API 로 바꾸면 된다.
+"""
 
-from fastapi import APIRouter, Depends, File, Path, Query, UploadFile, status
+from datetime import date
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Path,
+    Query,
+    UploadFile,
+    status,
+)
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user, get_optional_user
-from app.core.kst import today_kst
 from app.database.database import get_db
 from app.models.user import User
 from app.schemas.page import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
@@ -21,32 +35,16 @@ from app.schemas.post import (
     PostPage,
     PostUpdateRequest,
 )
-from app.services.post_service import (
-    attach_file,
-    create_comment,
-    create_post,
-    delete_comment,
-    delete_post,
-    detach_file,
-    get_post,
-    increase_view,
-    list_popular,
-    list_posts,
-    open_post_file,
-    set_like,
-    update_comment,
-    update_post,
-)
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
+
+# 아직 구현하지 않은 엔드포인트가 내려주는 문구.
+TODO_MESSAGE = "아직 만들지 않은 기능입니다. (게시판 담당자 작업 예정)"
 
 # 로그인이 필요한 엔드포인트가 공통으로 낼 수 있는 응답.
 AUTH_401 = {"description": "토큰 없음 · 만료 · 위조"}
 AUTH_423 = {"description": "잠긴 계정"}
 NOT_FOUND = {"description": "없는 게시글"}
-
-# 인기 레시피 기본 기간: 오늘 포함 최근 30일
-DEFAULT_POPULAR_DAYS = 29
 
 @router.get(
     "",
@@ -61,8 +59,11 @@ def read_posts(
     ),
     db: Session = Depends(get_db),
 ) -> PostPage:
-    """최신순."""
-    return list_posts(db, keyword, page, size)
+    """최신순.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.get(
@@ -76,18 +77,11 @@ def read_popular(
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ) -> list[PopularItem]:
-    """기간을 안 주면 오늘 포함 최근 30일이다."""
-    if end is None:
-        end = today_kst()
-    if start is None:
-        start = end - timedelta(days=DEFAULT_POPULAR_DAYS)
+    """기간을 안 주면 오늘 포함 최근 30일이다.
 
-    # ?start=2026-09-30&end=2026-09-01 처럼 뒤집힌 값이 들어와도
-    # 빈 목록이 아니라 정상 결과가 나오게 정렬해 둔다
-    if start > end:
-        start, end = end, start
-
-    return list_popular(db, start, end, limit)
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.get(
@@ -101,8 +95,11 @@ def read_post(
     current_user: User | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> PostDetailResponse:
-    """로그인 상태면 liked / is_mine 이 함께 계산돼 온다."""
-    return get_post(db, post_id, current_user)
+    """로그인 상태면 liked / is_mine 이 함께 계산돼 온다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.post(
@@ -123,8 +120,11 @@ def write_post(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> PostDetailResponse:
-    """레시피/재료는 요청 본문이 아니라 서버가 원본 기록에서 복사해 넣는다."""
-    return create_post(db, current_user, payload)
+    """레시피/재료는 요청 본문이 아니라 서버가 원본 기록에서 복사해 넣는다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.put(
@@ -144,8 +144,11 @@ def edit_post(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> PostDetailResponse:
-    """제목과 본문만 바뀐다. 레시피는 원본 기록에서 읽어오므로 그대로다."""
-    return update_post(db, current_user, post_id, payload)
+    """제목과 본문만 바뀐다. 레시피는 원본 기록에서 읽어오므로 그대로다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.delete(
@@ -163,8 +166,11 @@ def remove_post(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> None:
-    """행을 지우지 않고 use_yn='N' 으로 바꾼다."""
-    delete_post(db, current_user, post_id)
+    """행을 지우지 않고 use_yn='N' 으로 바꾼다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 # 첨부파일 (후기 하나당 파일 하나)
@@ -188,8 +194,11 @@ def upload_post_file(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> PostDetailResponse:
-    """첨부가 이미 있으면 새 파일로 갈아 끼운다. 옛 파일은 서버가 지운다."""
-    return attach_file(db, current_user, post_id, file)
+    """첨부가 이미 있으면 새 파일로 갈아 끼운다. 옛 파일은 서버가 지운다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.delete(
@@ -207,8 +216,11 @@ def remove_post_file(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> None:
-    """첨부가 없어도 204 다. 요청의 목적이 '첨부 없는 상태' 이기 때문이다."""
-    detach_file(db, current_user, post_id)
+    """첨부가 없어도 204 다. 요청의 목적이 '첨부 없는 상태' 이기 때문이다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.get(
@@ -221,14 +233,11 @@ def download_post_file(
     post_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ) -> FileResponse:
-    """업로드 폴더를 정적 서빙하지 않고 이 주소로 내려주는 이유가 두 가지다."""
-    target, org_name, _ext = open_post_file(db, post_id)
+    """업로드 폴더를 정적 서빙하지 않고 이 주소로 내려주는 이유가 두 가지다.
 
-    return FileResponse(
-        target,
-        filename=org_name,
-        content_disposition_type="inline",
-    )
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.post(
@@ -240,8 +249,11 @@ def count_view(
     post_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ) -> dict:
-    """상세 화면이 열릴 때 한 번 부른다."""
-    return {"view_count": increase_view(db, post_id)}
+    """상세 화면이 열릴 때 한 번 부른다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.put(
@@ -255,8 +267,11 @@ def like_post(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> LikeResponse:
-    """POST가 아니라 PUT이다. 같은 요청을 두 번 보내도 결과가 같다(멱등)."""
-    return set_like(db, current_user, post_id, liked=True)
+    """POST가 아니라 PUT이다. 같은 요청을 두 번 보내도 결과가 같다(멱등).
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.delete(
@@ -270,7 +285,8 @@ def unlike_post(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> LikeResponse:
-    return set_like(db, current_user, post_id, liked=False)
+    """TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다."""
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.post(
@@ -291,7 +307,8 @@ def write_comment(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> CommentResponse:
-    return create_comment(db, current_user, post_id, payload)
+    """TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다."""
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.put(
@@ -312,7 +329,8 @@ def edit_comment(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> CommentResponse:
-    return update_comment(db, current_user, post_id, comment_id, payload)
+    """TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다."""
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.delete(
@@ -331,4 +349,5 @@ def remove_comment(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> None:
-    delete_comment(db, current_user, post_id, comment_id)
+    """TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다."""
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)

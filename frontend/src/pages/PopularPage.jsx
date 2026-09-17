@@ -1,18 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import DateRangeFilter from '../components/common/DateRangeFilter'
-import ErrorMessage from '../components/common/ErrorMessage'
 import LikedList from '../components/recommendation/LikedList'
-import Loading from '../components/common/Loading'
-import { getPopular } from '../api/posts'
-import { parseApiError } from '../utils/apiError'
+import { SAMPLE_POPULAR } from '../data/sampleBoard'
 import { shiftDays, toDateKey } from '../utils/format'
 import '../styles/pages/ListPage.css'
 
 // 인기 레시피 전체 목록 + 기간 검색.
 // 첫 화면 오른쪽에 있는 순위를 넓게 펼친 화면이다.
 //
-// 집계는 서버가 한다. 고른 기간에 "새로" 눌린 좋아요만 세기 때문에
-// 여기 오는 like_count 는 그 기간의 좋아요 수지 누적이 아니다.
+// ! 아직 서버에 붙어 있지 않다. 게시판 담당자가 채운다.
+//
+// 인기 레시피는 게시글 좋아요(review_likes)를 기간으로 집계한 결과라서
+// 게시판이 완성돼야 값이 나온다. 지금은 하드코딩 데이터를 그린다.
+//
+// 붙일 때 할 일
+// -------------
+//   1. useEffect 로 getPopular({ start, end, limit: PAGE_SIZE }) 를 부른다
+//   2. 기간이 바뀔 때마다 다시 부른다 (의존성 [start, end])
+//   3. 요청이 보낸 순서대로 도착하지 않으니 alive 플래그로
+//      늦게 온 응답이 새 결과를 덮지 않게 막는다
 
 // 한 번에 받아올 개수. 전체보기 화면이라 첫 화면(8건)보다 넉넉히 잡았다.
 const PAGE_SIZE = 50
@@ -22,38 +28,8 @@ export default function PopularPage() {
   const [start, setStart] = useState(toDateKey(shiftDays(-29)))
   const [end, setEnd] = useState(toDateKey(new Date()))
 
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
-
-  // 기간이 바뀔 때마다 다시 물어본다.
-  // alive 는 늦게 도착한 옛날 응답이 새 결과를 덮지 않게 막아준다.
-  useEffect(() => {
-    let alive = true
-    setLoading(true)
-    setLoadError('')
-
-    getPopular({ start: start, end: end, limit: PAGE_SIZE })
-      .then(function (data) {
-        if (alive) {
-          setItems(data)
-        }
-      })
-      .catch(function (err) {
-        if (alive) {
-          setLoadError(parseApiError(err).message)
-        }
-      })
-      .finally(function () {
-        if (alive) {
-          setLoading(false)
-        }
-      })
-
-    return function () {
-      alive = false
-    }
-  }, [start, end])
+  // TODO: 서버에서 받아오게 바꾼다. 지금은 하드코딩 데이터다.
+  const items = SAMPLE_POPULAR
 
   // 기간 검색 버튼을 눌렀을 때
   function onSearch(nextStart, nextEnd) {
@@ -65,9 +41,7 @@ export default function PopularPage() {
     <div className="list-page">
       <div className="section-head">
         <h2 className="section-title">인기 레시피</h2>
-        {!loading && (
-          <span className="muted section-more">{items.length}건</span>
-        )}
+        <span className="muted section-more">{items.length}건</span>
       </div>
 
       <p className="muted list-page__desc">
@@ -77,13 +51,7 @@ export default function PopularPage() {
       <div className="card">
         <DateRangeFilter start={start} end={end} onSearch={onSearch} />
 
-        {loadError && <ErrorMessage message={loadError} />}
-
-        {!loadError && loading && (
-          <Loading message="인기 레시피를 불러오는 중..." />
-        )}
-
-        {!loadError && !loading && <LikedList items={items} />}
+        <LikedList items={items} />
       </div>
     </div>
   )

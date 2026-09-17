@@ -35,6 +35,12 @@
   top: 16px;
   right: 18px;
 
+  /* 흐르는 카드 줄(.wpick__track)보다 위에 둔다.
+     track 은 animation 으로 transform 이 걸려 있어서 쌓임 맥락을 새로 만드는데,
+     DOM 에서 이 버튼보다 뒤에 있어 그냥 두면 버튼을 덮는다.
+     덮이면 'AI가 추천했어요!' 배지 때문에 버튼을 누를 수가 없다 */
+  z-index: 2;
+
   display: inline-flex;
   align-items: center;
   gap: 6px;

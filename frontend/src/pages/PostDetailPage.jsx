@@ -1,24 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import ErrorMessage from '../components/common/ErrorMessage'
-import Loading from '../components/common/Loading'
+import { useRef, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import RecipeView from '../components/recipe/RecipeView'
-import { useAuth } from '../contexts/AuthContext'
-import { useProfile } from '../contexts/ProfileContext'
-import {
-  addComment,
-  countPostView,
-  getPost,
-  removeComment,
-  removePost,
-  removePostFile,
-  setPostLike,
-  updateComment,
-  updatePost,
-  uploadPostFile,
-} from '../api/posts'
 import PostAttachment from '../components/community/PostAttachment'
-import { parseApiError } from '../utils/apiError'
+import { useAuth } from '../contexts/AuthContext'
+import { SAMPLE_POST_DETAIL } from '../data/sampleBoard'
 import { formatDateTime } from '../utils/format'
 import '../styles/pages/PostDetailPage.css'
 
@@ -28,9 +13,19 @@ import '../styles/pages/PostDetailPage.css'
 // 좋아요, 댓글, 수정, 삭제만 로그인이 필요하고
 // 수정이랑 삭제는 내가 쓴 것만 된다. 서버가 다시 확인한다.
 //
-// 파일 안에 컴포넌트가 두 개인 이유는 아래 PostDetail 에 key 를 주려고 그렇다.
-// key 가 바뀌면 리액트가 다른 컴포넌트로 보고 처음부터 새로 만든다.
-// 이게 없으면 1번 글에서 2번 글로 갔을 때 좋아요랑 댓글이 1번 글 값으로 남는다.
+// ! 아직 서버에 붙어 있지 않다. 담당자가 채운다.
+//
+// 지금은 src/data/sampleBoard.js 의 하드코딩 데이터를 그린다.
+// 주소의 :postId 가 몇이든 같은 글이 나온다.
+//
+// 붙일 때 할 일
+// -------------
+//   1. useEffect 로 getPost(postId) 를 부르고 post · comments 에 넣는다
+//   2. 같은 자리에서 countPostView(postId) 도 한 번 부른다 (조회수 +1)
+//   3. 아래 onToggleLike · onSubmitComment · onEditComment · onRemoveComment ·
+//      onSaveEdit · onRemovePost · onPickFile · onRemoveFile 의 TODO 를 채운다
+//   4. 좋아요는 화면을 먼저 바꾸고 서버에 보내는 편이 낫다(낙관적 갱신).
+//      하트는 바로 반응해야 눌린 느낌이 나고, 실패하면 되돌리면 된다.
 export default function PostDetailPage() {
   const { postId } = useParams() // 주소의 /community/:postId 부분
   return <PostDetail key={postId} postId={postId} />
@@ -38,143 +33,47 @@ export default function PostDetailPage() {
 
 function PostDetail({ postId }) {
   const { isAuthenticated } = useAuth()
-  const { reload } = useProfile()
-  const navigate = useNavigate()
 
-  // 게시글
-  const [post, setPost] = useState(null)
-  const [comments, setComments] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
+  // TODO: 서버에서 받아오게 바꾼다. 지금은 하드코딩 데이터다.
+  //   const [post, setPost] = useState(null)
+  //   const [comments, setComments] = useState([])
+  //   useEffect(() => { getPost(postId).then(...) }, [postId])
+  const post = SAMPLE_POST_DETAIL
+  const comments = SAMPLE_POST_DETAIL.comments
 
   // 좋아요
-  const [liked, setLiked] = useState(false) // 내가 눌렀는지
-  const [likeCount, setLikeCount] = useState(0) // 전체 개수
-  const [likeBusy, setLikeBusy] = useState(false) // 요청 중이면 버튼 잠금
+  const [liked, setLiked] = useState(SAMPLE_POST_DETAIL.liked)
+  const [likeCount, setLikeCount] = useState(SAMPLE_POST_DETAIL.like_count)
 
   // 댓글 작성
-  const [draft, setDraft] = useState('') // 입력칸에 쓰는 중인 글
-  const [commentBusy, setCommentBusy] = useState(false)
-  const [actionError, setActionError] = useState('')
+  const [draft, setDraft] = useState('')
 
   // 글 수정
   const [editing, setEditing] = useState(false)
-  const [editTitle, setEditTitle] = useState('')
-  const [editContent, setEditContent] = useState('')
-  const [editBusy, setEditBusy] = useState(false)
+  const [editTitle, setEditTitle] = useState(SAMPLE_POST_DETAIL.title)
+  const [editContent, setEditContent] = useState(SAMPLE_POST_DETAIL.content)
 
   // 사진
-  const [fileBusy, setFileBusy] = useState(false)
   const fileInput = useRef(null)
-
-  // 글쓰기 화면에서 사진 업로드만 실패했을 때 들려 보낸 메시지.
-  // 글은 등록됐으므로 여기서 "다시 올려보세요" 라고 알려주는 편이 낫다.
-  const location = useLocation()
-
-  let firstFileError = ''
-  if (location.state && location.state.fileError) {
-    firstFileError = location.state.fileError
-  }
-
-  const [fileError, setFileError] = useState(firstFileError)
-
-  // 화면이 처음 열릴 때 게시글을 불러오고, 조회수를 한 번 올린다.
-  //
-  // 조회수를 GET 에서 같이 올리지 않는 이유는, GET 은 몇 번을 보내도 결과가
-  // 같아야 하기 때문이다. 그래서 서버에 따로 엔드포인트를 뒀고 화면이 부른다.
-  useEffect(() => {
-    getPost(postId)
-      .then(function (data) {
-        setPost(data)
-        // 서버가 준 값을 각각의 state 에 나눠 담는다.
-        // 좋아요랑 댓글은 이 화면에서 바뀌니까 따로 들고 있어야 한다.
-        setComments(data.comments)
-        setLiked(data.liked)
-        setLikeCount(data.like_count)
-        setEditTitle(data.title)
-        setEditContent(data.content)
-      })
-      .catch(function (err) {
-        setLoadError(parseApiError(err).message)
-      })
-      .finally(function () {
-        setLoading(false)
-      })
-
-    // 조회수는 실패해도 무시한다. 숫자 하나 때문에 에러를 띄울 이유가 없다.
-    countPostView(postId).catch(function () {})
-  }, [postId])
-
-  if (loading) {
-    return (
-      <div className="card">
-        <Loading message="게시글을 불러오는 중..." />
-      </div>
-    )
-  }
-
-  if (loadError || !post) {
-    let errorText = loadError
-    if (!errorText) {
-      errorText = '게시글을 찾을 수 없습니다.'
-    }
-
-    return (
-      <div className="card">
-        <p className="empty">
-          {errorText}
-          <br />
-          <Link to="/community" className="post__link">
-            목록으로 →
-          </Link>
-        </p>
-      </div>
-    )
-  }
 
   // 하트를 누르면 실행된다.
   //
-  // 서버 응답을 기다리지 않고 화면부터 먼저 바꾼다.
-  // 하트는 바로 반응해야 눌린 느낌이 나는데 서버를 기다리면 잠깐 멍하다.
-  // 대신 실패하면 아래 catch 에서 되돌린다.
-  async function onToggleLike() {
-    // 실패했을 때 되돌릴 수 있도록 지금 값을 먼저 적어둔다
-    const previousLiked = liked
-    const previousCount = likeCount
-
-    const nextLiked = !liked // 켜져 있으면 끄고, 꺼져 있으면 켠다
-
-    // 1) 화면부터 먼저 바꾼다
+  // TODO: setPostLike(post.id, nextLiked) 를 부르고
+  //   서버가 돌려준 { liked, like_count } 로 덮어쓴다.
+  //   지금은 화면 숫자만 바꾼다 (새로고침하면 돌아온다).
+  function onToggleLike() {
+    const nextLiked = !liked
     setLiked(nextLiked)
+
     if (nextLiked) {
-      setLikeCount(previousCount + 1)
+      setLikeCount(likeCount + 1)
     } else {
-      setLikeCount(previousCount - 1)
-    }
-
-    setActionError('')
-    setLikeBusy(true) // 응답이 올 때까지 버튼을 잠근다
-
-    try {
-      // 2) 서버에 알린다
-      const result = await setPostLike(post.id, nextLiked)
-
-      // 3) 서버가 직접 세어준 값으로 덮어쓴다.
-      //    내가 누르는 사이에 남이 누른 것까지 반영된다.
-      setLiked(result.liked)
-      setLikeCount(result.like_count)
-    } catch (err) {
-      // 실패했으니 1)에서 바꾼 화면을 눌렀던 순간의 값으로 되돌린다
-      setLiked(previousLiked)
-      setLikeCount(previousCount)
-      setActionError(parseApiError(err).message)
-    } finally {
-      setLikeBusy(false)
+      setLikeCount(likeCount - 1)
     }
   }
 
   // 댓글 등록 버튼을 누르면 실행된다
-  async function onSubmitComment(e) {
+  function onSubmitComment(e) {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
 
     const content = draft.trim()
@@ -182,95 +81,40 @@ function PostDetail({ postId }) {
       return
     }
 
-    setActionError('')
-    setCommentBusy(true)
-
-    try {
-      const created = await addComment(post.id, content)
-
-      // 서버가 준 댓글을 목록 맨 뒤에 붙인다.
-      // 댓글은 쓴 순서대로 보여줘서 맨 뒤가 맞다.
-      setComments(comments.concat([created]))
-
-      setDraft('') // 입력칸을 비운다
-      reload() // 알림 개수를 다시 맞춘다
-    } catch (err) {
-      setActionError(parseApiError(err).message)
-    } finally {
-      setCommentBusy(false)
-    }
+    // TODO: addComment(post.id, content) 를 부르고
+    //   서버가 준 댓글을 목록 맨 뒤에 붙인다. 댓글은 쓴 순서대로 보여준다.
+    window.alert('댓글 기능은 아직 준비 중입니다.')
+    setDraft('')
   }
 
-  // 댓글을 고친다. 서버가 준 값으로 그 자리만 갈아 끼운다.
-  async function onEditComment(comment, content) {
-    const updated = await updateComment(post.id, comment.id, content)
-
-    setComments(
-      comments.map(function (item) {
-        if (item.id === comment.id) {
-          return updated
-        }
-        return item
-      }),
-    )
+  // 댓글을 고친다
+  function onEditComment(comment, content) {
+    // TODO: updateComment(post.id, comment.id, content)
+    window.alert('댓글 기능은 아직 준비 중입니다.')
   }
 
   // 댓글을 지운다
-  async function onRemoveComment(comment) {
+  function onRemoveComment(comment) {
     const ok = window.confirm('댓글을 지울까요?')
     if (!ok) {
       return
     }
 
-    setActionError('')
-
-    try {
-      await removeComment(post.id, comment.id)
-
-      setComments(
-        comments.filter(function (item) {
-          return item.id !== comment.id
-        }),
-      )
-      reload()
-    } catch (err) {
-      setActionError(parseApiError(err).message)
-    }
+    // TODO: removeComment(post.id, comment.id)
+    window.alert('댓글 기능은 아직 준비 중입니다.')
   }
 
   // 글 수정 저장
-  async function onSaveEdit(e) {
+  function onSaveEdit(e) {
     e.preventDefault()
 
-    setEditBusy(true)
-    setActionError('')
-
-    try {
-      const updated = await updatePost(post.id, {
-        title: editTitle.trim(),
-        content: editContent.trim(),
-      })
-      setPost(updated)
-      setEditing(false)
-    } catch (err) {
-      const parsed = parseApiError(err)
-
-      let text = parsed.fieldErrors.title
-      if (!text) {
-        text = parsed.fieldErrors.content
-      }
-      if (!text) {
-        text = parsed.message
-      }
-
-      setActionError(text)
-    } finally {
-      setEditBusy(false)
-    }
+    // TODO: updatePost(post.id, { title, content })
+    window.alert('게시판 기능은 아직 준비 중입니다.')
+    setEditing(false)
   }
 
   // 글 삭제. 지우고 나면 볼 화면이 없어서 목록으로 보낸다.
-  async function onRemovePost() {
+  function onRemovePost() {
     const ok = window.confirm(
       '이 글을 지울까요?\n달린 댓글도 함께 보이지 않게 됩니다.',
     )
@@ -278,83 +122,31 @@ function PostDetail({ postId }) {
       return
     }
 
-    setActionError('')
+    // TODO: removePost(post.id) 하고 navigate('/community')
+    window.alert('게시판 기능은 아직 준비 중입니다.')
+  }
 
-    try {
-      await removePost(post.id)
-      reload()
-      navigate('/community')
-    } catch (err) {
-      setActionError(parseApiError(err).message)
+  // 사진 붙이기 / 갈아 끼우기
+  function onPickFile(e) {
+    // TODO: uploadPostFile(post.id, picked) 를 부르고
+    //   서버가 돌려준 게시글로 통째로 갈아 끼운다.
+    window.alert('사진 첨부는 아직 준비 중입니다.')
+
+    // 같은 파일을 또 골라도 onChange 가 돌게 입력칸을 비운다
+    if (fileInput.current) {
+      fileInput.current.value = ''
     }
   }
 
-  // 사진 붙이기 / 갈아 끼우기.
-  //
-  // 서버가 바뀐 게시글을 통째로 돌려줘서 그걸 그대로 쓴다.
-  // 화면에서 file 만 직접 만들어 넣으면 서버가 계산한 크기 표시나
-  // 내려받기 주소가 화면이랑 어긋날 수 있다.
-  async function onPickFile(e) {
-    let picked = null
-    if (e.target.files && e.target.files.length > 0) {
-      picked = e.target.files[0]
-    }
-
-    if (!picked) {
-      return
-    }
-
-    setFileError('')
-    setFileBusy(true)
-
-    try {
-      const updated = await uploadPostFile(post.id, picked)
-      setPost(updated)
-    } catch (err) {
-      setFileError(parseApiError(err).message)
-    } finally {
-      setFileBusy(false)
-
-      // 같은 파일을 또 골라도 onChange 가 돌게 입력칸을 비운다.
-      // 안 비우면 방금 실패한 파일을 다시 고를 때 아무 일도 안 일어난다.
-      if (fileInput.current) {
-        fileInput.current.value = ''
-      }
-    }
-  }
-
-  // 사진 떼기. 서버가 DB 를 정리하고 디스크에서도 지운다.
-  async function onRemoveFile() {
+  // 사진 떼기
+  function onRemoveFile() {
     const ok = window.confirm('첨부한 사진을 지울까요?')
     if (!ok) {
       return
     }
 
-    setFileError('')
-    setFileBusy(true)
-
-    try {
-      await removePostFile(post.id)
-
-      // 사진만 빼고 나머지는 그대로 둔다
-      const next = Object.assign({}, post)
-      next.file = null
-      setPost(next)
-    } catch (err) {
-      setFileError(parseApiError(err).message)
-    } finally {
-      setFileBusy(false)
-    }
-  }
-
-  let editSaveLabel = '저장'
-  if (editBusy) {
-    editSaveLabel = '저장 중…'
-  }
-
-  let commentSubmitLabel = '등록'
-  if (commentBusy) {
-    commentSubmitLabel = '등록 중...'
+    // TODO: removePostFile(post.id)
+    window.alert('사진 첨부는 아직 준비 중입니다.')
   }
 
   let likeClass = 'post__like'
@@ -405,8 +197,8 @@ function PostDetail({ postId }) {
             </label>
 
             <div className="post__edit-actions">
-              <button type="submit" className="btn btn--sm" disabled={editBusy}>
-                {editSaveLabel}
+              <button type="submit" className="btn btn--sm">
+                저장
               </button>
               <button
                 type="button"
@@ -437,8 +229,8 @@ function PostDetail({ postId }) {
             <PostAttachment
               file={post.file}
               isMine={post.is_mine}
-              busy={fileBusy}
-              error={fileError}
+              busy={false}
+              error=""
               inputRef={fileInput}
               onPick={onPickFile}
               onRemove={onRemoveFile}
@@ -461,7 +253,7 @@ function PostDetail({ postId }) {
             type="button"
             className={likeClass}
             onClick={onToggleLike}
-            disabled={!isAuthenticated || likeBusy}
+            disabled={!isAuthenticated}
             title={likeTitle}
           >
             ♥ {likeCount}
@@ -470,7 +262,7 @@ function PostDetail({ postId }) {
             <span className="muted post__hint">
               <Link to="/login" className="post__link">
                 로그인
-              </Link>{" "}
+              </Link>{' '}
               후 좋아요를 누를 수 있습니다
             </span>
           )}
@@ -495,8 +287,6 @@ function PostDetail({ postId }) {
             </span>
           )}
         </div>
-
-        <ErrorMessage message={actionError} />
       </article>
 
       <section className="card">
@@ -533,9 +323,9 @@ function PostDetail({ postId }) {
               <button
                 type="submit"
                 className="btn btn--sm"
-                disabled={!draft.trim() || commentBusy}
+                disabled={!draft.trim()}
               >
-                {commentSubmitLabel}
+                등록
               </button>
             </div>
           </form>
@@ -543,7 +333,7 @@ function PostDetail({ postId }) {
           <p className="muted post__login-ask">
             <Link to="/login" className="post__link">
               로그인
-            </Link>{" "}
+            </Link>{' '}
             후 댓글을 작성할 수 있습니다.
           </p>
         )}
@@ -560,10 +350,8 @@ function PostDetail({ postId }) {
 function Comment({ comment, onEdit, onRemove }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(comment.content)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
 
-  async function onSubmit(e) {
+  function onSubmit(e) {
     e.preventDefault()
 
     const content = draft.trim()
@@ -571,22 +359,8 @@ function Comment({ comment, onEdit, onRemove }) {
       return
     }
 
-    setBusy(true)
-    setError('')
-
-    try {
-      await onEdit(comment, content)
-      setEditing(false)
-    } catch (err) {
-      setError(parseApiError(err).message)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  let saveLabel = '저장'
-  if (busy) {
-    saveLabel = '저장 중…'
+    onEdit(comment, content)
+    setEditing(false)
   }
 
   // 고치던 내용을 버리고 원래대로 되돌린다
@@ -629,8 +403,8 @@ function Comment({ comment, onEdit, onRemove }) {
           <div className="post__form-foot">
             <span className="muted">{draft.length} / 1000</span>
             <span className="post__edit-actions">
-              <button type="submit" className="btn btn--sm" disabled={busy}>
-                {saveLabel}
+              <button type="submit" className="btn btn--sm">
+                저장
               </button>
               <button
                 type="button"
@@ -641,7 +415,6 @@ function Comment({ comment, onEdit, onRemove }) {
               </button>
             </span>
           </div>
-          <ErrorMessage message={error} />
         </form>
       ) : (
         <p className="post__comment-body">{comment.content}</p>

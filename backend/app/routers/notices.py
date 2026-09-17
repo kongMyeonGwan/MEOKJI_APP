@@ -1,6 +1,12 @@
-"""공지사항 라우터 (STEP 27)."""
+"""공지사항 라우터 (STEP 27).
 
-from fastapi import APIRouter, Depends, Path, Query, status
+! 아직 만들지 않은 기능이다. 담당자가 채운다.
+  주소 · 요청/응답 스키마는 그대로 두었으니 함수 안만 구현하면 된다.
+  화면(frontend/src/pages/CommunityPage.jsx)은 지금 하드코딩한
+  더미 데이터로 그려지고 있다. 여기가 완성되면 그쪽도 API 로 바꾸면 된다.
+"""
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_admin_user
@@ -14,15 +20,10 @@ from app.schemas.notice import (
     NoticeViewResponse,
 )
 from app.schemas.page import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
-from app.services.notice_service import (
-    create_notice,
-    delete_notice,
-    increase_view,
-    list_notices,
-    update_notice,
-)
-
 router = APIRouter(prefix="/api/notices", tags=["notices"])
+
+# 아직 구현하지 않은 엔드포인트가 내려주는 문구.
+TODO_MESSAGE = "아직 만들지 않은 기능입니다. (공지사항 담당자 작업 예정)"
 
 # 관리자 전용 엔드포인트가 공통으로 낼 수 있는 응답.
 # /docs 화면에 적어주는 설명일 뿐, 실제 동작에는 영향이 없다.
@@ -44,8 +45,11 @@ def read_notices(
     ),
     db: Session = Depends(get_db),
 ) -> NoticePage:
-    """고정 공지가 위로, 그 안에서는 최신순이다."""
-    return list_notices(db, page, size)
+    """고정 공지가 위로, 그 안에서는 최신순이다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.post(
@@ -58,8 +62,11 @@ def count_notice_view(
     notice_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ) -> NoticeViewResponse:
-    """목록 GET 에서 같이 올리지 않고 따로 뺐다."""
-    return increase_view(db, notice_id)
+    """목록 GET 에서 같이 올리지 않고 따로 뺐다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.post(
@@ -79,8 +86,11 @@ def write_notice(
     admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db),
 ) -> NoticeResponse:
-    """작성자는 본문이 아니라 토큰에서 나온 사람으로 들어간다."""
-    return create_notice(db, admin, payload)
+    """작성자는 본문이 아니라 토큰에서 나온 사람으로 들어간다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.put(
@@ -101,8 +111,11 @@ def edit_notice(
     admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db),
 ) -> NoticeResponse:
-    """'내 공지만' 이 아니다."""
-    return update_notice(db, notice_id, payload)
+    """'내 공지만' 이 아니다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
 
 
 @router.delete(
@@ -121,5 +134,8 @@ def remove_notice(
     admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db),
 ) -> None:
-    """행을 지우지 않고 use_yn='N' 으로 바꾼다."""
-    delete_notice(db, notice_id)
+    """행을 지우지 않고 use_yn='N' 으로 바꾼다.
+
+    TODO: 담당자가 구현할 것. 서비스 함수를 만들어 여기서 부른다.
+    """
+    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, TODO_MESSAGE)
