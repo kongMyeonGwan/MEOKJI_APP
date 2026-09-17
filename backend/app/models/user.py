@@ -1,9 +1,4 @@
-"""USERS 테이블 모델.
-
-스키마의 단일 소스는 db/01_schema.sql 이다.
-이 파일은 그 테이블을 파이썬에서 다루기 위한 매핑일 뿐이며,
-create_all()로 테이블을 만들지 않는다.
-"""
+"""USERS 테이블 모델."""
 
 from datetime import datetime
 from decimal import Decimal
@@ -14,18 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database.database import Base
 from app.models.types import USE_YN_YES, UtcTimestamp
 
-# DDL의 ck_users_gender CHECK 제약과 값이 일치해야 한다.
-GENDER_MALE = "MALE"
-GENDER_FEMALE = "FEMALE"
-GENDER_OTHER = "OTHER"
-
 # 권한 등급. DDL의 ck_users_user_level CHECK 제약과 값이 일치해야 한다.
-#
-# 숫자를 코드에 그대로 쓰지 않는다. `if user.user_level == 1` 은 읽는 사람이
-# 1이 관리자인지 일반 회원인지 알 수 없고, 반대로 적어도 눈에 띄지 않는다.
-#
-# 화면의 '요리 레벨'과는 아무 상관이 없다. 그쪽은 경험치에서 매번 계산하는
-# 값이고(user_service.make_level) DB에 저장하지 않는다. 이름만 비슷하다.
 USER_LEVEL_ADMIN = 1
 USER_LEVEL_MEMBER = 2
 
@@ -37,28 +21,19 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, Identity(always=False), primary_key=True)
 
     # unique=True를 주지 않는다. DDL의 유일성은 UNIQUE 제약이 아니라
-    # uq_users_email / uq_users_nickname 함수 기반 인덱스가 담당하며,
-    # 그 인덱스는 use_yn='Y' 인 행만 대상으로 한다(탈퇴 후 재가입 허용).
-    # 여기에 unique=True를 적으면 실제 제약과 다른 내용을 문서화하게 된다.
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     nickname: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # USER_LEVEL_* 상수만 넣는다. DB는 NUMBER(1) + CHECK(1,2).
-    #
-    # server_default="2" 라서 회원가입 코드가 이 값을 넘기지 않아도 일반 회원이
-    # 된다. 빠뜨렸을 때 권한이 없는 쪽으로 떨어지는 게 안전하다.
     user_level: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default=str(USER_LEVEL_MEMBER)
     )
 
-    # NULL = "선택 안 함". GENDER_* 상수만 넣는다.
+    # NULL = "선택 안 함". DDL의 ck_users_gender 가 값을 막는다.
     gender: Mapped[str | None] = mapped_column(String(10), nullable=True)
 
     # 대시보드 첫 화면의 날씨 조회에 쓴다.
-    #   address_* : 화면에 "서울특별시 강남구"로 보여주는 표시용
-    #   위경도    : 날씨 API를 실제로 호출하는 값
-    # OpenWeather가 한국 시·군·구를 도시명 문자열로 못 찾기 때문에 둘로 나눠 둔다.
     address_sido: Mapped[str | None] = mapped_column(String(30), nullable=True)
     address_sigungu: Mapped[str | None] = mapped_column(String(30), nullable=True)
     latitude: Mapped[Decimal | None] = mapped_column(Numeric(9, 6), nullable=True)

@@ -1,7 +1,4 @@
-"""Health Check 라우터.
-
-서버가 살아있는지, DB 연결이 되는지를 한 번에 확인한다.
-"""
+"""Health Check 라우터."""
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
@@ -17,10 +14,7 @@ router = APIRouter(prefix="/api", tags=["health"])
 
 @router.get("/health")
 def health_check(db: Session = Depends(get_db)):
-    """앱 + DB 상태 확인.
-
-    DB 연결 실패 시 503을 반환한다(앱은 떠 있지만 정상 서비스는 불가한 상태).
-    """
+    """앱 + DB 상태 확인."""
     db_status = "ok"
     db_error: str | None = None
 

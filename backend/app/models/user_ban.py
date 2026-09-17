@@ -1,7 +1,4 @@
-"""USER_BANS 테이블 모델 (못 먹거나 먹기 싫은 재료).
-
-스키마의 단일 소스는 db/01_schema.sql 이다.
-"""
+"""USER_BANS 테이블 모델 (못 먹거나 먹기 싫은 재료)."""
 
 from datetime import datetime
 
@@ -12,8 +9,6 @@ from app.database.database import Base
 from app.models.types import USE_YN_YES, UtcTimestamp
 
 # DDL의 ck_user_bans_type CHECK 제약과 값이 일치해야 한다.
-# 스키마(schemas/ban.py)의 Literal도 이 둘만 허용한다.
-BAN_TYPE_DISLIKE = "DISLIKE"
 BAN_TYPE_ALLERGY = "ALLERGY"
 
 

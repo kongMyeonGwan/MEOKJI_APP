@@ -1,24 +1,4 @@
-"""레시피 후기 게시판 기능 (글 목록 · 상세 · 쓰기 · 좋아요 · 댓글).
-
-라우터는 HTTP 껍데기만 담당하고, 실제 규칙은 전부 여기에 있다.
-
-함수가 받는 user 를 잘 보자
----------------------------
-    user: User | None    로그인 안 해도 되는 기능 (목록 · 상세)
-    user: User           로그인이 꼭 필요한 기능 (글쓰기 · 좋아요 · 댓글)
-
-"남의 기록으로 글을 쓸 수 없다" 같은 규칙은 라우터가 아니라 이 파일이 지킨다.
-
-기억해야 할 두 가지
--------------------
-1. 음식명 · 레시피 · 재료는 RECIPE_REVIEWS 테이블에 없다.
-   MEAL_HISTORIES(내가 확정한 식사 기록) 와 JOIN 해서 읽어온다.
-   복사본을 따로 두면 두 값이 어긋날 수 있어서 원본에서 바로 읽는다.
-
-2. 삭제는 전부 논리 삭제다. 행이 안 지워지고 use_yn 만 'N' 이 된다.
-   그래서 조회할 때마다 use_yn == 'Y' 조건을 붙여야 한다.
-   좋아요 개수 · 댓글 개수를 셀 때 특히 자주 빠뜨린다.
-"""
+"""레시피 후기 게시판 기능 (글 목록 · 상세 · 쓰기 · 좋아요 · 댓글)."""
 
 from datetime import date
 from pathlib import Path
@@ -55,26 +35,11 @@ from app.services import file_service
 # 화면은 CSS 로 2줄까지만 보여주므로 200자면 넉넉하다.
 EXCERPT_LENGTH = 200
 
-# ==========================================================
 # 도우미 함수들
-# ==========================================================
 
 
 def count_likes_by_post(db: Session, post_ids: list[int]) -> dict[int, int]:
-    """주어진 글들의 좋아요 개수를 한 번에 세서 {글 id: 개수} 로 돌려준다.
-
-        {1: 5, 2: 0, 3: 12}
-
-    글 하나마다 COUNT 쿼리를 날리면 글이 20개일 때 쿼리가 21번 나간다(N+1 문제).
-    GROUP BY 로 한 번에 세면 쿼리 한 번으로 끝난다.
-
-    post_ids 는 **지금 페이지에 실제로 나가는 글들** 이다.
-    이 조건이 없으면 1페이지를 보여주려고 전체 글의 좋아요를 다 세게 된다.
-    글이 수천 건이 돼도 세는 양이 20건어치로 고정된다.
-
-    use_yn == 'Y' 조건을 빠뜨리면 취소한 좋아요까지 세어서
-    좋아요를 눌렀다 껐는데도 숫자가 안 줄어든다.
-    """
+    """주어진 글들의 좋아요 개수를 한 번에 세서 {글 id: 개수} 로 돌려준다."""
     if not post_ids:
         return {}
 
@@ -124,10 +89,7 @@ def count_likes_of_post(db: Session, post_id: int) -> int:
 
 
 def is_liked_by(db: Session, post_id: int, user: User | None) -> bool:
-    """이 사람이 이 글에 좋아요를 눌러둔 상태인지 확인한다.
-
-    로그인 안 했으면(user 가 None) 볼 것도 없이 False 다.
-    """
+    """이 사람이 이 글에 좋아요를 눌러둔 상태인지 확인한다."""
     if user is None:
         return False
 
@@ -143,15 +105,7 @@ def is_liked_by(db: Session, post_id: int, user: User | None) -> bool:
 
 
 def add_keyword_filter(query, keyword: str | None):
-    """검색어가 있으면 "제목 또는 본문에 포함" 조건을 하나 더 붙인다.
-
-    Oracle 에는 대소문자를 무시하는 ILIKE 가 없어서, 양쪽 다 소문자로 바꿔 비교한다.
-    한글에는 의미가 없지만 영어 메뉴명 검색에 필요하다.
-
-    사용자가 % 나 _ 를 입력하면 SQL 에서는 "아무 글자나" 라는 뜻이 되어버린다.
-    그러면 "50%" 를 검색했을 때 엉뚱한 글이 다 나온다.
-    그래서 그 앞에 역슬래시를 붙여서 그냥 글자로 취급하게 만든다.
-    """
+    """검색어가 있으면 "제목 또는 본문에 포함" 조건을 하나 더 붙인다."""
     if keyword is None or not keyword.strip():
         return query
 
@@ -170,11 +124,7 @@ def add_keyword_filter(query, keyword: str | None):
 
 
 def get_alive_post(db: Session, post_id: int) -> RecipeReview:
-    """살아있는 게시글을 가져온다. 없거나 삭제됐으면 404.
-
-    삭제된 글은 "원래 없던 글"처럼 취급한다.
-    410(사라짐) 같은 걸 주면 "그 번호는 예전에 있었다"는 사실이 새어나간다.
-    """
+    """살아있는 게시글을 가져온다."""
     review = db.get(RecipeReview, post_id)
 
     if review is None or review.use_yn != USE_YN_YES:
@@ -184,12 +134,7 @@ def get_alive_post(db: Session, post_id: int) -> RecipeReview:
 
 
 def make_file_info(review: RecipeReview) -> PostFileInfo | None:
-    """첨부파일 정보를 화면이 쓸 모양으로 만든다. 첨부가 없으면 None.
-
-    파일 본체를 내려주는 주소만 알려준다. 서버에 저장된 실제 파일명과
-    폴더는 담지 않는다 — 화면이 쓸 일이 없고, 디스크 구조를 밖에
-    알려서 좋을 것도 없다.
-    """
+    """첨부파일 정보를 화면이 쓸 모양으로 만든다."""
     if review.file_yn != USE_YN_YES:
         return None
 
@@ -202,9 +147,7 @@ def make_file_info(review: RecipeReview) -> PostFileInfo | None:
     )
 
 
-# ==========================================================
 # 화면에서 부르는 기능들
-# ==========================================================
 
 
 def list_posts(
@@ -213,32 +156,7 @@ def list_posts(
     page: int = 1,
     size: int = DEFAULT_PAGE_SIZE,
 ) -> PostPage:
-    """게시글 목록을 최신순으로 한 페이지씩 돌려준다. 로그인 안 해도 볼 수 있다.
-
-    음식명은 MEAL_HISTORIES 에서 JOIN 해서 가져온다.
-    레시피 · 재료(CLOB)는 select 하지 않는다. 목록 화면에서는 안 쓰는데
-    20건이면 큰 데이터를 20번 읽어오게 되기 때문이다.
-    본문은 미리보기에 필요해서 읽되, 앞부분만 잘라서 내려준다.
-
-    MealHistory 쪽에는 use_yn 조건을 안 건다.
-    글쓴이가 나중에 자기 기록을 정리했다고 해서 남의 화면에서 음식명만
-    사라진 게시글이 되면 안 되기 때문이다.
-    글이 보일지 말지는 글 자신의 use_yn 이 정한다.
-
-    쿼리가 두 번 나간다
-    -------------------
-    1) COUNT — 조건에 맞는 글이 전부 몇 건인지. 화면의 페이지 번호에 쓴다
-    2) 목록   — 그중 이 페이지 몫만
-
-    한 번에 다 읽어서 파이썬에서 잘라도 결과는 같지만, 그러면 글이 천 건일 때
-    천 건을 전부 읽어놓고 20건만 쓰게 된다. 자르는 일은 DB 가 해야 한다.
-
-    정렬에 id 를 같이 넣는 이유
-    ---------------------------
-    created_at 이 같은 글이 둘 있으면 DB 가 순서를 마음대로 정한다. 그러면
-    같은 글이 1페이지와 2페이지에 다 나오거나 아예 안 나오는 일이 생긴다.
-    id 는 겹치지 않으므로 순서가 항상 똑같이 정해진다.
-    """
+    """게시글 목록을 최신순으로 한 페이지씩 돌려준다."""
     # COUNT 와 목록이 **같은 조건 · 같은 JOIN** 을 봐야 한다.
     # 한쪽에만 검색어를 붙이면 "3페이지가 있다는데 열면 비어 있는" 일이 생긴다.
     total = db.execute(
@@ -308,12 +226,7 @@ def list_posts(
 
 
 def get_post(db: Session, post_id: int, user: User | None) -> PostDetailResponse:
-    """게시글 하나 + 댓글 목록. 로그인 안 해도 볼 수 있다.
-
-    조회수는 여기서 안 올린다.
-    GET 요청은 몇 번을 보내도 결과가 같아야 하는데, 새로고침할 때마다
-    1씩 오르는 카운터는 그 원칙에 어긋난다.
-    """
+    """게시글 하나 + 댓글 목록."""
     row = db.execute(
         select(RecipeReview, MealHistory, User.nickname)
         .join(User, User.id == RecipeReview.user_id)
@@ -374,15 +287,7 @@ def get_post(db: Session, post_id: int, user: User | None) -> PostDetailResponse
 def create_post(
     db: Session, user: User, payload: PostCreateRequest
 ) -> PostDetailResponse:
-    """내가 확정한 식사 하나에 대해 후기를 올린다.
-
-    레시피 · 재료를 요청 본문으로 받지 않는다.
-    화면에 보여줄 값은 조회할 때 원본 기록에서 JOIN 해 오므로,
-    여기서는 "어떤 기록에 대한 글인지"만 정하면 된다.
-
-    남의 기록 번호를 넣어도 DB 의 FK 가 막아주긴 하지만,
-    거기까지 가면 Oracle 에러가 500 으로 새어나간다. 여기서 먼저 404 로 끊는다.
-    """
+    """내가 확정한 식사 하나에 대해 후기를 올린다."""
     history = db.get(MealHistory, payload.meal_history_id)
 
     # 없는 기록 · 남의 기록 · 삭제한 기록을 전부 똑같이 404 로 처리한다.
@@ -408,8 +313,6 @@ def create_post(
         db.rollback()
 
         # 이미 후기를 쓴 기록. 화면에서도 목록에서 빼두지만,
-        # 탭 두 개에서 동시에 등록하면 여기까지 온다.
-        # 최종 판단은 DB 의 uq_reviews_meal 인덱스가 한다.
         if "UQ_REVIEWS_MEAL" in str(exc.orig).upper():
             raise HTTPException(status.HTTP_409_CONFLICT, "이미 공유한 기록입니다.")
 
@@ -422,15 +325,7 @@ def create_post(
 
 
 def set_like(db: Session, user: User, post_id: int, liked: bool) -> LikeResponse:
-    """좋아요를 켜거나 끈다.
-
-    같은 상태를 두 번 요청해도 에러를 내지 않는다.
-    따닥 눌러서 요청이 두 번 나가는 건 사용자 잘못이 아니다.
-
-    좋아요 취소는 행을 지우는 게 아니라 use_yn='N' 이다.
-    다시 누르면 새 행을 만들지 않고 잠들어 있던 행을 되살린다.
-    새로 INSERT 해도 동작은 하지만, 껐다 켤 때마다 행이 계속 쌓인다.
-    """
+    """좋아요를 켜거나 끈다."""
     get_alive_post(db, post_id)  # 없는 글이면 여기서 404
 
     # 지금 켜져 있는 좋아요가 있는지 찾는다
@@ -498,19 +393,11 @@ def create_comment(
     )
 
 
-# ==========================================================
 # 수정 · 삭제 (STEP 21)
-#
-# 남의 글은 못 고치고 못 지운다. 그 판정을 여기서 한다.
-# ==========================================================
 
 
 def get_my_post(db: Session, user: User, post_id: int) -> RecipeReview:
-    """내 글 하나를 가져온다. 없거나 남의 글이면 404.
-
-    남의 글일 때만 403 을 주면 "그 번호는 존재한다"는 사실이 새어나간다.
-    그래서 둘 다 404 로 똑같이 응답한다.
-    """
+    """내 글 하나를 가져온다."""
     review = get_alive_post(db, post_id)
 
     if review.user_id != user.id:
@@ -522,11 +409,7 @@ def get_my_post(db: Session, user: User, post_id: int) -> RecipeReview:
 def update_post(
     db: Session, user: User, post_id: int, payload: PostUpdateRequest
 ) -> PostDetailResponse:
-    """내 글의 제목과 본문을 고친다.
-
-    레시피는 안 바뀐다. 원본 기록(MealHistory)에서 JOIN 해 오는 값이고,
-    그 기록은 확정한 뒤로 UPDATE 하지 않기 때문이다.
-    """
+    """내 글의 제목과 본문을 고친다."""
     review = get_my_post(db, user, post_id)
 
     review.title = payload.title
@@ -537,49 +420,22 @@ def update_post(
 
 
 def delete_post(db: Session, user: User, post_id: int) -> None:
-    """내 글을 지운다 (use_yn='N').
-
-    댓글과 좋아요는 함께 지우지 않는다. 글이 안 보이면 거기 달린 것도 같이
-    안 보이므로 화면상 차이가 없고, 나중에 글을 되살릴 때 그대로 돌아온다.
-
-    uq_reviews_meal 인덱스가 use_yn='Y' 인 행만 보므로, 글을 지우면
-    그 식사 기록으로 다시 글을 쓸 수 있다.
-    """
+    """내 글을 지운다 (use_yn='N')."""
     review = get_my_post(db, user, post_id)
 
     review.use_yn = USE_YN_NO
     db.commit()
 
     # 첨부파일은 디스크에서 지우지 않는다.
-    # 논리 삭제는 되돌릴 수 있어야 하는데 파일을 지워버리면 글만 돌아온다.
-    # 삭제된 글의 사진은 open_post_file() 이 use_yn 을 보고 막는다.
 
 
-# ==========================================================
 # 첨부파일 (후기 하나당 파일 하나)
-#
-# 글쓰기(JSON)와 따로 두었다. 기존 엔드포인트를 multipart 로 바꾸면
-# PostCreateRequest 의 검증기(빈 제목·본문 차단)를 못 쓰게 되고, 수정에
-# "파일 유지 / 교체 / 삭제" 를 구분하는 플래그가 붙는다.
-#
-# 따로 두면 업로드가 실패해도 남는 건 '첨부 없는 멀쩡한 글' 이다.
-# 첨부는 선택 사항이라 그 상태가 이미 정상이다.
-# ==========================================================
 
 
 def attach_file(
     db: Session, user: User, post_id: int, upload: UploadFile
 ) -> PostDetailResponse:
-    """내 글에 첨부파일을 붙인다. 이미 있으면 새 파일로 갈아 끼운다.
-
-    순서에 뜻이 있다.
-      1. 새 파일을 먼저 디스크에 쓴다
-      2. DB 를 고치고 commit
-      3. 그 다음에 옛 파일을 지운다
-
-    옛 파일을 먼저 지우면, 2번에서 실패했을 때 DB 는 옛 파일을 가리키는데
-    디스크에는 없는 상태가 된다. 화면에 깨진 이미지가 뜬다.
-    """
+    """내 글에 첨부파일을 붙인다."""
     review = get_my_post(db, user, post_id)
 
     # 갈아 끼우기 전에 옛 파일 위치를 기억해둔다. set_file() 이 덮어쓴다.
@@ -605,12 +461,7 @@ def attach_file(
 
 
 def detach_file(db: Session, user: User, post_id: int) -> None:
-    """내 글의 첨부파일을 뗀다.
-
-    첨부가 없어도 에러를 내지 않는다. "떼어달라" 는 요청의 목적은
-    '첨부 없는 상태' 이고, 이미 그 상태이기 때문이다.
-    좋아요 끄기(set_like)와 같은 규칙이다.
-    """
+    """내 글의 첨부파일을 뗀다."""
     review = get_my_post(db, user, post_id)
 
     if review.file_yn != USE_YN_YES:
@@ -628,14 +479,7 @@ def detach_file(db: Session, user: User, post_id: int) -> None:
 
 
 def open_post_file(db: Session, post_id: int) -> tuple[Path, str, str]:
-    """내려줄 파일의 (실제 경로, 원본 파일명, 확장자).
-
-    get_alive_post 를 쓰므로 삭제된 글(use_yn='N')의 사진은 나가지 않는다.
-    업로드 폴더를 정적 서빙했다면 URL 만 알면 계속 열렸을 자리다.
-
-    DB 에는 있는데 디스크에 없는 경우도 404 로 처리한다. 서버가 바뀌었거나
-    파일을 손으로 지웠을 때인데, 화면에서는 '없는 파일' 과 다를 게 없다.
-    """
+    """내려줄 파일의 (실제 경로, 원본 파일명, 확장자)."""
     review = get_alive_post(db, post_id)
 
     if review.file_yn != USE_YN_YES:
@@ -650,12 +494,7 @@ def open_post_file(db: Session, post_id: int) -> tuple[Path, str, str]:
 
 
 def increase_view(db: Session, post_id: int) -> int:
-    """조회수를 1 올리고 올라간 값을 돌려준다.
-
-    GET 요청에서 올리지 않고 별도 엔드포인트로 뺐다.
-    GET 은 몇 번을 보내도 결과가 같아야 하는데, 새로고침할 때마다 1씩 오르는
-    카운터는 그 원칙에 어긋난다. 화면이 상세를 열 때 한 번만 이 API 를 부른다.
-    """
+    """조회수를 1 올리고 올라간 값을 돌려준다."""
     review = get_alive_post(db, post_id)
 
     review.view_count = review.view_count + 1
@@ -706,12 +545,7 @@ def update_comment(
 
 
 def delete_comment(db: Session, user: User, post_id: int, comment_id: int) -> None:
-    """내 댓글을 지운다 (use_yn='N').
-
-    글쓴이가 남의 댓글을 지우는 기능은 넣지 않았다.
-    신고·차단 같은 운영 기능이 없는 상태에서 삭제 권한만 주면
-    마음에 안 드는 댓글을 지우는 도구가 된다.
-    """
+    """내 댓글을 지운다 (use_yn='N')."""
     comment = get_alive_comment(db, post_id, comment_id)
 
     if comment.user_id != user.id:
@@ -721,26 +555,13 @@ def delete_comment(db: Session, user: User, post_id: int, comment_id: int) -> No
     db.commit()
 
 
-# ==========================================================
 # 인기 레시피 (기간 안에 새로 받은 좋아요 기준)
-# ==========================================================
 
 
 def list_popular(
     db: Session, start: date, end: date, limit: int
 ) -> list[PopularItem]:
-    """고른 기간에 좋아요를 많이 받은 글을 순서대로 돌려준다.
-
-    누적 좋아요가 아니라 **그 기간에 눌린 좋아요만** 센다.
-    누적으로 세면 오래된 글이 영원히 1위라서 순위가 움직이지 않는다.
-
-    화면에서 고른 날짜는 한국 날짜이고 review_likes.created_at 은 UTC 다.
-    그대로 비교하면 경계에서 9시간이 어긋나므로 app/core/kst.py 로 변환한다.
-    끝 날짜는 '다음 날 0시 미만' 으로 잡아야 그날 마지막 1초가 안 빠진다.
-
-    use_yn 조건이 세 군데 필요하다. 하나라도 빠지면
-    취소한 좋아요나 지운 글이 순위에 섞인다.
-    """
+    """고른 기간에 좋아요를 많이 받은 글을 순서대로 돌려준다."""
     like_count = func.count(ReviewLike.id)
     last_liked = func.max(ReviewLike.created_at)
 

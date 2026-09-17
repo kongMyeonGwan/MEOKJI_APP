@@ -34,61 +34,9 @@
 /* 사이드바에 로고가 있으므로 웹 모드에서는 숨긴다 */
 .topbar__logo { display: none; }
 
-/* ===== 검색 ===== */
-.topbar__search {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  max-width: 620px;
-
-  padding-right: 6px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-rest);
-  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-}
-
-.topbar__search:focus-within {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-weak);
-}
-
-.topbar__search input {
-  flex: 1;
-  min-width: 0;
-  padding: 13px 6px 13px 22px;
-  border: none;
-  border-radius: var(--radius-pill);
-  background: none;
-  font: inherit;
-  font-size: 14.5px;
-  color: inherit;
-}
-
-.topbar__search input::placeholder { color: var(--color-subtle); }
-
-.topbar__search input:focus { outline: none; }
-
-/* 브라우저가 넣어주는 x 버튼. 우리 돋보기 버튼과 나란히 두면 지저분하다 */
-.topbar__search input::-webkit-search-cancel-button { display: none; }
-
-.topbar__search-btn {
-  display: flex;
-  flex-shrink: 0;
-  padding: 7px;
-  border: none;
-  border-radius: 50%;
-  background: none;
-  color: var(--color-muted);
-  cursor: pointer;
-}
-
-.topbar__search-btn:hover { color: var(--color-accent); }
-
 /* ===== AI 검색 도우미 ===== */
-.topbar__ai { position: relative; flex-shrink: 0; }
+/* 검색창이 있던 자리라, margin-left:auto 로 오른쪽 묶음을 만든다 */
+.topbar__ai { position: relative; flex-shrink: 0; margin-left: auto; }
 
 .topbar__ai-btn {
   display: flex;
@@ -119,7 +67,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-left: auto;
 }
 
 .topbar__icon-btn {
@@ -191,12 +138,6 @@
 .topbar__name {
   font-size: 13.5px;
   font-weight: 700;
-  white-space: nowrap;
-}
-
-.topbar__level {
-  font-size: 11.5px;
-  color: var(--color-muted);
   white-space: nowrap;
 }
 
@@ -372,8 +313,6 @@
 
   .topbar__logo svg { color: var(--color-accent); }
 
-  .topbar__search { background: var(--color-bg); }
-
   /* 좁은 화면에서는 라벨을 접고 ✨만 남긴다 */
   .topbar__ai-label { display: none; }
   .topbar__ai-btn { padding: 10px 12px; }
@@ -385,8 +324,7 @@
   .topbar__caret { display: none; }
 }
 
-/* 검색창까지 한 줄에 다 넣으면 어느 것도 못 쓸 만큼 좁아진다.
-   이 폭부터는 로고를 접고 검색창에 자리를 준다 */
+/* 좁아지면 로고 글자를 접는다 */
 @media (max-width: 720px) {
   .topbar__logo-text { display: none; }
 }

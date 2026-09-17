@@ -1,9 +1,4 @@
-"""비밀번호 해싱 / 검증 · JWT 토큰 발급 / 해석.
-
-passlib은 2020년 이후 릴리스가 없어 bcrypt 5.x와 호환되지 않는다
-(AttributeError: module 'bcrypt' has no attribute '__about__').
-그래서 bcrypt를 직접 사용한다.
-"""
+"""비밀번호 해싱 / 검증 · JWT 토큰 발급 / 해석."""
 
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -42,21 +37,11 @@ def verify_password(plain_password: str, password_hash: str) -> bool:
         return False
 
 
-# =========================================================
 # JWT (STEP 6)
-#
-# Refresh Token은 쓰지 않는다. Access Token 하나만 발급하고
-# 만료되면 다시 로그인한다(JWT_EXPIRE_MINUTES, 기본 30분).
-# =========================================================
 
 
 def create_access_token(user_id: int) -> str:
-    """사용자 id를 담은 Access Token을 발급한다.
-
-    payload에 email/nickname을 넣지 않는다. JWT는 서명만 되어 있을 뿐
-    누구나 내용을 디코딩해 읽을 수 있고, 닉네임이 바뀌어도 토큰은 그대로라
-    낡은 값이 돌아다니게 된다. 식별자만 넣고 나머지는 그때그때 DB에서 읽는다.
-    """
+    """사용자 id를 담은 Access Token을 발급한다."""
     now = datetime.now(timezone.utc)
     payload = {
         # RFC 7519상 sub는 문자열이어야 한다. PyJWT 2.10+는 int를 넣으면 거부한다.
@@ -68,14 +53,7 @@ def create_access_token(user_id: int) -> str:
 
 
 def decode_token(token: str) -> dict:
-    """토큰을 검증하고 payload를 돌려준다.
-
-    서명 불일치·만료·형식 오류는 모두 jwt.InvalidTokenError의 하위 예외다.
-    호출하는 쪽(core/deps.py)에서 401로 변환한다.
-
-    algorithms를 명시적으로 넘기는 것이 중요하다. 생략하면 토큰 헤더의
-    alg를 그대로 신뢰해 alg=none 위조 토큰을 통과시킬 수 있다.
-    """
+    """토큰을 검증하고 payload를 돌려준다."""
     return jwt.decode(
         token,
         settings.JWT_SECRET_KEY,
@@ -83,31 +61,18 @@ def decode_token(token: str) -> dict:
     )
 
 
-# =========================================================
 # 이메일 OTP (STEP 8)
-# =========================================================
 
 OTP_LENGTH = 6
 
 
 def generate_otp_code() -> str:
-    """6자리 숫자 인증번호를 만든다.
-
-    random 모듈을 쓰면 안 된다. 시드를 알면 다음 값을 예측할 수 있다.
-    secrets는 OS의 암호학적 난수를 쓴다.
-    """
+    """6자리 숫자 인증번호를 만든다."""
     return f"{secrets.randbelow(10**OTP_LENGTH):0{OTP_LENGTH}d}"
 
 
 def hash_otp_code(code: str) -> str:
-    """인증번호를 저장용 해시로 바꾼다.
-
-    비밀번호와 같은 bcrypt를 쓴다. 6자리는 경우의 수가 100만뿐이라
-    해시만으로는 금방 뚫리지만, 다음 세 가지로 막는다.
-      - 유효시간 5분 (OTP_EXPIRE_MINUTES)
-      - 시도 5회 제한 (OTP_MAX_ATTEMPT)
-      - bcrypt 자체가 느리다
-    """
+    """인증번호를 저장용 해시로 바꾼다."""
     return hash_password(code)
 
 

@@ -1,10 +1,4 @@
-"""인증 라우터.
-
-STEP 5: 회원가입
-STEP 6: 로그인 · 내 정보 조회
-STEP 7: 로그인 실패 누적 시 계정 잠금 (login_user 내부)
-STEP 8: 이메일 OTP 비밀번호 재설정
-"""
+"""인증 라우터."""
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
@@ -55,11 +49,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> UserRes
     },
 )
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
-    """이메일 + 비밀번호로 Access Token을 발급한다.
-
-    로그아웃은 서버에 엔드포인트를 두지 않는다. 서버가 상태를 갖지 않는
-    JWT 방식이라 프론트가 토큰을 버리는 것으로 충분하다.
-    """
+    """이메일 + 비밀번호로 Access Token을 발급한다."""
     user = login_user(db, payload)
     return TokenResponse(
         access_token=create_access_token(user.id),
@@ -75,18 +65,11 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse
     responses={401: {"description": "토큰 없음 · 만료 · 위조"}},
 )
 def read_me(current_user: User = Depends(get_current_user)) -> UserResponse:
-    """토큰이 아직 유효한지 확인하는 용도로도 쓴다.
-
-    프론트는 새로고침 직후 저장된 토큰으로 이걸 호출해서,
-    살아있으면 로그인 상태를 복원하고 401이면 토큰을 버린다.
-    """
+    """토큰이 아직 유효한지 확인하는 용도로도 쓴다."""
     return UserResponse.model_validate(current_user)
 
 
-# =========================================================
 # 비밀번호 재설정 (STEP 8)
-# 계정 잠금(STEP 7)을 푸는 유일한 경로이기도 하다.
-# =========================================================
 
 
 @router.post(
@@ -101,16 +84,7 @@ def read_me(current_user: User = Depends(get_current_user)) -> UserResponse:
 def password_reset_send(
     payload: PasswordResetSendRequest, db: Session = Depends(get_db)
 ) -> MessageResponse:
-    """이메일로 6자리 인증번호를 보낸다.
-
-    가입되지 않은 이메일이면 404 로 알려준다. 오타를 쳐도 "보냈습니다" 가
-    뜨면 사용자는 오지 않는 메일을 5분씩 기다리게 되기 때문이다.
-    (가입 여부가 드러나는 트레이드오프는 password_reset_service 주석 참고)
-
-    연달아 부르면 429 다. 요청 한 번이 바깥으로 메일 한 통을 내보내는
-    엔드포인트라 간격이 없으면 남의 받은편지함을 채우는 데 쓸 수 있다.
-    남은 시간은 문구와 Retry-After 헤더 양쪽에 담는다.
-    """
+    """이메일로 6자리 인증번호를 보낸다."""
     send_reset_code(db, payload.email)
     return MessageResponse(
         message="입력하신 이메일로 인증번호를 보냈습니다. 5분 안에 입력해주세요."

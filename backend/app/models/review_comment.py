@@ -1,9 +1,4 @@
-"""REVIEW_COMMENTS 테이블 모델 (댓글).
-
-스키마의 단일 소스는 db/01_schema.sql 이다.
-MVP에서는 대댓글이 없어 parent_comment_id 컬럼도 없다.
-삭제는 물리 삭제가 아니라 use_yn='N' 이다.
-"""
+"""REVIEW_COMMENTS 테이블 모델 (댓글)."""
 
 from datetime import datetime
 

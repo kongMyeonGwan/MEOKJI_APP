@@ -3,52 +3,58 @@ import { useNavigate } from 'react-router-dom'
 import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/recommendation/Roulette.css'
 
-/**
- * 음식 추천 룰렛.
- *
- * 뭘 먹을지 못 고를 때 종류부터 정해주는 장치다.
- * 결과를 고른 뒤 그 분류로 추천 화면(/recommend?category=한식)에 넘긴다.
- *
- * 회전은 CSS transform 하나로 처리한다.
- *   - 당첨 각도를 먼저 뽑고, 거기에 5바퀴(1800도)를 더해 돌린다.
- *     그래야 "한참 돌다가 멈추는" 느낌이 난다
- *   - 각도를 누적시키는 이유는 두 번째 회전이 0도로 되돌아갔다가
- *     다시 도는 역회전으로 보이지 않게 하기 위함이다
- *
- * 조각 목록은 서버에서 온다(CatalogContext).
- * 개수가 고정이 아니라서 조각 각도(360 / 개수)를 그릴 때마다 계산한다.
- */
+// 음식 추천 룰렛.
+// 뭘 먹을지 못 고를 때 종류부터 정해준다.
+// 돌려서 나온 분류로 /recommend?category=한식 로 넘어간다.
+//
+// 돌리는 건 CSS transform 하나로 한다.
+//   - 당첨 각도를 먼저 뽑고 거기에 5바퀴를 더해서 돌린다.
+//     그래야 한참 돌다가 멈추는 느낌이 난다.
+//   - 각도를 계속 더하는 이유는 두 번째로 돌릴 때 0도로 돌아갔다가
+//     다시 도는 역회전처럼 보이지 않게 하려는 것이다.
+//
+// 조각 목록은 서버에서 온다. 개수가 고정이 아니라서
+// 조각 각도(360 / 개수)를 그릴 때마다 계산한다.
+
 const SPIN_MS = 3200
 
-/**
- * 회전 애니메이션을 끈 사용자인지.
- *
- * CSS(@media prefers-reduced-motion)에서 transition만 끄면 바퀴는 즉시 정답에
- * 멈추는데 결과 문구는 3.2초 뒤에 뜬다. 그 사이 버튼도 잠겨 있어 고장으로 보인다.
- * 기다리는 시간 자체를 JS에서도 없애야 앞뒤가 맞는다.
- */
+// 화면 움직임을 꺼둔 사용자인지 확인한다.
+// CSS 에서 애니메이션만 끄면 바퀴는 바로 멈추는데 결과 문구는 3.2초 뒤에 떠서
+// 그 사이에 버튼이 잠긴 채로 있다. 기다리는 시간도 같이 없애야 말이 맞는다.
 function prefersReducedMotion() {
-  // ?.( 는 "matchMedia 라는 함수가 있으면 부르고, 없으면 undefined" 라는 뜻이다.
-  // 아주 옛날 브라우저에는 이 함수가 없다. 그때는 ?? false 가 받아서 false 로 만든다.
-  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+  if (!window.matchMedia) {
+    // 아주 옛날 브라우저에는 이 함수가 없다
+    return false
+  }
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-/** 원 위의 각도(도) -> SVG 좌표. 12시 방향이 0도, 시계방향이 양수 */
-function pointOn(deg, radius, center = 50) {
+// 원 위의 각도를 SVG 좌표로 바꾼다. 12시 방향이 0도, 시계방향이 +
+function pointOn(deg, radius) {
+  const center = 50
   const rad = ((deg - 90) * Math.PI) / 180
   return [center + radius * Math.cos(rad), center + radius * Math.sin(rad)]
 }
 
-/** 한 조각의 부채꼴 path */
+// 조각 하나의 부채꼴 모양을 만든다
 function slicePath(index, sliceDeg) {
   const start = index * sliceDeg
   const end = start + sliceDeg
-  const [x1, y1] = pointOn(start, 48)
-  const [x2, y2] = pointOn(end, 48)
-  // 조각이 180도를 넘으면 SVG에게 "먼 쪽 호"라고 알려줘야 한다.
-  // 조각이 두 개뿐일 때(각 180도) 이 값이 필요하다.
-  const largeArc = sliceDeg > 180 ? 1 : 0
-  return `M50,50 L${x1},${y1} A48,48 0 ${largeArc},1 ${x2},${y2} Z`
+
+  const startPoint = pointOn(start, 48)
+  const endPoint = pointOn(end, 48)
+
+  // 조각이 180도를 넘으면 SVG 한테 "먼 쪽 호" 라고 알려줘야 한다.
+  // 조각이 두 개뿐일 때(각 180도) 필요하다.
+  let largeArc = 0
+  if (sliceDeg > 180) {
+    largeArc = 1
+  }
+
+  return (
+    'M50,50 L' + startPoint[0] + ',' + startPoint[1] +
+    ' A48,48 0 ' + largeArc + ',1 ' + endPoint[0] + ',' + endPoint[1] + ' Z'
+  )
 }
 
 export default function Roulette() {
@@ -59,17 +65,31 @@ export default function Roulette() {
   const timer = useRef(null)
   const navigate = useNavigate()
 
-  // 도는 도중에 다른 화면으로 넘어가면 타이머만 살아남아
-  // 사라진 컴포넌트에 setState가 걸린다.
-  useEffect(() => () => clearTimeout(timer.current), [])
+  // 도는 중에 다른 화면으로 넘어가면 타이머만 살아남는다.
+  // 그러면 사라진 컴포넌트에 setState 가 걸린다.
+  useEffect(() => {
+    return function () {
+      clearTimeout(timer.current)
+    }
+  }, [])
 
   const sliceCount = roulette.length
-  const sliceDeg = sliceCount > 0 ? 360 / sliceCount : 360
 
-  /** 돌리기 버튼을 눌렀을 때. */
+  let sliceDeg = 360
+  if (sliceCount > 0) {
+    sliceDeg = 360 / sliceCount
+  }
+
+  // 돌리기 버튼을 눌렀을 때
   function spin() {
-    if (spinning) return // 도는 중에 또 누르면 무시한다
-    if (sliceCount === 0) return // 아직 목록을 못 받았다
+    if (spinning) {
+      // 도는 중에 또 누르면 무시한다
+      return
+    }
+    if (sliceCount === 0) {
+      // 아직 목록을 못 받았다
+      return
+    }
 
     const picked = Math.floor(Math.random() * sliceCount)
     // 당첨 조각의 한가운데가 12시 바늘에 오도록 되돌릴 각도
@@ -81,14 +101,27 @@ export default function Roulette() {
     setResult(null)
     setAngle(next)
 
+    let waitMs = SPIN_MS
+    if (prefersReducedMotion()) {
+      waitMs = 0
+    }
+
     clearTimeout(timer.current)
-    timer.current = setTimeout(
-      () => {
-        setSpinning(false)
-        setResult(roulette[picked])
-      },
-      prefersReducedMotion() ? 0 : SPIN_MS
-    )
+    timer.current = setTimeout(function () {
+      setSpinning(false)
+      setResult(roulette[picked])
+    }, waitMs)
+  }
+
+  // 도는 중일 때만 애니메이션을 켠다
+  let wheelTransition = 'none'
+  if (spinning) {
+    wheelTransition = 'transform ' + SPIN_MS + 'ms cubic-bezier(0.16, 1, 0.3, 1)'
+  }
+
+  let spinLabel = '돌리기'
+  if (spinning) {
+    spinLabel = '…'
   }
 
   return (
@@ -120,31 +153,35 @@ export default function Roulette() {
         <svg
           className="roulette__wheel"
           viewBox="0 0 100 100"
-          style={{
-            transform: `rotate(${angle}deg)`,
-            transition: spinning
-              ? `transform ${SPIN_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`
-              : 'none',
-          }}
+          style={{ transform: 'rotate(' + angle + 'deg)', transition: wheelTransition }}
           aria-hidden="true"
         >
-          {roulette.map((slice, i) => (
-            <path key={slice.label} d={slicePath(i, sliceDeg)} fill={slice.color} />
-          ))}
+          {roulette.map(function (slice, i) {
+            return (
+              <path
+                key={slice.label}
+                d={slicePath(i, sliceDeg)}
+                fill={slice.color}
+              />
+            )
+          })}
 
-          {roulette.map((slice, i) => {
+          {roulette.map(function (slice, i) {
             // 글자는 조각 한가운데, 바깥쪽에 놓는다
             const mid = i * sliceDeg + sliceDeg / 2
-            const [tx, ty] = pointOn(mid, 32)
+            const point = pointOn(mid, 32)
+            const tx = point[0]
+            const ty = point[1]
+
             return (
               <text
-                key={`t-${slice.label}`}
+                key={'t-' + slice.label}
                 x={tx}
                 y={ty}
                 className="roulette__slice-text"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                transform={`rotate(${mid} ${tx} ${ty})`}
+                transform={'rotate(' + mid + ' ' + tx + ' ' + ty + ')'}
               >
                 {slice.label}
               </text>
@@ -158,11 +195,11 @@ export default function Roulette() {
           onClick={spin}
           disabled={spinning || sliceCount === 0}
         >
-          {spinning ? '…' : '돌리기'}
+          {spinLabel}
         </button>
       </div>
 
-      {/* 결과는 회전이 끝난 뒤에만 뜬다. 도는 중에 보여주면 김이 샌다 */}
+      {/* 결과는 다 돌고 나서만 보여준다. 도는 중에 보여주면 김이 샌다 */}
       {result && (
         <div className="roulette__result">
           오늘은 <strong>{result.label}</strong> 어떠세요?
@@ -170,7 +207,7 @@ export default function Roulette() {
             type="button"
             className="btn btn--sm"
             onClick={() =>
-              navigate(`/recommend?category=${encodeURIComponent(result.label)}`)
+              navigate('/recommend?category=' + encodeURIComponent(result.label))
             }
           >
             추천 보기

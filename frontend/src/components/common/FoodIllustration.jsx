@@ -1,21 +1,14 @@
-/**
- * 음식 일러스트 (인라인 SVG).
- *
- * 실제 사진이 준비되기 전까지 쓰는 대체 이미지다.
- * 음식마다 그림을 그리면 관리가 안 되므로, 조리 형태별로 6종만 두고
- * 서버가 내려주는 art 값으로 고른다.
- *
- *   stew      붉은 찌개 (뚝배기)      김치찌개 · 순두부찌개
- *   soup      뽀얀 국물               수제비 · 미역국
- *   noodle    국밥 · 면류             콩나물국밥
- *   stirfry   팬 볶음                 닭갈비 · 두루치기 · 어묵볶음
- *   pancake   전 · 부침               김치전
- *   donburi   덮밥 · 정식             돈까스 · 가지덮밥
- *
- * 그라데이션(<defs>)을 쓰지 않는다. 같은 페이지에 여러 개가 렌더될 때
- * id가 충돌해 엉뚱한 그림에 다른 그라데이션이 먹기 때문이다.
- * 대신 단색 도형을 겹쳐 명암을 만든다.
- */
+// 음식 그림 (SVG 를 직접 그렸다).
+// 진짜 사진이 없어서 대신 쓰는 것이다.
+// 음식마다 그리면 100개를 그려야 해서 조리 형태별로 6종만 두고
+// 서버가 주는 art 값으로 고른다.
+//
+//   stew     붉은 찌개    김치찌개, 순두부찌개
+//   soup     뽀얀 국물    수제비, 미역국
+//   noodle   국밥, 면류   콩나물국밥
+//   stirfry  볶음         닭갈비, 어묵볶음
+//   pancake  전, 부침     김치전
+//   donburi  덮밥, 정식   돈까스, 가지덮밥
 
 const C = {
   broth: '#d9482a',       // 붉은 국물
@@ -37,13 +30,17 @@ const C = {
   shadow: '#e0cbb8',
 }
 
-/** 그릇 아래 바닥 그림자. 모든 그림이 공유한다. */
+// 그릇 아래 그림자. 모든 그림이 같이 쓴다.
 function Ground() {
   return <ellipse cx="120" cy="132" rx="76" ry="9" fill={C.shadow} opacity="0.55" />
 }
 
-/** 김. 그릇 위로 올라가는 흰 곡선 3줄. */
-function Steam({ y = 28 }) {
+// 김. 그릇 위로 올라가는 흰 곡선 3줄.
+function Steam({ y }) {
+  if (!y) {
+    y = 28
+  }
+
   return (
     <g stroke={C.white} strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.75">
       <path d={`M96 ${y + 16}c0-9 9-9 9-18s-6-10-6-10`} />
@@ -244,16 +241,18 @@ const ART = {
 }
 
 export default function FoodIllustration({ art, className }) {
-  // 정의되지 않은 값이 와도 화면이 비지 않도록 기본형을 둔다
-  const Art = ART[art] ?? Soup
+  // 모르는 값이 와도 화면이 비지 않게 기본 그림을 둔다
+  let Art = ART[art]
+  if (!Art) {
+    Art = Soup
+  }
 
   return (
     <svg
       className={className}
       viewBox="0 0 240 150"
-      // 카드 비율이 제각각이라, 잘리지 않고 가운데 정렬되도록 meet을 쓴다
+      // 카드 비율이 제각각이라 잘리지 않고 가운데 오게 meet 을 쓴다
       preserveAspectRatio="xMidYMid meet"
-      role="presentation"
       aria-hidden="true"
     >
       <Art />

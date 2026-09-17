@@ -1,15 +1,4 @@
-"""게시판 라우터 (STEP 20~23).
-
-조회는 Guest도 가능하므로 get_current_user 가 아니라 get_optional_user 를 쓴다.
-토큰이 만료됐다고 게시판이 에러 페이지로 바뀌면 안 된다.
-
-반대로 글쓰기 · 수정 · 삭제 · 좋아요 · 댓글은 get_current_user 로 로그인을 강제한다.
-
-주소를 적는 순서에 주의
------------------------
-/popular 를 /{post_id} 보다 **위에** 적어야 한다.
-아래에 적으면 FastAPI 가 "popular" 를 post_id 로 읽으려다 422 를 낸다.
-"""
+"""게시판 라우터 (STEP 20~23)."""
 
 from datetime import date, timedelta
 
@@ -52,8 +41,6 @@ from app.services.post_service import (
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
 # 로그인이 필요한 엔드포인트가 공통으로 낼 수 있는 응답.
-# /docs 화면에 "이 API 는 401 도 낼 수 있다" 고 적어주는 설명일 뿐,
-# 실제 동작에는 영향이 없다.
 AUTH_401 = {"description": "토큰 없음 · 만료 · 위조"}
 AUTH_423 = {"description": "잠긴 계정"}
 NOT_FOUND = {"description": "없는 게시글"}
@@ -74,17 +61,7 @@ def read_posts(
     ),
     db: Session = Depends(get_db),
 ) -> PostPage:
-    """최신순. content 는 목록용으로 잘린 미리보기다.
-
-    글 목록 대신 {items, total, page, size, total_pages} 가 온다.
-    화면이 "3 / 12" 를 그리려면 전체 건수를 알아야 하기 때문이다.
-
-    범위를 벗어난 page 는 에러가 아니라 빈 items 다.
-    있지도 않은 9999 페이지를 열었다고 화면이 에러로 바뀔 일은 아니고,
-    total_pages 를 보면 화면이 알아서 1페이지로 되돌릴 수 있다.
-
-    size 상한(MAX_PAGE_SIZE)을 두는 이유는 schemas/page.py 에 적어뒀다.
-    """
+    """최신순."""
     return list_posts(db, keyword, page, size)
 
 
@@ -99,11 +76,7 @@ def read_popular(
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ) -> list[PopularItem]:
-    """기간을 안 주면 오늘 포함 최근 30일이다.
-
-    누적 좋아요가 아니라 그 기간에 눌린 좋아요만 센다.
-    누적으로 세면 오래된 글이 영원히 1위라 순위가 움직이지 않는다.
-    """
+    """기간을 안 주면 오늘 포함 최근 30일이다."""
     if end is None:
         end = today_kst()
     if start is None:
@@ -194,16 +167,7 @@ def remove_post(
     delete_post(db, current_user, post_id)
 
 
-# ==========================================================
 # 첨부파일 (후기 하나당 파일 하나)
-#
-# 글쓰기(POST "")는 JSON 그대로 두고 파일만 따로 주고받는다.
-# 한 엔드포인트에서 UploadFile 과 Pydantic 본문을 같이 받을 수 없어,
-# 합치면 PostCreateRequest 의 검증기를 Form 으로 다시 짜야 한다.
-#
-# 화면은 글을 먼저 등록하고, 파일이 선택돼 있으면 한 번 더 보낸다.
-# 두 번째가 실패해도 남는 건 '첨부 없는 멀쩡한 글' 이다.
-# ==========================================================
 
 
 @router.post(
@@ -257,16 +221,7 @@ def download_post_file(
     post_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ) -> FileResponse:
-    """업로드 폴더를 정적 서빙하지 않고 이 주소로 내려주는 이유가 두 가지다.
-
-      - 삭제된 글(use_yn='N')의 사진을 막을 수 있다.
-        정적 서빙이면 URL 만 알면 글을 지운 뒤에도 계속 열린다
-      - 사용자가 올린 원래 이름으로 돌려줄 수 있다.
-        디스크에는 UUID 로 저장돼 있어서 그대로 주면 'a1b2....jpg' 가 된다
-
-    inline 으로 준다. attachment 로 주면 <img> 에 넣었을 때 그려지지 않고
-    내려받기 창이 뜬다. 오른쪽 클릭으로 저장하면 아래 filename 이 쓰인다.
-    """
+    """업로드 폴더를 정적 서빙하지 않고 이 주소로 내려주는 이유가 두 가지다."""
     target, org_name, _ext = open_post_file(db, post_id)
 
     return FileResponse(
@@ -285,11 +240,7 @@ def count_view(
     post_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ) -> dict:
-    """상세 화면이 열릴 때 한 번 부른다.
-
-    GET 상세에서 같이 올리지 않는 이유는, GET 은 몇 번을 보내도 결과가
-    같아야 하기 때문이다. 새로고침마다 1씩 오르는 카운터는 그 원칙에 어긋난다.
-    """
+    """상세 화면이 열릴 때 한 번 부른다."""
     return {"view_count": increase_view(db, post_id)}
 
 

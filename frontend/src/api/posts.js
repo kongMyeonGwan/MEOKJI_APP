@@ -1,176 +1,163 @@
 import client from './client'
 
-/**
- * 게시판 API (STEP 20~23).
- *
- * 조회는 Guest도 가능하다. 토큰이 있으면 client.js가 알아서 붙이고,
- * 서버는 그때만 liked / is_mine 을 계산해 내려준다.
- */
+// 게시판 API.
+// 목록이랑 상세는 로그인 안 해도 볼 수 있다.
+// 로그인했으면 서버가 liked / is_mine 을 계산해서 같이 준다.
 
-/**
- * 게시글 목록 한 페이지. 최신순으로 온다.
- *
- * content 는 목록용으로 잘린 미리보기이고, 레시피(recipe_json)는 들어있지 않다.
- * 목록에서 쓰지 않는 CLOB을 건당 읽어오지 않기 위해서다.
- *
- * 글 배열이 아니라 이런 모양이 온다.
- *
- *     { items: [...], total: 137, page: 3, size: 20, total_pages: 7 }
- *
- * 화면이 "3 / 7" 을 그리려면 전체가 몇 건인지 알아야 하는데, 20건짜리
- * 배열만으로는 이게 마지막 페이지인지 알 방법이 없다.
- *
- * page 는 1부터다. 범위를 벗어난 페이지는 에러가 아니라 빈 items 로 온다.
- */
-export async function getPosts(keyword, page = 1) {
-  const trimmed = keyword?.trim()
+// 게시글 목록 한 페이지. 최신순.
+// 배열이 아니라 { items, total, page, size, total_pages } 가 온다.
+// 화면에서 "3 / 7" 을 그리려면 전체가 몇 건인지 알아야 해서 이렇게 온다.
+// page 는 1부터다.
+export async function getPosts(keyword, page) {
+  let pageNumber = page
+  if (!pageNumber) {
+    pageNumber = 1
+  }
 
-  const { data } = await client.get('/api/posts', {
-    params: {
-      page,
-      // 검색어가 비었으면 아예 안 보낸다. ?keyword= 로 빈 값을 보내면
-      // 서버가 "빈 문자열로 검색" 인지 "검색 안 함" 인지 헷갈릴 여지가 생긴다.
-      ...(trimmed ? { keyword: trimmed } : {}),
-    },
-  })
-  return data
+  const params = { page: pageNumber }
+
+  // 검색어가 비어 있으면 아예 안 보낸다
+  if (keyword) {
+    const trimmed = keyword.trim()
+    if (trimmed) {
+      params.keyword = trimmed
+    }
+  }
+
+  const response = await client.get('/api/posts', { params: params })
+  return response.data
 }
 
-/** 게시글 상세 + 댓글. 없는 id면 404가 난다. */
+// 게시글 상세 + 댓글. 없는 번호면 404 가 난다.
 export async function getPost(postId) {
-  const { data } = await client.get(`/api/posts/${postId}`)
-  return data
+  const response = await client.get('/api/posts/' + postId)
+  return response.data
 }
 
-/**
- * 글쓰기. 확정한 식사(meal_history_id) 하나에서만 쓸 수 있다.
- *
- * 레시피/재료는 보내지 않는다. 서버가 원본 기록에서 직접 복사한다.
- * 이미 공유한 기록이면 409가 난다.
- */
-export async function createPost({ mealHistoryId, title, content }) {
-  const { data } = await client.post('/api/posts', {
-    meal_history_id: mealHistoryId,
-    title,
-    content,
+// 글쓰기. 확정한 식사 기록 하나를 골라야 쓸 수 있다.
+// 레시피랑 재료는 서버가 원본 기록에서 복사해온다.
+// 이미 공유한 기록이면 409 가 난다.
+export async function createPost(form) {
+  const response = await client.post('/api/posts', {
+    meal_history_id: form.mealHistoryId,
+    title: form.title,
+    content: form.content,
   })
-  return data
+  return response.data
 }
 
-/**
- * 좋아요 켜기/끄기. { liked, like_count } 를 돌려준다.
- *
- * 토글이 아니라 원하는 상태를 지정한다. 같은 요청을 두 번 보내도 결과가 같아서
- * 따닥 눌러 요청이 두 번 나가도 카운트가 어긋나지 않는다.
- */
+// 좋아요 켜기 / 끄기. { liked, like_count } 가 온다.
+// 토글이 아니라 원하는 상태를 보낸다. 그래야 따닥 눌러도 숫자가 안 어긋난다.
 export async function setPostLike(postId, liked) {
-  const { data } = liked
-    ? await client.put(`/api/posts/${postId}/like`)
-    : await client.delete(`/api/posts/${postId}/like`)
-  return data
+  let response = null
+
+  if (liked) {
+    response = await client.put('/api/posts/' + postId + '/like')
+  } else {
+    response = await client.delete('/api/posts/' + postId + '/like')
+  }
+
+  return response.data
 }
 
-/** 댓글 작성. 생성된 댓글을 그대로 돌려준다. */
+// 댓글 작성
 export async function addComment(postId, content) {
-  const { data } = await client.post(`/api/posts/${postId}/comments`, { content })
-  return data
+  const response = await client.post('/api/posts/' + postId + '/comments', {
+    content: content,
+  })
+  return response.data
 }
 
-/**
- * 글 수정. 제목과 본문만 바뀐다.
- *
- * 어떤 기록에 대한 글인지(meal_history_id)는 못 바꾼다.
- * 그게 바뀌면 본문과 레시피가 어긋나는데, 그건 수정이 아니라 다른 글이다.
- */
-export async function updatePost(postId, { title, content }) {
-  const { data } = await client.put(`/api/posts/${postId}`, { title, content })
-  return data
+// 글 수정. 제목이랑 본문만 바뀐다.
+// 어느 기록에 대한 글인지는 못 바꾼다. 그게 바뀌면 다른 글이 되기 때문이다.
+export async function updatePost(postId, form) {
+  const response = await client.put('/api/posts/' + postId, {
+    title: form.title,
+    content: form.content,
+  })
+  return response.data
 }
 
-/** 글 삭제. 내 글만 지울 수 있다. 성공하면 204라 본문이 없다. */
+// 글 삭제. 내 글만 지울 수 있다.
 export async function removePost(postId) {
-  await client.delete(`/api/posts/${postId}`)
+  await client.delete('/api/posts/' + postId)
 }
 
-/**
- * 첨부파일 올리기 · 교체. 후기 하나당 파일 하나라 두 번째부터는 갈아 끼워진다.
- *
- * 글쓰기(createPost)와 따로 부른다. 한 요청에 JSON과 파일을 같이 담을 수 없고,
- * 합치면 서버의 검증 스키마(PostCreateRequest)를 못 쓰게 되기 때문이다.
- * 이게 실패해도 글은 이미 등록돼 있다 — 첨부 없는 글이 정상 상태다.
- *
- * ⚠ Content-Type 을 여기서 덮어써야 한다.
- *   client.js 의 기본값이 application/json 인데, axios 는 그 상태로 FormData 를
- *   받으면 파일을 버리고 JSON 문자열로 바꿔서 보낸다. 여기서 multipart 라고
- *   적어주면 그 변환을 건너뛰고, 브라우저가 경계 문자열까지 붙여준다.
- *
- * 돌려주는 값은 갱신된 게시글 상세다 (file 필드가 채워져 있다).
- */
+// 사진 올리기 / 바꾸기. 글 하나당 사진 하나라서 또 올리면 갈아 끼워진다.
+//
+// 글쓰기랑 따로 부른다. 한 요청에 JSON 이랑 파일을 같이 담을 수 없어서다.
+// 이게 실패해도 글은 이미 올라가 있다.
+//
+// Content-Type 을 여기서 다시 적어줘야 한다. client.js 기본값이 json 이라
+// 그냥 두면 axios 가 파일을 버리고 문자열로 보내버린다.
 export async function uploadPostFile(postId, file) {
   const form = new FormData()
   form.append('file', file)
 
-  const { data } = await client.post(`/api/posts/${postId}/file`, form, {
+  const response = await client.post('/api/posts/' + postId + '/file', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
-  return data
+  return response.data
 }
 
-/** 첨부파일 떼기. 첨부가 없어도 에러가 아니다. */
+// 사진 떼기. 사진이 없어도 에러는 아니다.
 export async function removePostFile(postId) {
-  await client.delete(`/api/posts/${postId}/file`)
+  await client.delete('/api/posts/' + postId + '/file')
 }
 
-/**
- * 첨부파일을 실제로 가져올 주소.
- *
- * 서버는 '/api/posts/12/file' 처럼 앞부분 없는 경로만 준다. 백엔드 주소는
- * .env(VITE_API_BASE_URL)로 바뀔 수 있어서 서버가 알 수 없기 때문이다.
- * <img src> 에 넣으려면 여기서 붙여줘야 한다.
- */
+// 사진을 실제로 가져올 주소를 만든다.
+// 서버는 '/api/posts/12/file' 처럼 앞부분 없이 주기 때문에
+// <img src> 에 넣으려면 백엔드 주소를 앞에 붙여야 한다.
 export function postFileUrl(path) {
-  if (!path) return ''
+  if (!path) {
+    return ''
+  }
 
-  return `${client.defaults.baseURL ?? ''}${path}`
+  let base = client.defaults.baseURL
+  if (!base) {
+    base = ''
+  }
+
+  return base + path
 }
 
-/**
- * 조회수 올리기.
- *
- * 상세를 GET 할 때 서버가 같이 올리지 않는다. GET 은 몇 번을 보내도 결과가
- * 같아야 하기 때문이다. 화면이 상세를 열 때 이 함수를 한 번 부른다.
- */
+// 조회수 +1.
+// 상세를 볼 때 서버가 같이 안 올린다. GET 은 몇 번 불러도 결과가 같아야 해서다.
 export async function countPostView(postId) {
-  const { data } = await client.post(`/api/posts/${postId}/view`)
-  return data
+  const response = await client.post('/api/posts/' + postId + '/view')
+  return response.data
 }
 
-/** 댓글 수정. 내 댓글만 고칠 수 있다. */
+// 댓글 수정. 내 댓글만 고칠 수 있다.
 export async function updateComment(postId, commentId, content) {
-  const { data } = await client.put(
-    `/api/posts/${postId}/comments/${commentId}`,
-    { content },
+  const response = await client.put(
+    '/api/posts/' + postId + '/comments/' + commentId,
+    { content: content },
   )
-  return data
+  return response.data
 }
 
-/** 댓글 삭제. 내 댓글만 지울 수 있다. */
+// 댓글 삭제. 내 댓글만 지울 수 있다.
 export async function removeComment(postId, commentId) {
-  await client.delete(`/api/posts/${postId}/comments/${commentId}`)
+  await client.delete('/api/posts/' + postId + '/comments/' + commentId)
 }
 
-/**
- * 인기 레시피 — 고른 기간에 **새로 받은** 좋아요가 많은 순.
- *
- * 누적 좋아요가 아니다. 누적으로 세면 오래된 글이 영원히 1위라서
- * 순위가 움직이지 않는다.
- *
- * start · end 는 'YYYY-MM-DD' 한국 날짜다. 서버가 UTC 로 바꿔서 비교한다.
- * 안 주면 오늘 포함 최근 30일이다.
- */
-export async function getPopular({ start, end, limit } = {}) {
-  const { data } = await client.get('/api/posts/popular', {
-    params: { start, end, limit },
+// 인기 레시피. 고른 기간에 새로 받은 좋아요가 많은 순으로 온다.
+// 누적으로 세면 오래된 글이 계속 1등이라 순위가 안 움직인다.
+// start / end 는 'YYYY-MM-DD' 이고, 안 주면 최근 30일이다.
+export async function getPopular(options) {
+  let start = undefined
+  let end = undefined
+  let limit = undefined
+
+  if (options) {
+    start = options.start
+    end = options.end
+    limit = options.limit
+  }
+
+  const response = await client.get('/api/posts/popular', {
+    params: { start: start, end: end, limit: limit },
   })
-  return data
+  return response.data
 }

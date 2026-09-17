@@ -30,45 +30,6 @@ from app.services import price_service
 from app.services import unit_convert
 from app.services import weather_service
 from app.services.history_service import count_streak
-from app.services.user_service import make_level, make_title
-
-
-# =========================================================
-# 요리 레벨
-# =========================================================
-
-
-def test_레벨은_1부터_시작한다():
-    level, exp, exp_next = make_level(0)
-
-    assert level == 1
-    assert exp == 0
-    assert exp_next == 100
-
-
-def test_경험치가_쌓이면_레벨이_오른다():
-    # 100 을 채우면 2레벨이 되고, 2 -> 3 은 150 이 필요하다
-    level, exp, exp_next = make_level(100)
-
-    assert level == 2
-    assert exp == 0
-    assert exp_next == 150
-
-
-def test_레벨업하고_남은_경험치가_이어진다():
-    level, exp, exp_next = make_level(130)
-
-    assert level == 2
-    assert exp == 30
-    assert exp_next == 150
-
-
-def test_칭호는_레벨_구간을_따른다():
-    assert make_title(1) == "요리 입문"
-    assert make_title(4) == "요리 입문"
-    assert make_title(5) == "요리 초보"
-    assert make_title(12) == "요리 중수"
-    assert make_title(99) == "요리 장인"
 
 
 # =========================================================
@@ -159,7 +120,6 @@ def context(**overrides) -> dict:
         "budget_min": None,
         "budget_max": None,
         "query": None,
-        "ingredients": [],
         "allergies": [],
         "dislikes": [],
         "weather": None,
@@ -350,20 +310,6 @@ def test_비_오는_날_머리말도_비를_말한다():
 def test_맑은_날_문구는_그대로_기온을_따른다():
     assert weather_service.make_pick_lead("CLEAR", 30) == PICK_LEADS_HOT
     assert "시원하고 담백한" in weather_service.make_comment("CLEAR", 30)
-
-
-def test_냉장고_재료가_많이_겹치는_메뉴가_먼저_나온다():
-    items = ai_api.catalog_recommend_foods(
-        context(limit=3, ingredients=["계란", "대파", "밥"])
-    )
-
-    top = items[0]
-    matched = 0
-    for need in top["ingredients"]:
-        if need in ("계란", "대파", "밥"):
-            matched += 1
-
-    assert matched >= 2
 
 
 # =========================================================
@@ -634,11 +580,10 @@ def call_weather_with(broken):
     """
     from unittest.mock import patch
 
-    from fastapi.testclient import TestClient
+    from fastapi import HTTPException
 
     from app.core.config import settings
     from app.integrations import weather_api
-    from app.main import app
 
     # 캐시가 남아 있으면 바깥을 안 부르고 저장된 값을 돌려준다
     weather_api.weather_cache.clear()
@@ -649,9 +594,12 @@ def call_weather_with(broken):
     settings.OPENWEATHER_API_KEY = "test-key"
 
     try:
-        client = TestClient(app, raise_server_exceptions=False)
         with patch.object(weather_api.httpx, "get", broken):
-            return client.get("/api/weather", params={"lat": 37.6, "lon": 127.0})
+            try:
+                weather_service.get_current_weather(37.6, 127.0)
+            except HTTPException as exc:
+                return exc
+            raise AssertionError("503 이 나와야 하는데 그냥 통과했다")
     finally:
         settings.WEATHER_PROVIDER, settings.OPENWEATHER_API_KEY = before
         weather_api.weather_cache.clear()
@@ -661,11 +609,11 @@ def test_날씨_API_가_안_되면_500이_아니라_503():
     def refuse(*args, **kwargs):
         raise httpx.ConnectError("연결 실패")
 
-    response = call_weather_with(refuse)
+    exc = call_weather_with(refuse)
 
     # 500 이면 화면에 "요청을 처리하지 못했습니다" 만 뜨고 원인을 알 수 없다
-    assert response.status_code == 503
-    assert "날씨 API" in response.json()["detail"]
+    assert exc.status_code == 503
+    assert "날씨 API" in exc.detail
 
 
 def test_키가_틀리면_키를_확인하라고_알려준다():
@@ -674,10 +622,10 @@ def test_키가_틀리면_키를_확인하라고_알려준다():
         response = httpx.Response(401, request=request)
         raise httpx.HTTPStatusError("401", request=request, response=response)
 
-    response = call_weather_with(unauthorized)
+    exc = call_weather_with(unauthorized)
 
-    assert response.status_code == 503
-    assert "OPENWEATHER_API_KEY" in response.json()["detail"]
+    assert exc.status_code == 503
+    assert "OPENWEATHER_API_KEY" in exc.detail
 
 
 # =========================================================

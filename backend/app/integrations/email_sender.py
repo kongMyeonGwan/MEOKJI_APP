@@ -1,18 +1,4 @@
-"""이메일 발송.
-
-.env 의 EMAIL_PROVIDER 값에 따라 두 가지로 동작한다.
-
-    mock   실제로 보내지 않고 서버 콘솔에 인증번호를 출력한다 (개발용)
-    smtp   네이버 · Gmail 같은 진짜 메일 서버로 보낸다
-
-바깥에서는 send_verification_code() 하나만 쓰면 된다.
-
-파일 이름이 email.py 가 아니라 email_sender.py 인 이유
-------------------------------------------------------
-파이썬 표준 라이브러리에 이미 email 이라는 이름이 있다.
-같은 이름을 쓰면 아래 `from email.message import EmailMessage` 가
-어느 쪽을 가리키는지 헷갈리므로 이름을 다르게 지었다.
-"""
+"""이메일 발송."""
 
 import smtplib
 import ssl
@@ -24,20 +10,11 @@ from app.core.config import settings
 SMTP_TIMEOUT_SECONDS = 10
 
 # 포트에 따라 접속 방식이 다르다.
-#   587  STARTTLS  평문으로 연결한 뒤 TLS 로 올린다 (대부분 이 쪽)
-#   465  SSL       처음부터 TLS 로 연결한다
-# 잘못 맞추면 에러도 없이 멈춰 있다가 타임아웃이 나므로 포트로 자동 판별한다.
 SSL_PORT = 465
 
 
 def send_verification_code(to: str, code: str, expire_minutes: int) -> None:
-    """비밀번호 재설정 인증번호를 보낸다.
-
-    발송에 실패해도 예외를 던지지 않는다.
-    메일 서버가 죽었을 때만 500 이 나가면, 응답이 다르다는 것만으로
-    "이 이메일은 가입되어 있다"는 사실이 밖으로 새기 때문이다.
-    대신 서버 콘솔에 원인을 남겨서 개발자가 볼 수 있게 한다.
-    """
+    """비밀번호 재설정 인증번호를 보낸다."""
     if settings.EMAIL_PROVIDER.lower() == "smtp":
         send_by_smtp(to, code, expire_minutes)
     else:
@@ -45,13 +22,7 @@ def send_verification_code(to: str, code: str, expire_minutes: int) -> None:
 
 
 def print_to_console(to: str, code: str, expire_minutes: int) -> None:
-    """개발용. 메일 대신 서버 콘솔에 인증번호를 찍는다.
-
-    SMTP 계정 없이도 비밀번호 재설정 화면을 처음부터 끝까지 눌러볼 수 있다.
-
-    logging 이 아니라 print 를 쓰는 이유: uvicorn 기본 설정에서는 앱 로거가
-    화면에 안 나올 때가 있어서, 인증번호를 못 찾고 헤매게 된다.
-    """
+    """개발용."""
     print(
         "\n"
         "===================== [MOCK EMAIL] =====================\n"

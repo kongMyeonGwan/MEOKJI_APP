@@ -1,19 +1,4 @@
-"""AI 추천 · 레시피 생성 비즈니스 로직 (STEP 10~14).
-
-라우터는 HTTP 껍데기만 담당하고, 실제 규칙은 전부 여기에 있다.
-
-이 파일이 하는 일은 세 가지다.
-
-    1. DB 에서 조건을 모은다     — 로그인 사용자의 Ban 재료
-    2. 바깥에서 조건을 모은다     — 오늘 날씨
-    3. AI 를 부르고 결과를 검사한다 — 알레르기 재료가 섞여 오면 걸러낸다
-
-3번을 하는 이유
----------------
-프롬프트에 "땅콩은 절대 넣지 마세요" 라고 적어도 AI 가 지키지 않을 수 있다.
-알레르기는 지키지 못했을 때의 결과가 심각하므로, 받은 답을 우리가 한 번 더
-확인해서 걸러낸다. 프롬프트는 부탁이고, 이 검사가 실제 방어선이다.
-"""
+"""AI 추천 · 레시피 생성 비즈니스 로직 (STEP 10~14)."""
 
 import time
 
@@ -48,10 +33,6 @@ BUDGET_RELAX = 3_000
 
 
 # 레시피를 기억해두는 시간(초).
-#
-# 같은 음식의 레시피는 몇 시간이 지나도 달라질 이유가 없다. 그런데 제미나이를
-# 부르는 데 7~10초가 걸린다. 발표 리허설에서 김치찌개를 다섯 번 열면
-# 다섯 번 다 기다려야 하고, AI 호출도 다섯 번 나간다.
 RECIPE_CACHE_SECONDS = 60 * 60 * 6  # 6시간
 
 # 너무 커지면 통째로 비운다. 다시 물어보면 채워지는 값이라
@@ -59,10 +40,6 @@ RECIPE_CACHE_SECONDS = 60 * 60 * 6  # 6시간
 RECIPE_CACHE_MAX_ENTRIES = 200
 
 # {(음식이름, 알레르기, 싫어함): (저장시각, 레시피)}
-#
-# Ban 을 열쇠에 넣는 이유: 같은 김치찌개라도 돼지고기 알레르기가 있는 사람에게는
-# 다른 레시피가 나간다. 이름만으로 묶으면 남의 알레르기 재료가 섞인 레시피를
-# 보여주게 된다.
 recipe_cache: dict[tuple, tuple[float, RecipeResponse]] = {}
 
 
@@ -89,11 +66,7 @@ def read_recipe_cache(key: tuple) -> RecipeResponse | None:
 
 
 def write_recipe_cache(key: tuple, recipe: RecipeResponse) -> None:
-    """레시피를 기억해둔다. 가격은 빼고 저장한다.
-
-    가격은 조회 시점의 값이라 캐시하면 안 된다(설계 원칙 §13).
-    6시간 전 가격을 오늘 가격으로 보여주게 된다.
-    """
+    """레시피를 기억해둔다."""
     if len(recipe_cache) > RECIPE_CACHE_MAX_ENTRIES:
         recipe_cache.clear()
 
@@ -104,10 +77,7 @@ def write_recipe_cache(key: tuple, recipe: RecipeResponse) -> None:
 
 
 def collect_bans(db: Session, user: User | None) -> tuple[list[str], list[str]]:
-    """로그인 사용자의 Ban 재료를 (알레르기, 싫어함) 두 목록으로 나눈다.
-
-    Guest 는 Ban 을 가질 수 없으므로 둘 다 빈 목록이다.
-    """
+    """로그인 사용자의 Ban 재료를 (알레르기, 싫어함) 두 목록으로 나눈다."""
     if user is None:
         return [], []
 
@@ -124,15 +94,7 @@ def collect_bans(db: Session, user: User | None) -> tuple[list[str], list[str]]:
 
 
 def pick_coords(payload: RecommendRequest, user: User | None):
-    """어느 좌표로 날씨를 볼지 정한다. 우선순위가 있다.
-
-        1) 브라우저가 준 위치      지금 있는 곳이 가장 정확하다
-        2) 회원가입 때 고른 주소   위치 권한을 거부했거나 지원 안 하는 브라우저
-        3) None                   서버가 기본 좌표(종로2가)로 답한다
-
-    2번이 없으면 위치 권한을 거부한 사람은 서울에 살든 부산에 살든
-    영영 종로 날씨를 보게 된다. 주소를 받아둔 이유가 이것이다.
-    """
+    """어느 좌표로 날씨를 볼지 정한다."""
     if payload.lat is not None and payload.lon is not None:
         return payload.lat, payload.lon
 
@@ -157,7 +119,6 @@ def build_context(
         "budget_min": payload.budget_min,
         "budget_max": payload.budget_max,
         "query": payload.query,
-        "ingredients": payload.ingredients,
         "allergies": allergies,
         "dislikes": dislikes,
         "weather": weather,
@@ -174,11 +135,7 @@ def recommend(
     payload: RecommendRequest,
     bargains: list[dict] | None = None,
 ) -> RecommendResponse:
-    """조건에 맞는 음식 후보를 만들어 돌려준다.
-
-    bargains 는 라우터가 미리 훑어 넘겨준다. 시세 조회가 비동기라
-    이 함수(동기) 안에서 부를 수 없기 때문이다.
-    """
+    """조건에 맞는 음식 후보를 만들어 돌려준다."""
     allergies, dislikes = collect_bans(db, user)
 
     weather = None
@@ -193,8 +150,6 @@ def recommend(
     items = ask_ai(context, allergies)
 
     # 후보가 하나도 없으면 예산을 조금 넓혀서 한 번만 더 물어본다.
-    # "8천원 이하"로 아무것도 안 나올 때 빈 화면을 주는 것보다,
-    # 가장 가까운 금액의 대안을 보여주는 편이 낫다 (PROGRESS.md 요구사항 2).
     if not items and payload.budget_max is not None:
         context["budget_max"] = payload.budget_max + BUDGET_RELAX
         items = ask_ai(context, allergies)
@@ -234,11 +189,7 @@ def ask_ai(context: dict, allergies: list[str]) -> list[FoodItem]:
 
 
 def to_food_item(raw: dict) -> FoodItem | None:
-    """AI 응답 한 건을 화면용 스키마로 바꾼다. 모양이 깨졌으면 None.
-
-    카탈로그에 있는 음식이면 일러스트(art)를 붙여준다.
-    AI 가 만든 새 메뉴에는 그림이 없으므로 화면이 기본 그림을 쓴다.
-    """
+    """AI 응답 한 건을 화면용 스키마로 바꾼다."""
     name = raw.get("food_name")
     if not name:
         return None
@@ -262,7 +213,6 @@ def to_food_item(raw: dict) -> FoodItem | None:
             difficulty=raw.get("difficulty") or "보통",
             estimated_cost=int(raw.get("estimated_cost") or 0),
             tags=list(raw.get("tags") or []),
-            ingredients=list(raw.get("ingredients") or []),
             art=art,
             image_url=image_url,
         )
@@ -278,11 +228,7 @@ def describe(
     weather: dict | None,
     bargains: list[dict] | None = None,
 ) -> str:
-    """무슨 조건으로 골랐는지 한 줄로 적는다.
-
-    화면의 'AI 추천 기록'이 이 문장을 그대로 저장한다.
-    조건을 안 남기면 "저번에 나왔던 그 메뉴"를 다시 찾을 방법이 없다.
-    """
+    """무슨 조건으로 골랐는지 한 줄로 적는다."""
     parts = []
 
     if weather:
@@ -304,9 +250,6 @@ def describe(
 
     if payload.query:
         parts.append(f'"{payload.query}"')
-
-    if payload.ingredients:
-        parts.append(" · ".join(payload.ingredients))
 
     budget = describe_budget(payload)
     if budget:
@@ -340,27 +283,7 @@ def describe_budget(payload: RecommendRequest) -> str:
 
 
 def raise_or_ask_ai(food_name: str) -> None:
-    """미리 써둔 레시피가 없는 음식을 어떻게 할지 정한다.
-
-    AI_PROVIDER=catalog 면 404 로 끝낸다. 그 외(gemini · claude)면 아무것도
-    하지 않고 돌아가서, 부르는 쪽이 AI 에게 묻게 둔다.
-
-    왜 지어내지 않는가
-    ------------------
-    전에는 카탈로그에 없는 이름이 오면 이름을 md5 로 흩어서 재료와 순서를
-    만들어냈다(ai_api.catalog_build_recipe). 그러면 '마라탕' 을 검색했을 때
-    계란과 대파로 만드는 11단계짜리 '계란 마라탕' 이 나온다. 화면은 멀쩡해
-    보이지만 그 요리가 아니다.
-
-    빈 화면보다 틀린 레시피가 나쁘다. 요리는 따라 만드는 글이라, 사실이
-    아닌 순서는 재료와 시간을 실제로 버리게 만든다. 모르면 모른다고 한다.
-
-    404 를 쓰는 이유
-    ----------------
-    서버도 앱도 멀쩡하고, 그냥 그 이름의 레시피가 없는 것이다. 500 이나
-    503 으로 답하면 화면이 "잠시 후 다시 시도" 를 띄우는데, 다시 시도해도
-    영영 나오지 않는다.
-    """
+    """미리 써둔 레시피가 없는 음식을 어떻게 할지 정한다."""
     if settings.AI_PROVIDER.lower() not in CATALOG_PROVIDER:
         return
 
@@ -374,12 +297,7 @@ def raise_or_ask_ai(food_name: str) -> None:
 
 
 def make_recipe(db: Session, user: User | None, food_name: str) -> RecipeResponse:
-    """음식 하나의 레시피를 만든다 (아직 저장하지 않는다).
-
-    Ban 재료를 반영한다.
-      알레르기  재료 목록에서 아예 뺀다
-      싫어함    그대로 두되 substitutes 에 바꿀 방법을 함께 적는다
-    """
+    """음식 하나의 레시피를 만든다 (아직 저장하지 않는다)."""
     food_name = food_name.strip()
     if not food_name:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "음식 이름이 없습니다.")

@@ -7,30 +7,28 @@ import { createPost, uploadPostFile } from '../api/posts'
 import { parseApiError } from '../utils/apiError'
 import '../styles/pages/PostWritePage.css'
 
-// 사진 한 장만 붙는다. 서버의 UPLOAD_ALLOWED_EXTS · UPLOAD_MAX_MB 와 같은 값이다.
+// 게시글 쓰기 화면.
 //
-// 서버가 어차피 다시 검사한다. 여기서 한 번 더 보는 건 막으려는 게 아니라,
-// 5MB짜리를 다 올려보낸 뒤에 거절당하는 일을 없애려는 것이다.
+// 글은 반드시 확정한 식사 기록에서 출발한다. 기록 없이 글만 쓰는 길은 없다.
+// DB 에서도 meal_history_id 가 NOT NULL 이라 서버가 한 번 더 막는다.
+//
+// 고른 기록의 음식 이름이랑 레시피가 게시글로 복사된다.
+// 참조가 아니라 복사라서 나중에 글을 고쳐도 원본 기록은 안 바뀐다.
+//
+// 이미 공유한 기록은 다시 고를 수 없어서 목록에서 미리 걸러낸다.
+
+// 사진 한 장만 붙는다. 서버 설정이랑 같은 값이다.
+// 서버가 어차피 다시 검사한다. 여기서 한 번 더 보는 건
+// 5MB 짜리를 다 올려보낸 뒤에 거절당하는 일을 없애려는 것이다.
 const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
 const MAX_MB = 5
 
-/**
- * 게시글 작성 (STEP 20).
- *
- * 글은 반드시 확정한 식사(History)에서 출발한다. 히스토리 없이 글만 쓰는 경로는 없다.
- * DB에서도 posts.meal_history_id 가 NOT NULL 이라 서버가 한 번 더 막는다.
- *
- * 고른 히스토리의 food_name / recipe_json / ingredients_json 이 게시글로 복사된다.
- * 참조가 아니라 복사라서, 이후 글을 수정해도 원본 스냅샷은 변하지 않는다.
- *
- * 이미 공유한 히스토리는 uq_posts_meal(UNIQUE)에 걸려 다시 고를 수 없으므로
- * 목록에서 미리 걸러낸다.
- */
 export default function PostWritePage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [historyId, setHistoryId] = useState('')
   const [file, setFile] = useState(null)
+
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -44,93 +42,113 @@ export default function PostWritePage() {
   useEffect(() => {
     let alive = true
 
-    // 아직 공유하지 않은 기록만 서버가 걸러준다.
+    // 아직 공유 안 한 기록만 서버가 걸러준다.
     //
-    // 전에는 전체를 받아 화면에서 걸렀는데(!h.shared_post_id), 기록에 페이징이
-    // 붙으면서 그 방법이 깨졌다 — 1페이지 20건이 전부 공유된 기록이면 고를 것이
-    // 하나도 없는 화면이 된다.
+    // 전에는 전체를 받아서 화면에서 걸렀는데 기록에 페이징이 붙으면서 깨졌다.
+    // 1페이지 20건이 전부 공유된 기록이면 고를 게 하나도 없는 화면이 된다.
     //
-    // size 를 최대로 받는다. 드롭다운이라 한 번에 다 보여줘야 하는데, 그렇다고
-    // 수백 개짜리 드롭다운이 쓸 만한 것도 아니라서 최신 50건이면 충분하다.
-    // 사람은 보통 방금 먹은 것을 공유한다.
+    // size 는 50 으로 받는다. 드롭다운이라 한 번에 다 보여줘야 하는데
+    // 수백 개짜리 드롭다운도 쓸 만하지 않다. 보통 방금 먹은 걸 공유한다.
     getHistories({ shared: false, size: 50 })
-      .then((data) => {
-        if (alive) setHistories(data.items)
+      .then(function (data) {
+        if (alive) {
+          setHistories(data.items)
+        }
       })
-      .catch((err) => {
-        if (alive) setLoadError(parseApiError(err).message)
+      .catch(function (err) {
+        if (alive) {
+          setLoadError(parseApiError(err).message)
+        }
       })
-      .finally(() => {
-        if (alive) setLoading(false)
+      .finally(function () {
+        if (alive) {
+          setLoading(false)
+        }
       })
 
-    return () => {
+    return function () {
       alive = false
     }
   }, [])
 
-  // 서버가 shared=false 로 이미 걸러줬다. 이름만 남겨 아래 JSX 를 그대로 둔다.
-  const sharableHistories = histories
+  // 에러 하나만 바꾼다
+  function setFileError(text) {
+    const next = Object.assign({}, errors)
+    next.file = text
+    setErrors(next)
+  }
 
-  /** 사진을 골랐을 때. 확장자와 크기를 여기서 한 번 본다. */
+  // 사진을 골랐을 때. 확장자랑 크기를 여기서 한 번 본다.
   function onPickFile(e) {
-    const picked = e.target.files?.[0] ?? null
+    let picked = null
+    if (e.target.files && e.target.files.length > 0) {
+      picked = e.target.files[0]
+    }
 
     if (!picked) {
       setFile(null)
-      setErrors((prev) => ({ ...prev, file: undefined }))
+      setFileError(undefined)
       return
     }
 
-    const ext = picked.name.split('.').pop()?.toLowerCase() ?? ''
+    const parts = picked.name.split('.')
+    const ext = parts[parts.length - 1].toLowerCase()
 
     if (!ALLOWED_EXTS.includes(ext)) {
       setFile(null)
       e.target.value = '' // 안 받을 파일을 입력칸에 남겨두지 않는다
-      setErrors((prev) => ({
-        ...prev,
-        file: `${ALLOWED_EXTS.join(', ')} 파일만 올릴 수 있어요`,
-      }))
+      setFileError(ALLOWED_EXTS.join(', ') + ' 파일만 올릴 수 있어요')
       return
     }
 
     if (picked.size > MAX_MB * 1024 * 1024) {
       setFile(null)
       e.target.value = ''
-      setErrors((prev) => ({ ...prev, file: `${MAX_MB}MB 이하만 올릴 수 있어요` }))
+      setFileError(MAX_MB + 'MB 이하만 올릴 수 있어요')
       return
     }
 
     setFile(picked)
-    setErrors((prev) => ({ ...prev, file: undefined }))
+    setFileError(undefined)
   }
 
-  /** 등록 버튼을 눌렀을 때. */
+  // 등록 버튼을 눌렀을 때
   async function onSubmit(e) {
-    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
+    e.preventDefault() // 폼이 새로고침되는 걸 막는다
 
     const next = {}
-    if (!title.trim()) next.title = '제목을 입력해주세요'
-    if (!historyId) next.historyId = '공유할 내 기록을 선택해주세요'
-    if (!content.trim()) next.content = '내용을 입력해주세요'
+    if (!title.trim()) {
+      next.title = '제목을 입력해주세요'
+    }
+    if (!historyId) {
+      next.historyId = '공유할 내 기록을 선택해주세요'
+    }
+    if (!content.trim()) {
+      next.content = '내용을 입력해주세요'
+    }
+
     setErrors(next)
-    if (Object.keys(next).length > 0) return
+
+    if (Object.keys(next).length > 0) {
+      return
+    }
 
     setSubmitError('')
     setSubmitting(true)
+
     try {
-      // 레시피/재료는 보내지 않는다. 서버가 원본 기록에서 직접 복사한다.
+      // 레시피랑 재료는 안 보낸다. 서버가 원본 기록에서 복사해온다.
       const created = await createPost({
         mealHistoryId: Number(historyId),
         title: title.trim(),
         content: content.trim(),
       })
 
-      // 글을 먼저 등록하고 사진을 이어서 올린다. 한 요청에 JSON과 파일을
-      // 같이 담을 수 없기 때문이다.
+      // 글을 먼저 등록하고 사진을 이어서 올린다.
+      // 한 요청에 JSON 이랑 파일을 같이 담을 수 없기 때문이다.
       //
-      // 사진만 실패해도 글은 이미 등록돼 있으므로 되돌리지 않는다.
-      // 첨부 없는 글이 정상 상태이고, 상세 화면에서 다시 올리면 된다.
+      // 사진만 실패해도 글은 이미 등록돼 있어서 되돌리지 않는다.
+      // 사진 없는 글도 정상이고 상세 화면에서 다시 올리면 된다.
       let fileError = ''
       if (file) {
         try {
@@ -140,26 +158,43 @@ export default function PostWritePage() {
         }
       }
 
-      // 목록이 아니라 방금 쓴 글로 보낸다. 등록된 모습을 바로 확인할 수 있다.
+      // 목록이 아니라 방금 쓴 글로 보낸다. 등록된 모습을 바로 볼 수 있다.
       //
-      // 사진이 실패했으면 그 사실을 상세 화면에 들려 보낸다. 여기서 에러를
-      // 띄우고 멈추면 사용자가 등록을 다시 누르는데, 그러면 409 가 난다
-      // (이미 공유한 기록이라 uq_reviews_meal 에 걸린다).
-      navigate(`/community/${created.id}`, {
-        state: fileError ? { fileError } : undefined,
-      })
+      // 사진이 실패했으면 그 사실을 상세 화면에 들려 보낸다.
+      // 여기서 에러를 띄우고 멈추면 사용자가 등록을 다시 누르는데
+      // 그러면 이미 공유한 기록이라 409 가 난다.
+      let state = undefined
+      if (fileError) {
+        state = { fileError: fileError }
+      }
+
+      navigate('/community/' + created.id, { state: state })
     } catch (err) {
-      const { fieldErrors, message } = parseApiError(err)
-      // 서버의 422는 필드별로 쪼개 각 입력칸 아래에 붙인다.
+      const parsed = parseApiError(err)
+
+      // 서버가 준 422 는 칸별로 나눠서 각 입력칸 아래에 붙인다
       setErrors({
-        title: fieldErrors.title,
-        content: fieldErrors.content,
-        historyId: fieldErrors.meal_history_id,
+        title: parsed.fieldErrors.title,
+        content: parsed.fieldErrors.content,
+        historyId: parsed.fieldErrors.meal_history_id,
       })
-      setSubmitError(message)
+      setSubmitError(parsed.message)
       setSubmitting(false)
     }
   }
+
+  let submitLabel = '등록'
+  if (submitting) {
+    submitLabel = '등록하는 중...'
+  }
+
+  let fileHelp = '한 장까지 올릴 수 있어요. ' + MAX_MB + 'MB 이하 이미지.'
+  if (file) {
+    fileHelp = file.name + ' — 등록하면 함께 올라갑니다'
+  }
+
+  // <input type="file"> 의 accept 속성에 넣을 문자열
+  const acceptText = '.jpg,.jpeg,.png,.gif,.webp'
 
   return (
     <div className="card write">
@@ -172,16 +207,18 @@ export default function PostWritePage() {
         </Link>
       </div>
 
-      {loading ? (
-        <Loading message="내 기록을 불러오는 중..." />
-      ) : loadError ? (
-        <ErrorMessage message={loadError} />
-      ) : sharableHistories.length === 0 ? (
+      {loading && <Loading message="내 기록을 불러오는 중..." />}
+
+      {!loading && loadError && <ErrorMessage message={loadError} />}
+
+      {!loading && !loadError && histories.length === 0 && (
         <p className="muted write__help">
-          공유할 수 있는 기록이 없습니다. 식사를 확정하면 이곳에서 글을 쓸 수 있어요.{' '}
-          <Link to="/history">내 기록 보기</Link>
+          공유할 수 있는 기록이 없습니다. 식사를 확정하면 이곳에서 글을 쓸 수
+          있어요. <Link to="/history">내 기록 보기</Link>
         </p>
-      ) : (
+      )}
+
+      {!loading && !loadError && histories.length > 0 && (
         <form onSubmit={onSubmit} noValidate>
           <label className="write__field">
             <span>제목</span>
@@ -198,13 +235,18 @@ export default function PostWritePage() {
 
           <label className="write__field">
             <span>공유할 내 기록</span>
-            <select value={historyId} onChange={(e) => setHistoryId(e.target.value)}>
+            <select
+              value={historyId}
+              onChange={(e) => setHistoryId(e.target.value)}
+            >
               <option value="">기록을 선택해주세요</option>
-              {sharableHistories.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.food_name} — {h.recipe_name}
-                </option>
-              ))}
+              {histories.map(function (h) {
+                return (
+                  <option key={h.id} value={h.id}>
+                    {h.food_name} — {h.recipe_name}
+                  </option>
+                )
+              })}
             </select>
             <ErrorMessage message={errors.historyId} />
             <p className="muted write__help">
@@ -225,24 +267,16 @@ export default function PostWritePage() {
 
           <label className="write__field">
             <span>사진 (선택)</span>
-            <input
-              type="file"
-              accept={ALLOWED_EXTS.map((ext) => `.${ext}`).join(',')}
-              onChange={onPickFile}
-            />
+            <input type="file" accept={acceptText} onChange={onPickFile} />
             <ErrorMessage message={errors.file} />
-            <p className="muted write__help">
-              {file
-                ? `${file.name} — 등록하면 함께 올라갑니다`
-                : `한 장까지 올릴 수 있어요. ${MAX_MB}MB 이하 이미지.`}
-            </p>
+            <p className="muted write__help">{fileHelp}</p>
           </label>
 
           <div className="write__actions">
-            {/* 사진이 붙으면 업로드까지 기다려야 해서, 그동안 다시 눌리면
-                글이 두 번 등록되려다 409 가 난다. */}
+            {/* 사진이 붙으면 업로드까지 기다려야 해서
+                그동안 또 눌리면 글이 두 번 등록되려다 409 가 난다. */}
             <button type="submit" className="btn" disabled={submitting}>
-              {submitting ? '등록하는 중...' : '등록'}
+              {submitLabel}
             </button>
           </div>
         </form>

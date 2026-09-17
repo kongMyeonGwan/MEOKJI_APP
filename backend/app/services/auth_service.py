@@ -19,9 +19,6 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
     """회원가입. 이메일/닉네임 중복이면 409를 던진다."""
 
     # 1차: 사전 조회. 어느 쪽이 중복인지 사용자에게 정확히 알려주기 위함.
-    # 탈퇴한 회원(use_yn='N')은 중복 판정에서 제외한다.
-    # DB의 uq_users_email / uq_users_nickname 인덱스도 'Y' 인 행만 보므로
-    # 여기서 걸러야 인덱스와 판정 기준이 같아진다.
     existing = db.execute(
         select(User.email, User.nickname).where(
             User.use_yn == USE_YN_YES,
@@ -46,8 +43,6 @@ def register_user(db: Session, payload: RegisterRequest) -> User:
     )
 
     # 고른 주소를 좌표로 바꿔 함께 저장한다.
-    # 이 좌표가 대시보드 날씨 조회에 쓰인다. 주소만 저장해두면 화면에
-    # 보여줄 수는 있어도 날씨는 못 부른다 — OpenWeather 는 좌표로만 받는다.
     set_coords_from_address(user)
     db.add(user)
 
@@ -75,15 +70,7 @@ INVALID_CREDENTIALS = "이메일 또는 비밀번호가 올바르지 않습니�
 
 
 def set_coords_from_address(user: User) -> None:
-    """회원의 주소를 좌표로 바꿔 latitude / longitude 에 채운다.
-
-    목록(app/data/regions.json)에서 찾기만 하므로 바깥 API 를 부르지 않는다.
-    가입이 느려지지 않고, 그 API 가 죽어도 가입은 된다.
-
-    주소를 안 골랐거나 목록에 없으면 좌표를 지운다.
-    지우지 않으면 주소만 바꿨을 때 옛 좌표가 남아, 화면에는 부산이라고
-    적혀 있는데 서울 날씨가 나오는 상태가 된다.
-    """
+    """회원의 주소를 좌표로 바꿔 latitude / longitude 에 채운다."""
     coords = find_coords(user.address_sido, user.address_sigungu)
 
     if coords is None:
@@ -95,30 +82,13 @@ def set_coords_from_address(user: User) -> None:
 
 
 def login_user(db: Session, payload: LoginRequest) -> User:
-    """이메일 + 비밀번호를 검증하고 사용자를 돌려준다.
-
-    토큰 발급은 라우터가 담당한다. 이 함수는 "이 사람이 맞는가"만 판정한다.
-
-    실패하면 login_fail_count를 올리고, MAX_LOGIN_FAIL_COUNT(기본 20)에
-    도달하면 계정을 잠근다. 잠금은 비밀번호 재설정(STEP 8)으로만 풀린다.
-    """
+    """이메일 + 비밀번호를 검증하고 사용자를 돌려준다."""
     user = db.execute(
         select(User).where(User.email == payload.email, User.use_yn == USE_YN_YES)
     ).scalar_one_or_none()
 
     if user is None:
         # 가입되지 않았거나 탈퇴한 이메일. 실패 횟수를 셀 대상 자체가 없다.
-        # 탈퇴 여부를 응답으로 구분해주지 않는다.
-        #
-        # 여기서 곧바로 돌아서므로 아래 verify_password() 를 거치지 않는다.
-        # bcrypt 가 일부러 무겁게 설계돼 있어서 응답 시간이 갈린다 —
-        # 실측으로 6.6ms 대 321ms 다. 시간만 재면 가입 여부를 알 수 있다.
-        #
-        # 버릴 해시 계산을 한 번 돌려 시간을 맞추는 방법이 있지만 넣지 않았다.
-        # 같은 정보를 재설정 API 가 404 로 대놓고 알려주고(STEP 32), 아래
-        # "(남은 시도 N회)" 문구도 존재하는 계정에만 붙는다. 혼자 막아봐야
-        # 앞문을 열어두고 뒷문에 자물쇠를 다는 셈이다.
-        # (PROGRESS 의 「로그인 응답 시간은 맞추지 않는다」 참고)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, INVALID_CREDENTIALS)
 
     # 이미 잠긴 계정은 비밀번호 검증까지 가지 않는다.
@@ -147,9 +117,6 @@ def login_user(db: Session, payload: LoginRequest) -> User:
         db.commit()
 
         # 남은 횟수를 알려주기로 한 결정 (2026-08-17)
-        # 트레이드오프: 존재하는 계정에만 이 문구가 붙으므로, 없는 이메일과
-        # 응답을 비교하면 가입 여부를 알아낼 수 있다. 사용성을 택한 것이며
-        # 계정 열거를 막아야 한다면 이 부분을 INVALID_CREDENTIALS로 되돌리면 된다.
         remaining = settings.MAX_LOGIN_FAIL_COUNT - user.login_fail_count
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,

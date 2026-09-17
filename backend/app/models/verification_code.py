@@ -1,7 +1,4 @@
-"""VERIFICATION_CODES 테이블 모델 (이메일 OTP).
-
-스키마의 단일 소스는 db/01_schema.sql 이다.
-"""
+"""VERIFICATION_CODES 테이블 모델 (이메일 OTP)."""
 
 from datetime import datetime
 
@@ -12,9 +9,8 @@ from app.database.database import Base
 from app.models.types import UtcTimestamp
 
 # DDL의 ck_vc_purpose CHECK 제약과 값이 일치해야 한다.
+# DDL 은 EMAIL_VERIFY · ACCOUNT_UNLOCK 도 허용하지만 아직 안 쓴다.
 PURPOSE_PASSWORD_RESET = "PASSWORD_RESET"
-PURPOSE_EMAIL_VERIFY = "EMAIL_VERIFY"
-PURPOSE_ACCOUNT_UNLOCK = "ACCOUNT_UNLOCK"
 
 
 class VerificationCode(Base):
@@ -40,8 +36,6 @@ class VerificationCode(Base):
     )
 
     # 인증에 성공한 시각. NULL이면 아직 검증 전이다.
-    # verify와 change가 별도 엔드포인트라서, change 단계에서 "검증된 요청인지"를
-    # 판별할 근거가 필요하다. 이 컬럼이 그 역할을 한다.
     used_at: Mapped[datetime | None] = mapped_column(UtcTimestamp(), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(

@@ -107,107 +107,11 @@
   background: var(--color-border);
 }
 
-/* ===== 하단 (레벨 카드 + 유틸 버튼) ===== */
+/* ===== 하단 (유틸 버튼) ===== */
 .sidebar__foot {
   margin-top: auto;
   padding-top: 16px;
 }
-
-.level {
-  padding: 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-bg);
-}
-
-.level__head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.level__icon { font-size: 20px; line-height: 1; }
-
-.level__title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.level__sub {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--color-muted);
-}
-
-.level__bar {
-  height: 7px;
-  border-radius: 999px;
-  background: var(--color-border);
-  overflow: hidden;
-}
-
-.level__fill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  /* 왼쪽에서 오른쪽으로 밝아져서 "차오르는 중"으로 읽힌다 */
-  background: linear-gradient(90deg, var(--color-accent), #f6a23c);
-}
-
-.level__exp {
-  margin: 6px 0 0;
-  font-size: 11px;
-  color: var(--color-muted);
-  text-align: right;
-}
-
-/* 세 칸 고정. 숫자 자리라 폭이 흔들리면 지저분해 보인다 */
-.level__stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  margin: 12px 0 0;
-  padding: 12px 0 0;
-  border-top: 1px solid var(--color-border);
-  text-align: center;
-}
-
-.level__stats dt {
-  font-size: 10.5px;
-  color: var(--color-muted);
-  white-space: nowrap;
-}
-
-.level__stats dd {
-  margin: 3px 0 0;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.level__more { margin-top: 12px; }
-
-/* Guest용 축약형 */
-.level--guest {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.level__guest-text {
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--color-muted);
-  line-height: 1.5;
-}
-
-.level__guest-text a {
-  color: var(--color-accent);
-  font-weight: 700;
-}
-
-.level__guest-text a:hover { text-decoration: underline; }
 
 /* 테마 · 알림 스위치 */
 .sidebar__utils {

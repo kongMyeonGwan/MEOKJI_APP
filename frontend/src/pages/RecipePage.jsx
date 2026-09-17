@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import ErrorMessage from '../components/common/ErrorMessage'
 import Icon from '../components/common/Icon'
 import Loading from '../components/common/Loading'
@@ -9,33 +9,34 @@ import { getRecipe } from '../api/recommendations'
 import { createHistory } from '../api/histories'
 import { useAiLog } from '../contexts/AiLogContext'
 import { useAuth } from '../contexts/AuthContext'
-import { useLikeButton } from '../hooks/useLikeButton'
+import { useLikes } from '../contexts/LikesContext'
 import { useProfile } from '../contexts/ProfileContext'
 import { parseApiError } from '../utils/apiError'
 import { formatPrice } from '../utils/format'
 import '../styles/pages/RecipePage.css'
 
-/**
- * AI가 생성한 레시피 상세 (STEP 11).
- *
- * 홈에서 음식을 검색하거나 추천 카드를 누르면 이 화면으로 온다.
- * "이걸로 먹을래요"를 눌러야 비로소 meal_histories에 저장된다(STEP 15).
- * 저장 전까지는 아무것도 DB에 남기지 않는다.
- *
- * 레시피와 재료 가격을 한 번에 받아온다(GET /api/recipes/{이름}).
- * 나눠서 부르면 레시피가 먼저 뜨고 가격표가 나중에 나타나 화면이 한 번 튄다.
- */
+// AI 가 만든 레시피 상세 화면.
+//
+// 홈에서 음식을 검색하거나 추천 카드를 누르면 이 화면으로 온다.
+// "이걸로 먹을래요" 를 눌러야 기록에 저장된다.
+// 그 전까지는 아무것도 DB 에 안 남는다.
+//
+// 레시피랑 재료 가격을 한 번에 받아온다.
+// 나눠서 부르면 레시피가 먼저 뜨고 가격표가 나중에 떠서 화면이 한 번 튄다.
 export default function RecipePage() {
   const { foodName } = useParams()
-  // 다른 음식으로 이동했을 때 "저장했습니다" 상태가 남지 않도록 새로 마운트한다.
+
+  // 다른 음식으로 옮겼을 때 "저장했습니다" 가 남지 않게
+  // key 를 줘서 컴포넌트를 아예 새로 만든다.
   return <Recipe key={foodName} foodName={foodName} />
 }
 
 function Recipe({ foodName }) {
   const navigate = useNavigate()
+  const location = useLocation()
+
   const { isAuthenticated } = useAuth()
-  // 비로그인이면 하트를 눌렀을 때 로그인 화면으로 보낸다 (훅 안에서 처리).
-  const { isLiked, onLike } = useLikeButton()
+  const { has, toggle } = useLikes()
   const { markPicked } = useAiLog()
   const { reload } = useProfile()
 
@@ -47,39 +48,54 @@ function Recipe({ foodName }) {
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
 
-  const name = decodeURIComponent(foodName ?? '')
-  const liked = isLiked(name)
+  let name = ''
+  if (foodName) {
+    name = decodeURIComponent(foodName)
+  }
 
-  // 화면이 열릴 때 AI에게 레시피를 만들어달라고 한다.
+  const liked = has(name)
+
+  // 화면이 열릴 때 AI 한테 레시피를 만들어달라고 한다.
   // 응답이 몇 초 걸릴 수 있어서 로딩 문구를 확실히 띄운다.
   useEffect(() => {
     let alive = true
 
     getRecipe(name)
-      .then((data) => {
-        if (alive) setRecipe(data)
+      .then(function (data) {
+        if (alive) {
+          setRecipe(data)
+        }
       })
-      .catch((err) => {
-        if (alive) setLoadError(parseApiError(err).message)
+      .catch(function (err) {
+        if (alive) {
+          setLoadError(parseApiError(err).message)
+        }
       })
-      .finally(() => {
-        if (alive) setLoading(false)
+      .finally(function () {
+        if (alive) {
+          setLoading(false)
+        }
       })
 
-    return () => {
+    return function () {
       alive = false
     }
   }, [name])
 
-  /**
-   * "이거 먹을래요" 버튼. 로그인 안 했으면 로그인 화면으로 보낸다.
-   *
-   * 저장에 성공하면 요리 레벨이 오르므로 프로필을 다시 불러온다.
-   * 안 그러면 사이드바 레벨 카드가 새로고침 전까지 옛 값을 보여준다.
-   */
+  // 하트를 눌렀을 때. 로그인 안 했으면 로그인 화면으로 보낸다.
+  function onLike() {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+
+    toggle(name)
+  }
+
+  // "이걸로 먹을래요" 버튼. 로그인 안 했으면 로그인 화면으로 보낸다.
   async function onConfirm() {
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/recipe/${foodName}` } })
+      navigate('/login', { state: { from: '/recipe/' + foodName } })
       return
     }
 
@@ -90,7 +106,7 @@ function Recipe({ foodName }) {
       await createHistory(recipe)
       setSaved(true)
 
-      // AI 추천 기록에도 "이걸로 정했다"고 표시한다
+      // AI 추천 기록에도 "이걸로 정했다" 고 표시한다
       markPicked(recipe.food_name)
 
       reload()
@@ -102,13 +118,11 @@ function Recipe({ foodName }) {
   }
 
   if (loading) {
-    // 서버가 하는 일 순서대로 적는다. AI가 레시피를 짓고, 그 재료로 시세를 찾는다.
-    // 진행률을 받아오지는 못해서 시간으로 넘기지만, 순서는 실제와 같다.
-    //
-    // 두 번째로 여는 레시피는 서버가 기억해둬서 2초 만에 끝난다.
-    // 그때는 첫 문구만 잠깐 스쳐 지나간다.
+    // 서버가 하는 일 순서대로 적는다.
+    // AI 가 레시피를 짓고 그 재료로 시세를 찾는다.
+    // 진행률을 받아오지는 못해서 시간으로 넘기지만 순서는 실제랑 같다.
     const steps = [
-      `AI가 '${name}' 레시피를 만드는 중...`,
+      "AI가 '" + name + "' 레시피를 만드는 중...",
       '재료와 분량을 정리하는 중...',
       '시장에서 재료 가격을 찾는 중...',
       '조금만 더 기다려 주세요. AI가 붐비는 시간일 수 있어요.',
@@ -129,11 +143,16 @@ function Recipe({ foodName }) {
   }
 
   if (loadError || !recipe) {
+    let errorText = loadError
+    if (!errorText) {
+      errorText = '레시피를 만들지 못했습니다.'
+    }
+
     return (
       <div className="recipe-page">
         <section className="card">
           <p className="empty">
-            {loadError || '레시피를 만들지 못했습니다.'}
+            {errorText}
             <br />
             <Link to="/">← 홈으로</Link>
           </p>
@@ -142,21 +161,25 @@ function Recipe({ foodName }) {
     )
   }
 
-  // 시장마다 값이 달라 재료비는 하나의 숫자가 아니라 구간으로 나온다.
-  // 어디서 사느냐에 따라 얼마나 차이 나는지 먼저 보여준다.
+  // 시장마다 값이 달라서 재료비는 숫자 하나가 아니라 구간으로 나온다.
   //
-  // KAMIS 는 농수산물만 조사하므로 가공식품은 값이 없다. 그래서 이 합계는
-  // 재료 전체가 아닐 수 있다. 몇 개 기준인지 밝히지 않으면 사용자가
-  // 이 숫자를 '이 요리 만드는 총비용'으로 읽는다.
-  //
-  // 쪼개 팔지 않는 재료(무 0.2개)는 한 단위를 통째로 산 값으로 들어간다.
-  // 레시피가 요구하는 분량보다 큰 숫자라서, 왜 큰지 밝혀두지 않으면
-  // 계산이 틀린 것처럼 읽힌다.
+  // KAMIS 는 농수산물만 조사해서 가공식품은 값이 없다.
+  // 그래서 이 합계가 재료 전체가 아닐 수 있다.
+  // 몇 개 기준인지 안 밝히면 사용자가 '이 요리 총비용' 으로 읽는다.
   const priceRange = getPriceSummary(recipe.prices)
   const partial = priceRange.counted < priceRange.total
 
-  // 찜은 로그인 없이도 된다. 이 브라우저에만 저장되는 값이고(LikesContext),
-  // "이걸로 먹을래요"와 달리 기록으로 남지 않는다
+  let saveLabel = '이걸로 먹을래요'
+  if (saving) {
+    saveLabel = '저장 중…'
+  }
+
+  let likeLabel = '찜하기'
+  let heartIcon = 'heart'
+  if (liked) {
+    likeLabel = '찜 해제'
+    heartIcon = 'heart-fill'
+  }
 
   return (
     <div className="recipe-page">
@@ -208,7 +231,11 @@ function Recipe({ foodName }) {
           <>
             <p className="recipe-page__done">기록에 저장했습니다.</p>
             <div className="recipe-page__actions">
-              <button type="button" className="btn" onClick={() => navigate('/history')}>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => navigate('/history')}
+              >
                 History 보러가기
               </button>
               <button
@@ -233,16 +260,15 @@ function Recipe({ foodName }) {
                 onClick={onConfirm}
                 disabled={saving}
               >
-                {saving ? '저장 중…' : '이걸로 먹을래요'}
+                {saveLabel}
               </button>
               <button
                 type="button"
                 className="btn btn--ghost recipe-page__like"
-                onClick={() => onLike(name)}
-                aria-pressed={liked}
+                onClick={onLike}
               >
-                <Icon name={liked ? 'heart-fill' : 'heart'} size={17} />
-                {liked ? '찜 해제' : '찜하기'}
+                <Icon name={heartIcon} size={17} />
+                {likeLabel}
               </button>
             </div>
             <ErrorMessage message={saveError} />
@@ -253,14 +279,9 @@ function Recipe({ foodName }) {
   )
 }
 
-
-/**
- * 레시피가 오기 전에 자리를 잡아두는 뼈대.
- *
- * 빈 카드에 글자 한 줄만 있으면 화면이 비어 보이고, 내용이 도착하는 순간
- * 레이아웃이 확 늘어나면서 한 번 튄다. 미리 같은 모양을 깔아두면
- * 기다리는 동안에도 "여기에 레시피가 들어오겠구나" 가 읽힌다.
- */
+// 레시피가 오기 전에 자리를 잡아두는 뼈대.
+// 빈 카드에 글자 한 줄만 있으면 화면이 비어 보이고,
+// 내용이 도착하는 순간 레이아웃이 확 늘어나면서 한 번 튄다.
 function RecipeSkeleton() {
   return (
     <div className="skeleton" aria-hidden="true">

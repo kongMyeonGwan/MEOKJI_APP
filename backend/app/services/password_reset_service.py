@@ -1,18 +1,4 @@
-"""비밀번호 재설정 (이메일 OTP).
-
-흐름
-----
-    send    -> 6자리 코드 발급 · 해시 저장 · 이메일 발송
-    verify  -> 코드 대조. 맞으면 used_at 기록
-    change  -> used_at이 찍힌 코드에 한해 비밀번호 교체 후 코드 폐기
-
-verify와 change를 나눈 이유
----------------------------
-화면이 "인증번호 입력" -> "새 비밀번호 입력" 두 단계이기 때문이다.
-나누면 change 단계에서 "이 요청이 인증을 통과한 요청인가"를 판별할 근거가
-필요한데, 그게 used_at 컬럼이다. 없으면 같은 코드로 비밀번호를 몇 번이든
-바꿀 수 있어 OTP의 일회성이 깨진다.
-"""
+"""비밀번호 재설정 (이메일 OTP)."""
 
 from datetime import datetime, timedelta, timezone
 
@@ -33,27 +19,9 @@ from app.models.user import User
 from app.models.verification_code import PURPOSE_PASSWORD_RESET, VerificationCode
 
 # verify / change 단계의 실패 문구는 하나로 통일한다.
-# "코드가 틀렸다" / "만료됐다" / "그런 요청이 없다"를 구분해서 알려주면
-# 공격자가 유효한 코드를 좁혀나가는 데 쓸 수 있다.
 INVALID_CODE = "인증번호가 올바르지 않거나 만료되었습니다."
 
 # send 단계에서 가입 여부를 알려준다.
-#
-# 원래는 가입되지 않은 이메일에도 200 을 주고 조용히 끝냈다. 계정 열거
-# (이 엔드포인트만으로 "이 주소가 가입돼 있는가" 를 조회하는 것)를 막으려는
-# 것이었는데, 두 가지 이유로 팀이 알려주는 쪽으로 정했다 (2026-09-12).
-#
-#   1) 사용성. 오타를 쳐도 "보냈습니다" 가 떠서, 사용자는 오지 않는 메일을
-#      5분씩 기다리다 받은편지함과 스팸함을 뒤진다. 원인이 오타라는 것을
-#      알 방법이 없다.
-#
-#   2) 이미 로그인에서 열려 있다. login_user() 가 "(남은 시도 N회)" 를
-#      존재하는 계정에만 붙인다. 없는 이메일과 응답을 비교하면 가입 여부를
-#      알 수 있으므로, 여기만 가려봐야 실효가 없다.
-#      (PROGRESS 의 「왜 로그인 실패 시 남은 횟수를 알려주나」 참고)
-#
-# 되돌리려면 send_reset_code() 의 raise 를 return 으로 바꾸면 된다.
-# 그때는 login_user() 의 문구도 같이 되돌려야 뜻이 있다.
 NOT_REGISTERED = "가입되지 않은 회원입니다."
 
 
@@ -78,28 +46,7 @@ def find_latest_code(db: Session, user_id: int) -> VerificationCode | None:
 
 
 def raise_if_too_soon(db: Session, user_id: int) -> None:
-    """방금 보냈으면 429 로 끊는다.
-
-    왜 필요한가
-    -----------
-    없으면 버튼을 누르는 만큼 메일이 나간다. 남의 주소를 넣고 연타하면 그 사람
-    받은편지함이 채워지고, 우리 쪽에서는 발송 한도가 깎인다 (개인 Gmail 은
-    하루 500통이다). 요청 한 번이 바깥으로 메일 한 통을 내보내는 엔드포인트는
-    반드시 간격이 있어야 한다.
-
-    왜 따로 세는 표를 만들지 않았나
-    -------------------------------
-    verification_codes.created_at 이 곧 마지막 발송 시각이다. send 가 옛 코드를
-    지우고 하나만 새로 넣으므로, 가장 최근 행의 created_at 이 그 값이다.
-
-    메모리에 담아두는 방법도 있지만 서버를 다시 켜면 사라진다. 재시작만 하면
-    제한이 풀리는 장치는 없는 것과 비슷하다.
-
-    남은 시간을 알려주는 이유
-    -------------------------
-    "잠시 후 다시 시도하세요" 는 얼마나 기다려야 하는지 알려주지 않아서,
-    사용자가 10초마다 눌러보게 만든다. 막으려던 것을 오히려 부른다.
-    """
+    """방금 보냈으면 429 로 끊는다."""
     latest = find_latest_code(db, user_id)
     if latest is None:
         return
@@ -123,15 +70,7 @@ def raise_if_too_soon(db: Session, user_id: int) -> None:
 
 
 def send_reset_code(db: Session, email: str) -> None:
-    """인증번호를 발급하고 이메일로 보낸다.
-
-    가입되지 않은 이메일이면 404 로 알려준다. 왜 알려주기로 했는지는
-    위의 NOT_REGISTERED 주석에 적어뒀다.
-
-    탈퇴한 회원(use_yn='N')도 여기 걸린다. find_active_user 가 살아있는
-    회원만 찾기 때문이다 — 탈퇴한 사람에게 재설정 메일을 보낼 이유가 없고,
-    화면에는 "가입되지 않은 회원" 으로 보이는 편이 맞다.
-    """
+    """인증번호를 발급하고 이메일로 보낸다."""
     user = find_active_user(db, email)
     if user is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_REGISTERED)

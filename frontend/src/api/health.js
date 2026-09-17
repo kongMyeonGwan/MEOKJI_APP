@@ -1,13 +1,16 @@
 import client from './client'
 
-/** 백엔드 + DB 상태 조회. DB 장애 시 503이지만 body는 동일한 형태다. */
+// 백엔드랑 DB 가 살아있는지 확인한다.
 export async function fetchHealth() {
   try {
-    const { data } = await client.get('/api/health')
-    return data
+    const response = await client.get('/api/health')
+    return response.data
   } catch (err) {
-    // 503(degraded)도 axios는 에러로 던지므로 body를 살려서 반환한다
-    if (err.raw) return err.raw
+    // DB 가 죽었을 때 503 이 오는데 axios 는 이것도 에러로 던진다.
+    // 내용은 들어있으니 그대로 돌려준다.
+    if (err.raw) {
+      return err.raw
+    }
     throw err
   }
 }

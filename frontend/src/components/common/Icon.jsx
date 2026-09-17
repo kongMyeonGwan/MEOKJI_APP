@@ -1,12 +1,8 @@
-/**
- * 아이콘 세트 (인라인 SVG).
- *
- * 이모지를 쓰면 OS·브라우저마다 모양이 달라지고, 비활성 상태를 만들려고
- * grayscale 필터를 씌우면 탁해진다. 선으로 그린 아이콘은 currentColor를
- * 따라가므로 활성/비활성 색이 글자와 항상 일치한다.
- *
- * 모두 24x24 기준, 선 굵기 1.8로 통일했다.
- */
+// 아이콘 모음 (SVG 를 직접 그렸다).
+//
+// 이모지를 쓰면 OS 마다 모양이 달라져서 SVG 로 만들었다.
+// currentColor 를 쓰기 때문에 글자 색이 바뀌면 아이콘 색도 같이 바뀐다.
+// 전부 24x24 기준이고 선 굵기는 1.8 로 맞췄다.
 
 const PATHS = {
   home: <path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z" />,
@@ -99,15 +95,6 @@ const PATHS = {
     </>
   ),
 
-  // 냉장고. 손잡이 두 개와 가운데 칸막이로 읽힌다
-  fridge: (
-    <>
-      <rect x="6" y="3" width="12" height="18" rx="2.4" />
-      <path d="M6 10h12" />
-      <path d="M9 6.5v2M9 12.5v2.5" />
-    </>
-  ),
-
   /*
    * 톱니바퀴. 큰 원 + 작은 구멍 + 짧고 뭉툭한 톱니 여덟 개.
    *
@@ -142,29 +129,6 @@ const PATHS = {
     </>
   ),
 
-  trophy: (
-    <>
-      <path d="M8 4h8v5a4 4 0 0 1-8 0z" />
-      <path d="M8 5.5H5.5V7a3 3 0 0 0 3 3M16 5.5h2.5V7a3 3 0 0 1-3 3" />
-      <path d="M12 13v3.5M9 20h6l-.6-3.5H9.6z" />
-    </>
-  ),
-
-  star: (
-    <path
-      d="M12 4.5l2.3 4.7 5.2.8-3.8 3.6.9 5.1-4.6-2.4-4.6 2.4.9-5.1L4.5 10l5.2-.8z"
-      fill="currentColor"
-      stroke="none"
-    />
-  ),
-
-  calendar: (
-    <>
-      <rect x="4" y="5.5" width="16" height="14.5" rx="2.4" />
-      <path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" />
-    </>
-  ),
-
   refresh: (
     <>
       <path d="M19.5 12a7.5 7.5 0 1 1-2.6-5.7" />
@@ -175,15 +139,22 @@ const PATHS = {
   plus: <path d="M12 5.5v13M5.5 12h13" />,
 }
 
-export default function Icon({ name, size = 20, className }) {
+export default function Icon({ name, size, className }) {
   const path = PATHS[name]
-  if (!path) return null
+  if (!path) {
+    return null
+  }
+
+  let iconSize = size
+  if (!iconSize) {
+    iconSize = 20
+  }
 
   return (
     <svg
       className={className}
-      width={size}
-      height={size}
+      width={iconSize}
+      height={iconSize}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -197,16 +168,16 @@ export default function Icon({ name, size = 20, className }) {
   )
 }
 
-/**
- * 서비스 로고 마크 — 주황 타일에 얹은 요리사 모자.
- *
- * 모자만 두면 흰 배경에서 형태가 흐려지고, 사이드바·상단바·앱 아이콘에서
- * 크기가 제각각일 때 눈에 띄지 않는다. 타일로 감싸면 어디에 놓든
- * 같은 덩어리로 읽힌다. 타일 색은 currentColor라 부모가 정한다.
- */
-export function LogoMark({ size = 26 }) {
+// 로고. 주황 네모 위에 요리사 모자를 얹었다.
+// 네모 색은 currentColor 라서 부모가 정한다.
+export function LogoMark({ size }) {
+  let logoSize = size
+  if (!logoSize) {
+    logoSize = 26
+  }
+
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+    <svg width={logoSize} height={logoSize} viewBox="0 0 32 32" aria-hidden="true">
       <rect width="32" height="32" rx="9" fill="currentColor" />
       {/* 모자 윗부분 — 원 세 개를 겹쳐 부풀린 형태를 만든다 */}
       <g fill="#fff">

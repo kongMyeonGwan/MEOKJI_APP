@@ -1,54 +1,4 @@
-"""재료 가격 조회 (STEP 17~19).
-
-KAMIS 조사가격을 재료별로 모아 돌려준다.
-화면(PriceTable)은 그중 최저가와 최고가를 뽑아 보여준다.
-
-    PRICE_PROVIDERS=kamis
-
-값을 지어내지 않는다
---------------------
-전에는 KAMIS 에 없는 재료(두부·간장 등)를 mock 프로바이더가 그럴듯한
-숫자로 채웠다. 그런데 화면에서 진짜 조사가격과 지어낸 값이 구분되지 않아,
-표의 절반이 가짜인 채로 합계까지 계산됐다.
-
-모르는 값은 모른다고 하는 편이 낫다. 지금은 KAMIS 에 없는 재료면
-offers 를 빈 배열로 돌려주고, 화면이 '가격 정보 없음'으로 표시한다.
-
-쇼핑몰이 아니라 '시장'을 본다
-----------------------------
-처음에는 네이버 쇼핑 검색 API 로 쇼핑몰 최저가를 붙였다. 그런데 이 API 는
-2026-07-31 자로 종료됐고 공식 대체가 없다. 쿠팡·11번가는 제휴 승인이 필요해서
-바로 못 쓴다. 그래서 공공데이터포털의 KAMIS 일별 도·소매 가격정보로 바꿨다.
-
-    https://www.data.go.kr/data/15156057/openapi.do
-
-같은 품목이 시장·지역·등급별로 여러 행 나오므로, 그 행들의 최저/최고가 곧
-화면의 최저가/최고가가 된다. 다만 '어느 쇼핑몰에서 얼마'가 아니라
-'어느 시장 조사가격이 얼마'라서, 구매 링크는 없고 조사일자를 반드시 같이 적는다.
-
-바깥에서는 두 함수만 쓴다.
-
-    collect_offers(ingredients)   여러 재료를 한 번에 (비동기, 병렬)
-
-돌려주는 모양 — 프론트의 components/price/PriceTable.jsx 가 이 모양을 기대한다.
-
-    [
-      {"name": "돼지고기 앞다리살 200g",
-       "offers": [
-         {"shop": "서울 가락시장", "price": 3980, "link": "https://..."},
-         {"shop": "부산 엄궁시장", "price": 4350, "link": "https://..."}
-       ]}
-    ]
-
-왜 병렬로 부르는가
-------------------
-재료가 8개이고 조사처가 3곳이면 순차 호출은 24번을 줄 세우는 것이다.
-한 번에 0.3초만 걸려도 7초가 넘어간다. httpx.AsyncClient 로 동시에 던지면
-가장 느린 한 건만큼만 기다린다.
-
-가격은 DB 에 저장하지 않는다. 조회 시점의 값이고, 저장하면 하루만 지나도
-틀린 값을 보여주게 된다 (설계 원칙 §13).
-"""
+"""재료 가격 조회 (STEP 17~19)."""
 
 import asyncio
 import time
@@ -77,21 +27,7 @@ KAMIS_REFERENCE_URL = "https://www.kamis.or.kr/customer/price/retail/item.do"
 SUPPORTED_PROVIDERS = ("kamis",)
 
 
-# ==========================================================
 # 조사가격 캐시
-#
-# KAMIS 조사가격은 하루에 한 번만 바뀐다. 조사원이 시장을 돌며 적어온
-# 값이라 오전·오후로 달라지지 않는다(같은 시장·같은 날의 값은 딱 하나다).
-# 그런데 지금은 사용자가 레시피를 열 때마다 재료 수만큼 물어본다.
-#
-# 그래서 한 번 받아온 값을 잠시 기억해둔다. 캐시가 오차를 늘리지 않는다 —
-# 어차피 다음 조사 전까지는 같은 값이 돌아온다.
-#
-# 얻는 것
-#   레시피 화면에서 KAMIS 왕복 3초가 사라진다
-#   발표장에서 공공데이터포털이 느리거나 막혀도 화면이 뜬다
-#   일일 할당량(10,000건)을 아낀다
-# ==========================================================
 
 # 기억해두는 시간(초). 조사값은 하루 한 번 갱신되므로 3시간이면 넉넉하다.
 # 더 길게 잡으면 새 조사일자가 나왔는데 옛 값을 보여주는 시간이 늘어난다.
@@ -121,11 +57,7 @@ def read_kamis_cache(key: tuple) -> tuple[list[dict], dict | None] | None:
 
 
 def write_kamis_cache(key: tuple, offers: list[dict], trend: dict | None) -> None:
-    """조사가격과 추이를 기억해둔다.
-
-    빈 결과도 기억한다. KAMIS 에 없는 품목을 3초마다 다시 물어볼 이유가 없고,
-    없다는 사실도 다음 조사까지 바뀌지 않는다.
-    """
+    """조사가격과 추이를 기억해둔다."""
     if len(kamis_cache) > KAMIS_CACHE_MAX_ENTRIES:
         kamis_cache.clear()
 
@@ -136,17 +68,11 @@ def write_kamis_cache(key: tuple, offers: list[dict], trend: dict | None) -> Non
     )
 
 
-# ==========================================================
 # 바깥에서 부르는 함수
-# ==========================================================
 
 
 async def collect_offers(ingredients: list[str]) -> list[dict]:
-    """재료 목록의 가격을 조사처별로 모아온다 (병렬).
-
-    가격을 못 구한 재료는 offers 가 빈 배열로 나간다.
-    그 재료 하나 때문에 화면 전체가 죽으면 안 되기 때문에 예외를 던지지 않는다.
-    """
+    """재료 목록의 가격을 조사처별로 모아온다 (병렬)."""
     names = clean_names(ingredients)
     if not names:
         return []
@@ -174,15 +100,7 @@ async def collect_offers(ingredients: list[str]) -> list[dict]:
 async def collect_one(
     client: httpx.AsyncClient, name: str, providers: list[str]
 ) -> dict:
-    """재료 하나의 조사처별 가격과 최근 가격 추이를 모은다.
-
-    적은 순서대로 시도하다가 값이 나오면 거기서 멈춘다. 여러 곳의 결과를
-    합치지 않는다 — 곳마다 단위 기준이 달라 한 표에 담으면 최저/최고가
-    시장 차이가 아니라 단위 차이가 되기 때문이다.
-
-    어디서도 못 구하면 offers 가 빈 배열로 나간다. 화면은 그 줄을
-    '가격 정보 없음'으로 표시한다.
-    """
+    """재료 하나의 조사처별 가격과 최근 가격 추이를 모은다."""
     for provider in providers:
         key = provider.lower()
 
@@ -210,10 +128,7 @@ def offer_price(offer: dict) -> int:
 
 
 def clean_names(ingredients: list[str]) -> list[str]:
-    """빈 값과 중복을 걸러낸다.
-
-    같은 재료를 두 번 조회하면 합계가 두 배로 부풀려진다.
-    """
+    """빈 값과 중복을 걸러낸다."""
     names = []
 
     for raw in ingredients:
@@ -225,23 +140,11 @@ def clean_names(ingredients: list[str]) -> list[str]:
 
 
 def kamis_link(name: str) -> str:
-    """사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지 주소.
-
-    쇼핑몰과 달리 '이 상품을 사는 링크'가 없다. 조사가격 원문을 보여주는
-    페이지로 보내서, 화면 숫자가 어디서 왔는지 확인할 수 있게 한다.
-    """
+    """사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지 주소."""
     return f"{KAMIS_REFERENCE_URL}?keyword={quote(name)}"
 
 
-# ==========================================================
 # KAMIS — 공공데이터포털 일별 도·소매 가격정보 (진짜 가격)
-#
-# https://www.data.go.kr/data/15156057/openapi.do
-# 무료 · 개발계정 자동승인 · 일 10,000건
-#
-# 인증키만 .env 로 뺐다(팀원마다 다르다). URL 은 명세서 값 그대로다.
-#     DATA_GO_KR_SERVICE_KEY=...  (마이페이지의 일반 인증키, Decoding 값)
-# ==========================================================
 
 KAMIS_URL = "https://apis.data.go.kr/B552845/perDay/price"
 
@@ -254,8 +157,6 @@ KAMIS_RETAIL_CODE = "01"
 KAMIS_ROWS = 1000
 
 # 조사일자는 필수 파라미터인데 주말·공휴일은 조사가 없다.
-# 오늘 하루만 물으면 월요일 아침에 0건이 나오므로 며칠 거슬러 올라가 묻고,
-# 받아온 것 중 가장 최근 조사일자만 골라 쓴다.
 KAMIS_LOOKBACK_DAYS = 7
 
 # 응답에서 실제로 쓰는 컬럼만 받는다. 행 수는 그대로지만 응답이 가벼워진다.
@@ -268,11 +169,7 @@ KAMIS_REFERENCE_URL = "https://www.kamis.or.kr/customer/price/retail/item.do"
 async def kamis_offers(
     client: httpx.AsyncClient, name: str
 ) -> tuple[list[dict], dict | None]:
-    """KAMIS 소매 조사가격을 시장별 offer 목록과 최근 추이로 만든다.
-
-    실패해도 예외를 던지지 않는다. 재료 하나의 가격을 못 구했다고
-    레시피 화면 전체가 에러가 되면 안 된다.
-    """
+    """KAMIS 소매 조사가격을 시장별 offer 목록과 최근 추이로 만든다."""
     if not settings.DATA_GO_KR_SERVICE_KEY:
         raise RuntimeError(
             "PRICE_PROVIDERS 에 kamis 를 켰는데 DATA_GO_KR_SERVICE_KEY 가 "
@@ -304,8 +201,6 @@ async def kamis_offers(
         return [], None
 
     # raise_for_status() 를 쓰지 않는다. 인증키가 틀리면 403 과 함께
-    # 사유가 본문에 실려 오는데, 예외로 던져버리면 "403" 만 남고
-    # 무엇이 잘못됐는지는 사라진다.
     try:
         payload = response.json()
     except ValueError:
@@ -323,11 +218,6 @@ async def kamis_offers(
         return [], None
 
     # 단위를 먼저 맞춘 뒤 두 갈래로 쓴다.
-    #   전체 기간  가격 추이 계산
-    #   최근 하루  화면에 보여줄 시장별 가격
-    #
-    # 일주일치를 이미 받아놓고 최근 하루만 쓰고 버리고 있었다.
-    # 추이는 그 버려지던 데이터로 만든다 — 추가 호출이 없다.
     history = same_unit_rows(kamis_rows(payload))
     trend = price_trend(history)
     rows = latest_rows(history)
@@ -356,11 +246,7 @@ async def kamis_offers(
 
 
 def relabel(offers: list[dict], name: str) -> list[dict]:
-    """캐시에서 꺼낸 값에 이 재료 이름으로 만든 링크를 붙인다.
-
-    가격과 시장은 품목이 같으면 같지만, 확인 링크는 사용자가 본 이름으로
-    가야 한다. "다진 마늘" 을 눌렀는데 "마늘" 로 검색되면 어색하다.
-    """
+    """캐시에서 꺼낸 값에 이 재료 이름으로 만든 링크를 붙인다."""
     link = kamis_link(name)
 
     for offer in offers:
@@ -372,12 +258,7 @@ def relabel(offers: list[dict], name: str) -> list[dict]:
 def kamis_params(
     category_code: str, item_code: str, variety_code: str | None = None
 ) -> dict:
-    """요청 파라미터를 만든다.
-
-    조사일자(GTE/LTE)·부류코드·품목코드가 전부 필수다. 하나라도 빠지면
-    에러가 아니라 0건이 돌아와서, 데이터가 없는 것처럼 보인다.
-    파라미터 이름의 대괄호와 :: 는 명세서 그대로다.
-    """
+    """요청 파라미터를 만든다."""
     today = date.today()
     start = today - timedelta(days=KAMIS_LOOKBACK_DAYS)
 
@@ -401,17 +282,7 @@ def kamis_params(
 
 
 def kamis_error(payload: dict) -> str | None:
-    """에러 사유를 꺼낸다. 정상이면 None.
-
-    공공데이터포털은 실패 지점에 따라 봉투가 두 가지다. 하나만 보면
-    나머지 절반을 놓친다.
-
-    1. 게이트웨이가 막은 것 — 인증키 오타 · 미등록 · 트래픽 초과
-           {"OpenAPI_ServiceResponse": {"cmmMsgHeader": {"errMsg": ...}}}
-
-    2. 서비스까지 갔다가 실패한 것 — 파라미터 오류 등
-           {"response": {"header": {"resultCode": "01", "resultMsg": ...}}}
-    """
+    """에러 사유를 꺼낸다."""
     if not isinstance(payload, dict):
         return None
 
@@ -441,11 +312,7 @@ def kamis_error(payload: dict) -> str | None:
 
 
 def kamis_rows(payload: dict) -> list[dict]:
-    """응답에서 데이터 행 목록만 꺼낸다.
-
-    명세서 기준 response.body.items.item 이다. 행이 하나뿐일 때 배열이
-    아니라 객체로 오는 기관이 있어서 그 경우도 받아준다.
-    """
+    """응답에서 데이터 행 목록만 꺼낸다."""
     node = payload
     for key in ("response", "body", "items", "item"):
         if isinstance(node, dict) and key in node:
@@ -461,12 +328,7 @@ def kamis_rows(payload: dict) -> list[dict]:
 
 
 def latest_rows(rows: list[dict]) -> list[dict]:
-    """가장 최근 조사일자의 행만 남긴다.
-
-    주말을 건너뛰려고 일주일치를 받아왔다. 그대로 두면 지난 화요일 가격과
-    오늘 가격이 한 표에 섞여서, 최저/최고가 '시장 차이'가 아니라
-    '날짜 차이'가 되어버린다.
-    """
+    """가장 최근 조사일자의 행만 남긴다."""
     days = []
     for row in rows:
         day = str(row.get("exmn_ymd") or "").strip()
@@ -481,15 +343,7 @@ def latest_rows(rows: list[dict]) -> list[dict]:
 
 
 def same_unit_rows(rows: list[dict]) -> list[dict]:
-    """단위가 같은 행만 남긴다. 가장 많이 나온 단위를 기준으로 삼는다.
-
-    품종을 골라도 단위가 갈리는 품목이 있다. 계란은 10구와 30구가,
-    쌀은 10kg 과 20kg 이 같이 나온다. 그대로 최저/최고를 내면
-    '10구 최저가 ~ 30구 최고가'가 되어 세 배쯤 부풀려진다.
-
-    품종코드로 대부분 걸러지지만, 코드가 새로 생기거나 조사 방식이
-    바뀌어도 표가 이상해지지 않도록 마지막에 한 번 더 통일한다.
-    """
+    """단위가 같은 행만 남긴다."""
     if not rows:
         return []
 
@@ -504,18 +358,11 @@ def same_unit_rows(rows: list[dict]) -> list[dict]:
 
 
 # 추이를 화면에 알릴 최소 변동폭(%).
-#
-# 시장 조사가격은 며칠 사이에도 1~2% 씩 흔들린다. 그걸 다 "올랐다/내렸다"고
-# 적으면 배지가 늘 떠 있어서 아무 뜻이 없어진다. 장 볼 때 체감되는 폭만 알린다.
 TREND_MIN_PERCENT = 5.0
 
 
 def daily_average(rows: list[dict]) -> dict[str, int]:
-    """조사일자별 평균 가격.
-
-    같은 날에도 시장마다 값이 다르다. 날짜끼리 비교하려면 하루를
-    숫자 하나로 줄여야 한다.
-    """
+    """조사일자별 평균 가격."""
     buckets: dict[str, list[int]] = {}
 
     for row in rows:
@@ -528,16 +375,7 @@ def daily_average(rows: list[dict]) -> dict[str, int]:
 
 
 def price_trend(rows: list[dict]) -> dict | None:
-    """일주일 전과 견줘 값이 얼마나 움직였는지.
-
-    주말·공휴일은 조사가 없어서 날짜가 띄엄띄엄하다. 그래서 "7일 전"을
-    딱 집지 않고, 받아온 기간의 처음과 끝을 견준다.
-
-    쇼핑몰 API 로는 못 하는 일이다. 그쪽은 지금 값만 준다.
-    KAMIS 는 일별 조사값이라 "요즘 싼지 비싼지" 를 말할 수 있다.
-
-    변동이 작으면 None 을 돌려준다. 화면에 배지를 안 붙인다는 뜻이다.
-    """
+    """일주일 전과 견줘 값이 얼마나 움직였는지."""
     days = daily_average(rows)
     if len(days) < 2:
         return None
@@ -574,11 +412,7 @@ def kamis_market_label(row: dict) -> str:
 
 
 def kamis_unit(row: dict) -> str:
-    """가격의 기준 단위.  단위크기 '1' + 단위 'kg' -> '1kg'
-
-    단위를 안 적으면 쌀 10kg 값과 두부 300g 값이 한 표에 나란히 서서
-    쌀이 터무니없이 비싸 보인다.
-    """
+    """가격의 기준 단위."""
     size = str(row.get("unit_sz") or "").strip()
     unit = str(row.get("unit") or "").strip()
 
@@ -586,11 +420,7 @@ def kamis_unit(row: dict) -> str:
 
 
 def kamis_link(name: str) -> str:
-    """사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지 주소.
-
-    쇼핑몰과 달리 '이 상품을 사는 링크'가 없다. 조사가격 원문을 보여주는
-    페이지로 보내서, 화면 숫자가 어디서 왔는지 확인할 수 있게 한다.
-    """
+    """사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지 주소."""
     return f"{KAMIS_REFERENCE_URL}?keyword={quote(name)}"
 
 

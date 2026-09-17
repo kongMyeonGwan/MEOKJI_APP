@@ -2,19 +2,11 @@ import { Link } from 'react-router-dom'
 import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/recommendation/GamePromo.css'
 
-/**
- * 메뉴 게임 배너.
- *
- * 히어로 바로 아래에 둔다. 위에서 "오늘은 콩국수"라고 정해줬는데도
- * 안 당기는 사람이 다음으로 하는 생각이 "그럼 뭐 먹지"라서,
- * 그 자리에서 고르는 걸 대신해주는 장치를 내미는 순서다.
- *
- * 세 게임을 같은 크기로 늘어놓는다. 여기서는 "골라보세요"가 맞다.
- * 셋의 성격이 달라서(비교 · 질문 · 운) 어느 게 끌리는지가 곧 선택이다.
- *
- * 카드 자체가 링크라 "게임 시작하기"는 없어도 되지만,
- * 셋 다 안 정해진 사람을 위해 게임 목록(/game)으로 가는 문을 하나 둔다.
- */
+// 메뉴 게임 배너. 첫 화면의 히어로 바로 아래에 둔다.
+// 위에서 "오늘은 콩국수" 라고 정해줘도 안 당기는 사람이 많아서
+// 그 자리에서 고르는 걸 대신해주는 게임을 바로 내민다.
+//
+// 세 게임의 성격이 달라서(비교 / 질문 / 운) 같은 크기로 늘어놓는다.
 export default function GamePromo() {
   const { games } = useCatalog()
 
@@ -36,22 +28,24 @@ export default function GamePromo() {
       </div>
 
       <ul className="gpromo__games">
-        {games.map((game) => (
-          <li key={game.key}>
-            <Link to={game.to} className="gpromo__game">
-              <span className="gpromo__game-emoji" aria-hidden="true">
-                {game.emoji}
-              </span>
-              {/* 글자를 한 겹 더 감싼 이유: 좁은 화면에서는 카드가 가로로 눕는데,
-                  감싸지 않으면 제목과 설명이 이모지 옆에 나란히 늘어선다 */}
-              <span className="gpromo__game-text">
-                <strong className="gpromo__game-title">{game.title}</strong>
-                {/* 설명이 \n 으로 두 줄이다. CSS의 pre-line 이 그대로 살린다 */}
-                <span className="gpromo__game-desc">{game.desc}</span>
-              </span>
-            </Link>
-          </li>
-        ))}
+        {games.map(function (game) {
+          return (
+            <li key={game.key}>
+              <Link to={game.to} className="gpromo__game">
+                <span className="gpromo__game-emoji" aria-hidden="true">
+                  {game.emoji}
+                </span>
+                {/* 글자를 한 번 더 감쌌다. 좁은 화면에서 카드가 가로로 눕는데
+                    안 감싸면 제목이랑 설명이 이모지 옆에 나란히 늘어선다. */}
+                <span className="gpromo__game-text">
+                  <strong className="gpromo__game-title">{game.title}</strong>
+                  {/* 설명이 \n 으로 두 줄이다. CSS 의 pre-line 이 살려준다. */}
+                  <span className="gpromo__game-desc">{game.desc}</span>
+                </span>
+              </Link>
+            </li>
+          )
+        })}
       </ul>
 
       <div className="gpromo__cta">

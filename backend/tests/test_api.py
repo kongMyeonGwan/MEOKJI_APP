@@ -136,7 +136,6 @@ def test_카탈로그를_한_번에_내려준다(client):
         "roulette",
         "games",
         "balance_questions",
-        "fridge_groups",
         "search_suggestions",
         "budget_presets",
     ):
@@ -178,13 +177,6 @@ def test_레시피와_재료_가격이_한_번에_온다(client):
     assert len(body["prices"]) == len(body["ingredients_json"])
     for row in body["prices"]:
         assert "offers" in row
-
-
-def test_재료_가격만_따로도_조회된다(client):
-    response = client.post("/api/prices", json={"ingredients": ["두부", "대파"]})
-
-    assert response.status_code == 200
-    assert len(response.json()) == 2
 
 
 # =========================================================
@@ -324,14 +316,11 @@ def test_가입되지_않은_이메일의_인증_확인도_거부된다(client):
     assert "인증번호" in response.json()["detail"]
 
 
-def test_처음_가입하면_1레벨이다(client):
+def test_가입_직후에는_요리_횟수가_0이다(client):
     response = client.get("/api/users/me", headers=STATE["owner"])
     body = response.json()
 
     assert response.status_code == 200
-    assert body["level"] == 1
-    assert body["exp"] == 0
-    assert body["title"] == "요리 입문"
     assert body["cook_count"] == 0
 
 
@@ -400,12 +389,11 @@ def test_레시피를_확정하면_기록에_남는다(client):
     STATE["history_id"] = response.json()["id"]
 
 
-def test_확정하면_요리_경험치가_오른다(client):
+def test_식사를_확정하면_요리_횟수가_오른다(client):
     response = client.get("/api/users/me", headers=STATE["owner"])
     body = response.json()
 
     assert body["cook_count"] == 1
-    assert body["exp"] == 50  # EXP_PER_COOK
 
 
 def test_기록_요약에_연속_방문일이_들어있다(client):
@@ -934,21 +922,6 @@ def test_남의_글은_고치지도_지우지도_못한다(client):
         f"/api/histories/{STATE['history_id']}", headers=STATE["guest"]
     )
     assert response.status_code == 404
-
-
-def test_받은_좋아요도_경험치가_된다(client):
-    response = client.get("/api/users/me", headers=STATE["owner"])
-    body = response.json()
-
-    # 요리 50 + 글 30 + 댓글 10(내가 쓴 것) + 받은 좋아요 5x2 = 총 100
-    assert body["like_received"] == 2
-    assert body["post_count"] == 1
-
-    # exp 는 총합이 아니라 "지금 레벨에서 쌓은 양"이다.
-    # 100 을 채우는 순간 2레벨이 되고 exp 는 0으로 돌아간다.
-    assert body["level"] == 2
-    assert body["exp"] == 0
-    assert body["exp_next"] == 150
 
 
 # =========================================================

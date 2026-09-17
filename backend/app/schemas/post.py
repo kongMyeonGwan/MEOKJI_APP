@@ -1,11 +1,4 @@
-"""게시판 응답 스키마 (STEP 20~23).
-
-목록과 상세를 나눈 이유
------------------------
-목록에는 CLOB(recipe_json / ingredients_json)을 싣지 않는다.
-한 페이지에 20건이면 CLOB를 20번 읽어와 놓고 화면에는 제목만 쓰게 된다.
-레시피는 상세에서만 필요하다.
-"""
+"""게시판 응답 스키마 (STEP 20~23)."""
 
 from datetime import datetime
 
@@ -15,12 +8,7 @@ from app.schemas.page import Page
 
 
 def require_text(value: str, label: str) -> str:
-    """공백만 들어온 입력을 거르고, 앞뒤 공백을 떼어낸다.
-
-    "   " 처럼 스페이스만 넣은 값은 Field(min_length=1) 을 통과해버린다.
-    그런데 Oracle 은 빈 문자열을 NULL 로 취급해서, 그대로 저장하려 하면
-    NOT NULL 위반으로 500 이 난다. 그 전에 여기서 422 로 끊는다.
-    """
+    """공백만 들어온 입력을 거르고, 앞뒤 공백을 떼어낸다."""
     value = value.strip()
 
     if not value:
@@ -30,12 +18,7 @@ def require_text(value: str, label: str) -> str:
 
 
 class PostCreateRequest(BaseModel):
-    """글쓰기 요청.
-
-    food_name / recipe_json / ingredients_json 은 받지 않는다.
-    클라이언트가 보낸 값을 믿는 대신, 서버가 meal_history_id 로 원본을 찾아
-    직접 복사한다. 그래야 "게시글은 확정한 식사의 스냅샷"이 실제로 보장된다.
-    """
+    """글쓰기 요청."""
 
     meal_history_id: int = Field(..., ge=1)
     title: str = Field(..., min_length=1, max_length=200)
@@ -53,12 +36,7 @@ class PostCreateRequest(BaseModel):
 
 
 class PostUpdateRequest(BaseModel):
-    """글 수정 요청.
-
-    meal_history_id 는 받지 않는다. 어떤 식사에 대한 글인지가 바뀌면
-    본문과 레시피가 어긋나는데, 그건 수정이 아니라 다른 글이다.
-    바꾸고 싶으면 지우고 새로 쓰면 된다.
-    """
+    """글 수정 요청."""
 
     title: str = Field(..., min_length=1, max_length=200)
     content: str = Field(..., min_length=1)
@@ -105,11 +83,7 @@ class CommentResponse(BaseModel):
 
 
 class PostFileInfo(BaseModel):
-    """첨부파일 한 건. 파일 본체가 아니라 '어디서 받는지'를 알려준다.
-
-    서버에 저장한 이름(file_name)과 폴더(file_path)는 내려주지 않는다.
-    화면이 쓸 일이 없고, 디스크 구조를 밖에 알릴 이유도 없다.
-    """
+    """첨부파일 한 건."""
 
     # 사용자가 올린 원래 이름. 화면에 이 이름으로 보여준다.
     name: str
@@ -148,11 +122,7 @@ class PostListItem(BaseModel):
 
 
 class PostPage(Page):
-    """게시글 목록 한 페이지.
-
-    나머지 네 칸(total · page · size · total_pages)과 "왜 배열이 아니라
-    한 겹 감쌌나" 는 schemas/page.py 에 적혀 있다.
-    """
+    """게시글 목록 한 페이지."""
 
     items: list[PostListItem]
 
@@ -187,12 +157,7 @@ class PostDetailResponse(BaseModel):
 
 
 class PopularItem(BaseModel):
-    """인기 레시피 한 줄 (기간 안에 새로 받은 좋아요 기준).
-
-    화면의 LikedList · PopularRecipes 가 이 모양을 그대로 쓴다.
-    id 는 게시글 번호다. 클릭하면 /recipe/{food_name} 으로 가고,
-    좋아요 수는 "선택한 기간에 눌린 것"만 센 값이다.
-    """
+    """인기 레시피 한 줄 (기간 안에 새로 받은 좋아요 기준)."""
 
     id: int
     food_name: str

@@ -1,9 +1,4 @@
-"""AI 추천 · 레시피 · 재료 가격 요청/응답 스키마 (STEP 10~19).
-
-여기 있는 것들은 전부 **DB 에 저장하지 않는 값**이다.
-추천 후보와 가격은 조회 시점에만 존재하고, 사용자가 "이걸로 먹을래요"를 눌러
-확정한 것만 MEAL_HISTORIES 로 넘어간다 (설계 원칙 §13).
-"""
+"""AI 추천 · 레시피 · 재료 가격 요청/응답 스키마 (STEP 10~19)."""
 
 from typing import Literal
 
@@ -18,7 +13,6 @@ RecommendSource = Literal[
     "카테고리",
     "예산 추천",
     "레시피 검색",
-    "냉장고 재료",
     "메뉴 게임",
 ]
 
@@ -28,11 +22,7 @@ MAX_LIMIT = 12
 
 
 class RecommendRequest(BaseModel):
-    """추천 요청.
-
-    모든 항목이 선택이다. 아무것도 안 보내면 "오늘 무난한 메뉴"가 나온다.
-    Guest 도 부를 수 있고, 로그인했으면 서버가 Ban 재료를 알아서 붙인다.
-    """
+    """추천 요청."""
 
     source: RecommendSource = "카테고리"
     limit: int = Field(5, ge=1, le=MAX_LIMIT)
@@ -49,23 +39,13 @@ class RecommendRequest(BaseModel):
     # SQL LIKE 로는 이런 문장을 해석할 수 없어서 검색을 AI 에 맡긴다.
     query: str | None = Field(None, max_length=150)
 
-    # 냉장고에 있는 재료
-    ingredients: list[str] = Field(default_factory=list, max_length=30)
-
     # 이미 보여준 메뉴. '다른 메뉴 추천'을 눌렀을 때 겹치지 않게 한다.
     exclude: list[str] = Field(default_factory=list, max_length=30)
 
     # 요즘 값이 내린 재료를 반영할지.
-    #
-    # 켜면 서버가 KAMIS 시세를 훑어 싼 재료를 찾고, 그 재료를 쓰는 메뉴를
-    # 우선 추천한다. 쇼핑몰 API 로는 못 하는 일이다 — 그쪽은 지금 값만 준다.
     use_bargains: bool = False
 
     # 날씨를 반영할지. 대시보드 히어로만 True 로 보낸다.
-    #
-    # 좌표를 안 보내도 된다. 로그인했으면 서버가 회원가입 때 고른 주소의
-    # 좌표를 쓰고, 그것도 없으면 기본 좌표(종로2가)로 답한다
-    # (services/ai_service.pick_coords).
     use_weather: bool = False
     lat: float | None = Field(None, ge=-90, le=90)
     lon: float | None = Field(None, ge=-180, le=180)
@@ -73,11 +53,7 @@ class RecommendRequest(BaseModel):
     @field_validator("category", "query")
     @classmethod
     def blank_to_none(cls, value: str | None) -> str | None:
-        """공백만 들어온 값은 "안 보낸 것"으로 취급한다.
-
-        ?category= 처럼 빈 값이 붙어 오는 경우가 있는데, 그대로 두면
-        "이름이 빈 문자열인 분류"를 찾다가 결과가 0건이 된다.
-        """
+        """공백만 들어온 값은 "안 보낸 것"으로 취급한다."""
         if value is None:
             return None
 
@@ -87,7 +63,7 @@ class RecommendRequest(BaseModel):
 
         return value
 
-    @field_validator("ingredients", "exclude")
+    @field_validator("exclude")
     @classmethod
     def clean_names(cls, values: list[str]) -> list[str]:
         """빈 값과 중복을 걸러낸다."""
@@ -112,9 +88,6 @@ class FoodItem(BaseModel):
     estimated_cost: int
     tags: list[str] = []
 
-    # 냉장고 찾기의 "몇 개 가지고 있어요" 계산에 쓴다
-    ingredients: list[str] = []
-
     # 사진이 없는 동안 쓰는 SVG 일러스트 종류 (stew · soup · noodle ...).
     # image_url 이 채워지면 화면이 그쪽을 먼저 쓴다.
     art: str | None = None
@@ -122,10 +95,7 @@ class FoodItem(BaseModel):
 
 
 class BargainItem(BaseModel):
-    """요즘 값이 내린 재료 한 건.
-
-    화면의 "지금 싼 재료" 칩과 AI 프롬프트가 이 모양을 함께 쓴다.
-    """
+    """요즘 값이 내린 재료 한 건."""
 
     name: str
     percent: float      # 일주일 전 대비 등락률. 내린 것만 담으므로 음수다
@@ -135,12 +105,7 @@ class BargainItem(BaseModel):
 
 
 class RecommendResponse(BaseModel):
-    """추천 결과.
-
-    condition 은 "서울특별시 · 맑음 28° · 못 먹는 재료 3건 제외" 처럼
-    무슨 조건으로 골랐는지 한 줄로 적은 문장이다.
-    화면의 'AI 추천 기록'이 이 문장을 그대로 저장한다.
-    """
+    """추천 결과."""
 
     condition: str
     items: list[FoodItem]
@@ -154,19 +119,13 @@ class RecommendResponse(BaseModel):
 
 
 class PriceOffer(BaseModel):
-    """조사처 한 곳의 가격.
-
-    shop 은 쇼핑몰이 아니라 시장명이다. 예: "서울 가락시장"
-    """
+    """조사처 한 곳의 가격."""
 
     shop: str
     price: int
     link: str
 
     # 가격의 기준 단위. 예: "1kg", "30개", "500g"
-    #
-    # 이걸 안 적으면 쌀 20kg 값과 깻잎 100g 값이 한 표에 나란히 서서
-    # 쌀이 터무니없이 비싸 보인다. KAMIS 는 품목마다 단위가 다르다.
     unit: str = ""
 
     # 조사일자(YYYYMMDD). 주말·공휴일은 조사가 없어서 며칠 전 값일 수 있다.
@@ -175,14 +134,7 @@ class PriceOffer(BaseModel):
 
 
 class PriceTrend(BaseModel):
-    """최근 가격이 어느 쪽으로 움직였는지.
-
-    쇼핑몰 API 로는 못 만드는 값이다. 그쪽은 지금 값만 준다.
-    KAMIS 는 일별 조사값이라 "요즘 싼지 비싼지" 를 말할 수 있다.
-
-    변동이 작으면(5% 미만) 아예 만들지 않는다. 늘 떠 있는 배지는
-    아무 뜻이 없기 때문이다.
-    """
+    """최근 가격이 어느 쪽으로 움직였는지."""
 
     percent: float      # +는 오름, -는 내림
     from_price: int     # 기간 처음 날의 전국 평균
@@ -201,26 +153,11 @@ class PriceItem(BaseModel):
     trend: PriceTrend | None = None
 
     # ----- 이 레시피 때문에 내야 하는 돈 -----
-    #
-    # offers 의 price 는 판매 단위 가격이다(고춧가루 1kg 25,200원).
-    # 레시피가 요구하는 건 1큰술이라, 그대로 더하면 재료비가 백 배 넘게
-    # 부풀려진다. 그래서 필요한 만큼으로 환산한다.
-    #
-    # 환산만으로는 부족하다. "무 0.2개 640원" 은 계산은 맞지만 살 수는 없다.
-    # 무를 0.2개 파는 가게가 없기 때문이다. 그래서 쪼갤 수 없는 단위는
-    # 살 수 있는 데까지 올린 값을 담는다 (services/unit_convert.buy_ratio).
-    #
-    # 환산할 수 없으면(판매 단위가 '1마리' 인데 레시피는 'g' 으로 적은 경우)
-    # 셋 다 None 으로 두고, 화면이 합계에서 뺀다.
     need_text: str | None = None   # "0.2개" 처럼 사람이 읽는 필요량
     low_cost: int | None = None    # 가장 싼 시장에서 살 때 내는 돈(원)
     high_cost: int | None = None   # 가장 비싼 시장에서 살 때 내는 돈(원)
 
     # 필요한 양보다 더 산 재료인가.
-    #
-    # 무 0.2개가 필요한데 1개를 사야 했다면 True 다. 화면은 이때만
-    # '최소단위' 표시를 붙인다. 값이 부풀어 보이는 게 계산 실수가 아니라
-    # 쪼개 팔지 않아서라는 걸 밝혀야 사용자가 합계를 믿는다.
     min_unit: bool = False
 
     # 실제로 사게 되는 양. "1개" · "30구". min_unit 일 때 화면이
@@ -228,31 +165,11 @@ class PriceItem(BaseModel):
     buy_text: str | None = None
 
     # KAMIS 조사 품목인가.
-    #
-    # offers 가 비어 있는 이유는 두 가지고, 사용자에게는 완전히 다른 말이다.
-    #
-    #   조사 대상이 아니다   두부 · 밀가루 · 간장. 가공식품은 KAMIS 가 안 다룬다.
-    #                        앞으로도 값이 안 나온다 — 그렇다고 알려주면 된다.
-    #   이번에 못 가져왔다   호출 제한이나 통신 오류. 잠시 뒤엔 나온다.
-    #
-    # 이 값은 품목표(ingredient_match.find_codes)만 보고 정한다. API 응답과
-    # 무관하므로, 호출이 실패한 날에도 "조사 대상이 아니다" 라고 잘못 말하지
-    # 않는다. 화면은 이 값이 False 일 때만 '조사 대상 아님' 을 붙인다.
     surveyed: bool = True
 
 
-class PriceRequest(BaseModel):
-    """가격 조회 요청. 재료 이름만 보내면 된다."""
-
-    ingredients: list[str] = Field(..., min_length=1, max_length=30)
-
-
 class RecipeResponse(BaseModel):
-    """AI 가 만든 레시피 한 건 (아직 저장 전).
-
-    사용자가 '이걸로 먹을래요'를 누르면 이 값이 그대로
-    POST /api/histories 로 넘어가 MEAL_HISTORIES 에 스냅샷으로 저장된다.
-    """
+    """AI 가 만든 레시피 한 건 (아직 저장 전)."""
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,11 +1,7 @@
-"""내 정보 · 요리 레벨 · 알림 · 회원 탈퇴 로직.
-
-여기 있는 함수는 전부 "로그인한 본인" 만 다룬다.
-남의 정보를 조회하거나 고치는 경로는 만들지 않았다.
-"""
+"""내 정보 · 알림 · 회원 탈퇴 로직."""
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select, update
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -26,116 +22,13 @@ from app.schemas.user import (
 )
 from app.services.history_service import get_stats
 
-# =========================================================
-# 요리 레벨
-#
-# 무엇을 하면 몇 점인지. 실제로 요리한 것을 가장 높게 친다.
-# 글만 써서 레벨이 오르면 이 앱이 요리 앱이 아니라 게시판이 된다.
-# =========================================================
-EXP_PER_COOK = 50       # 식사 확정 (이걸로 먹을래요)
-EXP_PER_POST = 30       # 후기 글 작성
-EXP_PER_COMMENT = 10    # 댓글 작성
-EXP_PER_LIKE = 5        # 내 글이 좋아요를 받음
-
-# 레벨 1 -> 2 에 필요한 경험치. 레벨이 오를수록 아래만큼 더 필요해진다.
-FIRST_LEVEL_EXP = 100
-LEVEL_EXP_STEP = 50
-
-# 레벨 구간별 칭호. (이 레벨 이상이면 이 칭호) 를 위에서부터 확인한다.
-TITLES = [
-    (30, "요리 장인"),
-    (20, "요리 고수"),
-    (10, "요리 중수"),
-    (5, "요리 초보"),
-    (1, "요리 입문"),
-]
-
 # 알림에 한 번에 담을 최대 건수. 상단바 패널이 그보다 길어지면 어차피 안 읽는다.
 NOTIFICATION_LIMIT = 20
-
-
-def count_posts(db: Session, user_id: int) -> int:
-    """이 사람이 쓴 글 수 (지운 글 제외)."""
-    return db.execute(
-        select(func.count(RecipeReview.id)).where(
-            RecipeReview.user_id == user_id,
-            RecipeReview.use_yn == USE_YN_YES,
-        )
-    ).scalar_one()
-
-
-def count_comments(db: Session, user_id: int) -> int:
-    """이 사람이 쓴 댓글 수 (지운 댓글 제외)."""
-    return db.execute(
-        select(func.count(ReviewComment.id)).where(
-            ReviewComment.user_id == user_id,
-            ReviewComment.use_yn == USE_YN_YES,
-        )
-    ).scalar_one()
-
-
-def count_likes_received(db: Session, user_id: int) -> int:
-    """내 글들이 받은 좋아요 수.
-
-    review_likes 를 recipe_reviews 와 JOIN 해서 "내 글에 달린 것" 만 센다.
-    양쪽 다 use_yn 조건이 필요하다. 하나만 걸면 지운 글의 좋아요나
-    취소한 좋아요가 섞인다.
-    """
-    return db.execute(
-        select(func.count(ReviewLike.id))
-        .join(RecipeReview, RecipeReview.id == ReviewLike.review_id)
-        .where(
-            RecipeReview.user_id == user_id,
-            RecipeReview.use_yn == USE_YN_YES,
-            ReviewLike.use_yn == USE_YN_YES,
-        )
-    ).scalar_one()
-
-
-def make_level(total_exp: int) -> tuple[int, int, int]:
-    """총 경험치로 (레벨, 지금 레벨의 경험치, 다음 레벨까지 필요한 양) 을 구한다.
-
-    레벨이 오를수록 필요한 양이 조금씩 늘어난다.
-        1 -> 2 : 100
-        2 -> 3 : 150
-        3 -> 4 : 200
-    """
-    level = 1
-    need = FIRST_LEVEL_EXP
-    remain = total_exp
-
-    while remain >= need:
-        remain -= need
-        level += 1
-        need += LEVEL_EXP_STEP
-
-    return level, remain, need
-
-
-def make_title(level: int) -> str:
-    """레벨에 맞는 칭호를 고른다."""
-    for threshold, title in TITLES:
-        if level >= threshold:
-            return title
-
-    return TITLES[-1][1]
 
 
 def get_profile(db: Session, user: User) -> ProfileResponse:
     """마이페이지 · 사이드바가 함께 쓰는 내 정보를 만든다."""
     stats = get_stats(db, user)
-    post_count = count_posts(db, user.id)
-    comment_count = count_comments(db, user.id)
-    like_received = count_likes_received(db, user.id)
-
-    total_exp = (
-        stats.count * EXP_PER_COOK
-        + post_count * EXP_PER_POST
-        + comment_count * EXP_PER_COMMENT
-        + like_received * EXP_PER_LIKE
-    )
-
-    level, exp, exp_next = make_level(total_exp)
 
     return ProfileResponse(
         id=user.id,
@@ -149,15 +42,8 @@ def get_profile(db: Session, user: User) -> ProfileResponse:
         # 그대로 두면 JSON 으로 나갈 때 문자열이 되어 화면에서 계산이 안 된다.
         latitude=to_float(user.latitude),
         longitude=to_float(user.longitude),
-        level=level,
-        title=make_title(level),
-        exp=exp,
-        exp_next=exp_next,
         streak_days=stats.streak_days,
         cook_count=stats.count,
-        post_count=post_count,
-        comment_count=comment_count,
-        like_received=like_received,
     )
 
 
@@ -172,11 +58,7 @@ def to_float(value) -> float | None:
 def update_profile(
     db: Session, user: User, payload: ProfileUpdateRequest
 ) -> ProfileResponse:
-    """내 정보를 고친다. 요청에 담긴 항목만 바꾼다.
-
-    exclude_unset=True 가 핵심이다. 이게 없으면 닉네임만 보냈을 때
-    주소가 None 으로 덮여 지워진다.
-    """
+    """내 정보를 고친다."""
     changes = payload.model_dump(exclude_unset=True)
 
     for field, value in changes.items():
@@ -202,11 +84,7 @@ def update_profile(
 
 
 def change_my_password(db: Session, user: User, payload: PasswordChangeRequest) -> None:
-    """로그인한 상태에서 비밀번호를 바꾼다.
-
-    현재 비밀번호를 먼저 확인한다. 이게 없으면 로그인한 브라우저를 잠깐
-    빌린 사람이 비밀번호를 바꿔 계정을 통째로 가져갈 수 있다.
-    """
+    """로그인한 상태에서 비밀번호를 바꾼다."""
     if not verify_password(payload.current_password, user.password_hash):
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "현재 비밀번호가 올바르지 않습니다."
@@ -222,32 +100,13 @@ def change_my_password(db: Session, user: User, payload: PasswordChangeRequest) 
 
 
 def withdraw(db: Session, user: User, password: str) -> None:
-    """회원 탈퇴. DELETE 를 실행하지 않고 use_yn 을 'N' 으로 바꾼다.
-
-    하위 데이터도 함께 'N' 으로 바꿔야 한다.
-    FK 의 ON DELETE CASCADE 는 진짜 DELETE 에만 작동하고,
-    UPDATE use_yn='N' 은 DB 입장에서 그냥 값 수정이라 아무 반응도 없다.
-    (db/01_schema.sql 상단 [4] 참고)
-
-    안 지우면 탈퇴한 사람의 글과 댓글이 게시판에 계속 남는다.
-    """
+    """회원 탈퇴."""
     if not verify_password(password, user.password_hash):
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "비밀번호가 올바르지 않습니다."
         )
 
     # 자식부터 지운다. 순서가 중요한 건 아니지만, 중간에 실패했을 때
-    # "회원은 살아있는데 글만 사라진" 상태가 낫기 때문이다.
-    #
-    # NOTICES 는 일부러 빠져 있다
-    # --------------------------
-    # 공지도 user_id 와 use_yn 을 가지고 있어서 여기 넣을 수 있게 생겼는데,
-    # 넣으면 안 된다. 공지는 개인의 글이 아니라 운영팀이 서비스 이름으로 낸
-    # 글이라, 쓴 사람이 그만뒀다고 "서버 점검 안내" 가 같이 사라지면 곤란하다.
-    #
-    # DDL 도 같은 판단이다 — fk_notices_user 에만 ON DELETE CASCADE 가 없다
-    # (models/notice.py 참고). 여기에 Notice 를 더하면 그 설계를 코드가
-    # 조용히 뒤집게 된다.
     for model in (ReviewLike, ReviewComment, RecipeReview, MealHistory, UserBan):
         db.execute(
             update(model)
@@ -259,16 +118,10 @@ def withdraw(db: Session, user: User, password: str) -> None:
     db.commit()
 
     # 토큰은 따로 무효화하지 않는다. JWT 는 서버가 발급 목록을 들고 있지
-    # 않아서 취소할 방법이 없다. 대신 core/deps.py 가 요청마다
-    # use_yn 을 확인하므로, 남은 토큰으로는 아무것도 할 수 없다.
 
 
 def list_notifications(db: Session, user: User) -> list[NotificationItem]:
-    """내 글에 달린 댓글과 좋아요를 알림으로 모아준다.
-
-    내가 내 글에 단 댓글과 내가 누른 좋아요는 뺀다.
-    자기 행동이 자기 알림으로 돌아오면 그냥 시끄럽기만 하다.
-    """
+    """내 글에 달린 댓글과 좋아요를 알림으로 모아준다."""
     items = []
 
     comment_rows = db.execute(

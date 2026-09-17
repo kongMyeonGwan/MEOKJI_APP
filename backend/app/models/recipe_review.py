@@ -1,18 +1,4 @@
-"""RECIPE_REVIEWS 테이블 모델 (레시피 후기 게시판).
-
-스키마의 단일 소스는 db/01_schema.sql 이다.
-
-후기는 반드시 자기가 확정한 식사(MealHistory)에서 출발한다.
-DDL의 FK가 (meal_history_id, user_id) 합성이라, 남의 히스토리를 자기 후기로
-공유하려 하면 애플리케이션까지 오기 전에 DB가 ORA-02291로 막는다.
-
-첨부파일은 별도 테이블 없이 이 테이블의 file_* 컬럼 6개로 받는다.
-후기 하나당 파일 하나다. 여러 개가 필요해지면 REVIEW_FILES 테이블로 분리해야 한다.
-
-food_name / recipe_json / ingredients_json 컬럼을 두지 않는다.
-MEAL_HISTORIES 가 이미 "확정 당시 스냅샷, 이후 UPDATE 없음"이라 값이 변할 일이
-없으므로, 복사본을 두면 두 값이 어긋날 여지만 생긴다. JOIN 해서 읽는다.
-"""
+"""RECIPE_REVIEWS 테이블 모델 (레시피 후기 게시판)."""
 
 from datetime import datetime
 
@@ -36,12 +22,6 @@ class RecipeReview(Base):
     __tablename__ = "recipe_reviews"
 
     # DDL의 fk_reviews_meal 은 두 컬럼짜리 합성 FK다.
-    # mapped_column(ForeignKey(...))로는 표현할 수 없어 테이블 레벨에 선언한다.
-    #
-    # ondelete를 지정하지 않는다 = RESTRICT.
-    # 후기가 달린 히스토리를 물리 삭제하려 하면 ORA-02292가 난다.
-    # 다만 우리는 물리 삭제를 쓰지 않으므로, 논리 삭제(use_yn='N') 차단은
-    # 서비스 계층이 "살아있는 후기가 있는가"를 확인해서 막아야 한다.
     __table_args__ = (
         ForeignKeyConstraint(
             ["meal_history_id", "user_id"],
@@ -64,11 +44,6 @@ class RecipeReview(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
     # ===== 첨부파일 (후기 하나당 파일 하나) =====
-    #
-    # DDL의 ck_reviews_file_set이 file_yn과 나머지 컬럼을 묶어서 본다.
-    # file_yn='Y'면 name/org_name/path/ext가 전부 있어야 하고,
-    # 'N'이면 전부 NULL이어야 한다. 한쪽만 고치면 ORA-02290이 난다.
-    # 첨부를 지울 때는 file_yn만 바꾸지 말고 clear_file()을 쓴다.
 
     # 'Y' = 첨부 있음. file_path IS NOT NULL로도 알 수 있지만, 목록 조회에서
     # 500자짜리 경로 대신 CHAR(1) 하나만 읽으면 된다.
@@ -124,12 +99,7 @@ class RecipeReview(Base):
         self.file_size = size
 
     def clear_file(self) -> None:
-        """첨부파일을 뗀다.
-
-        file_yn 만 'N' 으로 바꾸고 나머지를 남겨두면 ck_reviews_file_set 이 막는다.
-        DB 가 막아주긴 하지만, 여섯 컬럼을 매번 손으로 지우다 하나를 빠뜨리는
-        일이 흔해서 여기 묶어둔다.
-        """
+        """첨부파일을 뗀다."""
         self.file_yn = USE_YN_NO
         self.file_name = None
         self.file_org_name = None

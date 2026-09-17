@@ -209,15 +209,14 @@ MEOKJI_APP/
 | | `POST /api/auth/login` | | Access Token 발급 |
 | | `GET /api/auth/me` | ● | 토큰 유효성 확인용 (가볍다) |
 | | `POST /api/auth/password-reset/{send,verify,change}` | | 이메일 OTP 재설정 (없는 이메일 404 · 재발송 60초 제한) |
-| users | `GET /api/users/me` | ● | 내 정보 + 요리 레벨 |
+| users | `GET /api/users/me` | ● | 내 정보 + 요리 횟수 · 연속 방문일 |
 | | `PATCH /api/users/me` | ● | 닉네임 · 성별 · 주소 수정 |
 | | `POST /api/users/me/password` | ● | 비밀번호 변경 |
 | | `GET /api/users/me/notifications` | ● | 내 글의 댓글 · 좋아요 |
 | | `DELETE /api/users/me` | ● | 회원 탈퇴 (`use_yn='N'`) |
 | bans | `GET·POST /api/bans`, `DELETE /api/bans/{id}` | ● | 못 먹는 재료 |
-| 추천 | `POST /api/recommendations` | | 날씨·예산·검색어·냉장고 조건 추천 |
+| 추천 | `POST /api/recommendations` | | 날씨·예산·검색어 조건 추천 |
 | | `GET /api/recipes/{음식이름}` | | 레시피 생성 + 재료 가격 |
-| | `POST /api/prices` | | 재료별 시장 조사가격 |
 | histories | `GET /api/histories` | ● | 내 기록 · 페이징 (`?page=1&size=20&shared=false`) |
 | | `GET /api/histories/stats` | ● | 건수 · 누적 비용 · 연속 방문일 (전체 기준) |
 | | `POST /api/histories` | ● | 식사 확정 (이걸로 먹을래요) |
@@ -231,8 +230,7 @@ MEOKJI_APP/
 | | `POST·PUT·DELETE /api/posts/{id}/comments[/{cid}]` | ● | 댓글 |
 | | `POST·DELETE /api/posts/{id}/file` | ● | 사진 붙이기 · 교체 · 떼기 |
 | | `GET /api/posts/{id}/file` | | 사진 내려받기 (원본 파일명으로) |
-| weather | `GET /api/weather` | | 현재 날씨 |
-| catalog | `GET /api/catalog` | | 카테고리 · 룰렛 · 게임 · 질문 · 재료 칩 |
+| catalog | `GET /api/catalog` | | 카테고리 · 룰렛 · 게임 · 질문 · 검색어 · 예산 |
 | | `GET /api/catalog/regions` | | 시·도 · 시·군·구 (주소 드롭다운) |
 | notices | `GET /api/notices` | | 공지사항 (고정 먼저 · 최신순, `?page=1&size=20`) |
 | | `POST /api/notices/{id}/view` | | 조회수 +1 (펼칠 때) |
@@ -384,7 +382,6 @@ VITE_API_BASE_URL=http://localhost:8000
 | [docs/PROGRESS.md](docs/PROGRESS.md) | 진행 상황 · 설계 결정 이유 · Oracle 관련 함정 |
 | [docs/DB_SETUP.md](docs/DB_SETUP.md) | 로컬 Oracle 개발환경 구축 |
 | [docs/STUDY_AUTH.md](docs/STUDY_AUTH.md) | 로그인과 JWT 는 어떻게 도는가 |
-| [docs/STUDY_JS_SYNTAX.md](docs/STUDY_JS_SYNTAX.md) | 프론트엔드에 나오는 `?.` 와 `??` |
 | [docs/STUDY_COLUMN_TYPES.md](docs/STUDY_COLUMN_TYPES.md) | 커스텀 컬럼 타입은 왜 필요한가 |
 
 처음 합류했다면 `STUDY_` 로 시작하는 세 문서를 먼저 읽으면 소스가 훨씬 잘 읽힌다.

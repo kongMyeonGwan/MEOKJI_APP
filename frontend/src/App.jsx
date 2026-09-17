@@ -14,7 +14,6 @@ import RegisterPage from './pages/RegisterPage'
 import RecommendPage from './pages/RecommendPage'
 import BudgetPage from './pages/BudgetPage'
 import SearchPage from './pages/SearchPage'
-import FridgePage from './pages/FridgePage'
 import GamePage from './pages/GamePage'
 import WorldCupPage from './pages/WorldCupPage'
 import BalancePage from './pages/BalancePage'
@@ -31,23 +30,16 @@ import SettingsPage from './pages/SettingsPage'
 import MyPage from './pages/MyPage'
 import NotFoundPage from './pages/NotFoundPage'
 
-/**
- * 라우팅 정의.
- *
- * 사이드바/하단탭의 메뉴가 여기 경로와 1:1로 대응한다.
- * community 목록·상세와 인기/찜 목록은 Guest도 볼 수 있어야 하므로
- * ProtectedRoute로 감싸지 않는다(STEP 20).
- *
- * Provider 순서
- * -------------
- *   PrefsProvider    테마·알림. 로그인과 무관하고 가장 바깥에서 <html>을 칠한다
- *   CatalogProvider  카테고리·게임 같은 고정 목록. 서버에서 한 번만 받아온다
- *   AuthProvider     로그인 상태
- *   ProfileProvider  요리 레벨·알림. useAuth를 쓰므로 반드시 Auth 안쪽이다
- *   LikesProvider    찜 목록. 서버(RECIPE_LIKES)에서 받아온다. useAuth 로 로그인
- *                    상태를 보므로 반드시 Auth 안쪽이다
- *   AiLogProvider    AI 추천 기록. 브라우저에만 저장한다
- */
+// 어떤 주소에 어떤 화면을 보여줄지 정하는 곳.
+// 사이드바랑 하단 탭의 메뉴가 여기 주소랑 하나씩 짝이 맞는다.
+//
+// Provider 를 여러 겹 감싸는데 순서가 중요하다.
+//   PrefsProvider    테마·알림. 로그인이랑 상관없어서 제일 바깥에 둔다.
+//   CatalogProvider  카테고리·게임 같은 고정 목록.
+//   AuthProvider     로그인 상태.
+//   ProfileProvider  내 정보·알림. useAuth 를 써서 Auth 안쪽이어야 한다.
+//   LikesProvider    찜 목록. 이것도 useAuth 를 써서 Auth 안쪽이다.
+//   AiLogProvider    AI 추천 기록. 브라우저에만 저장한다.
 export default function App() {
   return (
     <BrowserRouter>
@@ -70,7 +62,6 @@ export default function App() {
                       <Route path="recommend" element={<RecommendPage />} />
                       <Route path="budget" element={<BudgetPage />} />
                       <Route path="search" element={<SearchPage />} />
-                      <Route path="fridge" element={<FridgePage />} />
                       <Route path="recipe/:foodName" element={<RecipePage />} />
 
                       {/* 메뉴 게임 */}
@@ -79,18 +70,17 @@ export default function App() {
                       <Route path="game/balance" element={<BalancePage />} />
                       <Route path="roulette" element={<RoulettePage />} />
 
-                      {/* 커뮤니티 — 조회는 Guest 허용 */}
+                      {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
                       <Route path="popular" element={<PopularPage />} />
                       <Route path="community" element={<CommunityPage />} />
                       <Route path="community/:postId" element={<PostDetailPage />} />
 
-                      {/* 설정은 이 브라우저에 저장되는 값이라 Guest도 쓸 수 있다 */}
+                      {/* 설정은 브라우저에 저장되는 값이라 로그인 없이도 쓸 수 있다 */}
                       <Route path="settings" element={<SettingsPage />} />
 
                       {/* 로그인 필수 */}
                       <Route element={<ProtectedRoute />}>
-                        {/* 찜은 서버(RECIPE_LIKES)에 회원별로 저장된다.
-                            Guest 에게는 보여줄 것이 없으므로 목록도 로그인 필수다 */}
+                        {/* 찜은 서버에 회원별로 저장돼서 목록도 로그인이 필요하다 */}
                         <Route path="liked" element={<LikedPage />} />
                         <Route path="community/write" element={<PostWritePage />} />
                         <Route path="history" element={<HistoryPage />} />

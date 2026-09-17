@@ -1,8 +1,4 @@
-"""Ban 재료 라우터 (STEP 9).
-
-세 엔드포인트 전부 로그인이 필요하다. Guest는 Ban을 가질 수 없다.
-STEP 10(AI 추천)에서 이 목록을 프롬프트에 넣는다.
-"""
+"""Ban 재료 라우터 (STEP 9)."""
 
 from fastapi import APIRouter, Depends, Path, status
 from sqlalchemy.orm import Session

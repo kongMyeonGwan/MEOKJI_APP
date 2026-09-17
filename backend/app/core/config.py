@@ -1,18 +1,4 @@
-"""애플리케이션 설정.
-
-backend/.env 파일의 값을 읽어서 settings 라는 객체 하나에 담아둔다.
-다른 파일들은 이렇게 쓴다.
-
-    from app.core.config import settings
-    print(settings.DB_HOST)
-
-비밀번호나 API 키를 코드에 직접 쓰지 않으려고 만든 통로다.
-.env 는 git 에 올리지 않으므로(.gitignore) 키가 GitHub 에 새지 않는다.
-
-BaseSettings 를 상속하면 아래 적어둔 이름과 같은 항목을 .env 에서 자동으로 찾아
-넣어주고, 타입까지 맞춰준다. DB_PORT: int 라고 적어두면 .env 의 "1521"(문자열)이
-1521(정수)로 바뀌어 들어온다. 값이 없고 기본값도 없으면 서버가 뜰 때 바로 에러가 난다.
-"""
+"""애플리케이션 설정."""
 
 from pathlib import Path
 
@@ -20,8 +6,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
 
 # 이 파일(app/core/config.py) 기준으로 두 단계 위가 backend 폴더다.
-#   app/core/config.py -> app/core -> app -> backend
-# .env 를 절대 경로로 찾아야, 어느 폴더에서 서버를 켜도 같은 파일을 읽는다.
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 
@@ -60,13 +44,6 @@ class Settings(BaseSettings):
     OTP_MAX_ATTEMPT: int = 5
 
     # 인증번호를 다시 보내기까지 기다려야 하는 시간(초).
-    #
-    # 없으면 누르는 만큼 메일이 나간다. 남의 주소를 넣고 연타하면 그 사람
-    # 받은편지함이 채워지고, 우리 쪽에서는 발송 한도가 깎인다
-    # (개인 Gmail 은 하루 500통이다).
-    #
-    # 만료 시간(5분)보다 짧아야 한다. 길면 코드가 만료된 뒤에도 새로 못 받아
-    # 아무것도 할 수 없는 구간이 생긴다.
     OTP_RESEND_COOLDOWN_SECONDS: int = 60
 
     # ===== CORS =====
@@ -81,17 +58,12 @@ class Settings(BaseSettings):
     SMTP_FROM: str = ""
 
     # ===== AI =====
-    # mock   : API 키 없이 카탈로그에서 골라준다 (개발용)
-    # gemini : Google Gemini
-    # claude : Anthropic Claude
     AI_PROVIDER: str = "catalog"
 
     # Gemini (https://aistudio.google.com 에서 발급)
     GEMINI_API_KEY: str = ""
 
     # 쉼표로 여러 개를 적으면 앞에서부터 시도한다.
-    # 무료 등급은 모델이 붐빌 때(503) 실패하는 일이 잦아서, 예비 모델을
-    # 하나 적어두면 시연 중에 화면이 비는 일을 크게 줄일 수 있다.
     GEMINI_MODEL: str = "gemini-3.7-flash,gemini-3.5-flash"
 
     # Claude (https://console.anthropic.com 에서 발급)
@@ -108,23 +80,12 @@ class Settings(BaseSettings):
     DEFAULT_WEATHER_LON: float = 126.9885
 
     # ===== 재료 가격 =====
-    # kamis : 공공데이터포털 KAMIS 일별 도·소매 가격정보
-    #
-    # 네이버 쇼핑 검색 API 는 2026-07-31 종료되어 뺐다. 대체 API 는 없다.
-    # 값을 지어내던 mock 프로바이더도 없앴다. 진짜 조사가격과 구분이
-    # 안 되는 채로 합계까지 계산돼서, 표의 절반이 가짜였다.
     PRICE_PROVIDERS: str = "kamis"
 
     # 공공데이터포털 마이페이지의 일반 인증키 — Decoding 값을 넣는다.
-    # Encoding 값을 넣으면 httpx 가 한 번 더 인코딩해서 인증 실패한다.
-    # https://www.data.go.kr/data/15156057/openapi.do
     DATA_GO_KR_SERVICE_KEY: str = ""
 
     # ===== 후기 첨부파일 =====
-    #
-    # 파일 본체는 DB 에 넣지 않는다. 디스크에 저장하고 RECIPE_REVIEWS 의
-    # FILE_* 컬럼에는 경로만 적는다 (db/01_schema.sql 주석 참고).
-    # BLOB 으로 넣으면 목록 조회마다 사진이 딸려 나오고 백업이 그만큼 불어난다.
 
     # 저장 폴더. 상대 경로면 backend 폴더 기준이다.
     # DB 의 FILE_PATH 에도 이 이름이 앞에 붙어 들어간다 ("uploads/2026/09").
@@ -142,14 +103,7 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> URL:
-        """Oracle 접속 주소를 만든다.
-
-        문자열을 f-string 으로 직접 이어붙이지 않고 URL.create() 를 쓴다.
-        비밀번호에 @ : / 같은 글자가 들어있어도 SQLAlchemy 가 알아서 처리해준다.
-        직접 이어붙이면 그런 비밀번호에서 주소가 깨진다.
-
-        XEPDB1 은 SID 가 아니라 서비스명이라서 service_name 으로 넘겨야 한다.
-        """
+        """Oracle 접속 주소를 만든다."""
         return URL.create(
             "oracle+oracledb",
             username=self.DB_USER,
@@ -161,12 +115,7 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        """CORS_ORIGINS 를 리스트로 바꾼다.
-
-        .env 에는 한 줄로 적혀 있다.
-            CORS_ORIGINS=http://localhost:5173,http://localhost:3000
-        이걸 ["http://localhost:5173", "http://localhost:3000"] 으로 만든다.
-        """
+        """CORS_ORIGINS 를 리스트로 바꾼다."""
         return split_by_comma(self.CORS_ORIGINS)
 
     @property
@@ -181,13 +130,7 @@ class Settings(BaseSettings):
 
     @property
     def upload_root(self) -> Path:
-        """첨부파일 저장 폴더의 절대 경로.
-
-        DB 의 FILE_PATH 는 "uploads/2026/09" 처럼 UPLOAD_DIR 을 포함한
-        상대 경로다. 그래서 그 값을 이어붙일 기준은 upload_root 가 아니라
-        BASE_DIR 이다 (file_service.absolute_path 참고).
-        여기서 만든 절대 경로는 "폴더 밖으로 나가지 않았는지" 검사에 쓴다.
-        """
+        """첨부파일 저장 폴더의 절대 경로."""
         folder = Path(self.UPLOAD_DIR)
 
         return folder if folder.is_absolute() else BASE_DIR / folder
@@ -204,10 +147,7 @@ class Settings(BaseSettings):
 
 
 def split_by_comma(text: str) -> list[str]:
-    """쉼표로 나누고, 앞뒤 공백을 떼고, 빈 칸은 버린다.
-
-    "a, b ,, c" -> ["a", "b", "c"]
-    """
+    """쉼표로 나누고, 앞뒤 공백을 떼고, 빈 칸은 버린다."""
     result = []
     for piece in text.split(","):
         piece = piece.strip()

@@ -6,26 +6,20 @@ import { useLikes } from '../contexts/LikesContext'
 import '../styles/pages/ListPage.css'
 import '../styles/components/recommendation/LikedList.css'
 
-/**
- * 찜한 레시피 — 내가 하트를 누른 목록.
- *
- * 인기 레시피(/popular)와 헷갈리기 쉬운데 주인이 다르다.
- *   찜한 레시피  내가 담아둔 것. 남들의 좋아요 수와 무관하다
- *   인기 레시피  남들이 많이 누른 것
- *
- * 순서는 최근에 찜한 순이다(LikesContext가 앞에 넣는다).
- * 좋아요 수로 정렬하면 내가 방금 담은 게 목록 아래로 사라진다.
- *
- * 왜 카드가 아니라 이름 목록인가
- * ------------------------------
- * 찜은 서버에 **이름만** 저장한다(RECIPE_LIKES · LikesContext).
- * 조리시간·가격 같은 걸 같이 보여주려면 찜한 개수만큼 AI 호출이 필요한데,
- * 목록을 여는 데 그만한 시간을 쓸 이유가 없다. 눌러서 들어가면 그때 만든다.
- */
+// 찜한 레시피. 내가 하트를 누른 목록이다.
+//
+// 인기 레시피(/popular) 랑 헷갈리기 쉬운데 주인이 다르다.
+//   찜한 레시피 - 내가 담아둔 것
+//   인기 레시피 - 남들이 많이 누른 것
+//
+// 순서는 최근에 찜한 순이다. 좋아요 수로 정렬하면 방금 담은 게 아래로 사라진다.
+//
+// 카드가 아니라 이름 목록인 이유는 찜을 서버에 이름만 저장하기 때문이다.
+// 조리시간이나 가격까지 보여주려면 찜한 개수만큼 AI 를 불러야 한다.
 export default function LikedPage() {
   const { names, count, toggle, ready } = useLikes()
 
-  // 서버에서 받아오기 전에는 "없어요" 를 띄우지 않는다.
+  // 서버에서 받아오기 전에는 "없어요" 를 안 띄운다.
   // 안 그러면 화면이 열리자마자 빈 목록 문구가 깜빡였다가 목록으로 바뀐다.
   if (!ready) {
     return (
@@ -45,7 +39,7 @@ export default function LikedPage() {
         {count > 0 && <span className="muted section-more">{count}건</span>}
       </div>
 
-      {count === 0 ? (
+      {count === 0 && (
         <p className="empty">
           아직 찜한 레시피가 없어요.
           <br />
@@ -56,41 +50,43 @@ export default function LikedPage() {
             추천 메뉴 보러 가기
           </Link>
         </p>
-      ) : (
+      )}
+
+      {count > 0 && (
         <div className="card">
           <ul className="liked">
-            {names.map((name) => (
-              <li key={name}>
-                <Link
-                  to={`/recipe/${encodeURIComponent(name)}`}
-                  className="liked__row"
-                >
-                  {/* art 를 모르니 기본 그림이 그려진다. 이름은 읽어준다 */}
-                  <FoodThumb item={{ food_name: name }} size="md" />
+            {names.map(function (name) {
+              return (
+                <li key={name}>
+                  <Link
+                    to={'/recipe/' + encodeURIComponent(name)}
+                    className="liked__row"
+                  >
+                    {/* 그림 종류를 모르니까 기본 그림이 그려진다 */}
+                    <FoodThumb item={{ food_name: name }} size="md" />
 
-                  <span className="liked__body">
-                    <span className="liked__name">{name}</span>
-                    <span className="liked__meta muted">
-                      눌러서 레시피를 만들어 보세요
+                    <span className="liked__body">
+                      <span className="liked__name">{name}</span>
+                      <span className="liked__meta muted">
+                        눌러서 레시피를 만들어 보세요
+                      </span>
                     </span>
-                  </span>
-                </Link>
+                  </Link>
 
-                {/*
-                  하트를 목록 안에 둔다. 레시피를 열어야만 찜을 뺄 수 있으면
-                  정리하는 데 화면 이동이 매번 필요하다.
-                */}
-                <button
-                  type="button"
-                  className="liked__unlike"
-                  onClick={() => toggle(name)}
-                  aria-label={`${name} 찜 해제`}
-                  title="찜 해제"
-                >
-                  <Icon name="heart-fill" size={18} />
-                </button>
-              </li>
-            ))}
+                  {/* 하트를 목록 안에 뒀다. 레시피를 열어야만 찜을 뺄 수 있으면
+                      정리할 때마다 화면을 옮겨야 한다. */}
+                  <button
+                    type="button"
+                    className="liked__unlike"
+                    onClick={() => toggle(name)}
+                    aria-label={name + ' 찜 해제'}
+                    title="찜 해제"
+                  >
+                    <Icon name="heart-fill" size={18} />
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         </div>
       )}

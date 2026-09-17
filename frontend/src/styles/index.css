@@ -40,7 +40,6 @@
    */
   --shadow-rest: 0 1px 2px rgba(60, 42, 28, 0.04), 0 4px 16px rgba(60, 42, 28, 0.05);
   --shadow-lift: 0 2px 4px rgba(60, 42, 28, 0.05), 0 10px 28px rgba(60, 42, 28, 0.09);
-  --shadow-pop: 0 12px 36px rgba(60, 42, 28, 0.14);
 
   /* 미세한 인터랙션 전용. 길면 굼떠 보이고 짧으면 딸깍거린다 */
   --ease: cubic-bezier(0.2, 0.8, 0.3, 1);
@@ -104,7 +103,6 @@
   /* 어두운 배경에선 그림자가 안 보인다. 깊이는 그림자 대신 밝기 차로 낸다 */
   --shadow-rest: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.32);
   --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.34), 0 10px 28px rgba(0, 0, 0, 0.45);
-  --shadow-pop: 0 12px 36px rgba(0, 0, 0, 0.55);
 
   /* 일러스트가 밝은 색이라 배경까지 밝으면 카드에서 그 칸만 떠 보인다 */
   --thumb-bg: linear-gradient(150deg, #2e241c 0%, #3b2c22 100%);
@@ -156,25 +154,7 @@ button { font-family: inherit; }
   box-shadow: var(--shadow-rest);
 }
 
-/* 누를 수 있는 카드만 뜬다. 안 눌리는 카드가 반응하면 눌러보게 된다 */
-.card--interactive {
-  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
-    border-color var(--dur) var(--ease);
-}
-
-.card--interactive:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lift);
-}
-
-.card--interactive:active { transform: translateY(-1px); }
-
 .muted { color: var(--color-muted); }
-.subtle { color: var(--color-subtle); }
-
-/* 숫자는 자릿수가 흔들리지 않게 고정폭으로 뽑는다 (가격 · 좋아요 · 온도) */
-.tnum { font-variant-numeric: tabular-nums; }
-
 /* 섹션 제목 + 우측 '더보기' */
 .section-head {
   display: flex;
@@ -285,22 +265,6 @@ button { font-family: inherit; }
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
-}
-
-/* 별점 — "★ 4.8 (256)" */
-.stars {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.stars svg { color: #f5b301; }
-
-.stars__count {
-  color: var(--color-muted);
-  font-weight: 500;
 }
 
 /*

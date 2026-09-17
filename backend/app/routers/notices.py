@@ -1,16 +1,4 @@
-"""공지사항 라우터 (STEP 27).
-
-전에는 /api/catalog/notices 였다. catalog 는 "사용자가 만들지 않는 고정
-목록" 을 파일에서 내려주는 곳인데, 공지는 운영하면서 계속 새로 쓰는 값이라
-성격이 다르다. DB 로 옮기면서 주소도 옮겼다.
-
-읽기는 Guest 도 되고, 쓰기는 관리자(USER_LEVEL=1)만 된다.
-등급 확인은 get_admin_user 한 곳에서만 한다 — 세 엔드포인트가 각자 보게 두면
-하나를 빠뜨렸을 때 조용히 열린다.
-
-주소를 적는 순서는 신경 쓰지 않아도 된다. 게시판과 달리 /popular 같은
-고정 주소가 없어서 /{notice_id} 와 부딪힐 것이 없다.
-"""
+"""공지사항 라우터 (STEP 27)."""
 
 from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.orm import Session
@@ -56,11 +44,7 @@ def read_notices(
     ),
     db: Session = Depends(get_db),
 ) -> NoticePage:
-    """고정 공지가 위로, 그 안에서는 최신순이다.
-
-    공지 배열 대신 {items, total, page, size, total_pages} 가 온다.
-    고정 공지는 정렬상 앞쪽에 몰리므로 1페이지에만 보인다.
-    """
+    """고정 공지가 위로, 그 안에서는 최신순이다."""
     return list_notices(db, page, size)
 
 
@@ -74,12 +58,7 @@ def count_notice_view(
     notice_id: int = Path(..., ge=1),
     db: Session = Depends(get_db),
 ) -> NoticeViewResponse:
-    """목록 GET 에서 같이 올리지 않고 따로 뺐다.
-
-    GET 은 몇 번을 보내도 결과가 같아야 하는데, 화면을 열 때마다 목록에
-    있는 공지가 전부 1씩 오르면 숫자가 뜻을 잃는다.
-    화면은 공지를 펼칠 때 이걸 부른다.
-    """
+    """목록 GET 에서 같이 올리지 않고 따로 뺐다."""
     return increase_view(db, notice_id)
 
 
@@ -100,10 +79,7 @@ def write_notice(
     admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db),
 ) -> NoticeResponse:
-    """작성자는 본문이 아니라 토큰에서 나온 사람으로 들어간다.
-
-    조회수도 받지 않는다. 읽혀서 쌓이는 값이지 쓰는 사람이 정하는 값이 아니다.
-    """
+    """작성자는 본문이 아니라 토큰에서 나온 사람으로 들어간다."""
     return create_notice(db, admin, payload)
 
 
@@ -125,11 +101,7 @@ def edit_notice(
     admin: User = Depends(get_admin_user),
     db: Session = Depends(get_db),
 ) -> NoticeResponse:
-    """'내 공지만' 이 아니다. 관리자면 누가 쓴 공지든 고칠 수 있다.
-
-    공지는 개인의 글이 아니라 운영팀이 서비스 이름으로 내는 글이라,
-    쓴 사람이 자리를 비웠다고 아무도 못 고치면 곤란하다.
-    """
+    """'내 공지만' 이 아니다."""
     return update_notice(db, notice_id, payload)
 
 

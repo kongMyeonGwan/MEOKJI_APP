@@ -2,37 +2,34 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { getNotifications, getProfile } from '../api/users'
 import { useAuth } from './AuthContext'
 
-/**
- * 요리 레벨과 알림.
- *
- * 사이드바(레벨 카드) · 상단바(종 배지) · 마이페이지가 같은 값을 봐야 한다.
- * 화면마다 따로 부르면 대시보드 하나 여는 데 같은 요청이 세 번 나가고,
- * 글을 쓴 뒤 사이드바 레벨만 안 바뀌는 일이 생긴다.
- *
- * 로그인했을 때만 불러온다. Guest 는 레벨도 알림도 없다.
- *
- * 알림의 "읽음"은 왜 브라우저가 판단하나
- * --------------------------------------
- * 서버에 알림 테이블이 없다. 내 글에 달린 댓글과 좋아요를 조회 시점에
- * 모아서 만들어 주는 것이라, 하나하나 읽었는지를 서버가 알 수 없다.
- * 대신 "마지막으로 알림을 열어본 시각"만 이 브라우저에 저장해 두고,
- * 그보다 나중에 생긴 알림을 안 읽은 것으로 센다.
- *
- * 쓰는 법
- * -------
- *   const { profile, notifications, unreadCount, markAllRead, reload } = useProfile()
- */
+// 내 정보랑 알림을 앱 전체에서 같이 쓰기 위한 Context.
+// 상단바(종 배지)랑 마이페이지가 같은 값을 봐야 하는데 화면마다 따로 부르면
+// 같은 요청이 여러 번 나간다.
+//
+// 로그인했을 때만 불러온다. Guest 는 알림이 없다.
+//
+// 알림의 "읽음" 은 브라우저가 판단한다. 서버에 알림 테이블이 없어서
+// 하나하나 읽었는지를 서버가 알 수 없기 때문이다.
+// 대신 마지막으로 알림을 열어본 시각만 저장해두고 그보다 나중에 생긴 것을
+// 안 읽은 것으로 센다.
+//
+// 쓰는 법:
+//   const { profile, notifications, unreadCount, markAllRead, reload } = useProfile()
 
 const READ_AT_KEY = 'meokji.notify.readAt'
 
 const ProfileContext = createContext(null)
 
-/** 마지막으로 알림을 확인한 시각. 없으면 빈 문자열(전부 안 읽음) */
+// 마지막으로 알림을 확인한 시각. 없으면 빈 문자열(전부 안 읽음)
 function readSavedReadAt() {
   try {
-    return localStorage.getItem(READ_AT_KEY) ?? ''
-  } catch {
-    // 사생활 보호 모드 등으로 localStorage 를 못 읽는 경우
+    const saved = localStorage.getItem(READ_AT_KEY)
+    if (!saved) {
+      return ''
+    }
+    return saved
+  } catch (err) {
+    // 시크릿 모드 같은 이유로 localStorage 를 못 읽는 경우
     return ''
   }
 }
@@ -44,25 +41,26 @@ export function ProfileProvider({ children }) {
   const [notifications, setNotifications] = useState([])
   const [readAt, setReadAt] = useState(readSavedReadAt)
 
-  /**
-   * 서버에서 다시 받아온다.
-   *
-   * 식사를 확정하거나 글을 쓴 직후에 부르면 레벨이 바로 올라간다.
-   * 실패는 조용히 넘긴다. 레벨 카드가 안 갱신될 뿐이고, 그것 때문에
-   * 방금 성공한 작업이 실패한 것처럼 보이면 안 된다.
-   */
+  // 서버에서 다시 받아온다.
+  // 식사를 확정하거나 글을 쓴 직후에 부르면 숫자가 바로 바뀐다.
+  // 실패는 그냥 넘긴다. 이것 때문에 방금 성공한 작업이 실패한 것처럼
+  // 보이면 안 되기 때문이다.
   function reload() {
     getProfile()
-      .then((data) => setProfile(data))
-      .catch(() => {})
+      .then(function (data) {
+        setProfile(data)
+      })
+      .catch(function () {})
 
     getNotifications()
-      .then((data) => setNotifications(data))
-      .catch(() => {})
+      .then(function (data) {
+        setNotifications(data)
+      })
+      .catch(function () {})
   }
 
-  // 로그인 상태가 바뀔 때마다 다시 맞춘다.
-  // 로그아웃하면 남아 있던 남의 레벨이 화면에 보이지 않게 비운다.
+  // 로그인 상태가 바뀌면 다시 맞춘다.
+  // 로그아웃했을 때 남의 정보가 화면에 남지 않게 비운다.
   useEffect(() => {
     if (!isAuthenticated) {
       setProfile(null)
@@ -73,40 +71,42 @@ export function ProfileProvider({ children }) {
     reload()
   }, [isAuthenticated])
 
-  /** 종 아이콘을 열었을 때. 지금 시각을 "확인한 시각"으로 저장한다. */
+  // 종 아이콘을 열었을 때. 지금 시각을 확인한 시각으로 저장한다.
   function markAllRead() {
     const now = new Date().toISOString()
     setReadAt(now)
 
     try {
       localStorage.setItem(READ_AT_KEY, now)
-    } catch {
-      // 저장을 못 해도 이번 화면에서는 읽은 것으로 보인다
+    } catch (err) {
+      // 저장을 못 해도 이번 화면에서는 읽은 걸로 보인다
     }
   }
 
-  /** 이 알림이 마지막 확인 시각보다 나중에 온 것인지. */
+  // 이 알림이 마지막으로 확인한 시각보다 나중에 온 것인지
   function isUnread(item) {
     if (!readAt) {
-      return true // 한 번도 안 열어봤으면 전부 새 알림이다
+      // 한 번도 안 열어봤으면 전부 새 알림이다
+      return true
     }
     return item.created_at > readAt
   }
 
+  // 안 읽은 알림 개수 세기
   let unreadCount = 0
-  for (const item of notifications) {
-    if (isUnread(item)) {
-      unreadCount += 1
+  for (let i = 0; i < notifications.length; i++) {
+    if (isUnread(notifications[i])) {
+      unreadCount = unreadCount + 1
     }
   }
 
   const value = {
-    profile,
-    notifications,
-    unreadCount,
-    isUnread,
-    markAllRead,
-    reload,
+    profile: profile,
+    notifications: notifications,
+    unreadCount: unreadCount,
+    isUnread: isUnread,
+    markAllRead: markAllRead,
+    reload: reload,
   }
 
   return (

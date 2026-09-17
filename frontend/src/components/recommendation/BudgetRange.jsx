@@ -1,53 +1,53 @@
 import { formatPrice } from '../../utils/format'
 import '../../styles/components/recommendation/BudgetRange.css'
 
-/**
- * 예산 범위 슬라이더 (양쪽 손잡이).
- *
- * <input type="range"> 두 개를 겹쳐 놓고, 사이 구간만 색을 채운다.
- * 라이브러리를 쓰지 않는 이유는 이것 하나 때문에 의존성을 늘리기 아깝고,
- * 키보드 조작·접근성은 네이티브 range가 이미 갖추고 있기 때문이다.
- *
- * 겹쳐진 두 input 중 위에 있는 쪽이 클릭을 다 먹으므로,
- * 트랙은 pointer-events: none 으로 두고 손잡이만 다시 켠다(CSS 참고).
- *
- * variant
- *   'stacked'  제목 + 값이 위, 슬라이더, 양끝 금액 (전용 화면용)
- *   'inline'   양끝 금액이 위, 슬라이더, 고른 구간이 아래 한 줄
- *              (대시보드처럼 카드 제목이 이미 "예산 설정"인 자리)
- */
+// 예산 범위 슬라이더. 손잡이가 양쪽에 하나씩 있다.
+//
+// <input type="range"> 두 개를 겹쳐 놓고 사이 구간만 색을 채웠다.
+// 라이브러리를 안 쓴 이유는 이것 하나 때문에 설치하기 아깝고,
+// 키보드로 조작하는 것도 기본 range 가 이미 된다.
+//
+// variant
+//   'stacked'  제목이랑 값이 위에 (예산 전용 화면)
+//   'inline'   양끝 금액이 위에, 고른 구간이 아래 (첫 화면 카드)
+
 export const BUDGET_MIN = 0
 export const BUDGET_MAX = 20000
 const STEP = 1000
 
-export default function BudgetRange({ min, max, onChange, variant = 'stacked' }) {
-  // 두 손잡이가 서로를 넘어가지 못하게 막는다. 넘어가면 구간이 뒤집힌다.
-  /**
-   * 왼쪽(하한) 손잡이를 움직였을 때.
-   *
-   * Math.min 으로 상한보다 커지지 않게 막는다.
-   * 안 막으면 두 손잡이가 서로를 지나쳐서 구간이 뒤집힌다.
-   * STEP 만큼 띄우는 건 둘이 완전히 겹쳐서 잡을 수 없게 되는 걸 막기 위해서다.
-   */
+export default function BudgetRange({ min, max, onChange, variant }) {
+  // 왼쪽(하한) 손잡이를 움직였을 때.
+  // Math.min 으로 상한을 넘지 못하게 막는다. 안 막으면 구간이 뒤집힌다.
+  // STEP 만큼 띄우는 건 둘이 완전히 겹쳐서 못 잡게 되는 걸 막으려는 것이다.
   function setMin(value) {
-    onChange(Math.min(Number(value), max - STEP), max)
+    let next = Number(value)
+    if (next > max - STEP) {
+      next = max - STEP
+    }
+    onChange(next, max)
   }
 
-  /** 오른쪽(상한) 손잡이를 움직였을 때. 하한보다 작아지지 않게 막는다. */
+  // 오른쪽(상한) 손잡이를 움직였을 때. 하한보다 작아지지 않게 막는다.
   function setMax(value) {
-    onChange(min, Math.max(Number(value), min + STEP))
+    let next = Number(value)
+    if (next < min + STEP) {
+      next = min + STEP
+    }
+    onChange(min, next)
   }
 
-  /**
-   * 금액을 막대 위의 위치(%)로 바꾼다.
-   *
-   * 0원이면 0%, 최대 금액이면 100%.  예) 최대가 2만원일 때 5000원 -> 25%
-   */
+  // 금액을 막대 위의 위치(%)로 바꾼다.
+  // 0원이면 0%, 최대 금액이면 100%. 최대가 2만원일 때 5000원이면 25% 다.
   function pct(value) {
     return ((value - BUDGET_MIN) / (BUDGET_MAX - BUDGET_MIN)) * 100
   }
 
   const inline = variant === 'inline'
+
+  let wrapClass = 'budget'
+  if (inline) {
+    wrapClass = 'budget budget--inline'
+  }
 
   const ends = (
     <div className="budget__ends muted">
@@ -64,7 +64,7 @@ export default function BudgetRange({ min, max, onChange, variant = 'stacked' })
   )
 
   return (
-    <div className={`budget${inline ? ' budget--inline' : ''}`}>
+    <div className={wrapClass}>
       {inline ? (
         ends
       ) : (
@@ -76,10 +76,10 @@ export default function BudgetRange({ min, max, onChange, variant = 'stacked' })
 
       <div className="budget__slider">
         <span className="budget__track" />
-        {/* 선택된 구간만 브랜드색으로 채운다 */}
+        {/* 고른 구간만 주황색으로 채운다 */}
         <span
           className="budget__fill"
-          style={{ left: `${pct(min)}%`, right: `${100 - pct(max)}%` }}
+          style={{ left: pct(min) + '%', right: 100 - pct(max) + '%' }}
         />
 
         <input
@@ -102,7 +102,11 @@ export default function BudgetRange({ min, max, onChange, variant = 'stacked' })
         />
       </div>
 
-      {inline ? <strong className="budget__value budget__value--center">{value}</strong> : ends}
+      {inline ? (
+        <strong className="budget__value budget__value--center">{value}</strong>
+      ) : (
+        ends
+      )}
     </div>
   )
 }

@@ -5,17 +5,15 @@ import { parseApiError } from '../utils/apiError'
 import ErrorMessage from '../components/common/ErrorMessage'
 import '../styles/pages/PasswordResetPage.css'
 
-/**
- * 비밀번호 재설정 — 이메일 인증번호 방식.
- *
- * 한 화면 안에서 단계만 바꾼다. 라우트를 3개로 나누면 새로고침했을 때
- * 인증번호를 잃어버린 채 2단계 화면만 덩그러니 남는다.
- *
- * 로그인 실패 20회로 잠긴 계정도 이 절차로 풀린다.
- */
+// 비밀번호 재설정. 이메일로 인증번호를 받는 방식이다.
+//
+// 한 화면 안에서 단계만 바꾼다. 주소를 3개로 나누면 새로고침했을 때
+// 인증번호를 잃어버린 채로 2단계 화면만 남는다.
+//
+// 로그인 20번 실패해서 잠긴 계정도 이걸로 풀린다.
 
-// 화면이 네 단계로 바뀐다. 문자열을 직접 쓰면 오타를 내도 아무 에러가 안 나서
-// 이렇게 모아두고 STEP.SEND 처럼 꺼내 쓴다.
+// 화면이 네 단계로 바뀐다.
+// 문자열을 직접 쓰면 오타를 내도 에러가 안 나서 여기 모아두고 꺼내 쓴다.
 const STEP = { SEND: 'send', VERIFY: 'verify', CHANGE: 'change', DONE: 'done' }
 
 export default function PasswordResetPage() {
@@ -39,34 +37,45 @@ export default function PasswordResetPage() {
 
   const navigate = useNavigate()
 
-  // 1초마다 줄인다. 0이 되면 타이머를 걸지 않는다.
+  // 1초마다 줄인다. 0이 되면 타이머를 안 건다.
   useEffect(() => {
-    if (cooldown <= 0) return
+    if (cooldown <= 0) {
+      return
+    }
 
-    const timer = setTimeout(() => setCooldown((left) => left - 1), 1000)
-    return () => clearTimeout(timer)
+    const timer = setTimeout(function () {
+      setCooldown(function (left) {
+        return left - 1
+      })
+    }, 1000)
+
+    return function () {
+      clearTimeout(timer)
+    }
   }, [cooldown])
 
-  /** 요청을 보내기 전에 이전 에러 메시지를 지우고 버튼을 잠근다. */
+  // 요청을 보내기 전에 이전 에러를 지우고 버튼을 잠근다
   function startSubmit() {
     setMessage('')
     setFieldErrors({})
     setSubmitting(true)
   }
 
-  /** 요청이 실패했을 때 에러를 화면에 표시한다. */
+  // 요청이 실패했을 때 에러를 화면에 보여준다
   function showError(err) {
     const parsed = parseApiError(err)
     setFieldErrors(parsed.fieldErrors)
     setMessage(parsed.message)
 
     // 429 면 남은 시간만큼 버튼을 잠근다
-    if (err?.retryAfter) setCooldown(err.retryAfter)
+    if (err && err.retryAfter) {
+      setCooldown(err.retryAfter)
+    }
   }
 
-  // --- 1단계. 이메일로 인증번호 받기 ---
+  // 1단계. 이메일로 인증번호 받기
   async function onSend(e) {
-    e.preventDefault() // 폼 기본 동작(새로고침)을 막는다
+    e.preventDefault() // 폼이 새로고침되는 걸 막는다
 
     if (!email.trim()) {
       setFieldErrors({ email: '이메일을 입력해주세요' })
@@ -86,7 +95,7 @@ export default function PasswordResetPage() {
     }
   }
 
-  // --- 2단계. 인증번호 확인 ---
+  // 2단계. 인증번호 확인
   async function onVerify(e) {
     e.preventDefault()
 
@@ -107,7 +116,7 @@ export default function PasswordResetPage() {
     }
   }
 
-  // --- 3단계. 새 비밀번호로 바꾸기 ---
+  // 3단계. 새 비밀번호로 바꾸기
   async function onChange(e) {
     e.preventDefault()
 
@@ -137,7 +146,7 @@ export default function PasswordResetPage() {
     }
   }
 
-  /** 인증번호를 다시 받는다. 시도 횟수를 넘겼을 때 필요하다. */
+  // 인증번호를 다시 받는다. 시도 횟수를 넘겼을 때 필요하다.
   async function onResend() {
     startSubmit()
     try {
@@ -151,14 +160,41 @@ export default function PasswordResetPage() {
     }
   }
 
+  // 지금 어느 단계인지에 따라 목록에 표시를 준다
+  function stepClass(name) {
+    if (step === name) {
+      return 'is-current'
+    }
+    return ''
+  }
+
+  // 1단계 버튼 글자
+  let sendLabel = '인증번호 받기'
+  if (cooldown > 0) {
+    sendLabel = cooldown + '초 후에 다시 받기'
+  }
+  if (submitting) {
+    sendLabel = '보내는 중...'
+  }
+
+  let verifyLabel = '확인'
+  if (submitting) {
+    verifyLabel = '확인 중...'
+  }
+
+  let changeLabel = '비밀번호 변경'
+  if (submitting) {
+    changeLabel = '변경 중...'
+  }
+
   return (
     <div className="card reset">
       <h2 className="reset__title">비밀번호 재설정</h2>
 
       <ol className="reset__steps">
-        <li className={step === STEP.SEND ? 'is-current' : ''}>이메일 확인</li>
-        <li className={step === STEP.VERIFY ? 'is-current' : ''}>인증번호 입력</li>
-        <li className={step === STEP.CHANGE ? 'is-current' : ''}>새 비밀번호</li>
+        <li className={stepClass(STEP.SEND)}>이메일 확인</li>
+        <li className={stepClass(STEP.VERIFY)}>인증번호 입력</li>
+        <li className={stepClass(STEP.CHANGE)}>새 비밀번호</li>
       </ol>
 
       {step === STEP.SEND && (
@@ -181,17 +217,13 @@ export default function PasswordResetPage() {
             <ErrorMessage message={fieldErrors.email} />
           </label>
           <ErrorMessage message={message} />
-          {/* 쿨다운 중에는 못 누른다. 문구로 말리는 것보다 확실하다 */}
+          {/* 기다리는 동안에는 못 누른다. 문구로 말리는 것보다 확실하다. */}
           <button
             type="submit"
             disabled={submitting || cooldown > 0}
             className="reset__submit"
           >
-            {submitting
-              ? '보내는 중...'
-              : cooldown > 0
-                ? `${cooldown}초 후에 다시 받기`
-                : '인증번호 받기'}
+            {sendLabel}
           </button>
         </form>
       )}
@@ -205,8 +237,11 @@ export default function PasswordResetPage() {
               type="text"
               inputMode="numeric"
               value={code}
-              // 숫자만, 6자리까지. 공백이나 하이픈이 섞여 들어오는 것을 막는다.
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              // 숫자만 6자리까지 받는다. 공백이나 하이픈이 섞이는 걸 막는다.
+              onChange={(e) => {
+                const onlyNumbers = e.target.value.replace(/[^0-9]/g, '')
+                setCode(onlyNumbers.slice(0, 6))
+              }}
               placeholder="000000"
               maxLength={6}
               autoFocus
@@ -215,7 +250,7 @@ export default function PasswordResetPage() {
           </label>
           <ErrorMessage message={message} />
           <button type="submit" disabled={submitting} className="reset__submit">
-            {submitting ? '확인 중...' : '확인'}
+            {verifyLabel}
           </button>
           <button
             type="button"
@@ -255,7 +290,7 @@ export default function PasswordResetPage() {
           </label>
           <ErrorMessage message={message} />
           <button type="submit" disabled={submitting} className="reset__submit">
-            {submitting ? '변경 중...' : '비밀번호 변경'}
+            {changeLabel}
           </button>
         </form>
       )}
@@ -275,7 +310,9 @@ export default function PasswordResetPage() {
       )}
 
       <p className="muted reset__footer">
-        <Link to="/login" className="reset__link">로그인으로 돌아가기</Link>
+        <Link to="/login" className="reset__link">
+          로그인으로 돌아가기
+        </Link>
       </p>
     </div>
   )
