@@ -1,8 +1,13 @@
-"""AI 음식 추천 · 레시피 생성 (STEP 10~11)."""
+"""음식 추천 · 레시피 생성 (STEP 10~11).
+
+제미나이 · 클로드는 쓰지 않는다(2026-09-26). 추천은 카탈로그에서 고르고
+레시피는 app/data/recipes.json 에서 꺼낸다. AI 를 부르던 코드는 지우지 않고
+아래에 주석으로 남겨뒀다.
+"""
 
 import hashlib
-import json
-import time
+# import json
+# import time
 
 from app.core.config import settings
 from app.integrations.ingredient_match import vocabulary
@@ -15,11 +20,11 @@ CATALOG_PROVIDER = ("catalog", "mock")
 
 # AI 응답을 기다리는 최대 시간(초).
 # 프론트의 axios timeout 이 30초라, 그보다 짧게 잡아야 우리 에러 메시지가 나간다.
-AI_TIMEOUT_SECONDS = 25.0
+# AI_TIMEOUT_SECONDS = 25.0
 
 # 모델이 붐빌 때(503) 다시 시도하는 횟수와 간격(초).
-AI_RETRY_COUNT = 2
-AI_RETRY_WAIT_SECONDS = 1.5
+# AI_RETRY_COUNT = 2
+# AI_RETRY_WAIT_SECONDS = 1.5
 
 # 한 번에 만들 수 있는 후보 개수의 상한.
 # 많이 받아봐야 화면에서 다 안 보고, 토큰만 늘어난다.
@@ -29,7 +34,9 @@ MAX_FOODS = 12
 DIFFICULTIES = ("쉬움", "보통", "어려움")
 
 
-# 응답 스키마 — claude 와 catalog 가 똑같은 모양을 만든다
+# 응답 스키마 — 카탈로그가 만들어야 하는 모양이다.
+# 원래 AI 에게 "이 모양으로 답하라"고 주던 값인데, AI 를 끈 지금은
+# catalog_recommend_foods · catalog_build_recipe 가 맞춰야 할 기준으로 남긴다.
 
 FOODS_SCHEMA = {
     "type": "object",
@@ -156,29 +163,32 @@ def recommend_foods(context: dict) -> list[dict]:
     if provider in CATALOG_PROVIDER:
         return catalog_recommend_foods(context)
 
-    if provider == "gemini":
-        raw_items = gemini_generate(build_foods_prompt(context), FOODS_SCHEMA)
-        return cut_foods(raw_items, context)
+    # --- AI 는 쓰지 않는다 (2026-09-26) -------------------------------
+    # 추천은 카탈로그 100종(app/data/catalog.json)에서 고른다.
+    # 아래 두 분기는 되살릴 때를 위해 주석으로만 남긴다.
+    # if provider == "gemini":
+        # raw_items = gemini_generate(build_foods_prompt(context), FOODS_SCHEMA)
+        # return cut_foods(raw_items, context)
 
-    if provider == "claude":
-        require_api_key()
-        return claude_recommend_foods(context)
+    # if provider == "claude":
+        # require_api_key()
+        # return claude_recommend_foods(context)
 
     # 모르는 값이면 조용히 catalog 로 넘어가지 않고 에러를 낸다.
     # 조용히 넘어가면 "AI 를 붙였는데 추천이 늘 똑같다"가 된다.
     raise RuntimeError(
         f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
-        "사용 가능한 값: catalog, gemini, claude"
+        "사용 가능한 값: catalog"
     )
 
 
-def cut_foods(result: dict, context: dict) -> list[dict]:
-    """AI 응답에서 후보 목록만 꺼내고 요청한 개수만큼 자른다."""
-    foods = result.get("foods")
-    if not foods:
-        return []
+# def cut_foods(result: dict, context: dict) -> list[dict]:
+    # """AI 응답에서 후보 목록만 꺼내고 요청한 개수만큼 자른다."""
+    # foods = result.get("foods")
+    # if not foods:
+        # return []
 
-    return foods[: get_limit(context)]
+    # return foods[: get_limit(context)]
 
 
 def build_recipe(food_name: str, context: dict) -> dict:
@@ -188,285 +198,297 @@ def build_recipe(food_name: str, context: dict) -> dict:
     if provider in CATALOG_PROVIDER:
         return catalog_build_recipe(food_name, context)
 
-    if provider == "gemini":
-        return gemini_generate(build_recipe_prompt(food_name, context), RECIPE_SCHEMA)
+    # --- AI 는 쓰지 않는다 (2026-09-26) -------------------------------
+    # 레시피는 app/data/recipes.json 에서 꺼낸다.
+    # if provider == "gemini":
+        # return gemini_generate(build_recipe_prompt(food_name, context), RECIPE_SCHEMA)
 
-    if provider == "claude":
-        require_api_key()
-        return claude_build_recipe(food_name, context)
+    # if provider == "claude":
+        # require_api_key()
+        # return claude_build_recipe(food_name, context)
 
     raise RuntimeError(
         f"지원하지 않는 AI_PROVIDER: {settings.AI_PROVIDER}. "
-        "사용 가능한 값: catalog, gemini, claude"
+        "사용 가능한 값: catalog"
     )
 
 
-def require_api_key() -> None:
-    """키가 비어 있으면 여기서 바로 알려준다."""
-    if not settings.ANTHROPIC_API_KEY:
-        raise RuntimeError(
-            "AI_PROVIDER=claude 인데 ANTHROPIC_API_KEY 가 비어 있습니다."
-        )
+# def require_api_key() -> None:
+    # """키가 비어 있으면 여기서 바로 알려준다."""
+    # if not settings.ANTHROPIC_API_KEY:
+        # raise RuntimeError(
+            # "AI_PROVIDER=claude 인데 ANTHROPIC_API_KEY 가 비어 있습니다."
+        # )
 
 
+# ======================================================================
+# 아래는 전부 주석이다 — 제미나이 · 클로드를 쓰지 않기로 했다 (2026-09-26).
+#
+# 이 시스템은 날씨 API -> 카탈로그에서 음식 고르기 -> recipes.json 에서
+# 레시피 꺼내기 -> KAMIS 로 재료 시세 조회 순으로 돈다. 요리도 레시피도
+# 미리 써둔 파일에서 나오기 때문에 AI 를 부를 자리가 없다.
+#
+# 되살리려면 여기와 위의 분기, core/config.py 의 키 설정,
+# requirements.txt 의 google-genai · anthropic 을 같이 푼다.
+# ======================================================================
 # Gemini — 진짜 AI
 
 
-def gemini_generate(prompt: str, schema: dict) -> dict:
-    """Gemini 를 부르고, 스키마대로 채워진 딕셔너리를 돌려준다."""
+# def gemini_generate(prompt: str, schema: dict) -> dict:
+    # """Gemini 를 부르고, 스키마대로 채워진 딕셔너리를 돌려준다."""
     # import 를 함수 안에서 한다. AI_PROVIDER=catalog 로 쓰는 팀원이
     # google-genai 를 안 깔았어도 서버가 뜨게 하기 위함이다.
-    from google import genai
-    from google.genai import errors, types
+    # from google import genai
+    # from google.genai import errors, types
 
-    if not settings.GEMINI_API_KEY:
-        raise RuntimeError(
-            "AI_PROVIDER=gemini 인데 GEMINI_API_KEY 가 비어 있습니다. "
-            "https://aistudio.google.com 에서 발급받아 backend/.env 에 넣으세요."
-        )
+    # if not settings.GEMINI_API_KEY:
+        # raise RuntimeError(
+            # "AI_PROVIDER=gemini 인데 GEMINI_API_KEY 가 비어 있습니다. "
+            # "https://aistudio.google.com 에서 발급받아 backend/.env 에 넣으세요."
+        # )
 
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    # client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-    config = types.GenerateContentConfig(
+    # config = types.GenerateContentConfig(
         # 이 둘이 한 쌍이다. mime_type 만 주면 스키마 없는 아무 JSON 이 오고,
         # schema 만 주면 그걸 무시한 문장이 올 수 있다.
-        response_mime_type="application/json",
-        response_schema=schema,
-        http_options=types.HttpOptions(
+        # response_mime_type="application/json",
+        # response_schema=schema,
+        # http_options=types.HttpOptions(
             # 밀리초 단위다. 초로 착각해서 25 를 넣으면 0.025초 만에 끊긴다.
-            timeout=int(AI_TIMEOUT_SECONDS * 1000),
-        ),
-    )
+            # timeout=int(AI_TIMEOUT_SECONDS * 1000),
+        # ),
+    # )
 
-    response = call_gemini_with_retry(client, prompt, config, errors)
+    # response = call_gemini_with_retry(client, prompt, config, errors)
 
     # response_schema 를 줬으므로 본문은 JSON 문자열이다.
     # 그래도 파싱은 감싸둔다. 안전 필터에 걸리면 본문이 비어서 올 수 있다.
-    try:
-        return json.loads(response.text)
-    except (TypeError, ValueError):
-        raise RuntimeError(
-            "AI 응답을 해석하지 못했습니다. 잠시 후 다시 시도해주세요."
-        )
+    # try:
+        # return json.loads(response.text)
+    # except (TypeError, ValueError):
+        # raise RuntimeError(
+            # "AI 응답을 해석하지 못했습니다. 잠시 후 다시 시도해주세요."
+        # )
 
 
-def call_gemini_with_retry(client, prompt: str, config, errors):
-    """붐빌 때(503) 잠깐 쉬었다 다시 부르고, 그래도 안 되면 예비 모델로 넘어간다."""
-    models = settings.gemini_model_list
+# def call_gemini_with_retry(client, prompt: str, config, errors):
+    # """붐빌 때(503) 잠깐 쉬었다 다시 부르고, 그래도 안 되면 예비 모델로 넘어간다."""
+    # models = settings.gemini_model_list
 
-    if not models:
-        raise RuntimeError(
-            "GEMINI_MODEL 이 비어 있습니다. backend/.env 를 확인해주세요."
-        )
+    # if not models:
+        # raise RuntimeError(
+            # "GEMINI_MODEL 이 비어 있습니다. backend/.env 를 확인해주세요."
+        # )
 
-    last_error = None
+    # last_error = None
 
-    for model in models:
-        for attempt in range(AI_RETRY_COUNT + 1):
-            try:
-                return client.models.generate_content(
-                    model=model,
-                    contents=prompt,
-                    config=config,
-                )
-            except errors.APIError as exc:
-                last_error = exc
+    # for model in models:
+        # for attempt in range(AI_RETRY_COUNT + 1):
+            # try:
+                # return client.models.generate_content(
+                    # model=model,
+                    # contents=prompt,
+                    # config=config,
+                # )
+            # except errors.APIError as exc:
+                # last_error = exc
 
                 # 기다린다고 풀릴 오류가 아니면(잘못된 키 등) 바로 알린다
-                if exc.code not in (429, 503):
-                    raise RuntimeError(describe_gemini_error(exc, model))
+                # if exc.code not in (429, 503):
+                    # raise RuntimeError(describe_gemini_error(exc, model))
 
                 # 이 모델의 마지막 시도였으면 쉬지 말고 다음 모델로 넘어간다
-                if attempt < AI_RETRY_COUNT:
-                    time.sleep(AI_RETRY_WAIT_SECONDS)
+                # if attempt < AI_RETRY_COUNT:
+                    # time.sleep(AI_RETRY_WAIT_SECONDS)
 
-        print(f"[Gemini] {model} 이(가) 붐벼서 다음 모델로 넘어갑니다.", flush=True)
+        # print(f"[Gemini] {model} 이(가) 붐벼서 다음 모델로 넘어갑니다.", flush=True)
 
-    raise RuntimeError(describe_gemini_error(last_error, models[-1]))
+    # raise RuntimeError(describe_gemini_error(last_error, models[-1]))
 
 
-def describe_gemini_error(exc, model: str) -> str:
-    """Gemini 오류를 화면에 띄울 만한 문구로 바꾼다."""
-    code = getattr(exc, "code", None)
+# def describe_gemini_error(exc, model: str) -> str:
+    # """Gemini 오류를 화면에 띄울 만한 문구로 바꾼다."""
+    # code = getattr(exc, "code", None)
 
-    if code == 400:
-        return (
-            "AI 요청이 거부되었습니다. GEMINI_API_KEY 가 올바른지 확인해주세요."
-        )
-    if code == 404:
-        return (
-            f"AI 모델을 찾을 수 없습니다: {model}. "
-            "backend/.env 의 GEMINI_MODEL 을 확인해주세요."
-        )
-    if code == 429:
-        return "AI 사용량 한도를 넘었습니다. 잠시 후 다시 시도해주세요."
-    if code == 503:
-        return "AI 서버가 붐비고 있습니다. 잠시 후 다시 시도해주세요."
+    # if code == 400:
+        # return (
+            # "AI 요청이 거부되었습니다. GEMINI_API_KEY 가 올바른지 확인해주세요."
+        # )
+    # if code == 404:
+        # return (
+            # f"AI 모델을 찾을 수 없습니다: {model}. "
+            # "backend/.env 의 GEMINI_MODEL 을 확인해주세요."
+        # )
+    # if code == 429:
+        # return "AI 사용량 한도를 넘었습니다. 잠시 후 다시 시도해주세요."
+    # if code == 503:
+        # return "AI 서버가 붐비고 있습니다. 잠시 후 다시 시도해주세요."
 
-    return "AI 응답을 받지 못했습니다. 잠시 후 다시 시도해주세요."
+    # return "AI 응답을 받지 못했습니다. 잠시 후 다시 시도해주세요."
 
 
 # Claude — 진짜 AI
 
 
-def call_claude(prompt: str, tool_name: str, schema: dict) -> dict:
-    """Claude 를 부르고, 스키마대로 채워진 딕셔너리를 돌려준다."""
+# def call_claude(prompt: str, tool_name: str, schema: dict) -> dict:
+    # """Claude 를 부르고, 스키마대로 채워진 딕셔너리를 돌려준다."""
     # import 를 함수 안에서 한다. AI_PROVIDER=catalog 로 쓰는 팀원이
     # anthropic 패키지를 안 깔았어도 서버가 뜨게 하기 위함이다.
-    import anthropic
+    # import anthropic
 
-    client = anthropic.Anthropic(
-        api_key=settings.ANTHROPIC_API_KEY,
-        timeout=AI_TIMEOUT_SECONDS,
-    )
+    # client = anthropic.Anthropic(
+        # api_key=settings.ANTHROPIC_API_KEY,
+        # timeout=AI_TIMEOUT_SECONDS,
+    # )
 
-    message = client.messages.create(
-        model=settings.AI_MODEL,
-        max_tokens=4096,
-        tools=[
-            {
-                "name": tool_name,
-                "description": "이 형식에 맞춰 결과를 제출한다",
-                "input_schema": schema,
-            }
-        ],
+    # message = client.messages.create(
+        # model=settings.AI_MODEL,
+        # max_tokens=4096,
+        # tools=[
+            # {
+                # "name": tool_name,
+                # "description": "이 형식에 맞춰 결과를 제출한다",
+                # "input_schema": schema,
+            # }
+        # ],
         # "무조건 이 도구를 써라". 안 주면 그냥 문장으로 답할 때가 있다.
-        tool_choice={"type": "tool", "name": tool_name},
-        messages=[{"role": "user", "content": prompt}],
-    )
+        # tool_choice={"type": "tool", "name": tool_name},
+        # messages=[{"role": "user", "content": prompt}],
+    # )
 
-    for block in message.content:
-        if block.type == "tool_use":
-            return block.input
+    # for block in message.content:
+        # if block.type == "tool_use":
+            # return block.input
 
     # tool_choice 를 줬으므로 정상적으로는 여기까지 오지 않는다.
-    raise RuntimeError("AI 응답에서 결과를 찾지 못했습니다. 잠시 후 다시 시도해주세요.")
+    # raise RuntimeError("AI 응답에서 결과를 찾지 못했습니다. 잠시 후 다시 시도해주세요.")
 
 
-def claude_recommend_foods(context: dict) -> list[dict]:
-    """Claude 에게 후보 목록을 받아온다."""
-    result = call_claude(build_foods_prompt(context), "submit_foods", FOODS_SCHEMA)
+# def claude_recommend_foods(context: dict) -> list[dict]:
+    # """Claude 에게 후보 목록을 받아온다."""
+    # result = call_claude(build_foods_prompt(context), "submit_foods", FOODS_SCHEMA)
 
-    return cut_foods(result, context)
-
-
-def claude_build_recipe(food_name: str, context: dict) -> dict:
-    """Claude 에게 레시피 한 건을 받아온다."""
-    prompt = build_recipe_prompt(food_name, context)
-    return call_claude(prompt, "submit_recipe", RECIPE_SCHEMA)
+    # return cut_foods(result, context)
 
 
-def build_foods_prompt(context: dict) -> str:
-    """후보 추천용 프롬프트를 만든다."""
-    lines = [
-        "당신은 한국 가정식 요리 추천 도우미입니다.",
-        f"집에서 직접 만들어 먹을 메뉴를 {get_limit(context)}개 제안해주세요.",
-        "",
-        "규칙",
-        "- 배달 음식이 아니라 집에서 만드는 요리만 제안합니다.",
-        "- estimated_cost 는 2인분 기준 재료비를 원 단위 정수로 적습니다.",
-        "- reason 은 왜 지금 이 메뉴인지 한 문장으로 적습니다.",
-        "- 같은 메뉴를 두 번 넣지 않습니다.",
-        "",
-        "조건",
-    ]
-    lines.extend(describe_conditions(context))
-
-    return "\n".join(lines)
+# def claude_build_recipe(food_name: str, context: dict) -> dict:
+    # """Claude 에게 레시피 한 건을 받아온다."""
+    # prompt = build_recipe_prompt(food_name, context)
+    # return call_claude(prompt, "submit_recipe", RECIPE_SCHEMA)
 
 
-def build_recipe_prompt(food_name: str, context: dict) -> str:
-    """레시피 생성용 프롬프트를 만든다."""
-    lines = [
-        f"'{food_name}' 을(를) 집에서 만드는 레시피를 알려주세요.",
-        "",
-        "규칙",
-        "- steps 는 순서대로, 한 줄에 한 동작만 적습니다.",
-        "- ingredients 의 quantity 는 숫자, unit 은 g · 개 · 큰술 처럼 짧게 적습니다.",
-        "- ingredients 의 grams 에는 그 양을 그램으로 환산한 값을 반드시 적습니다.",
-        "  (1큰술=15, 1작은술=5, 종이컵 1컵=180, 대파 1대=100, 감자 1개=170)",
-        "  물처럼 값을 매기지 않는 재료도 grams 는 적습니다.",
-        "- ingredients 의 name 에는 재료 이름만 적습니다.",
-        "  손질 방법과 괄호 설명은 넣지 않습니다. 그건 steps 에 적습니다.",
-        "  (O) 마늘 · 밀가루 · 대파      (X) 다진 마늘 · 밀가루(중력분) · 잘게 썬 대파",
-        "- 아래 목록에 있는 재료는 반드시 목록의 이름 그대로 적습니다.",
-        "  시세를 붙일 수 있는 이름이라, 다르게 적으면 가격이 나오지 않습니다.",
-        "  목록에 없는 재료는 자유롭게 적으면 됩니다.",
-        f"  [{' · '.join(vocabulary())}]",
-        "- estimated_cost 는 재료비 합계를 원 단위 정수로 적습니다.",
-        "",
-        "조건",
-    ]
-    lines.extend(describe_conditions(context))
+# def build_foods_prompt(context: dict) -> str:
+    # """후보 추천용 프롬프트를 만든다."""
+    # lines = [
+        # "당신은 한국 가정식 요리 추천 도우미입니다.",
+        # f"집에서 직접 만들어 먹을 메뉴를 {get_limit(context)}개 제안해주세요.",
+        # "",
+        # "규칙",
+        # "- 배달 음식이 아니라 집에서 만드는 요리만 제안합니다.",
+        # "- estimated_cost 는 2인분 기준 재료비를 원 단위 정수로 적습니다.",
+        # "- reason 은 왜 지금 이 메뉴인지 한 문장으로 적습니다.",
+        # "- 같은 메뉴를 두 번 넣지 않습니다.",
+        # "",
+        # "조건",
+    # ]
+    # lines.extend(describe_conditions(context))
 
-    return "\n".join(lines)
+    # return "\n".join(lines)
 
 
-def describe_conditions(context: dict) -> list[str]:
-    """context 를 사람이 읽는 조건 문장으로 바꾼다."""
-    lines = []
+# def build_recipe_prompt(food_name: str, context: dict) -> str:
+    # """레시피 생성용 프롬프트를 만든다."""
+    # lines = [
+        # f"'{food_name}' 을(를) 집에서 만드는 레시피를 알려주세요.",
+        # "",
+        # "규칙",
+        # "- steps 는 순서대로, 한 줄에 한 동작만 적습니다.",
+        # "- ingredients 의 quantity 는 숫자, unit 은 g · 개 · 큰술 처럼 짧게 적습니다.",
+        # "- ingredients 의 grams 에는 그 양을 그램으로 환산한 값을 반드시 적습니다.",
+        # "  (1큰술=15, 1작은술=5, 종이컵 1컵=180, 대파 1대=100, 감자 1개=170)",
+        # "  물처럼 값을 매기지 않는 재료도 grams 는 적습니다.",
+        # "- ingredients 의 name 에는 재료 이름만 적습니다.",
+        # "  손질 방법과 괄호 설명은 넣지 않습니다. 그건 steps 에 적습니다.",
+        # "  (O) 마늘 · 밀가루 · 대파      (X) 다진 마늘 · 밀가루(중력분) · 잘게 썬 대파",
+        # "- 아래 목록에 있는 재료는 반드시 목록의 이름 그대로 적습니다.",
+        # "  시세를 붙일 수 있는 이름이라, 다르게 적으면 가격이 나오지 않습니다.",
+        # "  목록에 없는 재료는 자유롭게 적으면 됩니다.",
+        # f"  [{' · '.join(vocabulary())}]",
+        # "- estimated_cost 는 재료비 합계를 원 단위 정수로 적습니다.",
+        # "",
+        # "조건",
+    # ]
+    # lines.extend(describe_conditions(context))
 
-    allergies = context.get("allergies") or []
-    if allergies:
+    # return "\n".join(lines)
+
+
+# def describe_conditions(context: dict) -> list[str]:
+    # """context 를 사람이 읽는 조건 문장으로 바꾼다."""
+    # lines = []
+
+    # allergies = context.get("allergies") or []
+    # if allergies:
         # 알레르기는 대체재료로도 넣으면 안 된다. 가장 강한 말로 적는다.
-        lines.append(
-            "- 알레르기 재료(절대 사용 금지, 대체재료로도 넣지 말 것): "
-            + ", ".join(allergies)
-        )
+        # lines.append(
+            # "- 알레르기 재료(절대 사용 금지, 대체재료로도 넣지 말 것): "
+            # + ", ".join(allergies)
+        # )
 
-    dislikes = context.get("dislikes") or []
-    if dislikes:
-        lines.append(
-            "- 싫어하는 재료(가능하면 빼고, 꼭 필요하면 substitutes 에 대체안을 적을 것): "
-            + ", ".join(dislikes)
-        )
+    # dislikes = context.get("dislikes") or []
+    # if dislikes:
+        # lines.append(
+            # "- 싫어하는 재료(가능하면 빼고, 꼭 필요하면 substitutes 에 대체안을 적을 것): "
+            # + ", ".join(dislikes)
+        # )
 
-    category = context.get("category")
-    if category:
-        lines.append(f"- 분류: {category}")
+    # category = context.get("category")
+    # if category:
+        # lines.append(f"- 분류: {category}")
 
-    budget_max = context.get("budget_max")
-    budget_min = context.get("budget_min")
-    if budget_max is not None:
+    # budget_max = context.get("budget_max")
+    # budget_min = context.get("budget_min")
+    # if budget_max is not None:
         # 만들어 놓고 거르면 후보가 0건이 되기 쉬우므로 생성 단계에서 제한한다.
-        lines.append(f"- 재료비 상한: {budget_max}원 이하로만 제안할 것")
-    if budget_min:
-        lines.append(f"- 재료비 하한: {budget_min}원 이상")
+        # lines.append(f"- 재료비 상한: {budget_max}원 이하로만 제안할 것")
+    # if budget_min:
+        # lines.append(f"- 재료비 하한: {budget_min}원 이상")
 
-    bargains = context.get("bargains") or []
-    if bargains:
-        cheap = ", ".join(
-            f"{row['name']}({row['percent']:.0f}%)" for row in bargains
-        )
-        lines.append(
-            "- 요즘 값이 내린 재료입니다(괄호는 일주일 전 대비 등락률): "
-            + cheap
-        )
-        lines.append(
-            "  이 중 두 가지 이상을 주재료로 쓰는 메뉴를 우선 추천하세요. "
-            "reason 에 어떤 재료가 싸서 골랐는지 적으세요."
-        )
+    # bargains = context.get("bargains") or []
+    # if bargains:
+        # cheap = ", ".join(
+            # f"{row['name']}({row['percent']:.0f}%)" for row in bargains
+        # )
+        # lines.append(
+            # "- 요즘 값이 내린 재료입니다(괄호는 일주일 전 대비 등락률): "
+            # + cheap
+        # )
+        # lines.append(
+            # "  이 중 두 가지 이상을 주재료로 쓰는 메뉴를 우선 추천하세요. "
+            # "reason 에 어떤 재료가 싸서 골랐는지 적으세요."
+        # )
 
-    weather = context.get("weather")
-    if weather:
-        lines.append(
-            f"- 오늘 날씨: {weather.get('city', '')} "
-            f"{weather.get('condition_text', '')} {weather.get('temp')}도 "
-            f"(체감 {weather.get('feels_like')}도). 이 날씨에 어울리는 메뉴로."
-        )
+    # weather = context.get("weather")
+    # if weather:
+        # lines.append(
+            # f"- 오늘 날씨: {weather.get('city', '')} "
+            # f"{weather.get('condition_text', '')} {weather.get('temp')}도 "
+            # f"(체감 {weather.get('feels_like')}도). 이 날씨에 어울리는 메뉴로."
+        # )
 
-    query = context.get("query")
-    if query:
-        lines.append(f'- 사용자가 적은 말: "{query}" (이 요청을 최우선으로 해석할 것)')
+    # query = context.get("query")
+    # if query:
+        # lines.append(f'- 사용자가 적은 말: "{query}" (이 요청을 최우선으로 해석할 것)')
 
-    exclude = context.get("exclude") or []
-    if exclude:
-        lines.append("- 이미 보여준 메뉴(빼고 새로 제안): " + ", ".join(exclude))
+    # exclude = context.get("exclude") or []
+    # if exclude:
+        # lines.append("- 이미 보여준 메뉴(빼고 새로 제안): " + ", ".join(exclude))
 
-    if not lines:
-        lines.append("- 특별한 조건 없음. 무난하고 대중적인 메뉴로.")
+    # if not lines:
+        # lines.append("- 특별한 조건 없음. 무난하고 대중적인 메뉴로.")
 
-    return lines
+    # return lines
 
 
 # catalog — AI 를 부르지 않고 카탈로그에서 고른다

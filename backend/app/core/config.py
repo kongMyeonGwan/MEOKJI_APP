@@ -58,17 +58,19 @@ class Settings(BaseSettings):
     SMTP_FROM: str = ""
 
     # ===== AI =====
+    # 쓸 수 있는 값은 catalog(=mock) 하나다.
+    # 제미나이 · 클로드는 쓰지 않기로 했다(2026-09-26).
     AI_PROVIDER: str = "catalog"
 
-    # Gemini (https://aistudio.google.com 에서 발급)
-    GEMINI_API_KEY: str = ""
+    # # Gemini (https://aistudio.google.com 에서 발급)
+    # GEMINI_API_KEY: str = ""
 
-    # 쉼표로 여러 개를 적으면 앞에서부터 시도한다.
-    GEMINI_MODEL: str = "gemini-3.7-flash,gemini-3.5-flash"
+    # # 쉼표로 여러 개를 적으면 앞에서부터 시도한다.
+    # GEMINI_MODEL: str = "gemini-3.7-flash,gemini-3.5-flash"
 
-    # Claude (https://console.anthropic.com 에서 발급)
-    ANTHROPIC_API_KEY: str = ""
-    AI_MODEL: str = "claude-opus-5"
+    # # Claude (https://console.anthropic.com 에서 발급)
+    # ANTHROPIC_API_KEY: str = ""
+    # AI_MODEL: str = "claude-opus-5"
 
     # ===== Weather =====
     WEATHER_PROVIDER: str = "mock"
@@ -118,10 +120,10 @@ class Settings(BaseSettings):
         """CORS_ORIGINS 를 리스트로 바꾼다."""
         return split_by_comma(self.CORS_ORIGINS)
 
-    @property
-    def gemini_model_list(self) -> list[str]:
-        """GEMINI_MODEL 을 리스트로 바꾼다. 적힌 순서가 곧 우선순위다."""
-        return split_by_comma(self.GEMINI_MODEL)
+    # @property
+    # def gemini_model_list(self) -> list[str]:
+        # """GEMINI_MODEL 을 리스트로 바꾼다. 적힌 순서가 곧 우선순위다."""
+        # return split_by_comma(self.GEMINI_MODEL)
 
     @property
     def price_provider_list(self) -> list[str]:

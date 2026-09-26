@@ -104,8 +104,8 @@ def test_KST는_9시간_앞선다():
 # 카탈로그 추천
 #
 # 분기 함수(recommend_foods)가 아니라 카탈로그 구현(catalog_recommend_foods)을
-# 직접 부른다. 분기 함수를 부르면 .env 의 AI_PROVIDER 를 따라가서,
-# gemini 로 켜둔 사람의 컴퓨터에서는 이 테스트가 진짜 API 를 호출한다.
+# 직접 부른다. 분기 함수를 부르면 .env 의 AI_PROVIDER 를 따라가므로,
+# 설정이 무엇이든 테스트 결과가 같게 하려면 구현을 직접 부르는 편이 낫다.
 # =========================================================
 
 
@@ -417,23 +417,29 @@ def test_카탈로그에_없는_음식은_404다():
     assert "할머니표 비밀 국수" in caught.value.detail
 
 
-def test_AI_를_쓰면_카탈로그_밖도_물어본다():
-    # catalog 가 아닐 때는 404 로 끊지 않고 AI 에게 넘긴다.
-    # 여기서는 넘어가는지만 본다(키가 없으므로 503 으로 끝난다).
-    original = settings.AI_PROVIDER
-    settings.AI_PROVIDER = "gemini"
-    try:
-        with pytest.raises(HTTPException) as caught:
-            ai_service.make_recipe(None, None, "할머니표 비밀 국수")
-    finally:
-        settings.AI_PROVIDER = original
+def test_제미나이_클로드는_더_이상_쓸_수_없다():
+    # AI 를 쓰지 않기로 했다(2026-09-26). .env 에 gemini · claude 를 적어두면
+    # 조용히 카탈로그로 넘어가지 않고 503 으로 막는다 — 조용히 넘어가면
+    # "AI 를 켰는데 추천이 늘 똑같다"가 되어 원인을 못 찾는다.
+    #
+    # 예전에는 이 자리에서 실제로 AI 를 불렀다. .env 에 키가 있는 사람의
+    # 컴퓨터에서는 진짜 호출이 나가 결과가 그때그때 달랐다.
+    for provider in ("gemini", "claude"):
+        original = settings.AI_PROVIDER
+        settings.AI_PROVIDER = provider
+        try:
+            with pytest.raises(HTTPException) as caught:
+                ai_service.make_recipe(None, None, "할머니표 비밀 국수")
+        finally:
+            settings.AI_PROVIDER = original
 
-    assert caught.value.status_code != 404
+        assert caught.value.status_code == 503
+        assert "지원하지 않는 AI_PROVIDER" in caught.value.detail
 
 
 def test_AI_폴백용_레시피_생성기는_그대로_있다():
-    # catalog 모드에서는 더 이상 불리지 않지만, gemini · claude 로 바꿨을 때
-    # 쓰던 코드라 그대로 둔다.
+    # 카탈로그에 없는 음식은 라우터가 404 로 끊지만, 재료·순서를 만들어내는
+    # 이 함수 자체는 살아 있어야 한다.
     recipe = ai_api.catalog_build_recipe("할머니표 비밀 국수", {})
 
     assert recipe["recipe_name"]
@@ -629,60 +635,63 @@ def test_키가_틀리면_키를_확인하라고_알려준다():
 
 
 # =========================================================
+# 아래는 전부 주석이다 — 제미나이를 쓰지 않기로 했다 (2026-09-26).
+# 오류 문구를 만들던 describe_gemini_error 가 ai_api.py 에서 주석 처리돼
+# 이 테스트도 같이 멈춘다. AI 를 되살리면 여기 주석도 같이 푼다.
+# =========================================================
+# =========================================================
 # Gemini 오류 문구
-#
+# #
 # 실제 호출 없이 확인할 수 있는 부분만 본다.
 # 원문이 영어라 그대로 내보내면 사용자가 못 읽는다.
 # =========================================================
 
 
-class FakeApiError:
-    """google.genai 의 APIError 를 흉내 낸다. code 만 있으면 된다."""
+# class FakeApiError:
+    # """google.genai 의 APIError 를 흉내 낸다. code 만 있으면 된다."""
 
-    def __init__(self, code):
-        self.code = code
-
-
-def test_붐빌_때는_기다리라고_알려준다():
-    message = ai_api.describe_gemini_error(FakeApiError(503), "gemini-3.7-flash")
-
-    assert "붐비" in message
-    assert "다시 시도" in message
+    # def __init__(self, code):
+        # self.code = code
 
 
-def test_할당량_초과는_한도라고_알려준다():
-    message = ai_api.describe_gemini_error(FakeApiError(429), "gemini-3.7-flash")
+# def test_붐빌_때는_기다리라고_알려준다():
+    # message = ai_api.describe_gemini_error(FakeApiError(503), "gemini-3.7-flash")
 
-    assert "한도" in message
+    # assert "붐비" in message
+    # assert "다시 시도" in message
 
 
-def test_없는_모델이면_모델_이름을_짚어준다():
+# def test_할당량_초과는_한도라고_알려준다():
+    # message = ai_api.describe_gemini_error(FakeApiError(429), "gemini-3.7-flash")
+
+    # assert "한도" in message
+
+
+# def test_없는_모델이면_모델_이름을_짚어준다():
     # 어느 모델이 문제인지 안 적어주면 예비 모델까지 있을 때 원인을 못 찾는다
-    message = ai_api.describe_gemini_error(FakeApiError(404), "gemini-9-flash")
+    # message = ai_api.describe_gemini_error(FakeApiError(404), "gemini-9-flash")
 
-    assert "gemini-9-flash" in message
-    assert "GEMINI_MODEL" in message
-
-
-def test_인증_오류는_키를_확인하라고_알려준다():
-    message = ai_api.describe_gemini_error(FakeApiError(400), "gemini-3.7-flash")
-
-    assert "GEMINI_API_KEY" in message
+    # assert "gemini-9-flash" in message
+    # assert "GEMINI_MODEL" in message
 
 
-def test_모르는_오류도_영어를_그대로_내보내지_않는다():
-    message = ai_api.describe_gemini_error(FakeApiError(418), "gemini-3.7-flash")
+# def test_인증_오류는_키를_확인하라고_알려준다():
+    # message = ai_api.describe_gemini_error(FakeApiError(400), "gemini-3.7-flash")
 
-    assert "AI 응답을 받지 못했습니다" in message
+    # assert "GEMINI_API_KEY" in message
 
 
-def test_모델_목록은_쉼표로_나뉜다():
+# def test_모르는_오류도_영어를_그대로_내보내지_않는다():
+    # message = ai_api.describe_gemini_error(FakeApiError(418), "gemini-3.7-flash")
+
+    # assert "AI 응답을 받지 못했습니다" in message
+
+
+def test_쉼표로_적은_목록은_나뉜다():
+    # PRICE_PROVIDERS · CORS_ORIGINS 가 이 함수를 쓴다.
     from app.core.config import split_by_comma
 
-    assert split_by_comma("gemini-3.7-flash, gemini-3.5-flash") == [
-        "gemini-3.7-flash",
-        "gemini-3.5-flash",
-    ]
+    assert split_by_comma("kamis, mock") == ["kamis", "mock"]
 
 
 # =========================================================

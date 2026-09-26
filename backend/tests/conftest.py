@@ -134,7 +134,7 @@ def remove_test_users() -> None:
 def use_catalog_provider():
     """테스트가 도는 동안에는 AI 를 catalog 로 고정한다.
 
-    .env 가 gemini/claude 로 켜져 있어도 테스트는 바깥을 부르지 않는다.
+    .env 에 무엇이 적혀 있어도 테스트는 바깥을 부르지 않는다.
     이유가 셋 있다.
       - 돌릴 때마다 API 할당량과 돈이 나간다
       - 남의 서버가 붐비면(503) 우리 코드는 멀쩡한데 테스트가 빨개진다
