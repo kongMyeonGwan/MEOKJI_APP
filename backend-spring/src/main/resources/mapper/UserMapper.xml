@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+  USERS 표 SQL.
+
+  지켜야 할 것 두 가지
+  ====================
+  1) 조회에는 use_yn='Y' 를 붙인다. 이 서비스는 물리 삭제를 하지 않는다.
+     빼먹으면 탈퇴한 회원이 로그인되거나 목록에 다시 나타난다.
+
+  2) 시각은 DB 가 만들게 한다. SYS_EXTRACT_UTC(SYSTIMESTAMP) 로 UTC 를 넣는다.
+     애플리케이션에서 만든 값을 보내면 JVM 시간대에 따라 9시간 어긋날 수 있다.
+-->
+<mapper namespace="com.meokji.api.user.UserMapper">
+
+    <!--
+      컬럼을 * 로 받지 않고 적어둔다. 나중에 컬럼이 늘었을 때 어디를 고쳐야 하는지
+      드러나고, password_hash 가 실수로 응답까지 흘러가는 길도 줄어든다.
+    -->
+    <sql id="columns">
+        id, email, password_hash, nickname, user_level,
+        gender, address_sido, address_sigungu, latitude, longitude,
+        login_fail_count, is_locked, locked_at, use_yn, created_at, updated_at
+    </sql>
+
+    <select id="findById" resultType="com.meokji.api.user.User">
+        SELECT <include refid="columns"/>
+          FROM users
+         WHERE id = #{id}
+    </select>
+
+    <select id="findActiveByEmail" resultType="com.meokji.api.user.User">
+        SELECT <include refid="columns"/>
+          FROM users
+         WHERE email = #{email}
+           AND use_yn = 'Y'
+    </select>
+
+    <!--
+      어느 쪽이 중복인지 알려주려고 이메일과 닉네임을 같이 본다.
+      ROWNUM 으로 한 행만 받는다 - 둘 다 중복이면 이메일 쪽을 먼저 알려준다
+      (파이썬 register_user 와 같은 순서).
+    -->
+    <select id="findActiveByEmailOrNickname" resultType="com.meokji.api.user.User">
+        SELECT email, nickname
+          FROM (
+                SELECT email, nickname
+                  FROM users
+                 WHERE use_yn = 'Y'
+                   AND (email = #{email} OR nickname = #{nickname})
+                 ORDER BY CASE WHEN email = #{email} THEN 0 ELSE 1 END
+               )
+         WHERE ROWNUM = 1
+    </select>
+
+    <!--
+      keyProperty 로 IDENTITY 가 만든 id 를 되돌려 받는다.
+      user_level 은 적지 않는다 - DDL 의 DEFAULT 2(일반 회원)에 맡긴다. 가입으로
+      관리자가 만들어질 길을 아예 두지 않으려는 것이다.
+    -->
+    <insert id="insert" parameterType="com.meokji.api.user.User"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO users (
+            email, password_hash, nickname,
+            gender, address_sido, address_sigungu, latitude, longitude
+        ) VALUES (
+            #{email}, #{passwordHash}, #{nickname},
+            #{gender}, #{addressSido}, #{addressSigungu}, #{latitude}, #{longitude}
+        )
+    </insert>
+
+    <update id="increaseLoginFailCount">
+        UPDATE users
+           SET login_fail_count = login_fail_count + 1,
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+    <update id="resetLoginFailCount">
+        UPDATE users
+           SET login_fail_count = 0,
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+    <update id="lockAccount">
+        UPDATE users
+           SET is_locked = 1,
+               locked_at = SYS_EXTRACT_UTC(SYSTIMESTAMP),
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+</mapper>
