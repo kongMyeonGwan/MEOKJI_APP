@@ -76,6 +76,16 @@ app:
     # 응답의 expires_in 이 이 값 * 60 으로 나간다.
     expire-minutes: ${JWT_EXPIRE_MINUTES:30}
 
+  weather:
+    # mock  : 언제 불러도 28도 맑음. 키가 없어도 화면을 볼 수 있다
+    # openweather : 실제 날씨
+    provider: ${WEATHER_PROVIDER:mock}
+    api-key: ${OPENWEATHER_API_KEY:}
+
+    # 좌표를 안 보냈고 회원 주소도 없을 때 쓸 자리 (서울시청 근처).
+    default-lat: ${DEFAULT_WEATHER_LAT:37.5711}
+    default-lon: ${DEFAULT_WEATHER_LON:126.9885}
+
   # 로그인을 이 횟수만큼 틀리면 계정을 잠근다 (STEP 7).
   max-login-fail-count: ${MAX_LOGIN_FAIL_COUNT:20}
 

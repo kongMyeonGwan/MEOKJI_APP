@@ -74,7 +74,7 @@ python -m scripts.seed_demo
 
 ## 지금 어디까지 왔나
 
-전체 27개 중 **24개**를 옮겼다. (게시판 · 공지 20개는 담당자 몫이라 501 스텁이다.)
+전체 27개 중 **25개**를 옮겼다. (게시판 · 공지 20개는 담당자 몫이라 501 스텁이다.)
 
 | 그룹 | 개수 | 상태 |
 |---|:--:|---|
@@ -87,15 +87,17 @@ python -m scripts.seed_demo
 | catalog — 고정 목록 · 지역 | 2 | ✅ |
 | games — 플레이 기록 | 1 | ✅ |
 | likes — 찜 목록 · 토글 · 비우기 | 3 | ✅ |
-| 추천 · 레시피 | 2 | ⬜ 카탈로그 점수 · 조리순서 · KAMIS 가 필요하다 |
+| 추천 () | 1 | ✅ 날씨 반영 · 떨이 재료는 아직 빈 목록 |
+| 레시피 () | 1 | ⬜ 조리순서 · 분량 환산 · KAMIS 시세가 필요하다 |
 | **posts 15 · notices 5** | 20 | **🔧 501 스텁 — 담당자 작업 대상** |
 
 남은 것 셋의 크기는 이렇다.
 
     비밀번호 재설정   메일 발송(SMTP) + verification_codes + OTP 재발송 제한
-    추천              카탈로그 100종에 날씨·예산·Ban 점수 매기기 (ai_api.py 의 점수 함수들)
     레시피            recipes.json 에서 꺼내기 + 조리순서(steps.py 1,004줄)
                       + 분량 환산(portion.py · unit_convert.py) + KAMIS 시세
+    떨이 재료         KAMIS 품목 116개를 훑어 일주일 전과 비교 (bargain_service.py)
+                      — 추천의 use_bargains 를 켜도 지금은 빈 목록이다
 
 ---
 
@@ -229,6 +231,8 @@ backend-spring/
     │   │   ├── catalog/            고정 목록 · catalog.json 읽기
     │   │   ├── region/             regions.json 읽기 (주소 → 좌표)
     │   │   ├── like/               찜한 레시피
+    │   │   ├── weather/            날씨 (mock / openweather) + 안내 문구
+    │   │   ├── recommend/          음식 추천 (카탈로그 점수)
     │   │   ├── game/               미니게임 플레이 기록
     │   │   ├── post/               🔧 게시판 — 501 스텁
     │   │   └── notice/             🔧 공지 — 501 스텁
@@ -238,7 +242,7 @@ backend-spring/
     │       ├── data/               catalog.json · recipes.json · regions.json (파이썬에서 복사)
     │       └── mapper/             User · History · Ban · Like · Game
     └── test/
-        ├── java/com/meokji/api/    정답지 대조 테스트 41건
+        ├── java/com/meokji/api/    정답지 대조 테스트 52건
         └── resources/fixtures/     파이썬 응답 정답지 38개
 ```
 

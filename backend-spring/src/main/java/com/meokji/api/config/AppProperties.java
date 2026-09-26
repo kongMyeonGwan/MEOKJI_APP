@@ -34,6 +34,51 @@ public class AppProperties {
 
     private Jwt jwt = new Jwt();
 
+    private Weather weather = new Weather();
+
+    /** 날씨 연동. mock 이면 바깥을 부르지 않는다. */
+    public static class Weather {
+
+        private String provider = "mock";
+        private String apiKey = "";
+
+        /** 좌표를 안 보냈고 회원 주소도 없을 때 쓸 자리. */
+        private double defaultLat = 37.5711;
+        private double defaultLon = 126.9885;
+
+        public String getProvider() {
+            return provider;
+        }
+
+        public void setProvider(String provider) {
+            this.provider = provider;
+        }
+
+        public String getApiKey() {
+            return apiKey;
+        }
+
+        public void setApiKey(String apiKey) {
+            this.apiKey = apiKey;
+        }
+
+        public double getDefaultLat() {
+            return defaultLat;
+        }
+
+        public void setDefaultLat(double defaultLat) {
+            this.defaultLat = defaultLat;
+        }
+
+        public double getDefaultLon() {
+            return defaultLon;
+        }
+
+        public void setDefaultLon(double defaultLon) {
+            this.defaultLon = defaultLon;
+        }
+    }
+
     public static class Jwt {
 
         /**
@@ -121,5 +166,13 @@ public class AppProperties {
 
     public void setJwt(Jwt jwt) {
         this.jwt = jwt;
+    }
+
+    public Weather getWeather() {
+        return weather;
+    }
+
+    public void setWeather(Weather weather) {
+        this.weather = weather;
     }
 }

@@ -3,8 +3,10 @@ package com.meokji.api.catalog;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -33,6 +35,14 @@ public class FoodCatalog {
     /** 음식 이름 -> 카탈로그 한 줄. 순서를 유지해야 추천 결과가 흔들리지 않는다. */
     private final Map<String, JsonNode> foodsByName = new LinkedHashMap<>();
 
+    /**
+     * 더운 날 밀어줄 음식 이름.
+     *
+     * <p>태그로 못 잡는 것들이 있어서 이름을 직접 적어둔 목록이다. 예를 들어
+     * 냉면은 '면' 이면서 차게 먹는데, '면' 태그만 보면 칼국수와 같은 점수가 된다.
+     */
+    private final Set<String> hotWeatherPicks = new LinkedHashSet<>();
+
     private JsonNode root;
 
     @PostConstruct
@@ -44,6 +54,10 @@ public class FoodCatalog {
 
             for (JsonNode food : root.path("foods")) {
                 foodsByName.put(food.path("food_name").asString(), food);
+            }
+
+            for (JsonNode name : root.path("hot_weather_picks")) {
+                hotWeatherPicks.add(name.asString());
             }
         } catch (Exception exc) {
             // 이 파일이 없으면 추천이 아무것도 못 고른다. 조용히 빈 목록으로 뜨면
@@ -86,6 +100,11 @@ public class FoodCatalog {
     /** 음식 100종 전체. 추천이 여기서 고른다. */
     public List<JsonNode> foods() {
         return new ArrayList<>(foodsByName.values());
+    }
+
+    /** 더운 날 밀어줄 음식인지. 점수 계산이 이것을 먼저 본다. */
+    public boolean isHotWeatherPick(String foodName) {
+        return foodName != null && hotWeatherPicks.contains(foodName);
     }
 
     /** catalog.json 의 최상위 칸 하나 (categories · roulette · games 등). */
