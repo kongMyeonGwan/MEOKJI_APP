@@ -74,19 +74,28 @@ python -m scripts.seed_demo
 
 ## 지금 어디까지 왔나
 
-전체 27개 중 **21개**를 옮겼다. (게시판 · 공지 20개는 담당자 몫이라 501 스텁이다.)
+전체 27개 중 **24개**를 옮겼다. (게시판 · 공지 20개는 담당자 몫이라 501 스텁이다.)
 
-| 그룹 | 상태 |
-|---|---|
-| health | ✅ |
-| auth — 가입 · 로그인 · 토큰 확인 | ✅ |
-| auth — 비밀번호 재설정 3개 | ⬜ 메일 발송 · `verification_codes` 필요 |
-| users — 내 정보 · 수정 · 비밀번호 · 알림 · 탈퇴 | ✅ |
-| bans | ✅ |
-| histories — 목록 · 요약 · 확정 · 삭제 | ✅ |
-| 추천 · 레시피 | ⬜ 카탈로그 점수 · KAMIS · 조리순서 |
-| catalog · games · likes | ⬜ |
-| **posts 15 · notices 5** | **🔧 501 스텁 — 담당자 작업 대상** |
+| 그룹 | 개수 | 상태 |
+|---|:--:|---|
+| health | 1 | ✅ |
+| auth — 가입 · 로그인 · 토큰 확인 | 3 | ✅ |
+| auth — 비밀번호 재설정 | 3 | ⬜ 메일 발송 · `verification_codes` 표가 필요하다 |
+| users — 내 정보 · 수정 · 비밀번호 · 알림 · 탈퇴 | 5 | ✅ |
+| bans | 3 | ✅ |
+| histories — 목록 · 요약 · 확정 · 삭제 | 4 | ✅ |
+| catalog — 고정 목록 · 지역 | 2 | ✅ |
+| games — 플레이 기록 | 1 | ✅ |
+| likes — 찜 목록 · 토글 · 비우기 | 3 | ✅ |
+| 추천 · 레시피 | 2 | ⬜ 카탈로그 점수 · 조리순서 · KAMIS 가 필요하다 |
+| **posts 15 · notices 5** | 20 | **🔧 501 스텁 — 담당자 작업 대상** |
+
+남은 것 셋의 크기는 이렇다.
+
+    비밀번호 재설정   메일 발송(SMTP) + verification_codes + OTP 재발송 제한
+    추천              카탈로그 100종에 날씨·예산·Ban 점수 매기기 (ai_api.py 의 점수 함수들)
+    레시피            recipes.json 에서 꺼내기 + 조리순서(steps.py 1,004줄)
+                      + 분량 환산(portion.py · unit_convert.py) + KAMIS 시세
 
 ---
 
@@ -217,17 +226,19 @@ backend-spring/
     │   │   ├── user/               내 정보 · 알림 · 탈퇴
     │   │   ├── ban/                못 먹는 재료
     │   │   ├── history/            식사 기록
-    │   │   ├── catalog/            catalog.json 읽기 (썸네일 · 앞으로 추천 점수)
+    │   │   ├── catalog/            고정 목록 · catalog.json 읽기
     │   │   ├── region/             regions.json 읽기 (주소 → 좌표)
+    │   │   ├── like/               찜한 레시피
+    │   │   ├── game/               미니게임 플레이 기록
     │   │   ├── post/               🔧 게시판 — 501 스텁
     │   │   └── notice/             🔧 공지 — 501 스텁
     │   └── resources/
     │       ├── application.yml
     │       ├── application-local.yml.example
     │       ├── data/               catalog.json · recipes.json · regions.json (파이썬에서 복사)
-    │       └── mapper/             UserMapper.xml · HistoryMapper.xml · BanMapper.xml
+    │       └── mapper/             User · History · Ban · Like · Game
     └── test/
-        ├── java/com/meokji/api/    정답지 대조 테스트 32건
+        ├── java/com/meokji/api/    정답지 대조 테스트 41건
         └── resources/fixtures/     파이썬 응답 정답지 38개
 ```
 
