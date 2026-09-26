@@ -1,5 +1,7 @@
 package com.meokji.api.user;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -53,4 +55,49 @@ public interface UserMapper {
      * 애플리케이션에서 만든 시각을 보내면 JVM 시간대에 따라 어긋날 수 있다.
      */
     void lockAccount(@Param("id") Long id);
+
+    /**
+     * 내 정보 수정. null 이 아닌 칸만 고친다.
+     *
+     * <p>PATCH 라서 보내지 않은 칸은 그대로 두어야 한다. 그 판단은 서비스가 하고
+     * (무엇을 보냈는지는 DTO 가 안다), 여기는 받은 값을 그대로 넣는다.
+     */
+    void updateProfile(User user);
+
+    /** 비밀번호만 바꾼다. */
+    void updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
+
+    /** 회원 탈퇴. 행을 지우지 않고 use_yn='N' 으로 바꾼다. */
+    void withdraw(@Param("id") Long id);
+
+    /**
+     * 탈퇴할 때 딸린 자료도 같이 내린다.
+     *
+     * <p>표 이름을 문자열로 받는다. 다섯 표에 같은 UPDATE 를 보내는 일이라
+     * 매퍼 메서드를 다섯 개 두는 것보다 낫다. <b>부르는 쪽이 정해둔 목록에서만</b>
+     * 값이 오므로 사용자 입력이 섞일 자리가 없다.
+     */
+    void withdrawChildren(@Param("table") String table, @Param("userId") Long userId);
+
+    /** 알림 한 줄을 만들 재료. 댓글과 좋아요가 같은 모양을 쓴다. */
+    record NotificationRow(
+            Long id,
+            Long reviewId,
+            String reviewTitle,
+            String nickname,
+            String content,
+            java.time.LocalDateTime createdAt) {
+    }
+
+    /**
+     * 내 글에 달린 댓글.
+     *
+     * <p>내가 쓴 댓글은 뺀다 - 자기 글에 자기가 답한 것을 알림으로 받을 이유가 없다.
+     */
+    List<NotificationRow> findCommentNotifications(
+            @Param("userId") Long userId, @Param("limit") int limit);
+
+    /** 내 글이 받은 좋아요. 내가 누른 것은 뺀다. */
+    List<NotificationRow> findLikeNotifications(
+            @Param("userId") Long userId, @Param("limit") int limit);
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.meokji.api.history.HistoryMapper">
+
+    <select id="findStatsRows"
+            resultType="com.meokji.api.history.HistoryMapper$StatsRow">
+        SELECT selected_at AS selectedAt,
+               estimated_cost AS estimatedCost
+          FROM meal_histories
+         WHERE user_id = #{userId}
+           AND use_yn = 'Y'
+    </select>
+
+</mapper>
