@@ -1,0 +1,11 @@
+{
+  "note": "공지 목록 501",
+  "request": {
+    "method": "GET",
+    "path": "/api/notices"
+  },
+  "status": 501,
+  "body": {
+    "detail": "아직 만들지 않은 기능입니다. (공지사항 담당자 작업 예정)"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "note": "카탈로그에 없는 카테고리 - 0건이 정상",
+  "request": {
+    "method": "POST",
+    "path": "/api/recommendations"
+  },
+  "status": 200,
+  "body": {
+    "condition": "양식",
+    "items": [],
+    "weather": null,
+    "bargains": []
+  }
+}
