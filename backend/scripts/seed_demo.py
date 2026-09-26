@@ -15,6 +15,13 @@
     4) 후기 1건   첨부 없음
     5) 후기 1건   첨부 있음 (그림은 아래에서 직접 그린다)
 
+지금은 2 · 4 · 5 를 건너뛴다
+---------------------------
+게시판과 공지는 담당자가 채울 자리라 서버가 501 을 돌려준다
+(routers/posts.py · notices.py). 그 단계만 건너뛰고 나머지는 그대로 만든다.
+예전에는 여기서 그냥 죽어서, 게시판과 상관없는 식사 기록까지 못 만들어졌다.
+구현이 끝나면 501 이 사라져 조건이 저절로 풀리므로 이 파일은 고칠 필요가 없다.
+
 왜 DB 에 직접 INSERT 하지 않나
 ------------------------------
 서버를 거쳐야 검증기 · FK · UNIQUE 가 실제로 돌아간다. INSERT 로 넣으면
@@ -37,14 +44,19 @@ import time
 import zlib
 from pathlib import Path
 
+# 윈도우 기본 콘솔은 cp949 라서, 여기에 없는 글자를 print 하면 그 순간
+# UnicodeEncodeError 로 스크립트가 통째로 죽는다. 데모 데이터를 만드는
+# 도구가 글자 하나 때문에 멈추는 것보다 그 글자만 '?' 로 나오는 게 낫다.
+sys.stdout.reconfigure(errors="replace")
+
 from app.core.config import settings
 
-# AI 는 mock 으로 고정한다. .env 가 gemini 로 켜져 있어도 데모 데이터를
+# AI 는 mock 으로 고정한다. .env 가 무엇이든 데모 데이터를
 # 만들자고 API 할당량과 돈을 쓸 이유가 없다. 레시피 모양은 어느 쪽이든 같다.
 settings.AI_PROVIDER = "catalog"
 
 # 가격 조회도 막는다. DATA_GO_KR_SERVICE_KEY 가 비어 있으면
-# GET /api/recipes 가 재료마다 KAMIS 를 부르다 500 으로 죽는다.
+# GET /api/recipes 가 재료마다 KAMIS 를 부르다 503 으로 끝난다.
 # 시세는 DB 에 저장되지도 않는 값이라 데모 데이터와 아무 상관이 없다.
 from app.integrations import price_api  # noqa: E402
 from app.services import bargain_service  # noqa: E402
@@ -262,6 +274,19 @@ def skip(message: str) -> None:
     print(f"  --  {message}")
 
 
+def not_ready(response) -> bool:
+    """아직 서버에 없는 기능인지 본다.
+
+    게시판(posts)과 공지(notices)는 담당자가 채울 자리라 라우터가 501 을
+    돌려준다. 그때는 실패로 끝내지 않고 그 단계만 건너뛴다 — 회원과 식사
+    기록은 게시판과 상관없이 만들어지는데, 여기서 멈추면 그것까지 못 만든다.
+
+    상태 코드로 판단한다. "기능이 없다" 는 뜻을 가진 코드가 501 이라서,
+    구현이 끝나면 조건이 저절로 풀린다. 나중에 손으로 지울 일이 없다.
+    """
+    return response.status_code == 501
+
+
 def signup(client: TestClient, profile: dict) -> dict:
     """가입하고 로그인해서 Authorization 헤더를 돌려준다.
 
@@ -273,7 +298,7 @@ def signup(client: TestClient, profile: dict) -> dict:
     if response.status_code == 201:
         ok(f"가입 {profile['email']} ({profile['nickname']})")
     elif response.status_code == 409:
-        skip(f"이미 있는 계정 {profile['email']} — 로그인만 한다")
+        skip(f"이미 있는 계정 {profile['email']} - 로그인만 한다")
     else:
         raise SystemExit(f"가입 실패 {response.status_code}: {response.text}")
 
@@ -312,11 +337,17 @@ def seed_notices(client: TestClient, headers: dict) -> None:
     """
     # 목록 API 는 배열이 아니라 {items, total, ...} 로 온다 (STEP 31).
     # 시드가 넣는 공지는 몇 건뿐이라 1페이지만 봐도 충분하다.
-    existing = {row["title"] for row in client.get("/api/notices").json()["items"]}
+    listed = client.get("/api/notices")
+
+    if not_ready(listed):
+        skip("공지사항이 아직 서버에 없다(501). 담당자가 구현하면 이 단계가 다시 돈다.")
+        return
+
+    existing = {row["title"] for row in listed.json()["items"]}
 
     for notice in NOTICES:
         if notice["title"] in existing:
-            skip(f"이미 있음 — {notice['title']}")
+            skip(f"이미 있음 - {notice['title']}")
             continue
 
         response = client.post("/api/notices", headers=headers, json=notice)
@@ -340,7 +371,7 @@ def seed_histories(client: TestClient, headers: dict) -> dict:
 
     for food in FOODS:
         if food in histories:
-            skip(f"이미 있음 — {food}")
+            skip(f"이미 있음 - {food}")
             continue
 
         recipe = client.get(f"/api/recipes/{food}", headers=headers)
@@ -366,13 +397,18 @@ def seed_histories(client: TestClient, headers: dict) -> dict:
 
         saved = response.json()
         histories[food] = saved
-        ok(f"{saved['food_name']} — {saved['recipe_name']} ({saved['estimated_cost']:,}원)")
+        ok(f"{saved['food_name']} - {saved['recipe_name']} ({saved['estimated_cost']:,}원)")
 
     return histories
 
 
 def seed_posts(client: TestClient, headers: dict, histories: dict) -> None:
     """4·5) 후기. 하나는 첨부 없이, 하나는 첨부를 붙여서."""
+    if not_ready(client.get("/api/posts")):
+        skip("게시판이 아직 서버에 없다(501). 담당자가 구현하면 이 단계가 다시 돈다.")
+        skip("식사 기록은 이미 만들어져 있으니, 구현 뒤에 다시 돌리면 후기가 붙는다.")
+        return
+
     for item in POSTS:
         history = histories[item["food"]]
 
@@ -381,7 +417,7 @@ def seed_posts(client: TestClient, headers: dict, histories: dict) -> None:
         post_id = history.get("shared_post_id")
 
         if post_id:
-            skip(f"이미 공유한 기록 — #{post_id} {item['title']}")
+            skip(f"이미 공유한 기록 - #{post_id} {item['title']}")
         else:
             response = client.post(
                 "/api/posts",
@@ -450,12 +486,21 @@ def main() -> None:
         seed_posts(client, member, histories)
 
         print("\n[결과]")
-        notices = client.get("/api/notices").json()["items"]
-        page = client.get("/api/posts").json()
+        listed = client.get("/api/notices")
+        posts = client.get("/api/posts")
         stats = client.get("/api/histories/stats", headers=member).json()
 
-        print(f"  공지      {len(notices)} 건 (고정 {sum(n['pinned'] for n in notices)})")
-        print(f"  게시글    {page['total']} 건 (첨부 {sum(p['has_file'] for p in page['items'])})")
+        if not_ready(listed):
+            print("  공지      아직 서버에 없음 (501)")
+        else:
+            notices = listed.json()["items"]
+            print(f"  공지      {len(notices)} 건 (고정 {sum(n['pinned'] for n in notices)})")
+
+        if not_ready(posts):
+            print("  게시글    아직 서버에 없음 (501)")
+        else:
+            page = posts.json()
+            print(f"  게시글    {page['total']} 건 (첨부 {sum(p['has_file'] for p in page['items'])})")
         print(f"  식사 기록 {stats['count']} 건 · 누적 {stats['total_cost']:,}원")
         print(f"\n  로그인    {ADMIN['email']} (관리자) / {MEMBER['email']}")
 
