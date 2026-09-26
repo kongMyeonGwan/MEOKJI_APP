@@ -1,0 +1,19 @@
+# 사람마다 다른 값이 들어가는 설정. application-local.yml.example 을 복사해서 쓴다.
+application-local.yml
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+
+# 후기 첨부파일 (파이썬 쪽 backend/uploads 와 같은 이유로 추적하지 않는다)
+uploads/

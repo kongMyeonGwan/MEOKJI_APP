@@ -1,0 +1,18 @@
+# 로컬 개발용 값. 이 파일을 application-local.yml 로 복사해서 쓴다.
+#
+#   copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
+#
+# application-local.yml 은 .gitignore 에 있어 커밋되지 않는다.
+# 파이썬 쪽 backend/.env 와 같은 값을 넣으면 된다.
+
+spring:
+  datasource:
+    # 네트워크가 바뀌면 이 줄만 고친다. 사외에서는 로컬 Oracle 을 쓴다.
+    #   팀 공용 서버 10.1.54.120 / 개인 PC localhost
+    password: 팀에_문의
+
+app:
+  jwt:
+    # 아무 랜덤 문자열. 다만 HS256 이라 32바이트(영문 32자) 이상이어야 한다 -
+    # 짧으면 서버가 뜨다가 WeakKeyException 으로 죽는다.
+    secret-key: 여기에_32자_이상의_랜덤_문자열

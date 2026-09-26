@@ -18,20 +18,32 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// MyBatis. JPA 를 쓰지 않는 이유는 README 와 docs/PROGRESS.md 참고 -
+	// 이 스키마는 use_yn 소프트 삭제 · 함수 기반 UNIQUE · MERGE 가 기본이라
+	// SQL 을 직접 쓰는 쪽이 맞다.
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
-	compileOnly 'org.projectlombok:lombok'
+
+	// Oracle 21c XE. Thin 드라이버라 Instant Client 를 따로 깔지 않는다.
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc17'
+
+	// JWT. 파이썬 쪽 python-jose 자리다. api 만 컴파일에 쓰고 나머지는 런타임.
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.1'
 	testCompileOnly 'org.projectlombok:lombok'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
