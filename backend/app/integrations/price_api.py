@@ -14,15 +14,6 @@ from app.integrations.ingredient_match import find_codes, is_not_priced
 # 한 곳이 느리다고 레시피 화면 전체가 멈추면 안 된다.
 PRICE_TIMEOUT_SECONDS = 6.0
 
-# 한 재료당 받아올 최대 행 수. 많이 받아도 화면에는 최저/최고 둘만 쓴다.
-KAMIS_ROWS = 100
-
-# 조사일자가 비는 날(주말·공휴일)을 대비해 며칠까지 거슬러 올라가 볼지.
-KAMIS_LOOKBACK_DAYS = 7
-
-# 사용자가 값을 직접 확인할 수 있는 곳. 상품 페이지가 아니라 조사가격 페이지다.
-KAMIS_REFERENCE_URL = "https://www.kamis.or.kr/customer/price/retail/item.do"
-
 # 지원하는 PRICE_PROVIDERS 값. 에러 메시지에 그대로 쓴다.
 SUPPORTED_PROVIDERS = ("kamis",)
 
@@ -137,11 +128,6 @@ def clean_names(ingredients: list[str]) -> list[str]:
             names.append(name)
 
     return names
-
-
-def kamis_link(name: str) -> str:
-    """사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지 주소."""
-    return f"{KAMIS_REFERENCE_URL}?keyword={quote(name)}"
 
 
 # KAMIS — 공공데이터포털 일별 도·소매 가격정보 (진짜 가격)

@@ -23,7 +23,7 @@ export const SAMPLE_POSTS = [
     like_count: 12,
     comment_count: 3,
     created_at: '2026-09-16T10:20:00Z',
-    has_file: true,
+    has_file: false,
   },
   {
     id: 2,
@@ -49,7 +49,7 @@ export const SAMPLE_POSTS = [
     like_count: 9,
     comment_count: 2,
     created_at: '2026-09-14T08:40:00Z',
-    has_file: true,
+    has_file: false,
   },
   {
     id: 4,
