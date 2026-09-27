@@ -74,7 +74,7 @@ python -m scripts.seed_demo
 
 ## 지금 어디까지 왔나
 
-전체 27개 중 **25개**를 옮겼다. (게시판 · 공지 20개는 담당자 몫이라 501 스텁이다.)
+전체 27개 중 **26개**를 옮겼다. (게시판 · 공지 20개는 담당자 몫이라 501 스텁이다.)
 
 | 그룹 | 개수 | 상태 |
 |---|:--:|---|
@@ -88,16 +88,19 @@ python -m scripts.seed_demo
 | games — 플레이 기록 | 1 | ✅ |
 | likes — 찜 목록 · 토글 · 비우기 | 3 | ✅ |
 | 추천 `POST /api/recommendations` | 1 | ✅ 날씨 반영 · 떨이 재료는 아직 빈 목록 |
-| 레시피 `GET /api/recipes/{이름}` | 1 | ⬜ 조리순서 · 분량 환산 · KAMIS 시세가 필요하다 |
+| 레시피 `GET /api/recipes/{이름}` | 1 | ✅ KAMIS 실시세 포함 |
 | **posts 15 · notices 5** | 20 | **🔧 501 스텁 — 담당자 작업 대상** |
 
-남은 것 셋의 크기는 이렇다.
+남은 것 둘의 크기는 이렇다.
 
-    비밀번호 재설정   메일 발송(SMTP) + verification_codes + OTP 재발송 제한
-    레시피            recipes.json 에서 꺼내기 + 조리순서(steps.py 1,004줄)
-                      + 분량 환산(portion.py · unit_convert.py) + KAMIS 시세
+    비밀번호 재설정   메일 발송(SMTP) + verification_codes 표 + OTP 재발송 60초 제한
+                      (엔드포인트 3개)
     떨이 재료         KAMIS 품목 116개를 훑어 일주일 전과 비교 (bargain_service.py)
                       — 추천의 use_bargains 를 켜도 지금은 빈 목록이다
+
+레시피의 조리 순서를 만드는 코드(steps.py 1,004줄)는 옮기지 않았다.
+recipes.json 에 순서가 이미 들어 있고, 그 파일을 만들 때 쓴 코드라 조회에는
+필요하지 않다.
 
 ---
 
@@ -233,18 +236,49 @@ backend-spring/
     │   │   ├── like/               찜한 레시피
     │   │   ├── weather/            날씨 (mock / openweather) + 안내 문구
     │   │   ├── recommend/          음식 추천 (카탈로그 점수)
+    │   │   ├── recipe/             레시피 (recipes.json) + 응답 DTO
+    │   │   ├── price/              KAMIS 시세 · 재료 이름 매칭 · 단위 환산
     │   │   ├── game/               미니게임 플레이 기록
     │   │   ├── post/               🔧 게시판 — 501 스텁
     │   │   └── notice/             🔧 공지 — 501 스텁
     │   └── resources/
     │       ├── application.yml
     │       ├── application-local.yml.example
-    │       ├── data/               catalog.json · recipes.json · regions.json (파이썬에서 복사)
+    │       ├── data/               파이썬에서 내보낸 표 5개 (아래 설명)
     │       └── mapper/             User · History · Ban · Like · Game
     └── test/
-        ├── java/com/meokji/api/    정답지 대조 테스트 52건
+        ├── java/com/meokji/api/    정답지 대조 테스트 73건
         └── resources/fixtures/     파이썬 응답 정답지 38개
 ```
 
-`data/` 세 파일은 파이썬 쪽에서 **그대로 복사**했다. 손으로 옮기면 좌표나 분량이
-어긋나서 다른 결과가 나온다. 지금은 두 벌이지만 `backend/` 를 지울 때 한 벌이 된다.
+---
+
+## `data/` 는 파이썬에서 내보낸 것이다
+
+| 파일 | 무엇이 | 어디서 |
+|---|---|---|
+| `catalog.json` | 음식 100종 · 카테고리 · 룰렛 · 게임 | 그대로 복사 |
+| `recipes.json` | 손으로 쓴 레시피 100종 | 그대로 복사 |
+| `regions.json` | 시·도 17개와 시·군·구 좌표 | 그대로 복사 |
+| `ingredient-rules.json` | 세는 단위 무게 52 · 단위별 무게 10 · 대체재료 12 · 2인분 분량 107 | `portion.py` · `ai_api.py` 에서 내보냄 |
+| `kamis-items.json` | 품목코드 116 · 손질 표현 34 · 별칭 26 · 가공식품 27 | `ingredient_match.py` 에서 내보냄 |
+
+**손으로 옮기지 않았다.** 52개 · 116개를 베끼면 한두 개는 틀리고, 틀려도 티가
+안 난다 — 좌표가 어긋나면 다른 동네 날씨가 나오고, 분량이 어긋나면 가격이
+조용히 달라진다.
+
+고칠 일이 있으면 **파이썬 쪽을 고친 뒤 다시 내보낸다.** 각 파일 맨 위에 그렇게
+적어뒀다. `backend/` 를 지울 때 이 파일들이 원본이 된다.
+
+---
+
+## 옮기다 걸린 것들 (다음 사람을 위해)
+
+| 무엇 | 어떻게 됐나 |
+|---|---|
+| Boot 4 는 **Jackson 3** | 패키지가 `com.fasterxml.jackson` 이 아니라 `tools.jackson` 이다 |
+| `WRITE_DATES_AS_TIMESTAMPS` | Jackson 3 에서 `DateTimeFeature` 로 옮겼다. `spring.jackson.serialization` 아래에 적으면 **서버가 뜨지 않는다** |
+| XML 주석의 `--` | 매퍼 XML 주석에 `-----` 를 그으면 `SAXParseException` 으로 매퍼를 못 읽는다 |
+| 405 가 500 으로 | `ResponseStatusException` 만 잡으면 `HttpRequestMethodNotSupportedException`(ServletException 계열)이 빠져나간다. `ResponseEntityExceptionHandler` 를 상속해야 한다 |
+| 파이썬 `round()` | **짝수로 맞춤**이다. `round(2.5)` 가 2 다. `Math.round` 는 3 이라 가격이 1원씩 어긋난다 — `common/Numbers` 를 쓴다 |
+| `grams` 의 정수/소수 | 파이썬은 `quantity` 가 정수면 `grams` 도 정수로 내보낸다 (`80` vs `625.0`) |
