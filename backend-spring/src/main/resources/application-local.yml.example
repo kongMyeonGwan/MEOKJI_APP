@@ -11,6 +11,13 @@ spring:
     #   팀 공용 서버 10.1.54.120 / 개인 PC localhost
     password: 팀에_문의
 
+  # 인증번호 메일을 진짜로 보낼 때만 채운다. 비워두면 콘솔에 찍힌다
+  # (app.mail.provider 도 smtp 로 바꿔야 한다).
+  #mail:
+  #  host: smtp.gmail.com
+  #  username: 보내는_계정
+  #  password: 앱_비밀번호
+
 app:
   jwt:
     # 아무 랜덤 문자열. 다만 HS256 이라 32바이트(영문 32자) 이상이어야 한다 -
@@ -22,3 +29,8 @@ app:
     # Encoding 값을 넣으면 인증에 실패한다.
     # 없어도 서버는 뜬다 - 레시피의 가격만 비어 있다.
     service-key: 공공데이터포털에서_발급
+
+  mail:
+    # mock : 인증번호를 콘솔에 찍는다. 메일 서버 없이 재설정 화면을 끝까지 볼 수 있다
+    # smtp : 진짜로 보낸다. 위 spring.mail.* 을 채워야 한다
+    provider: mock

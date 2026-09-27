@@ -74,33 +74,77 @@ python -m scripts.seed_demo
 
 ## 지금 어디까지 왔나
 
-전체 27개 중 **26개**를 옮겼다. (게시판 · 공지 20개는 담당자 몫이라 501 스텁이다.)
+전체 27개를 **다 옮겼다.** 게시판 · 공지 20개만 담당자 몫이라 501 스텁이다.
 
 | 그룹 | 개수 | 상태 |
 |---|:--:|---|
 | health | 1 | ✅ |
 | auth — 가입 · 로그인 · 토큰 확인 | 3 | ✅ |
-| auth — 비밀번호 재설정 | 3 | ⬜ 메일 발송 · `verification_codes` 표가 필요하다 |
+| auth — 비밀번호 재설정 | 3 | ✅ 메일은 기본이 콘솔 출력(mock) |
 | users — 내 정보 · 수정 · 비밀번호 · 알림 · 탈퇴 | 5 | ✅ |
 | bans | 3 | ✅ |
 | histories — 목록 · 요약 · 확정 · 삭제 | 4 | ✅ |
 | catalog — 고정 목록 · 지역 | 2 | ✅ |
 | games — 플레이 기록 | 1 | ✅ |
 | likes — 찜 목록 · 토글 · 비우기 | 3 | ✅ |
-| 추천 `POST /api/recommendations` | 1 | ✅ 날씨 반영 · 떨이 재료는 아직 빈 목록 |
+| 추천 `POST /api/recommendations` | 1 | ✅ 날씨 · 떨이 재료 반영 |
 | 레시피 `GET /api/recipes/{이름}` | 1 | ✅ KAMIS 실시세 포함 |
 | **posts 15 · notices 5** | 20 | **🔧 501 스텁 — 담당자 작업 대상** |
-
-남은 것 둘의 크기는 이렇다.
-
-    비밀번호 재설정   메일 발송(SMTP) + verification_codes 표 + OTP 재발송 60초 제한
-                      (엔드포인트 3개)
-    떨이 재료         KAMIS 품목 116개를 훑어 일주일 전과 비교 (bargain_service.py)
-                      — 추천의 use_bargains 를 켜도 지금은 빈 목록이다
 
 레시피의 조리 순서를 만드는 코드(steps.py 1,004줄)는 옮기지 않았다.
 recipes.json 에 순서가 이미 들어 있고, 그 파일을 만들 때 쓴 코드라 조회에는
 필요하지 않다.
+
+### 비밀번호 재설정을 쓰려면
+
+기본값(`app.mail.provider=mock`)에서는 **인증번호가 콘솔에 찍힌다.** 메일 서버
+없이 화면을 끝까지 볼 수 있다.
+
+```
+===================== [MOCK EMAIL] =====================
+ 받는 사람 : minji@example.com
+ 인증번호  : 481027
+ 유효시간  : 5분
+```
+
+진짜로 보내려면 `application-local.yml` 에 두 가지를 넣는다.
+
+```yaml
+spring:
+  mail:
+    host: smtp.gmail.com
+    username: 보내는_계정
+    password: 앱_비밀번호
+app:
+  mail:
+    provider: smtp
+```
+
+`spring.mail.host` 를 비워두면 스프링이 메일 빈을 아예 만들지 않는다. 그래도
+서버는 정상으로 뜬다 — 설정이 없으면 콘솔 출력으로 되돌아간다.
+
+### 떨이 재료(`use_bargains`)를 쓰려면
+
+대시보드의 「지금 싼 재료로」 카드만 이걸 켜서 부른다. 켜면 KAMIS 품목
+**101개**(코드가 겹치는 이름을 줄인 수)를 훑어 일주일 전과 견주고, 5% 넘게
+내린 것 8개를 골라 응답의 `bargains` 에 싣는다.
+
+훑기는 1분 가까이 걸려서 **서버가 뜰 때 미리 한 번 돌린다.**
+
+```
+gradlew bootRun               떨이 재료를 안 훑는다 (기본값)
+set WARM_BARGAINS=true        훑는다. 첫 화면에서 칩이 바로 보인다
+gradlew bootRun
+```
+
+기본이 꺼짐인 것은 테스트 때문이다 — 켜두면 `gradlew test` 를 돌릴 때마다 바깥
+API 를 101번 두드린다. 결과는 `data/bargains.json` 에 날짜와 함께 남아서, 서버를
+다시 켜도 그날 안에는 다시 훑지 않는다(`.gitignore` 에 있다).
+
+**고른 메뉴에는 영향을 주지 않는다.** 원래는 이 목록을 AI 프롬프트에 넣어 "이
+재료를 쓰는 메뉴" 를 고르게 했는데, STEP 43 에서 AI 호출을 걷어내며 그 길이
+끊겼다. 파이썬도 지금 같은 상태다 — `catalog_recommend_foods` 가
+`context["bargains"]` 를 읽지 않는다. 화면은 이 값으로 칩만 그린다.
 
 ---
 
@@ -218,7 +262,7 @@ DB 에는 UTC 만 들어간다. 시각을 응답에 넣을 때는 `common/Times.
 
 ```
 backend-spring/
-├── build.gradle                    Boot 4.0.8 · Java 17 · MyBatis · ojdbc17 · jjwt
+├── build.gradle                    Boot 4.0.8 · Java 17 · MyBatis · ojdbc17 · jjwt · mail
 ├── gradlew(.bat)                   Gradle 을 안 깔아도 빌드된다
 └── src/
     ├── main/
@@ -227,7 +271,7 @@ backend-spring/
     │   │   ├── config/             AppProperties · SecurityConfig · WebConfig
     │   │   ├── security/           JwtProvider · @LoginUser · 인자 리졸버
     │   │   ├── health/             GET /api/health
-    │   │   ├── auth/               가입 · 로그인 · 토큰 확인
+    │   │   ├── auth/               가입 · 로그인 · 토큰 확인 · 비밀번호 재설정
     │   │   ├── user/               내 정보 · 알림 · 탈퇴
     │   │   ├── ban/                못 먹는 재료
     │   │   ├── history/            식사 기록
@@ -237,7 +281,7 @@ backend-spring/
     │   │   ├── weather/            날씨 (mock / openweather) + 안내 문구
     │   │   ├── recommend/          음식 추천 (카탈로그 점수)
     │   │   ├── recipe/             레시피 (recipes.json) + 응답 DTO
-    │   │   ├── price/              KAMIS 시세 · 재료 이름 매칭 · 단위 환산
+    │   │   ├── price/              KAMIS 시세 · 재료 이름 매칭 · 단위 환산 · 떨이 재료
     │   │   ├── game/               미니게임 플레이 기록
     │   │   ├── post/               🔧 게시판 — 501 스텁
     │   │   └── notice/             🔧 공지 — 501 스텁
@@ -247,7 +291,7 @@ backend-spring/
     │       ├── data/               파이썬에서 내보낸 표 5개 (아래 설명)
     │       └── mapper/             User · History · Ban · Like · Game
     └── test/
-        ├── java/com/meokji/api/    정답지 대조 테스트 73건
+        ├── java/com/meokji/api/    테스트 85건 (정답지 대조 + 재설정 · 떨이 재료)
         └── resources/fixtures/     파이썬 응답 정답지 38개
 ```
 

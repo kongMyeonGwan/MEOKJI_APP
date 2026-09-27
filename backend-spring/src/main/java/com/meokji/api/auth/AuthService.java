@@ -1,7 +1,6 @@
 package com.meokji.api.auth;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,12 +23,6 @@ import com.meokji.api.user.UserMapper;
  */
 @Service
 public class AuthService {
-
-    /**
-     * bcrypt 알고리즘 자체의 제약. 72바이트를 넘는 입력은 라이브러리가 거부한다.
-     * UTF-8 에서 한글 1자 = 3바이트이므로 한글 비밀번호는 24자가 상한이다.
-     */
-    private static final int BCRYPT_MAX_BYTES = 72;
 
     /**
      * 로그인 실패 문구.
@@ -62,7 +55,7 @@ public class AuthService {
     public User register(RegisterRequest request) {
         String nickname = request.trimmedNickname();
 
-        checkPasswordBytes(request.password());
+        Passwords.checkBytes(request.password());
 
         // 1차: 미리 조회한다. 어느 쪽이 중복인지 사용자에게 정확히 알려주기 위함이다.
         User existing = users.findActiveByEmailOrNickname(request.email(), nickname);
@@ -177,12 +170,10 @@ public class AuthService {
     /**
      * 평문과 저장된 해시를 대조한다.
      *
-     * <p>72바이트를 넘는 입력은 대조하지 않고 실패로 본다. bcrypt 구현마다 넘는
-     * 입력을 자르거나 거부하는데, 자르는 쪽이면 서로 다른 비밀번호가 같은 것으로
-     * 통해버린다.
+     * <p>72바이트를 넘는 입력은 대조하지 않고 실패로 본다({@link Passwords}).
      */
     private boolean matches(String rawPassword, String passwordHash) {
-        if (tooLong(rawPassword)) {
+        if (Passwords.tooLong(rawPassword)) {
             return false;
         }
 
@@ -192,19 +183,5 @@ public class AuthService {
             // DB 의 해시가 손상된 경우 등. 인증 실패로 처리한다.
             return false;
         }
-    }
-
-    /** 가입 · 비밀번호 변경에서 쓴다. 글자 수가 아니라 바이트로 잰다. */
-    private void checkPasswordBytes(String rawPassword) {
-        if (tooLong(rawPassword)) {
-            throw ApiException.unprocessable(
-                    "비밀번호는 UTF-8 기준 " + BCRYPT_MAX_BYTES
-                    + "바이트 이하여야 합니다 (한글은 1자당 3바이트)");
-        }
-    }
-
-    private static boolean tooLong(String rawPassword) {
-        return rawPassword != null
-                && rawPassword.getBytes(StandardCharsets.UTF_8).length > BCRYPT_MAX_BYTES;
     }
 }

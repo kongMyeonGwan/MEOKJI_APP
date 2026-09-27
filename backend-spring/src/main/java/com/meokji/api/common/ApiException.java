@@ -17,9 +17,22 @@ public class ApiException extends RuntimeException {
 
     private final HttpStatus status;
 
+    /**
+     * 429 에 붙일 {@code Retry-After} 값(초). 그 외에는 null 이다.
+     *
+     * <p>문구에도 남은 초가 적히지만 화면이 문구를 파싱하게 두면 안 된다. 표준
+     * 헤더로 같이 내보내서 화면이 숫자만 읽고 셀 수 있게 한다.
+     */
+    private final Integer retryAfterSeconds;
+
     public ApiException(HttpStatus status, String detail) {
+        this(status, detail, null);
+    }
+
+    public ApiException(HttpStatus status, String detail, Integer retryAfterSeconds) {
         super(detail);
         this.status = status;
+        this.retryAfterSeconds = retryAfterSeconds;
     }
 
     public HttpStatus getStatus() {
@@ -28,6 +41,10 @@ public class ApiException extends RuntimeException {
 
     public String getDetail() {
         return getMessage();
+    }
+
+    public Integer getRetryAfterSeconds() {
+        return retryAfterSeconds;
     }
 
     // 자주 쓰는 것만 짧게 만들어 둔다. 라우터에서 읽기 쉽게 하려는 것이다.
@@ -58,6 +75,16 @@ public class ApiException extends RuntimeException {
     /** 잠긴 계정. */
     public static ApiException locked(String detail) {
         return new ApiException(HttpStatus.LOCKED, detail);
+    }
+
+    /** 너무 잦은 요청. 인증번호 재발송 제한과 인증 시도 횟수 초과가 쓴다. */
+    public static ApiException tooManyRequests(String detail) {
+        return new ApiException(HttpStatus.TOO_MANY_REQUESTS, detail);
+    }
+
+    /** 위와 같되 {@code Retry-After} 헤더까지 붙인다. */
+    public static ApiException tooManyRequests(String detail, int retryAfterSeconds) {
+        return new ApiException(HttpStatus.TOO_MANY_REQUESTS, detail, retryAfterSeconds);
     }
 
     /**

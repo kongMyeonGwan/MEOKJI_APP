@@ -9,10 +9,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.auth.dto.LoginRequest;
+import com.meokji.api.auth.dto.PasswordResetChangeRequest;
+import com.meokji.api.auth.dto.PasswordResetSendRequest;
+import com.meokji.api.auth.dto.PasswordResetVerifyRequest;
 import com.meokji.api.auth.dto.RegisterRequest;
 import com.meokji.api.auth.dto.TokenResponse;
 import com.meokji.api.auth.dto.UserResponse;
 import com.meokji.api.common.ApiException;
+import com.meokji.api.common.MessageResponse;
 import com.meokji.api.security.JwtProvider;
 import com.meokji.api.security.LoginUser;
 import com.meokji.api.user.User;
@@ -20,21 +24,26 @@ import com.meokji.api.user.User;
 import jakarta.validation.Valid;
 
 /**
- * 회원가입 · 로그인 · 토큰 확인.
+ * 회원가입 · 로그인 · 토큰 확인 · 비밀번호 재설정.
  *
- * <p>파이썬 쪽 {@code app/routers/auth.py} 자리다. 비밀번호 재설정
- * (password-reset/{send,verify,change}) 은 아직 옮기지 않았다 - 메일 발송과
- * verification_codes 표가 필요해서 따로 간다.
+ * <p>파이썬 쪽 {@code app/routers/auth.py} 자리다.
+ *
+ * <p>여기 있는 주소는 모두 <b>로그인 없이</b> 부른다. 비밀번호를 잊은 사람은
+ * 토큰이 없기 때문이다. 로그인한 채로 비밀번호를 바꾸는 길은
+ * {@code POST /api/users/me/password} 쪽이다.
  */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordReset;
     private final JwtProvider jwt;
 
-    public AuthController(AuthService authService, JwtProvider jwt) {
+    public AuthController(
+            AuthService authService, PasswordResetService passwordReset, JwtProvider jwt) {
         this.authService = authService;
+        this.passwordReset = passwordReset;
         this.jwt = jwt;
     }
 
@@ -77,5 +86,43 @@ public class AuthController {
         }
 
         return UserResponse.from(me);
+    }
+
+    // ------------------------------------------------- 비밀번호 재설정 (STEP 8)
+
+    /**
+     * 1단계 — 이메일로 6자리 인증번호를 보낸다.
+     *
+     * <p>가입되지 않은 이메일이면 404 로 알려준다(STEP 32). 계정 열거를 막는
+     * 관례와는 어긋나지만, 오타를 친 사람이 오지 않는 메일을 5분 기다리게 두는
+     * 쪽이 더 나쁘다고 판단했다. 방금 보냈으면 429 와 {@code Retry-After} 가 나간다.
+     */
+    @PostMapping("/password-reset/send")
+    public MessageResponse passwordResetSend(
+            @Valid @RequestBody PasswordResetSendRequest request) {
+
+        passwordReset.send(request.email());
+
+        return new MessageResponse("입력하신 이메일로 인증번호를 보냈습니다. 5분 안에 입력해주세요.");
+    }
+
+    /** 2단계 — 인증번호 확인. 5회까지 틀릴 수 있고 넘으면 429 다. */
+    @PostMapping("/password-reset/verify")
+    public MessageResponse passwordResetVerify(
+            @Valid @RequestBody PasswordResetVerifyRequest request) {
+
+        passwordReset.verify(request.email(), request.code());
+
+        return new MessageResponse("인증되었습니다. 새 비밀번호를 입력해주세요.");
+    }
+
+    /** 3단계 — 비밀번호를 바꾸고 계정 잠금을 함께 푼다. */
+    @PostMapping("/password-reset/change")
+    public MessageResponse passwordResetChange(
+            @Valid @RequestBody PasswordResetChangeRequest request) {
+
+        passwordReset.change(request.email(), request.code(), request.newPassword());
+
+        return new MessageResponse("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
     }
 }

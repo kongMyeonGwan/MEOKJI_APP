@@ -56,7 +56,15 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     /** 우리가 직접 낸 오류. 상태 코드와 문구를 그대로 쓴다. */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<Object> handleApiException(ApiException exc) {
-        return ResponseEntity.status(exc.getStatus()).body(detail(exc.getDetail()));
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(exc.getStatus());
+
+        // 429 에만 붙는다. 화면이 문구에서 숫자를 뽑아내지 않고 이 헤더를 읽는다.
+        if (exc.getRetryAfterSeconds() != null) {
+            response = response.header(
+                    HttpHeaders.RETRY_AFTER, String.valueOf(exc.getRetryAfterSeconds()));
+        }
+
+        return response.body(detail(exc.getDetail()));
     }
 
     /**

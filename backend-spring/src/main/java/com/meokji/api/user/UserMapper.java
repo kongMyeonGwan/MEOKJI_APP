@@ -67,6 +67,17 @@ public interface UserMapper {
     /** 비밀번호만 바꾼다. */
     void updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
 
+    /**
+     * 비밀번호를 바꾸면서 계정 잠금도 함께 푼다. 비밀번호 재설정이 쓴다.
+     *
+     * <p>{@link #updatePassword} 와 나누어 둔 이유는, 내 정보에서 비밀번호를 바꾸는
+     * 길(로그인한 상태)로는 잠금이 풀려서는 안 되기 때문이다. 잠긴 계정은 애초에
+     * 로그인이 안 되므로 그 길로 들어올 수 없지만, 한 메서드로 합쳐두면 나중에
+     * 누군가 다른 데서 불러 잠금이 조용히 풀릴 수 있다.
+     */
+    void resetPasswordAndUnlock(
+            @Param("id") Long id, @Param("passwordHash") String passwordHash);
+
     /** 회원 탈퇴. 행을 지우지 않고 use_yn='N' 으로 바꾼다. */
     void withdraw(@Param("id") Long id);
 

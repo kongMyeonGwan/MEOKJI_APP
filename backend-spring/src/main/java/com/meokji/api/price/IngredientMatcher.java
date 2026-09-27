@@ -134,6 +134,23 @@ public class IngredientMatcher {
         return itemCodes.size();
     }
 
+    /**
+     * 코드가 겹치는 이름을 하나로 줄인 품목 이름 목록.
+     *
+     * <p>시세를 통째로 훑을 때 쓴다({@link BargainService}). 표에는 같은 코드를
+     * 가리키는 이름이 여럿이라("대파" · "쪽파" 가 같은 코드) 이름마다 물어보면
+     * 같은 응답을 두 번 받는다 - 116개가 101개로 줄어든다.
+     *
+     * <p>먼저 나온 이름을 대표로 쓴다. 화면의 칩에 그대로 적히는 이름이다.
+     */
+    public List<String> uniqueItemNames() {
+        Map<Codes, String> first = new LinkedHashMap<>();
+
+        itemCodes.forEach((name, codes) -> first.putIfAbsent(codes, name));
+
+        return List.copyOf(first.values());
+    }
+
     /** 비교하기 좋은 형태로 다듬는다. "다진 마늘 (국산)" -> "마늘" */
     String normalize(String rawName) {
         String text = stripParentheses(rawName == null ? "" : rawName).trim();

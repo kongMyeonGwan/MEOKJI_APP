@@ -118,6 +118,20 @@
          WHERE id = #{id}
     </update>
 
+    <!--
+      잠금을 푸는 세 칸(login_fail_count · is_locked · locked_at)을 비밀번호와 함께
+      되돌린다. STEP 7 에서 20회 틀려 잠긴 계정이 다시 열리는 유일한 길이다.
+    -->
+    <update id="resetPasswordAndUnlock">
+        UPDATE users
+           SET password_hash = #{passwordHash},
+               login_fail_count = 0,
+               is_locked = 0,
+               locked_at = NULL,
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
     <update id="withdraw">
         UPDATE users
            SET use_yn = 'N',

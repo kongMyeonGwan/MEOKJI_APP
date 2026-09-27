@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.meokji.api.ban.BanMapper;
 import com.meokji.api.catalog.FoodScorer;
+import com.meokji.api.common.Numbers;
+import com.meokji.api.price.BargainService;
 import com.meokji.api.recommend.dto.BargainItem;
 import com.meokji.api.recommend.dto.FoodItem;
 import com.meokji.api.recommend.dto.RecommendRequest;
@@ -40,14 +42,17 @@ public class RecommendService {
     private final FoodScorer scorer;
     private final WeatherService weatherService;
     private final BanMapper bans;
+    private final BargainService bargainService;
 
     public RecommendService(
             FoodScorer scorer,
             WeatherService weatherService,
-            BanMapper bans) {
+            BanMapper bans,
+            BargainService bargainService) {
         this.scorer = scorer;
         this.weatherService = weatherService;
         this.bans = bans;
+        this.bargainService = bargainService;
     }
 
     /** 조건에 맞는 후보를 만들어 돌려준다. 로그인하지 않았으면 Ban 이 비어 있다. */
@@ -86,13 +91,17 @@ public class RecommendService {
                     request.excludeOrEmpty());
         }
 
-        // 떨이 재료는 아직 옮기지 않았다. KAMIS 품목 116개를 훑어 일주일 전과
-        // 비교하는 일이라 시세 조회를 옮긴 뒤에 붙인다. use_bargains 를 켜도
-        // 빈 목록이 온다 - 화면은 빈 목록을 이미 견딘다.
-        List<BargainItem> bargains = List.of();
+        // 요즘 값이 내린 재료. 대시보드의 「지금 싼 재료로」 카드만 켜서 보낸다.
+        //
+        // 고른 메뉴에는 영향을 주지 않는다. 원래는 이 목록을 AI 프롬프트에 넣어
+        // "이 재료를 쓰는 메뉴" 를 고르게 했는데, STEP 43 에서 AI 호출을 걷어내며
+        // 그 길이 끊겼다. 파이썬도 지금 같은 상태다 - catalog_recommend_foods 가
+        // context["bargains"] 를 읽지 않는다. 화면은 이 값으로 칩만 그린다.
+        List<BargainItem> bargains =
+                request.bargainsWanted() ? bargainService.current() : List.of();
 
         return new RecommendResponse(
-                describe(request, weather, allergies.size() + dislikes.size()),
+                describe(request, weather, bargains, allergies.size() + dislikes.size()),
                 items,
                 weather,
                 bargains);
@@ -137,13 +146,32 @@ public class RecommendService {
      * 읽힌다 - 특히 날씨를 반영했을 때 "왜 국물만 나오지" 가 된다.
      */
     private static String describe(
-            RecommendRequest request, WeatherResponse weather, int banCount) {
+            RecommendRequest request,
+            WeatherResponse weather,
+            List<BargainItem> bargains,
+            int banCount) {
 
         List<String> parts = new ArrayList<>();
 
         if (weather != null) {
             parts.add(weather.city() + " · " + weather.conditionText() + " "
                     + weather.temp() + "°");
+        }
+
+        if (!bargains.isEmpty()) {
+            // "시세 대파 12%↓ 외 3건" - 무슨 근거로 골랐는지 한눈에 보이게 한다.
+            BargainItem first = bargains.get(0);
+
+            // Math.round 가 아니라 Numbers.round 다. 파이썬의 f"{...:.0f}" 는
+            // 짝수로 맞춤이라 12.5 가 12 가 된다 - Math.round 는 13 이다.
+            String text = first.name() + " "
+                    + Numbers.round(Math.abs(first.percent())) + "%↓";
+
+            if (bargains.size() > 1) {
+                text += " 외 " + (bargains.size() - 1) + "건";
+            }
+
+            parts.add("시세 " + text);
         }
 
         if (request.category() != null && !request.category().isBlank()) {

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.meokji.api.auth.Passwords;
 import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Kst;
 import com.meokji.api.common.Times;
@@ -155,6 +156,10 @@ public class UserService {
         if (request.currentPassword().equals(request.newPassword())) {
             throw ApiException.badRequest("지금 쓰는 비밀번호와 다른 값을 입력해주세요.");
         }
+
+        // DTO 의 @Size(max = 72) 는 글자 수라서 한글 비밀번호를 못 잡는다. 25자만
+        // 넘어도 75바이트가 되어 bcrypt 가 거부하고, 그대로 두면 500 이 나간다.
+        Passwords.checkBytes(request.newPassword());
 
         users.updatePassword(user.getId(), passwordEncoder.encode(request.newPassword()));
     }

@@ -38,6 +38,87 @@ public class AppProperties {
 
     private Price price = new Price();
 
+    private Otp otp = new Otp();
+
+    private Mail mail = new Mail();
+
+    /**
+     * 이메일 인증번호 (STEP 8 · 33).
+     *
+     * <p>파이썬 쪽 {@code OTP_*} 설정과 같은 값이어야 한다. 두 서버가 같은
+     * {@code verification_codes} 표를 보기 때문에, 만료 시간이 서로 다르면 한쪽에서
+     * 받은 코드가 다른 쪽에서 조용히 만료된다.
+     */
+    public static class Otp {
+
+        /** 발급한 코드가 살아 있는 시간(분). 메일 본문에도 이 값이 적힌다. */
+        private int expireMinutes = 5;
+
+        /** 한 코드에 몇 번까지 틀려볼 수 있는지. 넘으면 429 로 끊고 재발급을 시킨다. */
+        private int maxAttempt = 5;
+
+        /** 재발송 제한(초). 1분에 한 번만 보낸다 (STEP 33). */
+        private int resendCooldownSeconds = 60;
+
+        public int getExpireMinutes() {
+            return expireMinutes;
+        }
+
+        public void setExpireMinutes(int expireMinutes) {
+            this.expireMinutes = expireMinutes;
+        }
+
+        public int getMaxAttempt() {
+            return maxAttempt;
+        }
+
+        public void setMaxAttempt(int maxAttempt) {
+            this.maxAttempt = maxAttempt;
+        }
+
+        public int getResendCooldownSeconds() {
+            return resendCooldownSeconds;
+        }
+
+        public void setResendCooldownSeconds(int resendCooldownSeconds) {
+            this.resendCooldownSeconds = resendCooldownSeconds;
+        }
+    }
+
+    /**
+     * 메일 발송.
+     *
+     * <p>접속 정보(호스트 · 계정 · 비밀번호)는 여기 두지 않고 스프링 표준인
+     * {@code spring.mail.*} 을 쓴다. 우리가 정하는 것은 "보낼지 말지"와 발신자뿐이다.
+     */
+    public static class Mail {
+
+        /**
+         * mock : 콘솔에 인증번호를 찍는다. 메일 서버 없이 화면을 끝까지 볼 수 있다
+         * smtp : 진짜로 보낸다. {@code spring.mail.host} 등이 채워져 있어야 한다
+         */
+        private String provider = "mock";
+
+        /** 보내는 사람. 비워두면 {@code spring.mail.username} 을 쓴다. */
+        private String from = "";
+
+        public String getProvider() {
+            return provider;
+        }
+
+        public void setProvider(String provider) {
+            this.provider = provider;
+        }
+
+        public String getFrom() {
+            return from;
+        }
+
+        public void setFrom(String from) {
+            this.from = from;
+        }
+    }
+
     /** 재료 시세 연동 (KAMIS). */
     public static class Price {
 
@@ -50,6 +131,23 @@ public class AppProperties {
 
         /** 공공데이터포털 일반 인증키의 Decoding 값. */
         private String serviceKey = "";
+
+        /**
+         * 서버가 뜰 때 떨이 재료를 미리 훑을지.
+         *
+         * <p>기본값이 꺼짐인 것은 테스트 때문이다. 켜두면 {@code gradlew test} 를
+         * 돌릴 때마다 바깥 API 를 101번 두드린다. 실제로 띄울 때만 켠다.
+         */
+        private boolean warmBargains = false;
+
+        /**
+         * 훑은 결과를 남겨둘 파일. 실행 위치 기준 상대 경로다.
+         *
+         * <p>{@code resources/data} 가 아니라 바깥에 둔다 — 그쪽은 파이썬에서
+         * 내보낸 <b>고정된 표</b>가 있는 자리이고, 이 파일은 날마다 바뀌는 결과라
+         * 성격이 다르다. {@code .gitignore} 에도 넣어뒀다.
+         */
+        private String bargainFile = "data/bargains.json";
 
         public String getProviders() {
             return providers;
@@ -65,6 +163,22 @@ public class AppProperties {
 
         public void setServiceKey(String serviceKey) {
             this.serviceKey = serviceKey;
+        }
+
+        public boolean isWarmBargains() {
+            return warmBargains;
+        }
+
+        public void setWarmBargains(boolean warmBargains) {
+            this.warmBargains = warmBargains;
+        }
+
+        public String getBargainFile() {
+            return bargainFile;
+        }
+
+        public void setBargainFile(String bargainFile) {
+            this.bargainFile = bargainFile;
         }
 
         /** PRICE_PROVIDERS 를 리스트로. 앞에서부터 시도하다가 값이 나오면 멈춘다. */
@@ -222,5 +336,21 @@ public class AppProperties {
 
     public void setPrice(Price price) {
         this.price = price;
+    }
+
+    public Otp getOtp() {
+        return otp;
+    }
+
+    public void setOtp(Otp otp) {
+        this.otp = otp;
+    }
+
+    public Mail getMail() {
+        return mail;
+    }
+
+    public void setMail(Mail mail) {
+        this.mail = mail;
     }
 }

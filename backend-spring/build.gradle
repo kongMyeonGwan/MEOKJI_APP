@@ -22,6 +22,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
+	// 비밀번호 재설정 인증번호 메일. app.mail.provider=mock 이면 콘솔에 찍고
+	// 이 라이브러리를 쓰지 않는다 - 메일 서버 없이도 서버가 뜨고 화면이 돈다.
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 	// MyBatis. JPA 를 쓰지 않는 이유는 README 와 docs/PROGRESS.md 참고 -
 	// 이 스키마는 use_yn 소프트 삭제 · 함수 기반 UNIQUE · MERGE 가 기본이라
 	// SQL 을 직접 쓰는 쪽이 맞다.
@@ -48,4 +52,8 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+
+	// 서버가 뜰 때 KAMIS 품목 101개를 훑는 동작을 테스트에서는 끈다.
+	// 켜두면 gradlew test 를 돌릴 때마다 바깥 API 를 100번 넘게 두드린다.
+	environment 'WARM_BARGAINS', 'false'
 }
