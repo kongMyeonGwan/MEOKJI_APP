@@ -47,6 +47,22 @@
 | 인증 | JWT Access Token (Refresh Token 미사용) |
 | 비밀번호 | bcrypt |
 
+> ### 서버를 스프링부트로 옮기는 중이다
+>
+> 학원이 서버를 스프링부트로 쓰기로 바뀌어서 `backend-spring/` 을 따로 만들어
+> 옮기고 있다. **이 README 가 설명하는 `backend/`(FastAPI)는 그대로 돌아간다** —
+> 포팅이 끝나고 프론트가 스프링으로 붙는 것을 확인한 뒤에 정리한다.
+>
+> | 서버 | 포트 | 상태 |
+> |---|---|---|
+> | `backend/` FastAPI | 8000 | 돌아간다. 이 문서가 설명하는 것 |
+> | `backend-spring/` Spring Boot 4 + MyBatis | 8080 | 27개 중 26개 이식 · 테스트 73건 |
+>
+> 브랜치는 `feature/spring-boot` 이고 `develop` 에는 합치지 않았다.
+> 돌리는 법과 담당자용 안내는 [backend-spring/README.md](backend-spring/README.md),
+> 왜 그렇게 옮겼는지는 [docs/PROGRESS.md](docs/PROGRESS.md) 의
+> 「서버를 스프링부트로 옮기는 중」 절에 있다.
+
 ---
 
 ## 빠른 시작
@@ -144,6 +160,7 @@ npm run dev
 
 ```
 MEOKJI_APP/
+├── backend-spring/            Spring Boot 이식 (진행 중 — 위 안내 참고)
 ├── db/                        Oracle DDL
 │   ├── 00_create_user_local.sql   로컬 Oracle 계정 생성 (SYS로 실행)
 │   ├── 00_drop_all.sql
