@@ -86,6 +86,15 @@ app:
     default-lat: ${DEFAULT_WEATHER_LAT:37.5711}
     default-lon: ${DEFAULT_WEATHER_LON:126.9885}
 
+  price:
+    # 지금 쓸 수 있는 값은 kamis 하나뿐이다. 값을 지어내던 mock 은 없앴다 -
+    # 진짜 조사가격과 화면에서 구분되지 않은 채 합계까지 계산됐다.
+    providers: ${PRICE_PROVIDERS:kamis}
+
+    # 공공데이터포털 마이페이지 > 일반 인증키의 Decoding 값.
+    # Encoding 값을 넣으면 인증에 실패한다.
+    service-key: ${DATA_GO_KR_SERVICE_KEY:}
+
   # 로그인을 이 횟수만큼 틀리면 계정을 잠근다 (STEP 7).
   max-login-fail-count: ${MAX_LOGIN_FAIL_COUNT:20}
 

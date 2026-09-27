@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.meokji.api.price.PriceService;
 import com.meokji.api.recipe.dto.RecipeResponse;
 import com.meokji.api.security.LoginUser;
 import com.meokji.api.user.User;
@@ -25,9 +26,11 @@ import jakarta.validation.constraints.Size;
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final PriceService priceService;
 
-    public RecipeController(RecipeService recipeService) {
+    public RecipeController(RecipeService recipeService, PriceService priceService) {
         this.recipeService = recipeService;
+        this.priceService = priceService;
     }
 
     @GetMapping("/recipes/{foodName}")
@@ -35,8 +38,12 @@ public class RecipeController {
             @PathVariable @Size(min = 1, max = 150) String foodName,
             @LoginUser(required = false) User me) {
 
-        // 가격은 아직 붙이지 않는다. KAMIS 시세를 옮기면 여기서 갈아 끼운다
-        // (RecipeService.withPrices).
-        return recipeService.make(me, foodName);
+        RecipeResponse recipe = recipeService.make(me, foodName);
+
+        // 레시피를 만드는 일과 시세를 받아오는 일을 섞지 않는다. 앞은 파일에서
+        // 꺼내는 일이고 뒤는 바깥을 부르는 일이라, 한 메서드에 두면 무엇 때문에
+        // 느린지 · 무엇 때문에 실패했는지 가려낼 수 없다.
+        return RecipeService.withPrices(
+                recipe, priceService.forIngredients(recipe.ingredientsJson()));
     }
 }

@@ -114,6 +114,16 @@ public class IngredientRules {
         return Math.round(value * 10) / 10.0;
     }
 
+    /**
+     * 세는 단위 하나의 무게. 없으면 null.
+     *
+     * <p>단위 환산이 이 값을 쓴다 - "고등어 120g" 을 "1마리" 시세와 견주려면
+     * 한 마리가 몇 그램인지 알아야 한다.
+     */
+    public Integer countGramsOf(String name) {
+        return name == null ? null : countGrams.get(name);
+    }
+
     /** 이 재료를 무엇으로 바꿀지. 표에 없으면 "생략". */
     public Substitute substituteFor(String name) {
         return substitutes.getOrDefault(name, defaultSubstitute);

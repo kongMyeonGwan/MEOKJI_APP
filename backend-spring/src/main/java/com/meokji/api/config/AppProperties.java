@@ -36,6 +36,46 @@ public class AppProperties {
 
     private Weather weather = new Weather();
 
+    private Price price = new Price();
+
+    /** 재료 시세 연동 (KAMIS). */
+    public static class Price {
+
+        /**
+         * 쉼표로 여러 개를 받게 열어뒀지만 <b>지금 쓸 수 있는 값은 kamis 하나뿐이다.</b>
+         * 모르는 값을 적으면 조용히 건너뛰지 않고 503 을 낸다 - 오타를 못 찾는 것보다
+         * 낫다.
+         */
+        private String providers = "kamis";
+
+        /** 공공데이터포털 일반 인증키의 Decoding 값. */
+        private String serviceKey = "";
+
+        public String getProviders() {
+            return providers;
+        }
+
+        public void setProviders(String providers) {
+            this.providers = providers;
+        }
+
+        public String getServiceKey() {
+            return serviceKey;
+        }
+
+        public void setServiceKey(String serviceKey) {
+            this.serviceKey = serviceKey;
+        }
+
+        /** PRICE_PROVIDERS 를 리스트로. 앞에서부터 시도하다가 값이 나오면 멈춘다. */
+        public java.util.List<String> getProviderList() {
+            return java.util.Arrays.stream(providers.split(","))
+                    .map(String::trim)
+                    .filter(value -> !value.isEmpty())
+                    .toList();
+        }
+    }
+
     /** 날씨 연동. mock 이면 바깥을 부르지 않는다. */
     public static class Weather {
 
@@ -174,5 +214,13 @@ public class AppProperties {
 
     public void setWeather(Weather weather) {
         this.weather = weather;
+    }
+
+    public Price getPrice() {
+        return price;
+    }
+
+    public void setPrice(Price price) {
+        this.price = price;
     }
 }
