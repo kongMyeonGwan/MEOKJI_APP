@@ -9,8 +9,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 import com.meokji.api.common.ApiException;
-import com.meokji.api.user.User;
-import com.meokji.api.user.UserMapper;
+import com.meokji.api.mapper.UserMapper;
+import com.meokji.api.vo.User;
 
 import jakarta.servlet.http.HttpServletRequest;
 

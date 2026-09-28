@@ -1,7 +1,11 @@
 # 게시판 · 공지 명세 (담당자용)
 
-`backend-spring` 의 `post/` · `notice/` 는 **501 스텁**이다. 주소 · 요청/응답 모양 ·
-권한은 다 맞춰져 있고 메서드 안만 채우면 된다.
+`backend-spring` 의 게시판 · 공지는 **501 스텁**이다. 주소 · 요청/응답 모양 · 권한은
+다 맞춰져 있고 메서드 안만 채우면 된다.
+
+자바는 계층별 폴더다 — `controller/` · `service/` · `mapper/` · `dto/<기능>/` ·
+`vo/`. 게시판 담당자가 만들 것은 `mapper/PostMapper.java` 와
+`resources/mapper/PostMapper.xml` 이고, 나머지는 이미 자리가 잡혀 있다.
 
 이 문서는 **"무엇을 만들어야 하는가"** 가 아니라 **"어떻게 동작해야 하는가"** 를
 적은 것이다. 앞의 것은 `PostService.java` · `NoticeService.java` 주석에 있다.
@@ -147,7 +151,7 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 | 항목 | 규칙 |
 |---|---|
 | 기본 기간 | 기간을 안 주면 **오늘 포함 최근 30일** |
-| 날짜 경계 | **한국 날짜**다. `common/Kst` 로 UTC 범위로 바꿔서 비교한다 |
+| 날짜 경계 | **한국 날짜**다. `util/Kst` 로 UTC 범위로 바꿔서 비교한다 |
 | 조건 | `review_likes.created_at >= 시작일 00:00 KST` 그리고 `< 종료일 다음날 00:00 KST` |
 | 정렬 | 좋아요 많은 순 → **같으면 최근에 받은 순**(`MAX(created_at)`) |
 | 썸네일 | DB 에 없다. `catalog.json` 에 같은 이름이 있으면 `art` · `image_url` 을 가져다 쓴다 |
@@ -219,18 +223,18 @@ DB 에 들어갔을 때를 막는 자리다.
 
 | 무엇 | 어디 |
 |---|---|
-| 만들 메서드 목록 | `post/PostService.java` · `notice/NoticeService.java` 주석 |
-| 주소 · 로그인 필요 여부 | `post/PostController.java` · `notice/NoticeController.java` |
-| 요청/응답 모양 | `post/dto/` 9개 · `notice/dto/` 4개 (다 정의돼 있다) |
-| 표 한 행 | `post/RecipeReview.java` · `ReviewComment` · `ReviewLike` · `notice/Notice.java` |
-| 매퍼 본보기 | `user/UserMapper.java` + `resources/mapper/UserMapper.xml` |
-| **페이징 본보기** | `history/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
-| **되살리기 본보기** | `like/LikeMapper.xml` — 찜하기가 좋아요와 같은 구조다 |
-| 한국 날짜 | `common/Kst` |
+| 만들 메서드 목록 | `service/PostService.java` · `service/NoticeService.java` 주석 |
+| 주소 · 로그인 필요 여부 | `controller/PostController.java` · `controller/NoticeController.java` |
+| 요청/응답 모양 | `dto/post/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
+| 표 한 행 | `vo/RecipeReview.java` · `vo/ReviewComment` · `vo/ReviewLike` · `vo/Notice.java` |
+| 매퍼 본보기 | `mapper/UserMapper.java` + `resources/mapper/UserMapper.xml` |
+| **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
+| **되살리기 본보기** | `resources/mapper/LikeMapper.xml` — 찜하기가 좋아요와 같은 구조다 |
+| 한국 날짜 | `util/Kst` |
 | 오류 내는 법 | `common/ApiException` — `ResponseEntity` 로 직접 만들지 않는다 |
 | 스키마 | `db/01_schema.sql` 의 `recipe_reviews` · `review_comments` · `review_likes` · `notices` |
 
-**`like/LikeMapper.xml` 을 먼저 보는 것을 권한다.** 찜하기(`recipe_likes`)가 게시글
+**`resources/mapper/LikeMapper.xml` 을 먼저 보는 것을 권한다.** 찜하기(`recipe_likes`)가 게시글
 좋아요(`review_likes`)와 같은 문제를 이미 푼 코드다 — 함수 기반 UNIQUE, 껐던 행
 되살리기, 동시 요청 처리가 그대로 들어 있다.
 
@@ -250,5 +254,6 @@ gradlew seedDemo
 지금은 501 이라 공지 4건과 후기 2건을 건너뛰는데, 구현되면 그 조건이 풀려
 **파일을 고치지 않아도** 공지와 후기(첨부 포함)가 만들어진다.
 
-마지막으로 화면을 바꾼다 — `frontend/src/pages/CommunityPage.jsx` 등에서
-`SAMPLE_*` 대신 `api/posts.js` 를 부르게 하고 `frontend/src/data/sampleBoard.js` 를 지운다.
+마지막으로 화면을 바꾼다 — `frontend/src/pages/community/` 의 네 화면에서
+`SAMPLE_*` 대신 `api/posts.js` · `api/notices.js` 를 부르게 하고
+`frontend/src/data/sampleBoard.js` 를 지운다.

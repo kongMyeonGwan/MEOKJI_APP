@@ -6,6 +6,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.meokji.api.config.SecurityConfig;
+import com.meokji.api.vo.User;
+
 /**
  * 컨트롤러가 로그인한 회원을 받을 때 쓴다.
  *

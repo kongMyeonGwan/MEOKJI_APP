@@ -21,10 +21,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.meokji.api.auth.VerificationCode;
-import com.meokji.api.auth.VerificationCodeMapper;
-import com.meokji.api.user.User;
-import com.meokji.api.user.UserMapper;
+import com.meokji.api.mapper.UserMapper;
+import com.meokji.api.mapper.VerificationCodeMapper;
+import com.meokji.api.util.ResetCodeMailer;
+import com.meokji.api.vo.User;
+import com.meokji.api.vo.VerificationCode;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

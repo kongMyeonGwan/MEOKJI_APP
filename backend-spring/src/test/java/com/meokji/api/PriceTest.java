@@ -15,8 +15,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.meokji.api.price.IngredientMatcher;
-import com.meokji.api.price.UnitConvert;
+import com.meokji.api.service.PriceService;
+import com.meokji.api.util.IngredientMatcher;
+import com.meokji.api.util.UnitConvert;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

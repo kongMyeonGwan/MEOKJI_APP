@@ -181,12 +181,12 @@ API 를 101번 두드린다. 결과는 `data/bargains.json` 에 날짜와 함께
 
 | 무엇 | 어디 |
 |---|---|
-| 만들 메서드 목록 · 지켜야 할 규칙 | `post/PostService.java` · `notice/NoticeService.java` 주석 |
-| 주소 · 로그인 필요 여부 | `post/PostController.java` · `notice/NoticeController.java` |
-| 요청/응답 모양 | `post/dto/` 9개 · `notice/dto/` 4개 (다 정의돼 있다) |
-| 표 한 행 | `post/RecipeReview.java` · `ReviewComment` · `ReviewLike` · `notice/Notice.java` |
-| 매퍼 본보기 | `user/UserMapper.java` + `resources/mapper/UserMapper.xml` |
-| 페이징 본보기 | `history/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
+| 만들 메서드 목록 · 지켜야 할 규칙 | `service/PostService.java` · `service/NoticeService.java` 주석 |
+| 주소 · 로그인 필요 여부 | `controller/PostController.java` · `controller/NoticeController.java` |
+| 요청/응답 모양 | `dto/post/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
+| 표 한 행 | `vo/RecipeReview.java` · `vo/ReviewComment` · `vo/ReviewLike` · `vo/Notice.java` |
+| 매퍼 본보기 | `mapper/UserMapper.java` + `resources/mapper/UserMapper.xml` |
+| 페이징 본보기 | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
 | **어떻게 동작해야 하는가** | **`docs/BOARD_SPEC.md`** — 규칙 · 정렬 · 권한 · 첨부파일 처리 |
 | 돌아가던 구현 (파이썬) | `git show e22853f:backend/app/services/post_service.py` |
 | 왜 이렇게 넘겼는지 | `docs/PROGRESS.md` 의 「게시판 · 공지를 담당자에게 넘김」 |
@@ -293,15 +293,18 @@ gradlew test --tests "com.meokji.api.DataFileTest"
 | `DROP TABLE IF EXISTS` | 21c 에는 없다 (23ai부터) |
 
 **시간대**는 커넥션에서 못박아 뒀다 (`application.yml` 의 `connection-init-sql`).
-DB 에는 UTC 만 들어간다. 시각을 응답에 넣을 때는 `common/Times.toText()` 를 쓴다 —
+DB 에는 UTC 만 들어간다. 시각을 응답에 넣을 때는 `util/Times.toText()` 를 쓴다 —
 파이썬이 내던 `2026-09-11T21:29:42.955000Z` 와 글자까지 맞춘다.
 
-한국 날짜가 필요하면 `common/Kst` 를 쓴다. 연속 방문일과 인기 레시피 기간 검색이
+한국 날짜가 필요하면 `util/Kst` 를 쓴다. 연속 방문일과 인기 레시피 기간 검색이
 그 9시간 때문에 경계에서 어긋난다.
 
 ---
 
 ## 폴더 구조
+
+**계층별로 나눠져 있다.** 폴더 이름이 곧 그 파일의 역할이다 — 어디에 무엇을
+만들지 헤매지 않게 하려는 것이다.
 
 ```
 backend-spring/
@@ -310,32 +313,75 @@ backend-spring/
 └── src/
     ├── main/
     │   ├── java/com/meokji/api/
-    │   │   ├── common/             ApiException · 오류 핸들러 · Page · Times · Kst · Json
-    │   │   ├── config/             AppProperties · SecurityConfig · WebConfig
-    │   │   ├── security/           JwtProvider · @LoginUser · 인자 리졸버
-    │   │   ├── health/             GET /api/health
-    │   │   ├── auth/               가입 · 로그인 · 토큰 확인 · 비밀번호 재설정
-    │   │   ├── user/               내 정보 · 알림 · 탈퇴
-    │   │   ├── ban/                못 먹는 재료
-    │   │   ├── history/            식사 기록
-    │   │   ├── catalog/            고정 목록 · catalog.json 읽기
-    │   │   ├── region/             regions.json 읽기 (주소 → 좌표)
-    │   │   ├── like/               찜한 레시피
-    │   │   ├── weather/            날씨 (mock / openweather) + 안내 문구
-    │   │   ├── recommend/          음식 추천 (카탈로그 점수)
-    │   │   ├── recipe/             레시피 (recipes.json) + 응답 DTO
-    │   │   ├── price/              KAMIS 시세 · 재료 이름 매칭 · 단위 환산 · 떨이 재료
-    │   │   ├── game/               미니게임 플레이 기록
-    │   │   ├── post/               🔧 게시판 — 501 스텁
-    │   │   └── notice/             🔧 공지 — 501 스텁
+    │   │   ├── MeokjiApiApplication.java   루트에 있어야 컴포넌트 스캔이 된다
+    │   │   │
+    │   │   ├── controller/   12    HTTP 를 받는 자리. 로직을 두지 않는다
+    │   │   ├── service/      14    업무 규칙과 트랜잭션 경계
+    │   │   ├── mapper/        6    SQL 을 부르는 인터페이스 (+ Post · Notice 는 담당자 몫)
+    │   │   ├── dto/          42    요청 · 응답 모양. 기능별로 한 겹 더 나눠져 있다
+    │   │   │                       auth 7 · post 9 · user 5 · notice 4 · recommend 4
+    │   │   │                       history 3 · like 3 · recipe 3 · ban 2 · game 1 · weather 1
+    │   │   ├── vo/            9    표 한 행. User · MealHistory · RecipeReview · Notice ...
+    │   │   │
+    │   │   ├── util/         15    계산 · 바깥 API 호출 · 고정 목록 읽기
+    │   │   │                       KamisClient · FoodScorer · RecipeBook · Times · Kst ...
+    │   │   ├── common/        4    ApiException · 오류 핸들러 · Page · MessageResponse
+    │   │   ├── config/        3    AppProperties · SecurityConfig · WebConfig
+    │   │   └── security/      3    JwtProvider · @LoginUser · 인자 리졸버
     │   └── resources/
     │       ├── application.yml
     │       ├── application-local.yml.example
     │       ├── data/               파이썬에서 내보낸 표 5개 (아래 설명)
-    │       └── mapper/             User · History · Ban · Like · Game
+    │       └── mapper/             User · History · Ban · Like · Game · VerificationCode
     └── test/
-        ├── java/com/meokji/api/    테스트 85건 + 데모 데이터(SeedDemoTest)
+        ├── java/com/meokji/api/    테스트 94건 + 데모 데이터(SeedDemoTest)
         └── resources/fixtures/     파이썬 응답 정답지 38개
+```
+
+### 흐름은 예외 없이 세 층이다
+
+```
+controller  ->  service  ->  mapper  ->  DB
+```
+
+컨트롤러가 매퍼를 직접 부르지 않는다. 하는 일이 한 줄짜리라도 서비스를 둔다 —
+어떤 컨트롤러는 거치고 어떤 것은 건너뛰면, 새로 들어온 사람이 규칙을 코드마다
+다르게 배운다.
+
+예외는 둘뿐이고 둘 다 DB 를 안 쓴다. `HealthController` 는 DB 가 살아있는지만
+보고, `CatalogController` 는 JSON 파일을 읽어 그대로 내보낸다.
+
+### 주입은 `@Autowired` 필드 주입이다
+
+```java
+@RestController
+public class BanController {
+
+    @Autowired
+    private BanService banService;
+```
+
+`ApiException` 만 생성자를 쓴다. 빈이 아니라 예외 값 객체라 생성자가 값을 받는
+것이지 주입이 아니다.
+
+`JwtProvider` 는 주입받은 설정으로 서명키를 만들어야 해서 `@PostConstruct` 를 쓴다.
+**생성자에서는 주입받은 필드가 아직 null 이다** — 주입이 끝난 뒤 스프링이
+`@PostConstruct` 를 불러준다.
+
+### DAO 가 아니라 Mapper 다
+
+MyBatis 의 용어를 그대로 쓴다. 애노테이션이 `@Mapper` 이고, XML 루트 태그가
+`<mapper>` 이고, 설정 키가 `mapper-locations` 다. 인터페이스만 선언하면
+**구현은 MyBatis 가 만들어 준다** — 내가 구현을 짜는 DAO 와 그 점이 다르다.
+
+### 패키지를 옮길 때 조심할 것
+
+매퍼 XML 의 `namespace` 와 `resultType` 은 **문자열로 클래스를 찾는다.** 자바만
+옮기고 XML 을 안 고치면 컴파일은 지나가고 서버가 뜨다가 죽는다.
+
+```xml
+<mapper namespace="com.meokji.api.mapper.UserMapper">
+<select resultType="com.meokji.api.vo.User">
 ```
 
 ---

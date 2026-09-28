@@ -7,7 +7,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import com.meokji.api.security.LoginUser;
 import com.meokji.api.security.LoginUserArgumentResolver;
+import com.meokji.api.vo.User;
 
 /**
  * {@code @LoginUser} 인자를 채워주는 리졸버를 등록한다.

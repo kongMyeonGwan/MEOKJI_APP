@@ -34,8 +34,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.meokji.api.config.AppProperties;
-import com.meokji.api.price.IngredientMatcher;
-import com.meokji.api.price.KamisClient;
+import com.meokji.api.util.IngredientMatcher;
+import com.meokji.api.util.KamisClient;
+import com.meokji.api.vo.Notice;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

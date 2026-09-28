@@ -17,9 +17,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.meokji.api.price.BargainService;
-import com.meokji.api.price.IngredientMatcher;
-import com.meokji.api.recommend.dto.BargainItem;
+import com.meokji.api.dto.recommend.BargainItem;
+import com.meokji.api.service.BargainService;
+import com.meokji.api.util.IngredientMatcher;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

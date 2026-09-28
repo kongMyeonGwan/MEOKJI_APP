@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.meokji.api.history.HistoryMapper">
+<mapper namespace="com.meokji.api.mapper.HistoryMapper">
 
     <select id="findStatsRows"
-            resultType="com.meokji.api.history.HistoryMapper$StatsRow">
+            resultType="com.meokji.api.mapper.HistoryMapper$StatsRow">
         SELECT selected_at AS selectedAt,
                estimated_cost AS estimatedCost
           FROM meal_histories
@@ -14,14 +14,14 @@
     </select>
 
 
-    <resultMap id="pageRow" type="com.meokji.api.history.HistoryMapper$PageRow">
+    <resultMap id="pageRow" type="com.meokji.api.mapper.HistoryMapper$PageRow">
         <constructor>
-            <arg javaType="com.meokji.api.history.MealHistory" resultMap="history"/>
+            <arg javaType="com.meokji.api.vo.MealHistory" resultMap="history"/>
             <arg column="shared_post_id" javaType="java.lang.Long"/>
         </constructor>
     </resultMap>
 
-    <resultMap id="history" type="com.meokji.api.history.MealHistory">
+    <resultMap id="history" type="com.meokji.api.vo.MealHistory">
         <id     property="id"              column="id"/>
         <result property="userId"          column="user_id"/>
         <result property="foodName"        column="food_name"/>
@@ -80,7 +80,7 @@
          WHERE id = #{id}
     </select>
 
-    <insert id="insert" parameterType="com.meokji.api.history.MealHistory"
+    <insert id="insert" parameterType="com.meokji.api.vo.MealHistory"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO meal_histories (
             user_id, food_name, recipe_name,
