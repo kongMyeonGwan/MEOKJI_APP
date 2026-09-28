@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import ErrorMessage from '../components/common/ErrorMessage'
-import Loading from '../components/common/Loading'
-import { getHistories } from '../api/histories'
-import { parseApiError } from '../utils/apiError'
-import '../styles/pages/PostWritePage.css'
+import ErrorMessage from '../../components/common/ErrorMessage'
+import Loading from '../../components/common/Loading'
+import { getHistories } from '../../api/histories'
+import { parseApiError } from '../../utils/apiError'
+import '../../styles/pages/PostWritePage.css'
 
 // 게시글 쓰기 화면.
 //

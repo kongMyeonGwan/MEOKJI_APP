@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import Roulette from '../components/recommendation/Roulette'
-import { GAME_KEYS, recordGamePlay } from '../api/games'
-import { useAuth } from '../contexts/AuthContext'
-import '../styles/pages/ListPage.css'
+import Roulette from '../../components/recommendation/Roulette'
+import { GAME_KEYS, recordGamePlay } from '../../api/games'
+import { useAuth } from '../../contexts/AuthContext'
+import '../../styles/pages/ListPage.css'
 
 // 음식 추천 룰렛 화면. 첫 화면에 있는 카드를 넓게 펼친 것이다.
 //

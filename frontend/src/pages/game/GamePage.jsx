@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import { useCatalog } from '../contexts/CatalogContext'
-import '../styles/pages/ListPage.css'
-import '../styles/pages/GamePage.css'
+import { useCatalog } from '../../contexts/CatalogContext'
+import '../../styles/pages/ListPage.css'
+import '../../styles/pages/GamePage.css'
 
 // 메뉴 게임 목록.
 //

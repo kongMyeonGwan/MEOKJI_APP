@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { register } from '../api/auth'
-import { parseApiError } from '../utils/apiError'
-import AddressPicker from '../components/common/AddressPicker'
-import ErrorMessage from '../components/common/ErrorMessage'
-import '../styles/pages/RegisterPage.css'
+import { register } from '../../api/auth'
+import { parseApiError } from '../../utils/apiError'
+import AddressPicker from '../../components/common/AddressPicker'
+import ErrorMessage from '../../components/common/ErrorMessage'
+import '../../styles/pages/RegisterPage.css'
 
 // 회원가입 화면
 

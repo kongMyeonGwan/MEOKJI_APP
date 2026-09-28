@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import ErrorMessage from '../components/common/ErrorMessage'
-import FoodCard from '../components/recommendation/FoodCard'
-import Loading from '../components/common/Loading'
-import { getRecommendations } from '../api/recommendations'
-import { useAiLog } from '../contexts/AiLogContext'
-import { parseApiError } from '../utils/apiError'
-import '../styles/pages/ListPage.css'
+import ErrorMessage from '../../components/common/ErrorMessage'
+import FoodCard from '../../components/recommendation/FoodCard'
+import Loading from '../../components/common/Loading'
+import { getRecommendations } from '../../api/recommendations'
+import { useAiLog } from '../../contexts/AiLogContext'
+import { parseApiError } from '../../utils/apiError'
+import '../../styles/pages/ListPage.css'
 
 // AI 추천 전체 목록.
 // 첫 화면은 앞부분만 보여주고 여기서 전부 본다.

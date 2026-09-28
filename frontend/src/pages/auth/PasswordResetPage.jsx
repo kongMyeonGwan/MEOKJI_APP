@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { changePassword, sendResetCode, verifyResetCode } from '../api/auth'
-import { parseApiError } from '../utils/apiError'
-import ErrorMessage from '../components/common/ErrorMessage'
-import '../styles/pages/PasswordResetPage.css'
+import { changePassword, sendResetCode, verifyResetCode } from '../../api/auth'
+import { parseApiError } from '../../utils/apiError'
+import ErrorMessage from '../../components/common/ErrorMessage'
+import '../../styles/pages/PasswordResetPage.css'
 
 // 비밀번호 재설정. 이메일로 인증번호를 받는 방식이다.
 //

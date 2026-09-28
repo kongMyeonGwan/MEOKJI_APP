@@ -7,28 +7,37 @@ import { PrefsProvider } from './contexts/PrefsContext'
 import { ProfileProvider } from './contexts/ProfileContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import MainLayout from './layouts/MainLayout'
-import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
-import PasswordResetPage from './pages/PasswordResetPage'
-import RegisterPage from './pages/RegisterPage'
-import RecommendPage from './pages/RecommendPage'
-import BudgetPage from './pages/BudgetPage'
-import SearchPage from './pages/SearchPage'
-import GamePage from './pages/GamePage'
-import WorldCupPage from './pages/WorldCupPage'
-import BalancePage from './pages/BalancePage'
-import RoulettePage from './pages/RoulettePage'
-import LikedPage from './pages/LikedPage'
-import PopularPage from './pages/PopularPage'
-import RecipePage from './pages/RecipePage'
-import CommunityPage from './pages/CommunityPage'
-import PostDetailPage from './pages/PostDetailPage'
-import PostWritePage from './pages/PostWritePage'
-import HistoryPage from './pages/HistoryPage'
-import AiHistoryPage from './pages/AiHistoryPage'
-import SettingsPage from './pages/SettingsPage'
-import MyPage from './pages/MyPage'
 import NotFoundPage from './pages/NotFoundPage'
+
+// 화면은 pages/ 아래 역할별 폴더로 나눠져 있다. 폴더 하나가 담당자 한 사람의
+// 자리다 (pages/README.md 참고). NotFoundPage 만 어느 역할에도 속하지 않아
+// 최상위에 둔다.
+import HomePage from './pages/home/HomePage'
+
+import LoginPage from './pages/auth/LoginPage'
+import PasswordResetPage from './pages/auth/PasswordResetPage'
+import RegisterPage from './pages/auth/RegisterPage'
+
+import BudgetPage from './pages/recommend/BudgetPage'
+import RecipePage from './pages/recommend/RecipePage'
+import RecommendPage from './pages/recommend/RecommendPage'
+import SearchPage from './pages/recommend/SearchPage'
+
+import BalancePage from './pages/game/BalancePage'
+import GamePage from './pages/game/GamePage'
+import RoulettePage from './pages/game/RoulettePage'
+import WorldCupPage from './pages/game/WorldCupPage'
+
+import CommunityPage from './pages/community/CommunityPage'
+import PopularPage from './pages/community/PopularPage'
+import PostDetailPage from './pages/community/PostDetailPage'
+import PostWritePage from './pages/community/PostWritePage'
+
+import AiHistoryPage from './pages/mypage/AiHistoryPage'
+import HistoryPage from './pages/mypage/HistoryPage'
+import LikedPage from './pages/mypage/LikedPage'
+import MyPage from './pages/mypage/MyPage'
+import SettingsPage from './pages/mypage/SettingsPage'
 
 // 어떤 주소에 어떤 화면을 보여줄지 정하는 곳.
 // 사이드바랑 하단 탭의 메뉴가 여기 주소랑 하나씩 짝이 맞는다.

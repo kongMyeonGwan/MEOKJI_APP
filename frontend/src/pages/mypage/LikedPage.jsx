@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
-import Icon from '../components/common/Icon'
-import FoodThumb from '../components/common/FoodThumb'
-import Loading from '../components/common/Loading'
-import { useLikes } from '../contexts/LikesContext'
-import '../styles/pages/ListPage.css'
-import '../styles/components/recommendation/LikedList.css'
+import Icon from '../../components/common/Icon'
+import FoodThumb from '../../components/common/FoodThumb'
+import Loading from '../../components/common/Loading'
+import { useLikes } from '../../contexts/LikesContext'
+import '../../styles/pages/ListPage.css'
+import '../../styles/components/recommendation/LikedList.css'
 
 // 찜한 레시피. 내가 하트를 누른 목록이다.
 //

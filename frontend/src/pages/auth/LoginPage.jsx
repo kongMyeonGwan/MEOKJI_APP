@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { parseApiError } from '../utils/apiError'
-import ErrorMessage from '../components/common/ErrorMessage'
-import '../styles/pages/LoginPage.css'
+import { useAuth } from '../../contexts/AuthContext'
+import { parseApiError } from '../../utils/apiError'
+import ErrorMessage from '../../components/common/ErrorMessage'
+import '../../styles/pages/LoginPage.css'
 
 // 로그인 화면
 export default function LoginPage() {

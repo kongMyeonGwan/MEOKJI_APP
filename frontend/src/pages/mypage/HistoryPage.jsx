@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import ErrorMessage from '../components/common/ErrorMessage'
-import Loading from '../components/common/Loading'
-import RecipeView from '../components/recipe/RecipeView'
-import Pagination from '../components/common/Pagination'
-import { getHistories, getHistoryStats, removeHistory } from '../api/histories'
-import { useProfile } from '../contexts/ProfileContext'
-import { parseApiError } from '../utils/apiError'
-import { formatDate, formatPrice } from '../utils/format'
-import '../styles/pages/HistoryPage.css'
+import ErrorMessage from '../../components/common/ErrorMessage'
+import Loading from '../../components/common/Loading'
+import RecipeView from '../../components/recipe/RecipeView'
+import Pagination from '../../components/common/Pagination'
+import { getHistories, getHistoryStats, removeHistory } from '../../api/histories'
+import { useProfile } from '../../contexts/ProfileContext'
+import { parseApiError } from '../../utils/apiError'
+import { formatDate, formatPrice } from '../../utils/format'
+import '../../styles/pages/HistoryPage.css'
 
 // 내가 확정한 식사 기록.
 //

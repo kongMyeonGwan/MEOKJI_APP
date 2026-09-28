@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import ErrorMessage from '../components/common/ErrorMessage'
-import FoodCard from '../components/recommendation/FoodCard'
-import Loading from '../components/common/Loading'
+import ErrorMessage from '../../components/common/ErrorMessage'
+import FoodCard from '../../components/recommendation/FoodCard'
+import Loading from '../../components/common/Loading'
 import BudgetRange, {
   BUDGET_MAX,
   BUDGET_MIN,
-} from '../components/recommendation/BudgetRange'
-import { getRecommendations } from '../api/recommendations'
-import { useAiLog } from '../contexts/AiLogContext'
-import { parseApiError } from '../utils/apiError'
-import { formatPrice } from '../utils/format'
-import '../styles/pages/ListPage.css'
+} from '../../components/recommendation/BudgetRange'
+import { getRecommendations } from '../../api/recommendations'
+import { useAiLog } from '../../contexts/AiLogContext'
+import { parseApiError } from '../../utils/apiError'
+import { formatPrice } from '../../utils/format'
+import '../../styles/pages/ListPage.css'
 
 // 예산 맞춤 추천 화면.
 //

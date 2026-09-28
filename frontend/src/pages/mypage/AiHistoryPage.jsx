@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { useAiLog } from '../contexts/AiLogContext'
-import { formatDateTime } from '../utils/format'
-import '../styles/pages/ListPage.css'
-import '../styles/pages/AiHistoryPage.css'
+import { useAiLog } from '../../contexts/AiLogContext'
+import { formatDateTime } from '../../utils/format'
+import '../../styles/pages/ListPage.css'
+import '../../styles/pages/AiHistoryPage.css'
 
 // AI 추천 기록.
 //

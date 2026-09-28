@@ -1,11 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom'
-import Icon from '../components/common/Icon'
-import { useAiLog } from '../contexts/AiLogContext'
-import { useAuth } from '../contexts/AuthContext'
-import { useLikes } from '../contexts/LikesContext'
-import { usePrefs } from '../contexts/PrefsContext'
-import '../styles/pages/ListPage.css'
-import '../styles/pages/SettingsPage.css'
+import Icon from '../../components/common/Icon'
+import { useAiLog } from '../../contexts/AiLogContext'
+import { useAuth } from '../../contexts/AuthContext'
+import { useLikes } from '../../contexts/LikesContext'
+import { usePrefs } from '../../contexts/PrefsContext'
+import '../../styles/pages/ListPage.css'
+import '../../styles/pages/SettingsPage.css'
 
 // 설정 화면.
 //

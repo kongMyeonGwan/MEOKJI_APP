@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import RecipeView from '../components/recipe/RecipeView'
-import PostAttachment from '../components/community/PostAttachment'
-import { useAuth } from '../contexts/AuthContext'
-import { SAMPLE_POST_DETAIL } from '../data/sampleBoard'
-import { formatDateTime } from '../utils/format'
-import '../styles/pages/PostDetailPage.css'
+import RecipeView from '../../components/recipe/RecipeView'
+import PostAttachment from '../../components/community/PostAttachment'
+import { useAuth } from '../../contexts/AuthContext'
+import { SAMPLE_POST_DETAIL } from '../../data/sampleBoard'
+import { formatDateTime } from '../../utils/format'
+import '../../styles/pages/PostDetailPage.css'
 
 // 게시글 상세 + 좋아요 + 댓글.
 //
