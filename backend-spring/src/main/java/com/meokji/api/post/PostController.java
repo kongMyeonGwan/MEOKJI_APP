@@ -109,7 +109,7 @@ public class PostController {
      * <p><b>자기 식사 기록만 공유할 수 있다.</b> {@code mealHistoryId} 의 주인이
      * 나인지 확인해야 한다 - FK 가 막아주지만 그때는 500 이 나간다.
      */
-    @PostMapping
+    @PostMapping("")
     public ResponseEntity<PostDetailResponse> create(
             @LoginUser User me,
             @Valid @RequestBody PostCreateRequest request) {
