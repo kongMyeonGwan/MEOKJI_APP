@@ -13,7 +13,7 @@
 - **테이블을 함부로 늘리지 않는다.**
   AI 추천 기록처럼 테이블이 필요해 보이는 것은 브라우저 localStorage 에 두고,
   카테고리처럼 사용자가 만들지 않는 목록은 서버 파일
-  (`backend/app/data/catalog.json`)에서 내려준다
+  (`backend-spring/src/main/resources/data/catalog.json`)에서 내려준다
 
   > 테이블은 **10개**다.
   > `users` · `verification_codes` · `user_bans` · `meal_histories` ·
@@ -40,28 +40,33 @@
 | 영역 | 기술 |
 |---|---|
 | Frontend | React 19 + Vite 6 (JavaScript, TypeScript 미사용) |
-| Backend | Python 3.13 + FastAPI |
-| ORM | SQLAlchemy 2.0 |
+| Backend | Java 17 + Spring Boot 4 |
+| DB 접근 | MyBatis (JPA 미사용 — 아래 참고) |
 | Database | **Oracle Database 21c XE** |
-| Driver | python-oracledb (Thin 모드, Instant Client 불필요) |
+| Driver | ojdbc17 (Thin 모드, Instant Client 불필요) |
 | 인증 | JWT Access Token (Refresh Token 미사용) |
 | 비밀번호 | bcrypt |
 
-> ### 서버를 스프링부트로 옮기는 중이다
+> ### 서버는 스프링부트다 (2026-09-29)
 >
-> 학원이 서버를 스프링부트로 쓰기로 바뀌어서 `backend-spring/` 을 따로 만들어
-> 옮기고 있다. **이 README 가 설명하는 `backend/`(FastAPI)는 그대로 돌아간다** —
-> 포팅이 끝나고 프론트가 스프링으로 붙는 것을 확인한 뒤에 정리한다.
+> 원래 Python + FastAPI 였고, 학원이 스프링부트를 쓰기로 바뀌어 옮겼다.
+> 옮기기를 끝내고 **파이썬은 걷어냈다.**
 >
-> | 서버 | 포트 | 상태 |
-> |---|---|---|
-> | `backend/` FastAPI | 8000 | 돌아간다. 이 문서가 설명하는 것 |
-> | `backend-spring/` Spring Boot 4 + MyBatis | 8080 | 27개 중 26개 이식 · 테스트 73건 |
+> 필요하면 git 에서 꺼내 볼 수 있다. 특히 조리 순서를 만드는 `steps.py` 와
+> 게시판 구현은 옮기지 않았다.
 >
-> 브랜치는 `feature/spring-boot` 이고 `develop` 에는 합치지 않았다.
+> ```
+> git show dd8e8e9:backend/app/integrations/steps.py        # 레시피 조리 순서
+> git show e22853f:backend/app/services/post_service.py     # 돌아가던 게시판
+> ```
+>
+> **MyBatis 를 고른 이유가 이 스키마에 있다.** 모든 조회에 `use_yn='Y'` 가 붙고,
+> UNIQUE 가 제약조건이 아니라 함수 기반 인덱스이고, 중복 INSERT 는 `MERGE` 로
+> 처리하고, 검색은 `LOWER(col) LIKE LOWER(?)` 다. JPA 로 우회하는 것보다 SQL 을
+> 직접 쓰는 쪽이 맞다.
+>
 > 돌리는 법과 담당자용 안내는 [backend-spring/README.md](backend-spring/README.md),
-> 왜 그렇게 옮겼는지는 [docs/PROGRESS.md](docs/PROGRESS.md) 의
-> 「서버를 스프링부트로 옮기는 중」 절에 있다.
+> 옮기면서 걸린 것들은 [docs/PROGRESS.md](docs/PROGRESS.md) 에 있다.
 
 ---
 
@@ -83,18 +88,21 @@ cd MEOKJI_APP
 ### 2. Backend
 
 ```bash
-cd backend
-cp .env.example .env
-#  .env를 열어 DB_PASSWORD 입력  (git에 올라가지 않는 파일)
+cd backend-spring
+copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
+#  열어서 DB 비밀번호와 JWT 비밀키를 채운다 (git 에 올라가지 않는 파일)
 
-python -m venv .venv
-.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-
-uvicorn app.main:app --reload --port 8000
+gradlew bootRun
 ```
 
-확인: http://127.0.0.1:8000/api/health → `{"status":"ok","database":"ok"}`
+**Gradle 은 안 깔아도 된다.** `gradlew` 가 알아서 받아 쓴다. JDK 17 이상만 있으면 된다.
+
+확인: <http://localhost:8080/api/health> → `{"status":"ok", ..., "database":"ok"}`
+
+JWT 비밀키는 **32바이트(영문 32자) 이상**이어야 한다. 짧으면 서버가 뜨다가
+`WeakKeyException` 으로 죽는다.
+
+더 자세한 것은 `backend-spring/README.md` 에 있다.
 
 ### 3. Frontend
 
@@ -142,7 +150,8 @@ npm run dev
 | 1 | `db/00_create_user_local.sql` | **SYS AS SYSDBA** | 파일 안의 비밀번호 자리를 먼저 수정 |
 | 2 | `db/01_schema.sql` | meokji_app | 10개 테이블 생성 |
 
-그리고 `backend/.env`의 `DB_HOST`를 `localhost`로 바꾼다.
+그리고 `backend-spring/src/main/resources/application-local.yml` 의 접속 정보를
+로컬에 맞춘다(기본값이 이미 `localhost`라 비밀번호만 채우면 된다).
 
 **DBeaver 접속 설정 주의**
 
@@ -160,48 +169,32 @@ npm run dev
 
 ```
 MEOKJI_APP/
-├── backend-spring/            Spring Boot 이식 (진행 중 — 위 안내 참고)
-├── db/                        Oracle DDL
-│   ├── 00_create_user_local.sql   로컬 Oracle 계정 생성 (SYS로 실행)
-│   ├── 00_drop_all.sql
-│   ├── 01_schema.sql              10개 테이블 (단일 소스)
-│   ├── 02_migrate_v2.sql          v1 -> v2 마이그레이션 (1회성)
-│   ├── 03_add_review_attachments.sql  후기 첨부파일 컬럼 추가 (1회성)
-│   ├── 04_notices_and_games.sql   공지 분류 컬럼 · 게임 종류 A~C (1회성)
-│   ├── 05_seed_notices.sql        초기 공지 5건 (선택)
-│   ├── 06_add_user_level.sql      회원 권한 등급 1=관리자 2=일반 (1회성)
-│   ├── 07_drop_notice_category.sql  04 가 넣은 공지 분류 컬럼 제거 (1회성)
-│   └── 08_add_recipe_likes.sql   찜한 레시피 표 (1회성)
-├── backend/
-│   ├── requirements.txt
-│   ├── pytest.ini
-│   ├── .env.example
-│   ├── tests/                 자동 테스트
-│   │   ├── test_logic.py          DB 없이 도는 계산 검증
-│   │   └── test_api.py            실제 Oracle 에 붙는 통합 검증
-│   ├── scripts/               손으로 한 번씩 돌리는 것들
-│   │   ├── check_email.py         .env 의 메일 설정으로 실제 발송 시도
-│   │   └── seed_demo.py           빈 DB 에 데모 데이터 채우기
-│   └── app/
-│       ├── main.py            FastAPI 진입점
-│       ├── core/              config(설정) · security(bcrypt/JWT) · deps(로그인) · kst(시간대)
-│       ├── database/          엔진 · 세션 · Base
-│       ├── models/            SQLAlchemy 모델 · Oracle 전용 타입
-│       ├── schemas/           Pydantic 요청/응답
-│       ├── services/          비즈니스 로직
-│       ├── routers/           API 엔드포인트
-│       ├── data/              테이블이 필요 없는 고정 목록
-│       │   ├── catalog.json       카테고리 · 룰렛 · 게임 · 질문 · 음식 100종
-│       │   └── recipes.json       손으로 쓴 레시피 100종 (STEP 41)
-│       └── integrations/      외부 연동 · 레시피 계산
-│           ├── ai_api.py          음식 추천 (카탈로그. AI 호출은 주석)
-│           ├── recipe_book.py     recipes.json 에서 레시피 꺼내기 (STEP 41)
-│           ├── steps.py           조리 순서 만들기 (STEP 40)
-│           ├── portion.py         2인분 분량 · 세는 단위의 무게 (STEP 37)
-│           ├── ingredient_match.py 재료 이름 -> KAMIS 품목코드 116개 (STEP 39)
-│           ├── weather_api.py     날씨 (mock / openweather)
-│           ├── email_sender.py    메일 (mock / smtp)
-│           └── price_api.py       재료 가격 (kamis)
+├── backend-spring/            Spring Boot 서버
+│   ├── build.gradle           Boot 4.0.8 · Java 17 · MyBatis · ojdbc17 · jjwt · mail
+│   ├── gradlew(.bat)          Gradle 을 안 깔아도 빌드된다
+│   └── src/
+│       ├── main/java/com/meokji/api/
+│       │   ├── controller/    HTTP 를 받는 자리 (12)
+│       │   ├── service/       업무 규칙과 트랜잭션 경계 (14)
+│       │   ├── mapper/        SQL 을 부르는 인터페이스 (6)
+│       │   ├── dto/           요청 · 응답 모양. 기능별로 한 겹 더 (42)
+│       │   ├── vo/            표 한 행 (9)
+│       │   ├── util/          계산 · 바깥 API · 고정 목록 읽기 (15)
+│       │   ├── common/        ApiException · 오류 핸들러 · Page
+│       │   ├── config/        AppProperties · SecurityConfig · WebConfig
+│       │   └── security/      JwtProvider · @LoginUser · 인자 리졸버
+│       ├── main/resources/
+│       │   ├── application.yml
+│       │   ├── data/          테이블이 필요 없는 고정 목록 5개
+│       │   │   ├── catalog.json        음식 100종 · 카테고리 · 룰렛 · 게임
+│       │   │   ├── recipes.json        손으로 쓴 레시피 100종
+│       │   │   ├── regions.json        시·도 17개와 시·군·구 좌표
+│       │   │   ├── ingredient-rules.json  분량 환산 · 대체재료
+│       │   │   └── kamis-items.json    재료 이름 -> KAMIS 품목코드 116개
+│       │   └── mapper/        매퍼 XML 6개
+│       └── test/
+│           ├── java/          테스트 94건 + 데모 데이터(SeedDemoTest)
+│           └── resources/fixtures/   파이썬 응답 정답지 38개
 └── frontend/
     ├── package.json
     ├── .env.example
@@ -210,19 +203,27 @@ MEOKJI_APP/
         ├── components/        공통 · 기능별 컴포넌트
         ├── contexts/          앱 전체가 공유하는 상태
         │                      (로그인 · 프로필/알림 · 찜 · AI 기록 · 카탈로그 · 설정)
-        ├── pages/             라우팅 대상 화면
+        ├── pages/             라우팅 대상 화면. 역할별 폴더로 나뉜다
+        │                      (home · auth · recommend · game · community · mypage)
         ├── layouts/           사이드바 + 상단바 + Outlet
         └── utils/             token(로그인 토큰) · apiError · format
 ```
+
 
 ---
 
 ## API 목록
 
-전체 목록과 요청/응답 모양은 서버를 켜고 <http://localhost:8000/docs> 에서
-직접 눌러볼 수 있다. 아래는 어떤 기능이 어디에 있는지 찾기 위한 지도다.
+아래는 어떤 기능이 어디에 있는지 찾기 위한 지도다.
 
 로그인 칸의 ● 는 로그인 필수, ▲ 는 관리자(`users.user_level = 1`) 전용이다.
+
+**✗ 가 붙은 20개는 아직 서버에 없다(501).** 후기 게시판(`reviews`)과
+공지(`notices`)는 팀원이 직접 구현할 자리라 주소와 DTO 만 남기고 메서드
+안을 비워뒀다. 화면은 `frontend/src/data/sampleBoard.js` 의 가데이터를
+그리고 있어서 그대로 볼 수 있다.
+
+어떻게 동작해야 하는지는 [docs/BOARD_SPEC.md](docs/BOARD_SPEC.md) 에 있다.
 
 **✗ 가 붙은 20개는 아직 서버에 없다(501).** 게시판(`posts`)과
 공지(`notices`)는 팀원이 직접 구현할 자리라 주소와 스키마만 남기고 함수
@@ -280,19 +281,17 @@ MEOKJI_APP/
 먼저 확정해야 해서 손으로 채우려면 한참 걸린다.
 
 ```bash
-cd backend
-.venv\Scriptsctivate
-
-python -m scripts.seed_demo
+cd backend-spring
+gradlew seedDemo
 ```
 
 회원 2명(운영자 · 일반) · 공지 4건 · 식사 기록 3건 · 후기 2건(첨부 1건)을
-**실제 API 를 거쳐** 만든다. DB 에 직접 INSERT 하지 않으므로 검증기 · FK ·
+**실제 API 를 거쳐** 만든다(MockMvc). DB 에 직접 INSERT 하지 않으므로 검증기 · FK ·
 UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지 않는다.
 
 **지금은 회원과 식사 기록만 만들어진다.** 공지와 후기는 서버가 501 이라
 그 단계를 건너뛰고 "아직 서버에 없다" 고 찍는다. 담당자가 구현하면 조건이
-저절로 풀려서 공지 4건 · 후기 2건까지 다시 채워진다 - 스크립트는 고칠
+저절로 풀려서 공지 4건 · 후기 2건까지 다시 채워진다 - 이 코드는 고칠
 필요가 없다.
 
 여러 번 돌려도 안전하다 — 이미 있는 것은 건너뛴다.
@@ -305,7 +304,7 @@ UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지
 비밀번호는 `db/02_seed.sql` 의 개발용 계정과 같다. 다른 값을 쓰려면 실행 전에
 `SEED_PASSWORD` 환경변수를 지정한다.
 
-> **`APP_ENV=local` 에서만 돈다.** 저장소에 적힌 개발용 비밀번호로 **관리자
+> **`app.env` 가 `local` 일 때만 돈다.** 저장소에 적힌 개발용 비밀번호로 **관리자
 > 계정**을 만들기 때문이다. 운영이나 공용 DB 에서 돌면 README 를 읽은 누구나
 > 관리자로 로그인할 수 있게 된다. 다른 값이면 아무것도 하지 않고 멈춘다.
 
@@ -314,64 +313,80 @@ UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지
 ## 테스트
 
 ```bash
-cd backend
-.venv\Scripts\activate
-
-pytest                      # 전부 (245건)
-pytest tests/test_logic.py  # DB 없이 되는 것만 (150건)
+cd backend-spring
+gradlew test
 ```
 
-게시판 · 공지가 아직 서버에 없어서(아래 「API 목록」 참고) 그쪽 54건은
-`skip` 으로 잡혀 있다. 담당자가 구현하면 `@pytest.mark.skip` 줄만 지우면 된다.
+**94건이다.** 실제 Oracle 에 붙고, 위 `seedDemo` 가 만든 계정
+(`minji@example.com`)이 있어야 한다.
 
-`tests/test_api.py` 는 실제 Oracle 에 붙는다. DB 가 꺼져 있으면 실패가 아니라
-**건너뛴다(skip)**. 코드가 깨진 것과 DB 를 안 켠 것을 구분하기 위해서다.
+대부분이 **파이썬 서버의 실제 응답과 글자 단위로 대조**하는 방식이다
+(`src/test/resources/fixtures/` 38개). 게시판 · 공지는 아직 501 이라
+주소 20개가 제대로 서 있는지만 확인한다.
 
-테스트가 만드는 계정(`pytest_*@example.com`)과 그 하위 데이터는
-`tests/conftest.py` 가 앞뒤로 물리 삭제한다.
+데이터 파일(`resources/data/*.json`)이 성한지 보는 검사도 여기 들어 있다 —
+개수 · 빠진 칸 · 좌표가 한국 안인지, 카탈로그와 레시피의 메뉴가 같은지.
+
+프론트는 빌드로 확인한다.
+
+```bash
+cd frontend
+npm run build      # 못 찾는 import 가 있으면 여기서 걸린다
+```
+
+테스트는 데모 계정을 그대로 쓰고 새 계정을 만들지 않는다. 비밀번호 재설정
+테스트만 `minji@example.com` 의 비밀번호를 건드리는데, **같은 값으로 되돌려
+놓아서** 다른 테스트가 깨지지 않는다.
 
 ---
 
 ## 환경변수
 
-`.env`는 git에 올라가지 않는다. `.env.example`을 복사해서 쓴다.
+사람마다 다른 값은 git 에 올라가지 않는다. `.example` 파일을 복사해서 쓴다.
 
-### backend/.env
+### backend-spring/src/main/resources/application-local.yml
+
+```yaml
+spring:
+  datasource:
+    password: 팀에_문의          # 네트워크가 바뀌면 url 도 여기서 덮어쓴다
+
+app:
+  jwt:
+    secret-key: 32자_이상의_랜덤_문자열
+  price:
+    service-key: 공공데이터포털에서_발급     # 없으면 레시피의 가격만 비어 있다
+```
+
+접속 주소 · 포트 같은 기본값은 `application.yml` 에 있고, 환경변수로도 덮어쓸 수
+있다(`DB_HOST` · `DB_PORT` · `DB_SERVICE` · `DB_USER` ...).
+
+### frontend/.env
 
 ```env
-DB_HOST=localhost    # 네트워크가 바뀌면 이 줄만 수정
-DB_PORT=1521
-DB_SERVICE=XEPDB1
-DB_USER=meokji_app
-DB_PASSWORD=            # 팀에 문의
-JWT_SECRET_KEY=         # 아무 랜덤 문자열
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
 ### 외부 연동 켜기 (전부 선택)
 
-키가 없어도 전 기능이 동작한다. 진짜 서비스를 붙이려면
-아래 값만 바꾸면 되고, **코드는 한 줄도 고치지 않는다.**
+키가 없어도 전 기능이 동작한다. 진짜 서비스를 붙이려면 아래 값만 바꾸면 되고,
+**코드는 한 줄도 고치지 않는다.**
+
+| 하고 싶은 것 | `application-local.yml` 에 넣을 값 |
+|---|---|
+| 실제 날씨 | `app.weather.provider: openweather` + `app.weather.api-key` |
+| 실제 재료 시세 | `app.price.service-key` (`providers` 는 기본이 `kamis`) |
+| 실제 인증 메일 발송 | `app.mail.provider: smtp` + `spring.mail.*` |
+| 뜰 때 떨이 재료 미리 훑기 | 환경변수 `WARM_BARGAINS=true` |
 
 **AI 는 쓰지 않는다 (2026-09-26).** 음식 추천은 카탈로그 100종에 날씨·예산·Ban
-점수를 매겨 고르고, 레시피는 미리 써둔 100종(`app/data/recipes.json`)에서
+점수를 매겨 고르고, 레시피는 미리 써둔 100종(`resources/data/recipes.json`)에서
 꺼낸다. 요리도 레시피도 파일에서 나오므로 AI 를 부를 자리가 없다.
 
-제미나이 · 클로드를 부르던 코드는 지우지 않고 주석으로 남겨뒀다
-(`app/integrations/ai_api.py` · `app/core/config.py` · `requirements.txt`).
-그래서 `AI_PROVIDER` 에 쓸 수 있는 값은 `catalog`(= 예전 이름 `mock`) 하나뿐이고,
-다른 값을 적으면 추천·레시피가 503 으로 막힌다.
+후기 첨부파일은 키가 필요 없다. 다만 **아직 서버가 501** 이라 담당자가 구현할
+자리다 — 저장 규칙은 [docs/BOARD_SPEC.md](docs/BOARD_SPEC.md) 에 적어뒀다.
 
-| 하고 싶은 것 | `.env` 에 넣을 값 |
-|---|---|
-| 실제 날씨 | `WEATHER_PROVIDER=openweather` + `OPENWEATHER_API_KEY=...` |
-| 실제 재료 최저가 | `PRICE_PROVIDERS=kamis` + `DATA_GO_KR_SERVICE_KEY=...` |
-| 실제 인증 메일 발송 | `EMAIL_PROVIDER=smtp` + `SMTP_*` |
-
-후기 첨부파일은 키가 필요 없다. `UPLOAD_DIR`(기본 `uploads`) 아래에
-저장하고 DB 에는 경로만 적는다. 폴더는 `.gitignore` 에 있어 커밋되지 않는다.
-받아줄 확장자와 최대 크기는 `UPLOAD_ALLOWED_EXTS` · `UPLOAD_MAX_MB` 로 정한다.
-
-`PRICE_PROVIDERS` 에 지금 쓸 수 있는 값은 **`kamis` 하나뿐이다.** 모르는 값을
+`app.price.providers` 에 지금 쓸 수 있는 값은 **`kamis` 하나뿐이다.** 모르는 값을
 적으면 조용히 건너뛰지 않고 에러를 낸다 — 오타를 못 찾는 것보다 낫기 때문인데,
 지금은 그 에러를 아무도 잡지 않아서 레시피 조회가 500 으로 끝난다.
 
@@ -388,7 +403,7 @@ JWT_SECRET_KEY=         # 아무 랜덤 문자열
 다. 무료이고 개발계정은 자동승인(일 10,000건)이다. 인증키는 마이페이지의
 **Decoding** 값을 넣어야 한다 — Encoding 값을 넣으면 인증에 실패한다.
 
-품목 116개를 `KAMIS_ITEM_CODES` 에 매핑해뒀다(참고문서 코드표 기준).
+품목 116개를 `resources/data/kamis-items.json` 에 매핑해뒀다(참고문서 코드표 기준).
 **농수산물만** 나오므로 두부·간장·설탕 같은 가공식품은 값이 없다. 레시피
 100종의 재료로 세어보면 998회 중 638회(64%)에 시세가 붙고, 나머지는
 '가격 정보 없음'으로 둔다. 이것을 메우려고 값을 지어내던 mock 은
@@ -409,7 +424,7 @@ JWT_SECRET_KEY=         # 아무 랜덤 문자열
 ### frontend/.env
 
 ```env
-VITE_API_BASE_URL=http://localhost:8000
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
 `VITE_` 접두사가 붙은 값은 **브라우저에 그대로 노출된다.** API 키를 넣지 말 것.

@@ -1,5 +1,5 @@
 {
- "_note": "backend/app/integrations/ingredient_match.py 에서 내보낸 표. backend/ 가 살아 있는 동안은 그쪽을 고친 뒤 다시 내보낸다. 지운 뒤에는 이 파일이 원본이다 - 고쳤으면 DataFileTest 를 돌려 확인한다.",
+ "_note": "재료 이름 -> KAMIS 품목코드. 원래 파이썬(ingredient_match.py)에서 내보낸 표인데 그쪽은 지웠다 - 이제 이 파일이 원본이다. 고쳤으면 DataFileTest 를 돌려 확인한다.",
  "item_codes": {
   "쌀": {
    "group": "100",

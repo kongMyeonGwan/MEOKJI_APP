@@ -350,30 +350,44 @@ JWT_SECRET_KEY=아무_랜덤_문자열
 
 > `.env` 는 git에 올라가지 않습니다. 각자 자기 PC에서 만드는 파일입니다.
 > 비밀번호에 `@` `:` `/` 가 들어 있어도 그대로 적으면 됩니다 —
-> [`config.py`](../backend/app/core/config.py) 가 `URL.create()` 로 알아서 이스케이프합니다.
+> YAML 에서 따옴표로 감싸면(`password: "a@b"`) 그대로 전달됩니다.
 
 ---
 
 ## [6] 백엔드 실행 + 최종 확인
 
 ```cmd
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+cd backend-spring
+copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
+:: 열어서 datasource.password 와 app.jwt.secret-key 를 채웁니다
+gradlew bootRun
 ```
 
-브라우저에서 <http://127.0.0.1:8000/api/health> 를 엽니다.
+브라우저에서 <http://localhost:8080/api/health> 를 엽니다.
 
 ```json
-{"status":"ok","database":"ok"}
+{"status":"ok","app":"뭐먹지? API","version":"0.1.0","env":"local","database":"ok"}
 ```
 
 **`"database":"ok"` 가 나오면 DB 세팅 완료입니다.**
 
 > Oracle 접속에 Instant Client 같은 별도 프로그램은 필요 없습니다.
-> `python-oracledb` 를 Thin 모드로 쓰기 때문에 `pip install` 만으로 끝납니다.
+> `ojdbc17` 을 Thin 모드로 쓰기 때문에 JDK 17 만 있으면 됩니다.
+> Gradle 도 안 깔아도 됩니다 — `gradlew` 가 알아서 받아 씁니다.
+
+> 비밀키가 32자보다 짧으면 서버가 뜨다가 `WeakKeyException` 으로 죽습니다.
+> HS256 의 요구사항입니다.
+
+### 데모 데이터 채우기 (선택)
+
+빈 DB 로는 화면을 볼 수가 없습니다.
+
+```cmd
+gradlew seedDemo
+```
+
+회원 2명 · 식사 기록 3건을 **실제 API 를 거쳐** 만듭니다. 여러 번 돌려도
+안전합니다. 로그인은 `minji@example.com` / `meokji1234!` 입니다.
 
 ---
 
@@ -520,14 +534,14 @@ exit
 
 ```cmd
 :: [5][6] 백엔드
-cd backend
-copy .env.example .env
-:: .env 에서 DB_HOST=localhost / DB_PASSWORD / JWT_SECRET_KEY 수정
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-:: http://127.0.0.1:8000/api/health  ->  "database":"ok"
+cd backend-spring
+copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
+:: application-local.yml 에서 datasource.password / app.jwt.secret-key 수정
+gradlew bootRun
+:: http://localhost:8080/api/health  ->  "database":"ok"
+
+:: (선택) 데모 데이터
+gradlew seedDemo
 ```
 
 ---
