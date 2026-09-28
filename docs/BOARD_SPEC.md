@@ -1,0 +1,254 @@
+# 게시판 · 공지 명세 (담당자용)
+
+`backend-spring` 의 `post/` · `notice/` 는 **501 스텁**이다. 주소 · 요청/응답 모양 ·
+권한은 다 맞춰져 있고 메서드 안만 채우면 된다.
+
+이 문서는 **"무엇을 만들어야 하는가"** 가 아니라 **"어떻게 동작해야 하는가"** 를
+적은 것이다. 앞의 것은 `PostService.java` · `NoticeService.java` 주석에 있다.
+
+---
+
+## 0. 먼저 — 돌아가던 구현이 git 에 있다
+
+파이썬 쪽 게시판도 지금은 501 스텁이지만, **그 전에는 돌아갔다.** 화면을 가데이터로
+바꾸면서(2026-09-18) 걷어낸 것이라 구현이 커밋에 남아 있다.
+
+```
+e22853f  2026-09-18  소스 단계 낮추기     <- 마지막으로 구현이 살아 있던 커밋
+5576ddc  2026-09-18  가데이터             <- 여기서 501 스텁으로 바뀜
+```
+
+꺼내 보는 법:
+
+```
+git show e22853f:backend/app/services/post_service.py    # 620줄 — 게시판 로직 전부
+git show e22853f:backend/app/services/notice_service.py  # 129줄 — 공지
+git show e22853f:backend/app/services/file_service.py    # 135줄 — 첨부파일 저장
+git show e22853f:backend/app/routers/posts.py            # 334줄
+git show e22853f:backend/app/routers/notices.py          # 125줄
+```
+
+파일로 꺼내려면:
+
+```
+git show e22853f:backend/app/services/post_service.py > post_service.py
+```
+
+**이 저장소를 새로 파면 이게 사라진다.** 아래 내용은 그 구현에서 뽑아낸 것이지만,
+막히면 원본을 직접 보는 편이 빠르다.
+
+---
+
+## 1. 지켜야 할 것 다섯 가지
+
+### 1) 삭제는 `use_yn='N'` 이다
+
+물리 삭제를 하지 않는다. **모든 조회에 `use_yn='Y'` 가 붙어야 한다.** 글 · 댓글 ·
+좋아요 · 공지가 전부 그렇다. 빼먹으면 지운 글이 목록에 다시 나타나고, 지운 좋아요가
+계속 세어진다.
+
+### 2) 없는 것 · 남의 것 · 지운 것은 **전부 404** 다
+
+403 을 쓰지 않는다.
+
+```
+없는 글 번호        -> 404
+남이 쓴 글을 수정   -> 404   (403 이 아니다)
+이미 지운 글        -> 404
+다른 글의 댓글 번호 -> 404
+```
+
+남의 글일 때만 403 을 주면 **"그 번호는 존재한다"** 는 사실이 새어나간다. 문구도
+하나로 통일한다 — `"게시글을 찾을 수 없습니다."` · `"댓글을 찾을 수 없습니다."`
+
+### 3) 목록의 COUNT 와 본문은 **같은 조건 · 같은 JOIN** 을 봐야 한다
+
+한쪽에만 검색어를 붙이면 *"3페이지가 있다는데 열면 비어 있는"* 일이 생긴다.
+`HistoryMapper.xml` 의 `<sql id="mineWithShared">` 가 그 본보기다 — 조건을 한 번만
+쓰고 COUNT 와 목록이 같이 `<include>` 한다.
+
+### 4) 후기는 **내 식사 기록에서만** 쓸 수 있다
+
+`recipe_reviews.meal_history_id` 가 NOT NULL 이고, `uq_reviews_meal` 인덱스가 같은
+기록을 두 번 공유하지 못하게 막는다.
+
+```
+없는 기록 · 남의 기록 · 지운 기록  -> 404 "기록을 찾을 수 없습니다."
+이미 후기를 쓴 기록                -> 409 "이미 공유한 기록입니다."
+```
+
+409 는 미리 조회해서 막지 말고 **`DuplicateKeyException` 을 잡아서** 낸다. 미리
+조회한 뒤 INSERT 하기까지 사이에 다른 요청이 끼어들 수 있다. 오라클이 ORA-00001 을
+던지며 메시지에 제약조건 이름(`UQ_REVIEWS_MEAL`)을 담아준다 —
+`AuthService.register()` 가 이메일 중복에 쓰는 방식과 같다.
+
+### 5) 첨부파일 컬럼 여섯 개는 **한 몸**이다
+
+`file_yn` · `file_name` · `file_org_name` · `file_path` · `file_ext` · `file_size` 를
+손으로 하나씩 만지면 안 된다. `ck_reviews_file_set` 이 ORA-02290 으로 막는다.
+붙일 때 여섯 개를 같이 채우고, 뗄 때 같이 비운다.
+
+---
+
+## 2. 동작 명세
+
+### 목록 `GET /api/posts`
+
+| 항목 | 규칙 |
+|---|---|
+| 정렬 | `created_at DESC, id DESC` — 두 번째 기준이 없으면 같은 글이 두 페이지에 나온다 |
+| 검색 | 제목 **또는** 본문에 포함. `LOWER(col) LIKE LOWER(?)` |
+| 검색어 이스케이프 | `\` `%` `_` 앞에 `\` 를 붙이고 `ESCAPE '\'` 를 준다. "50%" 로 검색하면 전체가 걸린다 |
+| 본문 | **200자까지만** 잘라 보낸다. 화면은 CSS 로 2줄만 쓴다 |
+| 좋아요 · 댓글 수 | 글마다 세지 말고 **이 페이지의 id 들을 한 번에** `GROUP BY` 로 센다 |
+| `has_file` | `file_yn = 'Y'` 인지만. 경로 · 원본 이름은 상세에서만 쓴다 |
+| 페이징 | `OFFSET ? ROWS FETCH NEXT ? ROWS ONLY` |
+
+좋아요가 하나도 없는 글은 `GROUP BY` 결과에 아예 없다. **기본값 0** 으로 채운다.
+
+### 상세 `GET /api/posts/{id}`
+
+- `food_name` · `recipe_json` · `ingredients_json` 은 **복사본이 아니라 원본
+  `meal_histories` 에서 읽는다.** 기록은 확정한 뒤로 수정하지 않으므로 값이 흔들리지 않는다.
+- `liked` · `is_mine` 은 로그인했을 때만 계산한다. 비로그인이면 둘 다 `false`
+  (`@LoginUser(required = false)`).
+- 댓글은 `created_at, id` **오름차순** (목록과 반대다).
+- 댓글의 `is_mine` 은 "로그인했고 그 댓글을 내가 썼는가".
+
+### 조회수 `POST /api/posts/{id}/view`
+
+상세와 나눠져 있다. 상세를 열 때마다 올리면 새로고침으로 조회수가 오른다.
+
+### 좋아요 `PUT/DELETE /api/posts/{id}/like`
+
+**껐던 행을 되살린다.** 새로 INSERT 하지 않는다.
+
+```
+켜달라 + 켜진 게 없음
+    -> use_yn='N' 인 행이 있나 본다 (id DESC 로 하나)
+       있으면  use_yn='Y' 로 되살린다
+       없으면  새로 INSERT
+끄달라 + 켜진 게 있음
+    -> use_yn='N'
+```
+
+`uq_review_likes` 가 함수 기반 UNIQUE 라 `use_yn='Y'` 인 행만 중복을 막는다. 껐던 행을
+남겨둔 채 새로 INSERT 하면 죽은 행이 계속 쌓인다.
+
+동시에 두 번 눌러 INSERT 가 겹치면 `DuplicateKeyException` 이 온다. **삼킨다** —
+결과는 "좋아요 켜짐" 으로 어차피 같다.
+
+응답은 `{liked, like_count}` 이고, `like_count` 는 **바꾼 뒤 다시 센 값**이다.
+
+### 인기 레시피 `GET /api/posts/popular`
+
+**기간 안에 새로 받은 좋아요** 기준이다. 글의 총 좋아요가 아니다.
+
+| 항목 | 규칙 |
+|---|---|
+| 기본 기간 | 기간을 안 주면 **오늘 포함 최근 30일** |
+| 날짜 경계 | **한국 날짜**다. `common/Kst` 로 UTC 범위로 바꿔서 비교한다 |
+| 조건 | `review_likes.created_at >= 시작일 00:00 KST` 그리고 `< 종료일 다음날 00:00 KST` |
+| 정렬 | 좋아요 많은 순 → **같으면 최근에 받은 순**(`MAX(created_at)`) |
+| 썸네일 | DB 에 없다. `catalog.json` 에 같은 이름이 있으면 `art` · `image_url` 을 가져다 쓴다 |
+
+두 번째 정렬 기준이 없으면 같은 데이터인데도 순서가 들쭉날쭉해 보인다.
+
+`Kst` 를 안 쓰고 UTC 로 자르면 **9시간 때문에 경계에서 어긋난다** — 밤 9시 이후에
+누른 좋아요가 다음 날로 넘어간다.
+
+### 첨부파일 `POST/DELETE/GET /api/posts/{id}/file`
+
+**후기 하나당 파일 하나.** 다시 올리면 교체다.
+
+저장 규칙:
+
+```
+폴더      uploads/yyyy/MM            (월별로 나눈다)
+파일명    <UUID 32자>.<확장자>        원본 이름으로 저장하지 않는다
+DB        원본 이름은 file_org_name 에 따로 적는다 (VARCHAR2(255) — 넘으면 자른다)
+```
+
+검사 순서:
+
+1. **확장자 허용 목록** 대조 — 아니면 422
+2. **받으면서 크기를 잰다.** 다 받아놓고 재지 않는다 — 넘는 순간 끊어야 디스크와
+   메모리를 아낀다. 넘으면 413
+3. 0바이트면 422
+4. 실패하면 **쓰다 만 파일을 지운다**
+
+경로 조작 막기: DB 의 `(폴더, 파일명)` 을 실제 경로로 바꾼 뒤, 그것이
+**업로드 루트 아래인지 확인**한다. 아니면 404. `..%2F..%2Fetc%2Fpasswd` 같은 값이
+DB 에 들어갔을 때를 막는 자리다.
+
+순서가 중요하다:
+
+```
+붙일 때   옛 경로 기억 -> 새 파일 저장 -> DB 커밋 -> (실패하면 새 파일 삭제)
+          -> 커밋 성공 후 옛 파일 삭제
+뗄 때     DB 를 먼저 비우고 -> 그 다음 파일 삭제
+글 삭제   파일은 디스크에서 지우지 않는다
+```
+
+반대로 하면 **DB 는 첨부가 있다는데 파일이 없는** 상태가 된다.
+
+크기 표시(`size_text`)는 이렇게 만든다 — 화면이 그대로 띄운다.
+
+```
+1024 미만        "184 B"
+1MB 미만         "184 KB"      소수점 없음
+그 이상          "1.4 MB"      소수점 한 자리
+```
+
+내려줄 때는 원본 파일명을 `Content-Disposition` 에 담는다. CORS 설정에
+`exposedHeaders` 로 이미 열어뒀다(`SecurityConfig`).
+
+### 공지 `GET/POST/PUT/DELETE /api/notices`
+
+| 항목 | 규칙 |
+|---|---|
+| 정렬 | `pinned_yn DESC, created_at DESC, id DESC` — `'Y' > 'N'` 이라 내림차순이면 고정이 위로 온다 |
+| `pinned` | DB 는 `'Y'/'N'`, JSON 은 **`true`/`false`**. 양방향으로 바꿔줘야 한다 |
+| 작성자 | **요청 본문이 아니라 토큰에서** 나온 사람이다. 본문으로 받으면 남의 이름으로 공지를 쓸 수 있다 |
+| 권한 | 쓰기 · 수정 · 삭제는 `@LoginUser(admin = true)` — 목록과 조회수는 누구나 |
+| 첨부 | **없다.** 표에 파일 컬럼이 없고 붙일 API 도 없다. 첨부는 후기에만 있다 |
+
+---
+
+## 3. 만들 때 볼 것
+
+| 무엇 | 어디 |
+|---|---|
+| 만들 메서드 목록 | `post/PostService.java` · `notice/NoticeService.java` 주석 |
+| 주소 · 로그인 필요 여부 | `post/PostController.java` · `notice/NoticeController.java` |
+| 요청/응답 모양 | `post/dto/` 9개 · `notice/dto/` 4개 (다 정의돼 있다) |
+| 표 한 행 | `post/RecipeReview.java` · `ReviewComment` · `ReviewLike` · `notice/Notice.java` |
+| 매퍼 본보기 | `user/UserMapper.java` + `resources/mapper/UserMapper.xml` |
+| **페이징 본보기** | `history/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
+| **되살리기 본보기** | `like/LikeMapper.xml` — 찜하기가 좋아요와 같은 구조다 |
+| 한국 날짜 | `common/Kst` |
+| 오류 내는 법 | `common/ApiException` — `ResponseEntity` 로 직접 만들지 않는다 |
+| 스키마 | `db/01_schema.sql` 의 `recipe_reviews` · `review_comments` · `review_likes` · `notices` |
+
+**`like/LikeMapper.xml` 을 먼저 보는 것을 권한다.** 찜하기(`recipe_likes`)가 게시글
+좋아요(`review_likes`)와 같은 문제를 이미 푼 코드다 — 함수 기반 UNIQUE, 껐던 행
+되살리기, 동시 요청 처리가 그대로 들어 있다.
+
+---
+
+## 4. 확인
+
+`src/test/java/.../StubFixtureTest.java` 가 **주소 20개가 파이썬과 같은지** 검사한다.
+구현하면서 주소를 바꿨다면 이 테스트도 같이 고쳐야 한다 — 프론트가 그 주소를 쓴다.
+
+구현이 끝나면 데모 데이터가 저절로 채워진다:
+
+```
+gradlew seedDemo
+```
+
+지금은 501 이라 공지 4건과 후기 2건을 건너뛰는데, 구현되면 그 조건이 풀려
+**파일을 고치지 않아도** 공지와 후기(첨부 포함)가 만들어진다.
+
+마지막으로 화면을 바꾼다 — `frontend/src/pages/CommunityPage.jsx` 등에서
+`SAMPLE_*` 대신 `api/posts.js` 를 부르게 하고 `frontend/src/data/sampleBoard.js` 를 지운다.

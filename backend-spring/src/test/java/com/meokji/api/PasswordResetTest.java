@@ -33,7 +33,7 @@ import tools.jackson.databind.json.JsonMapper;
  * 비밀번호 재설정 세 단계를 확인한다 (STEP 8 · 32 · 33).
  *
  * <p>DB 에 붙는다. {@code minji@example.com} 계정이 있어야 한다 -
- * {@code backend} 의 {@code python -m scripts.seed_demo} 가 만들어준다.
+ * {@code gradlew seedDemo} 가 만들어준다 ({@link SeedDemoTest}).
  *
  * <h2>인증번호를 콘솔에서 주워온다</h2>
  *

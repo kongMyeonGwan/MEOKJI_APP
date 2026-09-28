@@ -187,10 +187,15 @@ API 를 101번 두드린다. 결과는 `data/bargains.json` 에 날짜와 함께
 | 표 한 행 | `post/RecipeReview.java` · `ReviewComment` · `ReviewLike` · `notice/Notice.java` |
 | 매퍼 본보기 | `user/UserMapper.java` + `resources/mapper/UserMapper.xml` |
 | 페이징 본보기 | `history/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
+| **어떻게 동작해야 하는가** | **`docs/BOARD_SPEC.md`** — 규칙 · 정렬 · 권한 · 첨부파일 처리 |
+| 돌아가던 구현 (파이썬) | `git show e22853f:backend/app/services/post_service.py` |
 | 왜 이렇게 넘겼는지 | `docs/PROGRESS.md` 의 「게시판 · 공지를 담당자에게 넘김」 |
 
 ### 시작하는 순서
 
+0. **`docs/BOARD_SPEC.md` 를 먼저 읽는다.** DTO 만 봐서는 알 수 없는 것들이 있다 —
+   남의 글도 403 이 아니라 404 인 이유, 좋아요를 껐다 켤 때 새로 INSERT 하지 않는
+   이유, 인기 레시피의 날짜가 한국 날짜인 이유
 1. `PostMapper` 인터페이스와 `resources/mapper/PostMapper.xml` 을 새로 만든다
 2. `PostService` 에 메서드를 채운다
 3. `PostController` 의 `throw todo();` 를 서비스 호출로 바꾼다
@@ -249,11 +254,25 @@ detail 이 배열이면     입력칸별 오류. 각 항목의 loc 마지막 값
 오류 본문(401 · 404 · 409 · 422 · 501)도 같이 떠 있다 — 프론트가 `detail` 을 읽어
 화면에 뿌리므로 오류 모양도 계약이다.
 
-다시 뜨고 싶으면 (파이썬 쪽에서):
+**다시 뜰 수는 없다.** 이걸 떠온 스크립트(`capture_fixtures.py`)는 scratchpad 에만
+있다가 사라졌다. 그래서 이 파일들은 **고정된 과거 스냅샷**으로 본다 — 스프링 응답이
+정답지와 달라지면 스프링을 고치는 것이지 정답지를 고치는 게 아니다.
+
+일부러 응답 모양을 바꿔야 한다면(프론트와 함께) 정답지도 손으로 고치고, 왜 바꿨는지를
+`docs/PROGRESS.md` 에 남긴다.
+
+### 데이터 파일은 테스트가 지킨다
+
+`resources/data/*.json` 다섯 개는 파이썬에서 내보낸 표다. **`backend/` 를 지우면
+이 파일이 원본이 된다.** 그때부터는 손으로 고치게 되는데, 116개 · 107개짜리 표를
+손으로 고치면 한두 개는 틀리고 **틀려도 티가 안 난다** — 좌표가 어긋나면 다른 동네
+날씨가 나오고, 분량이 어긋나면 가격이 조용히 달라진다.
+
+`DataFileTest` 가 그걸 잡는다. 개수 · 빠진 칸 · 좌표 범위와, **카탈로그와 레시피의
+메뉴가 정확히 같은지**까지 본다. 데이터를 고쳤으면 이걸 돌린다.
 
 ```
-cd ..\backend
-python <스크립트>   # scratchpad 의 capture_fixtures.py 참고
+gradlew test --tests "com.meokji.api.DataFileTest"
 ```
 
 ---

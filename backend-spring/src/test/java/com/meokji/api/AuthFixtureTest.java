@@ -25,7 +25,7 @@ import tools.jackson.databind.json.JsonMapper;
  * 인증 응답을 파이썬 정답지와 대조한다.
  *
  * <p>DB 에 붙는다. {@code minji@example.com} 계정이 있어야 한다 -
- * {@code backend} 의 {@code python -m scripts.seed_demo} 가 만들어준다.
+ * {@code gradlew seedDemo} 가 만들어준다 ({@link SeedDemoTest}).
  *
  * <p>토큰 문자열 자체는 비교하지 않는다. 발급 시각이 들어가서 매번 달라지기
  * 때문이다. 대신 <b>모양</b>(칸 이름 · 형 · 회원 정보)을 본다.
