@@ -1,4 +1,4 @@
-package com.meokji.api.dto.post;
+package com.meokji.api.dto.review;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Size;
  *
  * <p>같은 기록으로 두 번 쓸 수 없다. {@code uq_reviews_meal} 이 막는다.
  */
-public record PostCreateRequest(
+public record ReviewCreateRequest(
 
         @NotNull(message = "어떤 식사 기록을 공유할지 골라주세요")
         @Min(value = 1, message = "식사 기록 번호가 올바르지 않습니다")

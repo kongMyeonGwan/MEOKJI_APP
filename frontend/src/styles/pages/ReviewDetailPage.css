@@ -1,18 +1,18 @@
-.post {
+.review {
   display: grid;
   gap: 20px;
 }
 
-.post__back { margin: 0; font-size: 14px; }
-.post__back a:hover { color: var(--color-accent); }
+.review__back { margin: 0; font-size: 14px; }
+.review__back a:hover { color: var(--color-accent); }
 
-.post__title {
+.review__title {
   margin: 0 0 10px;
   font-size: 22px;
   line-height: 1.4;
 }
 
-.post__meta {
+.review__meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -23,7 +23,7 @@
 }
 
 /* 작성자가 입력한 줄바꿈을 그대로 보여준다 */
-.post__content {
+.review__content {
   padding: 20px 0;
   font-size: 15px;
   line-height: 1.75;
@@ -31,7 +31,7 @@
   word-break: break-word;
 }
 
-.post__actions {
+.review__actions {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -39,7 +39,7 @@
   border-top: 1px solid var(--color-border);
 }
 
-.post__like {
+.review__like {
   padding: 8px 18px;
   border: 1px solid var(--color-border);
   border-radius: 999px;
@@ -50,38 +50,38 @@
   cursor: pointer;
 }
 
-.post__like:disabled { cursor: not-allowed; }
+.review__like:disabled { cursor: not-allowed; }
 
-.post__like.is-on {
+.review__like.is-on {
   border-color: var(--color-accent);
   background: var(--color-accent-weak);
   color: var(--color-accent);
   font-weight: 600;
 }
 
-.post__hint { font-size: 13px; }
+.review__hint { font-size: 13px; }
 
-.post__link {
+.review__link {
   color: var(--color-accent);
   font-weight: 600;
 }
 
-.post__comments {
+.review__comments {
   margin: 0 0 20px;
   padding: 0;
   list-style: none;
 }
 
-.post__comment-head {
+.review__comment-head {
   display: flex;
   align-items: baseline;
   gap: 10px;
   font-size: 14px;
 }
 
-.post__comment-head span { font-size: 12px; }
+.review__comment-head span { font-size: 12px; }
 
-.post__comment-body {
+.review__comment-body {
   margin: 4px 0 0;
   font-size: 14px;
   line-height: 1.6;
@@ -89,7 +89,7 @@
   word-break: break-word;
 }
 
-.post__form textarea {
+.review__form textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--color-border);
@@ -101,12 +101,12 @@
   resize: vertical;
 }
 
-.post__form textarea:focus {
+.review__form textarea:focus {
   outline: 2px solid var(--color-accent);
   outline-offset: -1px;
 }
 
-.post__form-foot {
+.review__form-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -115,7 +115,7 @@
   font-size: 13px;
 }
 
-.post__login-ask {
+.review__login-ask {
   margin: 0;
   padding: 16px 0 0;
   border-top: 1px solid var(--color-border);
@@ -123,37 +123,37 @@
 }
 
 /* 공유된 레시피 스냅샷. 본문과 좋아요 버튼 사이에 끼어 들어간다. */
-.post__recipe {
+.review__recipe {
   padding: 16px 0;
   border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 1023px) {
-  .post { gap: 14px; }
-  .post__title { font-size: 19px; }
-  .post__content { padding: 16px 0; font-size: 15px; }
+  .review { gap: 14px; }
+  .review__title { font-size: 19px; }
+  .review__content { padding: 16px 0; font-size: 15px; }
 
   /* 좋아요는 엄지로 누르는 버튼이라 충분히 크게 */
-  .post__like { padding: 10px 22px; }
-  .post__actions { flex-wrap: wrap; }
+  .review__like { padding: 10px 22px; }
+  .review__actions { flex-wrap: wrap; }
 }
 
 /* ===== 내 글 · 내 댓글에만 나오는 수정/삭제 =====
    좋아요 버튼과 같은 줄에 두되, margin-left:auto 로 오른쪽 끝에 붙인다.
    나란히 놓으면 하트를 누르려다 삭제를 누르게 된다. */
-.post__owner-actions {
+.review__owner-actions {
   margin-left: auto;
   display: flex;
   gap: 6px;
 }
 
-.post__comment-actions {
+.review__comment-actions {
   margin-left: auto;
   display: flex;
   gap: 8px;
 }
 
-.post__comment-actions button {
+.review__comment-actions button {
   border: none;
   background: none;
   padding: 0;
@@ -162,31 +162,31 @@
   cursor: pointer;
 }
 
-.post__comment-actions button:hover { color: var(--color-accent); }
+.review__comment-actions button:hover { color: var(--color-accent); }
 
 /* 되돌릴 수 없는 동작만 색을 달리한다 */
-.post__danger { color: var(--color-error); }
-.post__comment-actions .post__danger:hover { color: var(--color-error); }
+.review__danger { color: var(--color-error); }
+.review__comment-actions .review__danger:hover { color: var(--color-error); }
 
 /* ===== 글 수정 폼 ===== */
-.post__edit {
+.review__edit {
   display: grid;
   gap: 12px;
 }
 
-.post__edit-field {
+.review__edit-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.post__edit-field > span {
+.review__edit-field > span {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-subtle);
 }
 
-.post__edit-actions {
+.review__edit-actions {
   display: flex;
   gap: 8px;
 }

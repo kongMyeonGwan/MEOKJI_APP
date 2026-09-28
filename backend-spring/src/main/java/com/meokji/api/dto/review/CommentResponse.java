@@ -1,4 +1,4 @@
-package com.meokji.api.dto.post;
+package com.meokji.api.dto.review;
 
 /**
  * 댓글 한 건.

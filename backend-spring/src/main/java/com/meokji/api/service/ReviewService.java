@@ -3,13 +3,13 @@ package com.meokji.api.service;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.Page;
-import com.meokji.api.controller.PostController;
-import com.meokji.api.dto.post.CommentResponse;
-import com.meokji.api.dto.post.LikeResponse;
-import com.meokji.api.dto.post.PopularItem;
-import com.meokji.api.dto.post.PostDetailResponse;
-import com.meokji.api.dto.post.PostFileInfo;
-import com.meokji.api.dto.post.PostListItem;
+import com.meokji.api.controller.ReviewController;
+import com.meokji.api.dto.review.CommentResponse;
+import com.meokji.api.dto.review.LikeResponse;
+import com.meokji.api.dto.review.PopularItem;
+import com.meokji.api.dto.review.ReviewDetailResponse;
+import com.meokji.api.dto.review.ReviewFileInfo;
+import com.meokji.api.dto.review.ReviewListItem;
 import com.meokji.api.mapper.HistoryMapper;
 import com.meokji.api.mapper.UserMapper;
 import com.meokji.api.vo.RecipeReview;
@@ -21,23 +21,23 @@ import com.meokji.api.vo.ReviewLike;
  *
  * <h2>여기에 만들 메서드</h2>
  *
- * <p>{@link PostController} 가 부를 메서드다. 이름과 인자는 바꿔도 되지만,
+ * <p>{@link ReviewController} 가 부를 메서드다. 이름과 인자는 바꿔도 되지만,
  * 컨트롤러가 돌려주는 DTO 모양에 맞는 값을 줘야 화면이 그대로 돈다.
  *
  * <pre>
- *   Page&lt;PostListItem&gt; list(keyword, page, size)          목록 + 검색 + 페이징
+ *   Page&lt;ReviewListItem&gt; list(keyword, page, size)          목록 + 검색 + 페이징
  *   List&lt;PopularItem&gt;   listPopular(start, end, limit)     기간 내 좋아요 순
- *   PostDetailResponse  get(postId, me)                    상세 + 댓글
- *   PostDetailResponse  create(me, request)                글쓰기
- *   PostDetailResponse  update(me, postId, request)        글 수정
- *   void                delete(me, postId)                 글 삭제 (use_yn='N')
- *   int                 increaseView(postId)               조회수 +1
- *   LikeResponse        setLike(me, postId, liked)          좋아요 켜기/끄기
- *   CommentResponse     createComment(me, postId, request)
- *   CommentResponse     updateComment(me, postId, commentId, request)
- *   void                deleteComment(me, postId, commentId)
- *   PostFileInfo        attachFile(me, postId, file)
- *   void                detachFile(me, postId)
+ *   ReviewDetailResponse  get(reviewId, me)                    상세 + 댓글
+ *   ReviewDetailResponse  create(me, request)                글쓰기
+ *   ReviewDetailResponse  update(me, reviewId, request)        글 수정
+ *   void                delete(me, reviewId)                 글 삭제 (use_yn='N')
+ *   int                 increaseView(reviewId)               조회수 +1
+ *   LikeResponse        setLike(me, reviewId, liked)          좋아요 켜기/끄기
+ *   CommentResponse     createComment(me, reviewId, request)
+ *   CommentResponse     updateComment(me, reviewId, commentId, request)
+ *   void                deleteComment(me, reviewId, commentId)
+ *   ReviewFileInfo        attachFile(me, reviewId, file)
+ *   void                detachFile(me, reviewId)
  * </pre>
  *
  * <h2>쓸 수 있는 것은 이미 준비돼 있다</h2>
@@ -83,7 +83,7 @@ import com.meokji.api.vo.ReviewLike;
  * </pre>
  */
 @Service
-public class PostService {
+public class ReviewService {
 
     // 담당자가 채운다. 지금은 컨트롤러가 501 을 돌려주므로 여기까지 오지 않는다.
 }

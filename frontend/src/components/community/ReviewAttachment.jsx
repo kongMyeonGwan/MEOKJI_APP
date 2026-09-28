@@ -1,6 +1,6 @@
-import { postFileUrl } from '../../api/posts'
+import { reviewFileUrl } from '../../api/reviews'
 import ErrorMessage from '../common/ErrorMessage'
-import '../../styles/components/community/PostAttachment.css'
+import '../../styles/components/community/ReviewAttachment.css'
 
 // 게시글에 붙은 사진 한 장.
 //
@@ -8,14 +8,14 @@ import '../../styles/components/community/PostAttachment.css'
 //
 // img src 에 서버 주소가 붙는 이유는 업로드 폴더를 그냥 열어두지 않아서다.
 // 그러면 지워진 글의 사진도 주소만 알면 계속 보인다.
-// 대신 GET /api/posts/{id}/file 이 use_yn 을 보고 내려준다.
+// 대신 GET /api/reviews/{id}/file 이 use_yn 을 보고 내려준다.
 //
 // 내 글일 때만 바꾸기 / 지우기 버튼이 보인다.
 //
 // ! 사진 올리기·지우기는 아직 서버에 안 붙어 있다. 게시판 담당자가 채운다.
 //   이 컴포넌트는 props 로 받은 것만 그린다. 실제 업로드는
-//   부모(PostDetailPage)의 onPick · onRemove 에서 한다.
-export default function PostAttachment({
+//   부모(ReviewDetailPage)의 onPick · onRemove 에서 한다.
+export default function ReviewAttachment({
   file,
   isMine,
   busy,
@@ -50,13 +50,13 @@ export default function PostAttachment({
           {/* 서버가 이미지만 받아서 <img> 로 그려도 된다 */}
           <img
             className="attach__image"
-            src={postFileUrl(file.url)}
+            src={reviewFileUrl(file.url)}
             alt={file.name}
             loading="lazy"
           />
           <figcaption className="muted attach__caption">
             <a
-              href={postFileUrl(file.url)}
+              href={reviewFileUrl(file.url)}
               target="_blank"
               rel="noreferrer"
               className="attach__name"

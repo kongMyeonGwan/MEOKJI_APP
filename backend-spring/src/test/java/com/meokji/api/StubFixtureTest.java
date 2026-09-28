@@ -40,23 +40,30 @@ class StubFixtureTest {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
-    /** 파이썬 쪽 라우터가 들고 있는 주소. 스프링도 같은 20개를 들고 있어야 한다. */
+    /**
+     * 담당자가 채울 주소 20개. 프론트가 이 주소를 그대로 부른다.
+     *
+     * <p><b>후기 쪽은 파이썬과 주소가 다르다.</b> 파이썬은 {@code /api/posts} 였는데
+     * 표 이름이 {@code recipe_reviews} 라서 {@code /api/reviews} 로 바꿨다 - "post" 와
+     * "review" 가 섞여 있으면 어느 쪽이 무엇인지 매번 확인해야 한다. 공지(notices)는
+     * 표 이름이 그대로라 손대지 않았다.
+     */
     private static final List<String> EXPECTED = List.of(
-            "GET    /api/posts",
-            "POST   /api/posts",
-            "GET    /api/posts/popular",
-            "GET    /api/posts/{postId}",
-            "PUT    /api/posts/{postId}",
-            "DELETE /api/posts/{postId}",
-            "POST   /api/posts/{postId}/view",
-            "PUT    /api/posts/{postId}/like",
-            "DELETE /api/posts/{postId}/like",
-            "POST   /api/posts/{postId}/comments",
-            "PUT    /api/posts/{postId}/comments/{commentId}",
-            "DELETE /api/posts/{postId}/comments/{commentId}",
-            "POST   /api/posts/{postId}/file",
-            "GET    /api/posts/{postId}/file",
-            "DELETE /api/posts/{postId}/file",
+            "GET    /api/reviews",
+            "POST   /api/reviews",
+            "GET    /api/reviews/popular",
+            "GET    /api/reviews/{reviewId}",
+            "PUT    /api/reviews/{reviewId}",
+            "DELETE /api/reviews/{reviewId}",
+            "POST   /api/reviews/{reviewId}/view",
+            "PUT    /api/reviews/{reviewId}/like",
+            "DELETE /api/reviews/{reviewId}/like",
+            "POST   /api/reviews/{reviewId}/comments",
+            "PUT    /api/reviews/{reviewId}/comments/{commentId}",
+            "DELETE /api/reviews/{reviewId}/comments/{commentId}",
+            "POST   /api/reviews/{reviewId}/file",
+            "GET    /api/reviews/{reviewId}/file",
+            "DELETE /api/reviews/{reviewId}/file",
             "GET    /api/notices",
             "POST   /api/notices",
             "POST   /api/notices/{noticeId}/view",
@@ -89,7 +96,7 @@ class StubFixtureTest {
             String path = firstPattern(info);
 
             if (path == null
-                    || !(path.startsWith("/api/posts") || path.startsWith("/api/notices"))) {
+                    || !(path.startsWith("/api/reviews") || path.startsWith("/api/notices"))) {
                 return;
             }
 
@@ -115,11 +122,11 @@ class StubFixtureTest {
     }
 
     @Test
-    @DisplayName("GET /api/posts - 501 이고 문구가 파이썬과 같다")
+    @DisplayName("GET /api/reviews - 501 이고 문구가 파이썬과 같다")
     void postsListIsNotImplemented() throws Exception {
-        JsonNode want = fixture("posts_not_implemented");
+        JsonNode want = fixture("reviews_not_implemented");
 
-        MvcResult result = mvc.perform(get("/api/posts")).andReturn();
+        MvcResult result = mvc.perform(get("/api/reviews")).andReturn();
 
         assertThat(result.getResponse().getStatus()).isEqualTo(want.get("status").asInt());
         assertThat(body(result)).isEqualTo(want.get("body"));
@@ -139,7 +146,7 @@ class StubFixtureTest {
     @Test
     @DisplayName("게스트도 볼 수 있는 조회는 401 이 아니라 501 이다")
     void guestReadableStubsReturn501() throws Exception {
-        String[] paths = {"/api/posts", "/api/posts/1", "/api/posts/popular", "/api/notices"};
+        String[] paths = {"/api/reviews", "/api/reviews/1", "/api/reviews/popular", "/api/notices"};
 
         for (String path : paths) {
             MvcResult result = mvc.perform(get(path)).andReturn();
@@ -157,7 +164,7 @@ class StubFixtureTest {
     void loginRequiredStubsReturn401() throws Exception {
         // 글쓰기는 로그인이 필요하다. 구현 전이라도 인증은 먼저 걸려야 한다 -
         // 여기서 501 이 나오면 @LoginUser 가 안 붙은 것이다.
-        MvcResult result = mvc.perform(post("/api/posts")
+        MvcResult result = mvc.perform(post("/api/reviews")
                         .contentType("application/json")
                         .content("{\"meal_history_id\":1,\"title\":\"ㄱ\",\"content\":\"ㄴ\"}"))
                 .andReturn();

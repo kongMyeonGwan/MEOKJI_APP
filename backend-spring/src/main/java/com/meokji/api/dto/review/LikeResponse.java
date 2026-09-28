@@ -1,4 +1,4 @@
-package com.meokji.api.dto.post;
+package com.meokji.api.dto.review;
 
 /**
  * 좋아요를 켜고 끈 결과.

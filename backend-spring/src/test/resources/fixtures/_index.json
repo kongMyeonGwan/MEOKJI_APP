@@ -178,7 +178,7 @@
       "note": "없는 게임 키"
     },
     {
-      "name": "posts_not_implemented",
+      "name": "reviews_not_implemented",
       "status": 501,
       "note": "게시판 목록 501"
     },

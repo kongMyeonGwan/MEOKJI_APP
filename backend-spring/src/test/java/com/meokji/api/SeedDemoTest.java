@@ -533,7 +533,7 @@ class SeedDemoTest {
 
     /** 4·5) 후기. 하나는 첨부 없이, 하나는 첨부를 붙여서. */
     private void seedPosts(String member, Map<String, JsonNode> histories) throws Exception {
-        if (notReady(getJson("/api/posts", null))) {
+        if (notReady(getJson("/api/reviews", null))) {
             skip("게시판이 아직 서버에 없다(501). 담당자가 구현하면 이 단계가 다시 돈다.");
             skip("식사 기록은 이미 만들어져 있으니, 구현 뒤에 다시 돌리면 후기가 붙는다.");
             return;
@@ -550,12 +550,12 @@ class SeedDemoTest {
             // 한 기록에는 후기를 한 번만 쓸 수 있다(uq_reviews_meal).
             // 이미 썼으면 shared_post_id 가 채워져 있으니 그 글을 이어서 쓴다.
             JsonNode shared = history.path("shared_post_id");
-            Long postId = shared.isNull() || shared.isMissingNode() ? null : shared.asLong();
+            Long reviewId = shared.isNull() || shared.isMissingNode() ? null : shared.asLong();
 
-            if (postId != null) {
-                skip("이미 공유한 기록 - #" + postId + " " + item.title());
+            if (reviewId != null) {
+                skip("이미 공유한 기록 - #" + reviewId + " " + item.title());
             } else {
-                MvcResult created = postJson("/api/posts", member, Map.of(
+                MvcResult created = postJson("/api/reviews", member, Map.of(
                         "meal_history_id", history.path("id").asLong(),
                         "title", item.title(),
                         "content", item.content()));
@@ -563,8 +563,8 @@ class SeedDemoTest {
                 assertThat(created.getResponse().getStatus())
                         .as("글쓰기 실패: %s", body(created)).isEqualTo(201);
 
-                postId = body(created).path("id").asLong();
-                ok("#" + postId + " " + item.title());
+                reviewId = body(created).path("id").asLong();
+                ok("#" + reviewId + " " + item.title());
             }
 
             if (!item.attach()) {
@@ -574,7 +574,7 @@ class SeedDemoTest {
 
             // 이미 붙어 있으면 다시 올리지 않는다. 다시 올려도 교체라 문제는 없지만,
             // 돌릴 때마다 같은 그림이 디스크에 하나씩 쌓인다.
-            JsonNode detail = body(getJson("/api/posts/" + postId, null));
+            JsonNode detail = body(getJson("/api/reviews/" + reviewId, null));
             if (!detail.path("file").isNull() && !detail.path("file").isMissingNode()) {
                 skip("   첨부 이미 있음");
                 continue;
@@ -586,7 +586,7 @@ class SeedDemoTest {
             MockMultipartFile file = new MockMultipartFile(
                     "file", ATTACH_NAME, "image/png", drawNoodlePng());
 
-            MvcResult attached = mvc.perform(multipart("/api/posts/" + postId + "/file")
+            MvcResult attached = mvc.perform(multipart("/api/reviews/" + reviewId + "/file")
                             .file(file)
                             .header("Authorization", "Bearer " + member))
                     .andReturn();
@@ -606,7 +606,7 @@ class SeedDemoTest {
         System.out.println("\n[결과]");
 
         MvcResult notices = getJson("/api/notices", null);
-        MvcResult posts = getJson("/api/posts", null);
+        MvcResult posts = getJson("/api/reviews", null);
 
         if (notReady(notices)) {
             System.out.println("  공지      아직 서버에 없음 (501)");

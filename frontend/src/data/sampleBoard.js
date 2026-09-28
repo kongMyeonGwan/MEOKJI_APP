@@ -6,12 +6,12 @@
 // 그래도 화면 모양은 확인할 수 있어야 해서, 서버에서 받아올 값을
 // 여기에 같은 모양으로 적어두고 화면이 이걸 그리게 해놨다.
 //
-// 필드 이름은 서버 스키마(backend/app/schemas/post.py · notice.py)와 똑같다.
+// 필드 이름은 서버 스키마(backend-spring 의 dto/review/ · dto/notice/)와 똑같다.
 // 그래서 나중에 이 배열 대신 API 응답을 넣기만 하면 화면은 안 고쳐도 된다.
 
-// ===== 게시글 목록 (GET /api/posts) =====
+// ===== 게시글 목록 (GET /api/reviews) =====
 // 서버는 { items, total, page, size, total_pages } 모양으로 준다.
-export const SAMPLE_POSTS = [
+export const SAMPLE_REVIEWS = [
   {
     id: 1,
     title: '비 오는 날엔 역시 김치전이죠',
@@ -79,9 +79,9 @@ export const SAMPLE_POSTS = [
   },
 ]
 
-// ===== 게시글 상세 (GET /api/posts/{id}) =====
+// ===== 게시글 상세 (GET /api/reviews/{id}) =====
 // 목록 항목에 본문 전체 · 레시피 · 댓글이 더 붙는다.
-export const SAMPLE_POST_DETAIL = {
+export const SAMPLE_REVIEW_DETAIL = {
   id: 1,
   title: '비 오는 날엔 역시 김치전이죠',
   content:
@@ -181,7 +181,7 @@ export const SAMPLE_NOTICES = [
   },
 ]
 
-// ===== 인기 레시피 (GET /api/posts/popular) =====
+// ===== 인기 레시피 (GET /api/reviews/popular) =====
 // 고른 기간에 새로 받은 좋아요가 많은 순.
 export const SAMPLE_POPULAR = [
   {

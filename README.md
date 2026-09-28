@@ -249,15 +249,15 @@ MEOKJI_APP/
 | | `GET /api/histories/stats` | ● | 건수 · 누적 비용 · 연속 방문일 (전체 기준) |
 | | `POST /api/histories` | ● | 식사 확정 (이걸로 먹을래요) |
 | | `DELETE /api/histories/{id}` | ● | 기록 삭제 (공유했으면 409) |
-| posts | `GET /api/posts` | | ✗ 목록 · 검색 · 페이징 (`?page=1&size=20`) |
-| | `GET /api/posts/popular` | | ✗ 기간 내 좋아요 순위 |
-| | `GET /api/posts/{id}` | | ✗ 상세 + 댓글 |
-| | `POST·PUT·DELETE /api/posts[/{id}]` | ● | ✗ 글쓰기 · 수정 · 삭제 |
-| | `POST /api/posts/{id}/view` | | ✗ 조회수 +1 |
-| | `PUT·DELETE /api/posts/{id}/like` | ● | ✗ 좋아요 켜기 · 끄기 |
-| | `POST·PUT·DELETE /api/posts/{id}/comments[/{cid}]` | ● | ✗ 댓글 |
-| | `POST·DELETE /api/posts/{id}/file` | ● | ✗ 사진 붙이기 · 교체 · 떼기 |
-| | `GET /api/posts/{id}/file` | | ✗ 사진 내려받기 (원본 파일명으로) |
+| reviews | `GET /api/reviews` | | ✗ 목록 · 검색 · 페이징 (`?page=1&size=20`) |
+| | `GET /api/reviews/popular` | | ✗ 기간 내 좋아요 순위 |
+| | `GET /api/reviews/{id}` | | ✗ 상세 + 댓글 |
+| | `POST·PUT·DELETE /api/reviews[/{id}]` | ● | ✗ 글쓰기 · 수정 · 삭제 |
+| | `POST /api/reviews/{id}/view` | | ✗ 조회수 +1 |
+| | `PUT·DELETE /api/reviews/{id}/like` | ● | ✗ 좋아요 켜기 · 끄기 |
+| | `POST·PUT·DELETE /api/reviews/{id}/comments[/{cid}]` | ● | ✗ 댓글 |
+| | `POST·DELETE /api/reviews/{id}/file` | ● | ✗ 사진 붙이기 · 교체 · 떼기 |
+| | `GET /api/reviews/{id}/file` | | ✗ 사진 내려받기 (원본 파일명으로) |
 | catalog | `GET /api/catalog` | | 카테고리 · 룰렛 · 게임 · 질문 · 검색어 · 예산 |
 | | `GET /api/catalog/regions` | | 시·도 · 시·군·구 (주소 드롭다운) |
 | notices | `GET /api/notices` | | ✗ 공지사항 (고정 먼저 · 최신순, `?page=1&size=20`) |

@@ -197,6 +197,50 @@ null 로 들어와서 로그인 검사가 사라진 채로 정상 동작하는 �
 테스트가 통과했다** — 28도 mock 에서 '시원한음식' 태그가 4점을 받아 결과가
 그럴싸했기 때문이다. 파이썬 코드를 다시 읽으며 찾았다.
 
+### post 를 review 로 — 표 이름에 맞췄다 (2026-09-29)
+
+2026-09-04 스키마 v2 기록에 이렇게 적어뒀던 것을 닫는다.
+
+> API 경로는 아직 `/api/posts` 다. 테이블만 `recipe_reviews` 로 바뀐 상태라
+> 이름이 어긋나 있다. **프론트까지 함께 고칠 때 정리한다**
+
+표는 `recipe_reviews` · `review_likes` · `review_comments` 인데 API 와 화면만
+"post" 였다. 엔티티(`RecipeReview` · `ReviewComment` · `ReviewLike`)는 처음부터
+맞아 있어서, 한 도메인에 두 이름이 섞여 있었다 - 어느 쪽이 무엇인지 매번
+확인해야 한다.
+
+    자바    PostController · PostService · dto/post/ · PostCreateRequest ...
+            -> ReviewController · ReviewService · dto/review/ · ReviewCreateRequest
+    주소    /api/posts/{postId}        -> /api/reviews/{reviewId}
+    프론트  api/posts.js · PostWritePage · PostDetailPage · PostCard · PostAttachment
+            -> api/reviews.js · ReviewWritePage · ReviewDetailPage · ReviewCard ...
+    CSS     .post · .post__* · .post-card* -> .review · .review__* · .review-card*
+
+공지(notices)는 표 이름이 그대로라 손대지 않았다.
+
+#### "post" 를 통째로 바꾸면 안 되는 자리가 있다
+
+HTTP 메서드도 post 다. `@PostMapping` · `client.post(` · `HttpMethod.POST` ·
+MockMvc 의 `post(...)` 를 같이 바꾸면 컴파일이 깨지거나 - 더 나쁘게는 -
+요청 메서드가 조용히 달라진다. 그래서 낱말 단위 식별자만 골라 바꿨고,
+`client.post(` 가 들어 있는 파일에서는 단독 `post` 치환을 아예 막아뒀다.
+
+#### 파이썬과 주소가 갈라졌다
+
+`StubFixtureTest` 는 "파이썬과 같은 주소 20개" 를 지키는 테스트였다. 이제 후기
+쪽은 다르다. 주석을 사실대로 고쳤다 - 파이썬은 곧 걷어내고, 그때 기준이 될
+것은 이쪽이다. 정답지 `posts_not_implemented.json` 도
+`reviews_not_implemented.json` 으로 옮기고 바뀐 이유를 파일 안에 적었다.
+
+#### 지금이 가장 싼 시점이었다
+
+게시판 담당자가 아직 `ReviewMapper` 를 만들지 않았다. 구현이 들어간 뒤였다면
+주소 계약을 중간에 바꾸는 일이 됐을 것이다.
+
+확인: 테스트 94건 · `vite build` 209 모듈 · 서버를 띄워 주소 확인.
+
+---
+
 ### 자바를 계층별 폴더로 · 주입을 @Autowired 로 (2026-09-29)
 
 팀원마다 맡은 자리가 있는데 파일 목록만 봐서는 어디에 무엇을 만들어야 할지

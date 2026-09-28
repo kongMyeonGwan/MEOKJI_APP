@@ -113,7 +113,7 @@ gradlew test
 | likes — 찜 목록 · 토글 · 비우기 | 3 | ✅ |
 | 추천 `POST /api/recommendations` | 1 | ✅ 날씨 · 떨이 재료 반영 |
 | 레시피 `GET /api/recipes/{이름}` | 1 | ✅ KAMIS 실시세 포함 |
-| **posts 15 · notices 5** | 20 | **🔧 501 스텁 — 담당자 작업 대상** |
+| **reviews 15 · notices 5** | 20 | **🔧 501 스텁 — 담당자 작업 대상** |
 
 레시피의 조리 순서를 만드는 코드(steps.py 1,004줄)는 옮기지 않았다.
 recipes.json 에 순서가 이미 들어 있고, 그 파일을 만들 때 쓴 코드라 조회에는
@@ -181,9 +181,9 @@ API 를 101번 두드린다. 결과는 `data/bargains.json` 에 날짜와 함께
 
 | 무엇 | 어디 |
 |---|---|
-| 만들 메서드 목록 · 지켜야 할 규칙 | `service/PostService.java` · `service/NoticeService.java` 주석 |
-| 주소 · 로그인 필요 여부 | `controller/PostController.java` · `controller/NoticeController.java` |
-| 요청/응답 모양 | `dto/post/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
+| 만들 메서드 목록 · 지켜야 할 규칙 | `service/ReviewService.java` · `service/NoticeService.java` 주석 |
+| 주소 · 로그인 필요 여부 | `controller/ReviewController.java` · `controller/NoticeController.java` |
+| 요청/응답 모양 | `dto/review/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
 | 표 한 행 | `vo/RecipeReview.java` · `vo/ReviewComment` · `vo/ReviewLike` · `vo/Notice.java` |
 | 매퍼 본보기 | `mapper/UserMapper.java` + `resources/mapper/UserMapper.xml` |
 | 페이징 본보기 | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
@@ -196,11 +196,11 @@ API 를 101번 두드린다. 결과는 `data/bargains.json` 에 날짜와 함께
 0. **`docs/BOARD_SPEC.md` 를 먼저 읽는다.** DTO 만 봐서는 알 수 없는 것들이 있다 —
    남의 글도 403 이 아니라 404 인 이유, 좋아요를 껐다 켤 때 새로 INSERT 하지 않는
    이유, 인기 레시피의 날짜가 한국 날짜인 이유
-1. `PostMapper` 인터페이스와 `resources/mapper/PostMapper.xml` 을 새로 만든다
-2. `PostService` 에 메서드를 채운다
-3. `PostController` 의 `throw todo();` 를 서비스 호출로 바꾼다
+1. `ReviewMapper` 인터페이스와 `resources/mapper/ReviewMapper.xml` 을 새로 만든다
+2. `ReviewService` 에 메서드를 채운다
+3. `ReviewController` 의 `throw todo();` 를 서비스 호출로 바꾼다
 4. 화면(`frontend/src/pages/CommunityPage.jsx` 등)에서 `SAMPLE_*` 대신
-   `api/posts.js` 를 부르게 바꾸고 `frontend/src/data/sampleBoard.js` 를 지운다
+   `api/reviews.js` 를 부르게 바꾸고 `frontend/src/data/sampleBoard.js` 를 지운다
 
 ### 확인은 이걸로
 

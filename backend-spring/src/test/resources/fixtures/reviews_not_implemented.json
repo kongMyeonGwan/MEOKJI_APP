@@ -1,8 +1,8 @@
 {
-  "note": "게시판 목록 501",
+  "note": "후기 게시판 목록 501. 파이썬은 /api/posts 였다 - 표 이름(recipe_reviews)에 맞춰 주소를 바꿨다",
   "request": {
     "method": "GET",
-    "path": "/api/posts"
+    "path": "/api/reviews"
   },
   "status": 501,
   "body": {

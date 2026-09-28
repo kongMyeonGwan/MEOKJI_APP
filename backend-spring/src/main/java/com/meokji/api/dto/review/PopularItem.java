@@ -1,4 +1,4 @@
-package com.meokji.api.dto.post;
+package com.meokji.api.dto.review;
 
 /**
  * 인기 레시피 한 줄. 기간 안에 좋아요를 많이 받은 순.

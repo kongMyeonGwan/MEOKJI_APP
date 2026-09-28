@@ -4,11 +4,11 @@
 다 맞춰져 있고 메서드 안만 채우면 된다.
 
 자바는 계층별 폴더다 — `controller/` · `service/` · `mapper/` · `dto/<기능>/` ·
-`vo/`. 게시판 담당자가 만들 것은 `mapper/PostMapper.java` 와
-`resources/mapper/PostMapper.xml` 이고, 나머지는 이미 자리가 잡혀 있다.
+`vo/`. 게시판 담당자가 만들 것은 `mapper/ReviewMapper.java` 와
+`resources/mapper/ReviewMapper.xml` 이고, 나머지는 이미 자리가 잡혀 있다.
 
 이 문서는 **"무엇을 만들어야 하는가"** 가 아니라 **"어떻게 동작해야 하는가"** 를
-적은 것이다. 앞의 것은 `PostService.java` · `NoticeService.java` 주석에 있다.
+적은 것이다. 앞의 것은 `ReviewService.java` · `NoticeService.java` 주석에 있다.
 
 ---
 
@@ -96,7 +96,7 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 
 ## 2. 동작 명세
 
-### 목록 `GET /api/posts`
+### 목록 `GET /api/reviews`
 
 | 항목 | 규칙 |
 |---|---|
@@ -110,7 +110,7 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 
 좋아요가 하나도 없는 글은 `GROUP BY` 결과에 아예 없다. **기본값 0** 으로 채운다.
 
-### 상세 `GET /api/posts/{id}`
+### 상세 `GET /api/reviews/{id}`
 
 - `food_name` · `recipe_json` · `ingredients_json` 은 **복사본이 아니라 원본
   `meal_histories` 에서 읽는다.** 기록은 확정한 뒤로 수정하지 않으므로 값이 흔들리지 않는다.
@@ -119,11 +119,11 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 - 댓글은 `created_at, id` **오름차순** (목록과 반대다).
 - 댓글의 `is_mine` 은 "로그인했고 그 댓글을 내가 썼는가".
 
-### 조회수 `POST /api/posts/{id}/view`
+### 조회수 `POST /api/reviews/{id}/view`
 
 상세와 나눠져 있다. 상세를 열 때마다 올리면 새로고침으로 조회수가 오른다.
 
-### 좋아요 `PUT/DELETE /api/posts/{id}/like`
+### 좋아요 `PUT/DELETE /api/reviews/{id}/like`
 
 **껐던 행을 되살린다.** 새로 INSERT 하지 않는다.
 
@@ -144,7 +144,7 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 
 응답은 `{liked, like_count}` 이고, `like_count` 는 **바꾼 뒤 다시 센 값**이다.
 
-### 인기 레시피 `GET /api/posts/popular`
+### 인기 레시피 `GET /api/reviews/popular`
 
 **기간 안에 새로 받은 좋아요** 기준이다. 글의 총 좋아요가 아니다.
 
@@ -161,7 +161,7 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 `Kst` 를 안 쓰고 UTC 로 자르면 **9시간 때문에 경계에서 어긋난다** — 밤 9시 이후에
 누른 좋아요가 다음 날로 넘어간다.
 
-### 첨부파일 `POST/DELETE/GET /api/posts/{id}/file`
+### 첨부파일 `POST/DELETE/GET /api/reviews/{id}/file`
 
 **후기 하나당 파일 하나.** 다시 올리면 교체다.
 
@@ -223,9 +223,9 @@ DB 에 들어갔을 때를 막는 자리다.
 
 | 무엇 | 어디 |
 |---|---|
-| 만들 메서드 목록 | `service/PostService.java` · `service/NoticeService.java` 주석 |
-| 주소 · 로그인 필요 여부 | `controller/PostController.java` · `controller/NoticeController.java` |
-| 요청/응답 모양 | `dto/post/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
+| 만들 메서드 목록 | `service/ReviewService.java` · `service/NoticeService.java` 주석 |
+| 주소 · 로그인 필요 여부 | `controller/ReviewController.java` · `controller/NoticeController.java` |
+| 요청/응답 모양 | `dto/review/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
 | 표 한 행 | `vo/RecipeReview.java` · `vo/ReviewComment` · `vo/ReviewLike` · `vo/Notice.java` |
 | 매퍼 본보기 | `mapper/UserMapper.java` + `resources/mapper/UserMapper.xml` |
 | **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
@@ -255,5 +255,5 @@ gradlew seedDemo
 **파일을 고치지 않아도** 공지와 후기(첨부 포함)가 만들어진다.
 
 마지막으로 화면을 바꾼다 — `frontend/src/pages/community/` 의 네 화면에서
-`SAMPLE_*` 대신 `api/posts.js` · `api/notices.js` 를 부르게 하고
+`SAMPLE_*` 대신 `api/reviews.js` · `api/notices.js` 를 부르게 하고
 `frontend/src/data/sampleBoard.js` 를 지운다.

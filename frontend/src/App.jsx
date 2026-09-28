@@ -30,8 +30,8 @@ import WorldCupPage from './pages/game/WorldCupPage'
 
 import CommunityPage from './pages/community/CommunityPage'
 import PopularPage from './pages/community/PopularPage'
-import PostDetailPage from './pages/community/PostDetailPage'
-import PostWritePage from './pages/community/PostWritePage'
+import ReviewDetailPage from './pages/community/ReviewDetailPage'
+import ReviewWritePage from './pages/community/ReviewWritePage'
 
 import AiHistoryPage from './pages/mypage/AiHistoryPage'
 import HistoryPage from './pages/mypage/HistoryPage'
@@ -82,7 +82,7 @@ export default function App() {
                       {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
                       <Route path="popular" element={<PopularPage />} />
                       <Route path="community" element={<CommunityPage />} />
-                      <Route path="community/:postId" element={<PostDetailPage />} />
+                      <Route path="community/:reviewId" element={<ReviewDetailPage />} />
 
                       {/* 설정은 브라우저에 저장되는 값이라 로그인 없이도 쓸 수 있다 */}
                       <Route path="settings" element={<SettingsPage />} />
@@ -91,7 +91,7 @@ export default function App() {
                       <Route element={<ProtectedRoute />}>
                         {/* 찜은 서버에 회원별로 저장돼서 목록도 로그인이 필요하다 */}
                         <Route path="liked" element={<LikedPage />} />
-                        <Route path="community/write" element={<PostWritePage />} />
+                        <Route path="community/write" element={<ReviewWritePage />} />
                         <Route path="history" element={<HistoryPage />} />
                         <Route path="ai-history" element={<AiHistoryPage />} />
                         <Route path="mypage" element={<MyPage />} />

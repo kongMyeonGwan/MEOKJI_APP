@@ -3,20 +3,20 @@ import { Link, useNavigate } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Loading from '../../components/common/Loading'
 import { getHistories } from '../../api/histories'
-import { createPost, uploadPostFile } from '../../api/posts'
+import { createReview, uploadReviewFile } from '../../api/reviews'
 import { parseApiError } from '../../utils/apiError'
-import '../../styles/pages/PostWritePage.css'
+import '../../styles/pages/ReviewWritePage.css'
 
 // 게시글 쓰기 화면.
 //
 // 글은 반드시 확정한 식사 기록에서 출발한다. 기록 없이 글만 쓰는 길은 없다.
 // DB 에서도 meal_history_id 가 NOT NULL 이라 서버가 한 번 더 막는다.
 //
-// 화면은 다 붙여뒀다. 다만 서버의 POST /api/posts 가 아직 501 이라
-// api/posts.js 의 createPost 가 그 전에 막는다 - 등록을 누르면
+// 화면은 다 붙여뒀다. 다만 서버의 POST /api/reviews 가 아직 501 이라
+// api/reviews.js 의 createReview 가 그 전에 막는다 - 등록을 누르면
 // "게시판 기능은 아직 준비 중입니다." 가 뜬다.
 //
-// 게시판 담당자가 서버와 api/posts.js 를 채우면 이 화면은 그대로 돈다.
+// 게시판 담당자가 서버와 api/reviews.js 를 채우면 이 화면은 그대로 돈다.
 //
 // 등록이 두 번에 나뉘는 이유
 // --------------------------
@@ -30,7 +30,7 @@ import '../../styles/pages/PostWritePage.css'
 const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp']
 const MAX_MB = 5
 
-export default function PostWritePage() {
+export default function ReviewWritePage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [historyId, setHistoryId] = useState('')
@@ -147,7 +147,7 @@ export default function PostWritePage() {
 
     let created
     try {
-      created = await createPost({
+      created = await createReview({
         mealHistoryId: historyId,
         title: title.trim(),
         content: content,
@@ -170,7 +170,7 @@ export default function PostWritePage() {
     // 남는 것은 '사진 없는 멀쩡한 글' 이고, 상세 화면에서 다시 붙일 수 있다.
     if (file) {
       try {
-        await uploadPostFile(created.id, file)
+        await uploadReviewFile(created.id, file)
       } catch (err) {
         window.alert('글은 올라갔지만 사진을 올리지 못했습니다. 상세 화면에서 다시 붙여주세요.')
       }

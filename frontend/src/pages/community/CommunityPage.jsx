@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import PostCard from '../../components/community/PostCard'
+import ReviewCard from '../../components/community/ReviewCard'
 import NoticeList from '../../components/community/NoticeList'
 import NoticeForm from '../../components/community/NoticeForm'
 import Pagination from '../../components/common/Pagination'
 import Icon from '../../components/common/Icon'
 import { useAuth } from '../../contexts/AuthContext'
-import { SAMPLE_NOTICES, SAMPLE_POSTS } from '../../data/sampleBoard'
+import { SAMPLE_NOTICES, SAMPLE_REVIEWS } from '../../data/sampleBoard'
 import '../../styles/pages/CommunityPage.css'
 
 // 커뮤니티 목록 화면.
@@ -22,8 +22,8 @@ import '../../styles/pages/CommunityPage.css'
 //
 // 붙일 때 할 일
 // -------------
-//   1. useEffect 로 getPosts(query, page) · getNotices({ page }) 를 부른다
-//   2. 응답의 items 를 posts / notices 에 넣고 total_pages 도 같이 받는다
+//   1. useEffect 로 getReviews(query, page) · getNotices({ page }) 를 부른다
+//   2. 응답의 items 를 reviews / notices 에 넣고 total_pages 도 같이 받는다
 //   3. 검색은 이미 아래 keyword -> query 로 0.3초 늦춰 놨으니 그대로 쓰면 된다
 //   4. 공지 쓰기 · 고치기 · 지우기는 NoticeForm / NoticeList 가
 //      onDone · onEdit · onDelete 로 알려준다
@@ -64,10 +64,10 @@ export default function CommunityPage() {
   }
 
   // TODO: 서버에서 받아오게 바꾼다. 지금은 하드코딩 데이터다.
-  //   const [posts, setPosts] = useState([])
+  //   const [reviews, setPosts] = useState([])
   //   const [totalPages, setTotalPages] = useState(1)
-  //   useEffect(() => { getPosts(query, page).then(...) }, [query, page])
-  const posts = SAMPLE_POSTS
+  //   useEffect(() => { getReviews(query, page).then(...) }, [query, page])
+  const reviews = SAMPLE_REVIEWS
   const totalPages = 1
 
   // TODO: 공지도 마찬가지다. getNotices({ page: noticePage })
@@ -205,13 +205,13 @@ export default function CommunityPage() {
             aria-label="게시글 검색"
           />
 
-          {posts.length === 0 && <p className="empty">{emptyText}</p>}
+          {reviews.length === 0 && <p className="empty">{emptyText}</p>}
 
-          {posts.length > 0 && (
+          {reviews.length > 0 && (
             <>
               <div className="divided community__list">
-                {posts.map(function (post) {
-                  return <PostCard key={post.id} post={post} />
+                {reviews.map(function (review) {
+                  return <ReviewCard key={review.id} review={review} />
                 })}
               </div>
 

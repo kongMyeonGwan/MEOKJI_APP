@@ -1,4 +1,4 @@
-package com.meokji.api.dto.post;
+package com.meokji.api.dto.review;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import tools.jackson.databind.JsonNode;
  * <p>{@code liked} · {@code isMine} 은 지금 보는 사람 기준이다. 로그인하지 않았으면
  * 둘 다 false 다.
  */
-public record PostDetailResponse(
+public record ReviewDetailResponse(
         Long id,
         String title,
         String content,
@@ -25,7 +25,7 @@ public record PostDetailResponse(
         JsonNode recipeJson,
         JsonNode ingredientsJson,
         Long mealHistoryId,
-        PostFileInfo file,
+        ReviewFileInfo file,
         boolean liked,
         boolean isMine,
         List<CommentResponse> comments) {

@@ -1,4 +1,4 @@
-package com.meokji.api.dto.post;
+package com.meokji.api.dto.review;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
