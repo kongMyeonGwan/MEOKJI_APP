@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,21 +46,15 @@ public class UserService {
     private static final List<String> WITHDRAW_TABLES = List.of(
             "review_likes", "review_comments", "recipe_reviews", "meal_histories", "user_bans");
 
-    private final UserMapper users;
-    private final HistoryMapper histories;
-    private final PasswordEncoder passwordEncoder;
-    private final RegionCatalog regions;
+    @Autowired
+    private UserMapper users;
+    @Autowired
+    private HistoryMapper histories;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RegionCatalog regions;
 
-    public UserService(
-            UserMapper users,
-            HistoryMapper histories,
-            PasswordEncoder passwordEncoder,
-            RegionCatalog regions) {
-        this.users = users;
-        this.histories = histories;
-        this.passwordEncoder = passwordEncoder;
-        this.regions = regions;
-    }
 
     /** 내 정보. 연속 방문일 · 요리 횟수를 같이 계산해서 준다. */
     public ProfileResponse getProfile(User user) {

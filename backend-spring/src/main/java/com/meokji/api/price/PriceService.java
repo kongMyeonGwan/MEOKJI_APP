@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.ApiException;
@@ -35,10 +36,14 @@ public class PriceService {
     /** 한 번에 던질 최대 개수. 재료가 더 많으면 나머지는 기다린다. */
     private static final int PARALLELISM = 6;
 
-    private final IngredientMatcher matcher;
-    private final KamisClient kamis;
-    private final UnitConvert convert;
-    private final AppProperties app;
+    @Autowired
+    private IngredientMatcher matcher;
+    @Autowired
+    private KamisClient kamis;
+    @Autowired
+    private UnitConvert convert;
+    @Autowired
+    private AppProperties app;
 
     /**
      * 시세 조회 전용 스레드.
@@ -52,16 +57,6 @@ public class PriceService {
         return thread;
     });
 
-    public PriceService(
-            IngredientMatcher matcher,
-            KamisClient kamis,
-            UnitConvert convert,
-            AppProperties app) {
-        this.matcher = matcher;
-        this.kamis = kamis;
-        this.convert = convert;
-        this.app = app;
-    }
 
     @PreDestroy
     void shutdown() {

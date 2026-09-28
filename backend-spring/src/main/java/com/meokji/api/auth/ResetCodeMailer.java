@@ -1,5 +1,6 @@
 package com.meokji.api.auth;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -25,19 +26,17 @@ public class ResetCodeMailer {
 
     private static final String SUBJECT = "[뭐먹지?] 비밀번호 재설정 인증번호";
 
-    private final AppProperties app;
+    @Autowired
+    private AppProperties app;
 
     /**
      * {@code spring.mail.host} 를 적지 않으면 스프링이 이 빈을 아예 만들지 않는다.
      * 그래서 직접 주입받지 않고 {@code ObjectProvider} 로 "있으면 쓴다" 로 둔다 -
      * mock 으로 쓰는 사람이 메일 설정 때문에 서버를 못 띄우면 안 된다.
      */
-    private final ObjectProvider<JavaMailSender> mailSender;
+    @Autowired
+    private ObjectProvider<JavaMailSender> mailSender;
 
-    public ResetCodeMailer(AppProperties app, ObjectProvider<JavaMailSender> mailSender) {
-        this.app = app;
-        this.mailSender = mailSender;
-    }
 
     /** 인증번호를 보낸다. provider 가 smtp 가 아니면 콘솔에 찍는다. */
     public void send(String to, String code, int expireMinutes) {

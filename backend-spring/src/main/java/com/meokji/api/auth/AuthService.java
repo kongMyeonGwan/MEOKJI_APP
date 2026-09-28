@@ -2,6 +2,7 @@ package com.meokji.api.auth;
 
 import java.math.BigDecimal;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,21 +35,15 @@ public class AuthService {
      */
     private static final String INVALID_CREDENTIALS = "이메일 또는 비밀번호가 올바르지 않습니다.";
 
-    private final UserMapper users;
-    private final PasswordEncoder passwordEncoder;
-    private final RegionCatalog regions;
-    private final AppProperties app;
+    @Autowired
+    private UserMapper users;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RegionCatalog regions;
+    @Autowired
+    private AppProperties app;
 
-    public AuthService(
-            UserMapper users,
-            PasswordEncoder passwordEncoder,
-            RegionCatalog regions,
-            AppProperties app) {
-        this.users = users;
-        this.passwordEncoder = passwordEncoder;
-        this.regions = regions;
-        this.app = app;
-    }
 
     /** 회원가입. 이메일 · 닉네임이 겹치면 409. */
     @Transactional

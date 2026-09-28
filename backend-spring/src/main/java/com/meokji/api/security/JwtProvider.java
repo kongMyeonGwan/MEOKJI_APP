@@ -6,6 +6,7 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.meokji.api.config.AppProperties;
@@ -14,6 +15,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Access Token 발급 · 해석.
@@ -29,10 +31,24 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtProvider {
 
-    private final SecretKey key;
-    private final long expireSeconds;
+    @Autowired
+    private AppProperties app;
 
-    public JwtProvider(AppProperties app) {
+    private SecretKey key;
+    private long expireSeconds;
+
+    /**
+     * 비밀키를 서명에 쓸 수 있는 형태로 만들어 둔다.
+     *
+     * <p>생성자가 아니라 {@code @PostConstruct} 인 이유는 필드 주입이라서다 -
+     * 생성자가 도는 시점에는 {@code app} 이 아직 null 이다. 주입이 끝난 뒤에
+     * 스프링이 이 메서드를 불러준다.
+     *
+     * <p>여기서 예외가 나면 <b>서버가 아예 뜨지 않는다.</b> 그게 맞다 - 토큰을
+     * 만들 때마다 실패하는 것보다 시작할 때 멈추는 편이 낫다.
+     */
+    @PostConstruct
+    void init() {
         String secret = app.getJwt().getSecretKey();
 
         if (secret == null || secret.isBlank()) {
@@ -41,8 +57,7 @@ public class JwtProvider {
                     + "application-local.yml.example 을 복사해서 채우세요.");
         }
 
-        // HS256 은 32바이트 이상을 요구한다. 짧으면 여기서 WeakKeyException 이 난다 -
-        // 서버가 아예 뜨지 않는 편이, 토큰을 만들 때마다 실패하는 것보다 낫다.
+        // HS256 은 32바이트 이상을 요구한다. 짧으면 여기서 WeakKeyException 이 난다.
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expireSeconds = app.getJwt().getExpiresInSeconds();
     }

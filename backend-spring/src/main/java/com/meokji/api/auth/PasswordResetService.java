@@ -2,9 +2,9 @@ package com.meokji.api.auth;
 
 import java.security.SecureRandom;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -47,11 +47,16 @@ public class PasswordResetService {
     /** {@code Math.random()} 이 아니라 암호학적 난수를 쓴다. 코드를 예측당하면 안 된다. */
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final UserMapper users;
-    private final VerificationCodeMapper codes;
-    private final PasswordEncoder passwordEncoder;
-    private final ResetCodeMailer mailer;
-    private final AppProperties app;
+    @Autowired
+    private UserMapper users;
+    @Autowired
+    private VerificationCodeMapper codes;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ResetCodeMailer mailer;
+    @Autowired
+    private AppProperties app;
 
     /**
      * 발급 부분만 트랜잭션으로 묶는다.
@@ -59,23 +64,12 @@ public class PasswordResetService {
      * <p>{@code @Transactional} 을 쓰지 않는 이유는, 같은 클래스 안에서 부르면
      * 프록시를 거치지 않아 애노테이션이 <b>조용히 아무 일도 하지 않기</b> 때문이다.
      * 여기서는 "이 블록만 묶고 그 뒤에 메일을 보낸다" 가 핵심이라 눈에 보이게 쓴다.
+     *
+     * <p>스프링부트가 만들어 둔 빈을 그대로 받는다. 직접 {@code new} 하던 것을
+     * 주입으로 바꾼 것뿐이고, 기본 전파 · 격리 수준도 같다.
      */
-    private final TransactionTemplate transaction;
-
-    public PasswordResetService(
-            UserMapper users,
-            VerificationCodeMapper codes,
-            PasswordEncoder passwordEncoder,
-            ResetCodeMailer mailer,
-            AppProperties app,
-            PlatformTransactionManager transactionManager) {
-        this.users = users;
-        this.codes = codes;
-        this.passwordEncoder = passwordEncoder;
-        this.mailer = mailer;
-        this.app = app;
-        this.transaction = new TransactionTemplate(transactionManager);
-    }
+    @Autowired
+    private TransactionTemplate transaction;
 
     /**
      * 1단계 — 인증번호를 발급하고 메일로 보낸다.

@@ -2,6 +2,7 @@ package com.meokji.api.recipe;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.ban.BanMapper;
@@ -31,15 +32,13 @@ public class RecipeService {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
-    private final RecipeBook recipeBook;
-    private final FoodCatalog catalog;
-    private final BanMapper bans;
+    @Autowired
+    private RecipeBook recipeBook;
+    @Autowired
+    private FoodCatalog catalog;
+    @Autowired
+    private BanMapper bans;
 
-    public RecipeService(RecipeBook recipeBook, FoodCatalog catalog, BanMapper bans) {
-        this.recipeBook = recipeBook;
-        this.catalog = catalog;
-        this.bans = bans;
-    }
 
     /**
      * 음식 이름으로 레시피를 만든다. 가격은 붙이지 않는다 - 부르는 쪽이 붙인다.

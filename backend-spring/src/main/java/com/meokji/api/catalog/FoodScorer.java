@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.meokji.api.recommend.dto.FoodItem;
@@ -27,11 +28,9 @@ public class FoodScorer {
     /** 싫어하는 재료가 들어갔을 때 깎는 점수. 빼지는 않는다 — 대체재료를 낼 수 있다. */
     private static final int DISLIKE_PENALTY = 4;
 
-    private final FoodCatalog catalog;
+    @Autowired
+    private FoodCatalog catalog;
 
-    public FoodScorer(FoodCatalog catalog) {
-        this.catalog = catalog;
-    }
 
     /** 점수를 매긴 한 줄. 정렬에 쓴다. */
     private record Scored(int score, int cost, String name, JsonNode food) {

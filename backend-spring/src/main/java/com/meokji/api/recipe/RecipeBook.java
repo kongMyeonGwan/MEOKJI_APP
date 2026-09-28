@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -40,11 +41,9 @@ public class RecipeBook {
     /** 음식 이름 -> 미리 써둔 레시피. */
     private final Map<String, JsonNode> recipes = new LinkedHashMap<>();
 
-    private final IngredientRules rules;
+    @Autowired
+    private IngredientRules rules;
 
-    public RecipeBook(IngredientRules rules) {
-        this.rules = rules;
-    }
 
     /**
      * Ban 을 반영해 다듬은 레시피 한 건.

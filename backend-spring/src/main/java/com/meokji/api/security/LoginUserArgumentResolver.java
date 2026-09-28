@@ -1,5 +1,6 @@
 package com.meokji.api.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -26,13 +27,11 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
     private static final String HEADER = "Authorization";
     private static final String PREFIX = "Bearer ";
 
-    private final JwtProvider jwt;
-    private final UserMapper users;
+    @Autowired
+    private JwtProvider jwt;
+    @Autowired
+    private UserMapper users;
 
-    public LoginUserArgumentResolver(JwtProvider jwt, UserMapper users) {
-        this.jwt = jwt;
-        this.users = users;
-    }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {

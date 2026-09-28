@@ -1,5 +1,6 @@
 package com.meokji.api.auth;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,16 +37,13 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
-    private final PasswordResetService passwordReset;
-    private final JwtProvider jwt;
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private PasswordResetService passwordReset;
+    @Autowired
+    private JwtProvider jwt;
 
-    public AuthController(
-            AuthService authService, PasswordResetService passwordReset, JwtProvider jwt) {
-        this.authService = authService;
-        this.passwordReset = passwordReset;
-        this.jwt = jwt;
-    }
 
     /**
      * 회원가입.

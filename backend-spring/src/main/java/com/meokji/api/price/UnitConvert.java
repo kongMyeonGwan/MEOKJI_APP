@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.meokji.api.catalog.IngredientRules;
@@ -68,11 +69,9 @@ public class UnitConvert {
     private record Count(String name, double per) {
     }
 
-    private final IngredientRules rules;
+    @Autowired
+    private IngredientRules rules;
 
-    public UnitConvert(IngredientRules rules) {
-        this.rules = rules;
-    }
 
     /** KAMIS 단위 문자열을 쪼갠다. 못 읽으면 null. */
     public static Unit parseUnit(String text) {

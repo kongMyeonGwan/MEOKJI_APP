@@ -2,6 +2,7 @@ package com.meokji.api.ban;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,11 +19,9 @@ import com.meokji.api.user.User;
 @Service
 public class BanService {
 
-    private final BanMapper bans;
+    @Autowired
+    private BanMapper bans;
 
-    public BanService(BanMapper bans) {
-        this.bans = bans;
-    }
 
     public List<UserBan> list(User user) {
         return bans.findActiveByUser(user.getId());

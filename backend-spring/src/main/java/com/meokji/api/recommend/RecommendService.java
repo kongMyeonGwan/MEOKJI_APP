@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.ban.BanMapper;
@@ -39,21 +40,15 @@ public class RecommendService {
 
     private static final NumberFormat WON = NumberFormat.getIntegerInstance(Locale.KOREA);
 
-    private final FoodScorer scorer;
-    private final WeatherService weatherService;
-    private final BanMapper bans;
-    private final BargainService bargainService;
+    @Autowired
+    private FoodScorer scorer;
+    @Autowired
+    private WeatherService weatherService;
+    @Autowired
+    private BanMapper bans;
+    @Autowired
+    private BargainService bargainService;
 
-    public RecommendService(
-            FoodScorer scorer,
-            WeatherService weatherService,
-            BanMapper bans,
-            BargainService bargainService) {
-        this.scorer = scorer;
-        this.weatherService = weatherService;
-        this.bans = bans;
-        this.bargainService = bargainService;
-    }
 
     /** 조건에 맞는 후보를 만들어 돌려준다. 로그인하지 않았으면 Ban 이 비어 있다. */
     public RecommendResponse recommend(User me, RecommendRequest request) {

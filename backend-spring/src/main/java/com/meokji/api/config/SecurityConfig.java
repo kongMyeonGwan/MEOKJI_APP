@@ -2,6 +2,7 @@ package com.meokji.api.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,11 +30,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfig {
 
-    private final AppProperties app;
+    @Autowired
+    private AppProperties app;
 
-    public SecurityConfig(AppProperties app) {
-        this.app = app;
-    }
 
     /**
      * bcrypt. 파이썬 쪽 passlib 와 같은 알고리즘이라 <b>기존 회원의 비밀번호가

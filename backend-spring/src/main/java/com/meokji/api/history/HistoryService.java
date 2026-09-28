@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,13 +29,11 @@ import com.meokji.api.user.User;
 @Service
 public class HistoryService {
 
-    private final HistoryMapper histories;
-    private final FoodCatalog catalog;
+    @Autowired
+    private HistoryMapper histories;
+    @Autowired
+    private FoodCatalog catalog;
 
-    public HistoryService(HistoryMapper histories, FoodCatalog catalog) {
-        this.histories = histories;
-        this.catalog = catalog;
-    }
 
     /**
      * 내 기록 한 페이지. 최신순.

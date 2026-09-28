@@ -1,5 +1,6 @@
 package com.meokji.api.recipe;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,13 +26,11 @@ import jakarta.validation.constraints.Size;
 @RequestMapping("/api")
 public class RecipeController {
 
-    private final RecipeService recipeService;
-    private final PriceService priceService;
+    @Autowired
+    private RecipeService recipeService;
+    @Autowired
+    private PriceService priceService;
 
-    public RecipeController(RecipeService recipeService, PriceService priceService) {
-        this.recipeService = recipeService;
-        this.priceService = priceService;
-    }
 
     @GetMapping("/recipes/{foodName}")
     public RecipeResponse read(

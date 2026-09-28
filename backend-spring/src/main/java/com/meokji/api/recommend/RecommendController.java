@@ -1,5 +1,6 @@
 package com.meokji.api.recommend;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,11 +26,9 @@ import jakarta.validation.Valid;
 @RequestMapping("/api")
 public class RecommendController {
 
-    private final RecommendService recommendService;
+    @Autowired
+    private RecommendService recommendService;
 
-    public RecommendController(RecommendService recommendService) {
-        this.recommendService = recommendService;
-    }
 
     @PostMapping("/recommendations")
     public RecommendResponse recommend(

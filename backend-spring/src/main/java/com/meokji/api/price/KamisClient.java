@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.meokji.api.common.Numbers;
@@ -84,7 +85,8 @@ public class KamisClient {
     private record Cached(long savedAt, Quote quote) {
     }
 
-    private final AppProperties app;
+    @Autowired
+    private AppProperties app;
 
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(4))
@@ -93,9 +95,6 @@ public class KamisClient {
     /** 품목코드 -> 조사가격. 같은 품목을 재료 여러 개가 쓸 수 있다. */
     private final Map<String, Cached> cache = new ConcurrentHashMap<>();
 
-    public KamisClient(AppProperties app) {
-        this.app = app;
-    }
 
     /**
      * 품목 하나의 조사가격.

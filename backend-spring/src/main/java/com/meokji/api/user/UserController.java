@@ -2,6 +2,7 @@ package com.meokji.api.user;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,11 +33,9 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
+    @Autowired
+    private UserService userService;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     /** 내 정보. 연속 방문일 · 요리 횟수는 DB 컬럼이 아니라 조회할 때 센다. */
     @GetMapping("/me")

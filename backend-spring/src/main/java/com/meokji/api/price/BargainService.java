@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -83,9 +84,12 @@ public class BargainService {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
-    private final IngredientMatcher matcher;
-    private final KamisClient kamis;
-    private final AppProperties app;
+    @Autowired
+    private IngredientMatcher matcher;
+    @Autowired
+    private KamisClient kamis;
+    @Autowired
+    private AppProperties app;
 
     /**
      * 마지막으로 훑은 결과. 내린 것과 오른 것이 <b>모두</b> 등락률 순으로 들어 있다.
@@ -101,11 +105,6 @@ public class BargainService {
     private record Snapshot(long savedAt, List<BargainItem> rows) {
     }
 
-    public BargainService(IngredientMatcher matcher, KamisClient kamis, AppProperties app) {
-        this.matcher = matcher;
-        this.kamis = kamis;
-        this.app = app;
-    }
 
     /**
      * 값이 내린 재료 목록.

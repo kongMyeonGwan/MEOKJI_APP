@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.meokji.api.config.AppProperties;
@@ -62,7 +63,8 @@ public class WeatherClient {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
-    private final AppProperties app;
+    @Autowired
+    private AppProperties app;
 
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
@@ -87,9 +89,6 @@ public class WeatherClient {
             String conditionText) {
     }
 
-    public WeatherClient(AppProperties app) {
-        this.app = app;
-    }
 
     /**
      * 좌표로 현재 날씨를 가져온다.

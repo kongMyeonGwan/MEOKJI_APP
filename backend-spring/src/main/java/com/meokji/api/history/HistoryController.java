@@ -1,5 +1,6 @@
 package com.meokji.api.history;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,11 +32,9 @@ import jakarta.validation.constraints.Min;
 @RequestMapping("/api/histories")
 public class HistoryController {
 
-    private final HistoryService historyService;
+    @Autowired
+    private HistoryService historyService;
 
-    public HistoryController(HistoryService historyService) {
-        this.historyService = historyService;
-    }
 
     /** 최신순 목록. 범위를 벗어난 페이지는 404 가 아니라 빈 목록이다. */
     @GetMapping

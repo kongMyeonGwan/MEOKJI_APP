@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,13 +29,11 @@ public class CatalogController {
             "categories", "roulette", "games",
             "balance_questions", "search_suggestions", "budget_presets");
 
-    private final FoodCatalog catalog;
-    private final RegionCatalog regions;
+    @Autowired
+    private FoodCatalog catalog;
+    @Autowired
+    private RegionCatalog regions;
 
-    public CatalogController(FoodCatalog catalog, RegionCatalog regions) {
-        this.catalog = catalog;
-        this.regions = regions;
-    }
 
     /**
      * 대시보드가 처음 뜰 때 필요한 목록을 한 번에.

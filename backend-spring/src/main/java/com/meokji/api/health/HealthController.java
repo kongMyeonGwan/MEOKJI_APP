@@ -3,6 +3,7 @@ package com.meokji.api.health;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,13 +24,11 @@ import com.meokji.api.config.AppProperties;
 @RequestMapping("/api")
 public class HealthController {
 
-    private final JdbcTemplate jdbc;
-    private final AppProperties app;
+    @Autowired
+    private JdbcTemplate jdbc;
+    @Autowired
+    private AppProperties app;
 
-    public HealthController(JdbcTemplate jdbc, AppProperties app) {
-        this.jdbc = jdbc;
-        this.app = app;
-    }
 
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {

@@ -2,6 +2,7 @@ package com.meokji.api.weather;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.ApiException;
@@ -51,13 +52,11 @@ public class WeatherService {
             "RAIN", "비 오는 날엔 뜨끈한 국물 어떠세요?",
             "SNOW", "눈 오는 날엔 뜨끈한 한 그릇 어떠세요?");
 
-    private final WeatherClient client;
-    private final AppProperties app;
+    @Autowired
+    private WeatherClient client;
+    @Autowired
+    private AppProperties app;
 
-    public WeatherService(WeatherClient client, AppProperties app) {
-        this.client = client;
-        this.app = app;
-    }
 
     /**
      * 좌표로 현재 날씨를 조회한다. 좌표가 없으면 기본 자리(서울시청 근처)를 쓴다.
