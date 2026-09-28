@@ -73,10 +73,16 @@ pages/
 | `PostWritePage.jsx` | `/community/write` | 글쓰기 (로그인 필요) |
 | `PopularPage.jsx` | `/popular` | 인기 레시피 |
 
-> **아직 서버가 없다.** 게시판과 공지 API 는 501 이고, 이 화면들은
-> `src/data/sampleBoard.js` 의 가데이터로 그려진다. 서버가 완성되면
-> `SAMPLE_*` 대신 `api/posts.js` · `api/notices.js` 를 부르게 바꾸고
-> `sampleBoard.js` 를 지우면 된다.
+> **아직 서버가 없다.** 게시판과 공지 API 는 501 이다.
+>
+> `PostWritePage` 만 `api/posts.js` 를 **이미 부르고 있다.** 서버가 501 이라
+> `createPost` 가 그 전에 막혀서 "게시판 기능은 아직 준비 중입니다." 가 뜬다 -
+> 서버와 `api/posts.js` 가 채워지면 이 화면은 고칠 것 없이 그대로 돈다.
+>
+> 나머지 셋(`CommunityPage` · `PostDetailPage` · `PopularPage`)은 아직
+> `src/data/sampleBoard.js` 의 가데이터로 그려진다. `SAMPLE_*` 대신
+> `api/posts.js` · `api/notices.js` 를 부르게 바꾸고 `sampleBoard.js` 를
+> 지우면 된다.
 >
 > 서버 쪽이 어떻게 동작해야 하는지는 `docs/BOARD_SPEC.md` 에 있다.
 

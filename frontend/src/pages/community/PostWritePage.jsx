@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Loading from '../../components/common/Loading'
 import { getHistories } from '../../api/histories'
+import { createPost, uploadPostFile } from '../../api/posts'
 import { parseApiError } from '../../utils/apiError'
 import '../../styles/pages/PostWritePage.css'
 
@@ -11,21 +12,17 @@ import '../../styles/pages/PostWritePage.css'
 // 글은 반드시 확정한 식사 기록에서 출발한다. 기록 없이 글만 쓰는 길은 없다.
 // DB 에서도 meal_history_id 가 NOT NULL 이라 서버가 한 번 더 막는다.
 //
-// ! 등록은 아직 서버에 안 붙어 있다. 게시판 담당자가 채운다.
+// 화면은 다 붙여뒀다. 다만 서버의 POST /api/posts 가 아직 501 이라
+// api/posts.js 의 createPost 가 그 전에 막는다 - 등록을 누르면
+// "게시판 기능은 아직 준비 중입니다." 가 뜬다.
 //
-// 기록 목록(왼쪽 드롭다운)은 식사 기록 API 라서 지금도 진짜로 돈다.
-// 아래 onSubmit 의 TODO 자리만 채우면 된다.
+// 게시판 담당자가 서버와 api/posts.js 를 채우면 이 화면은 그대로 돈다.
 //
-// 붙일 때 할 일
-// -------------
-//   1. createPost({ mealHistoryId, title, content }) 를 부른다
-//   2. 사진이 있으면 이어서 uploadPostFile(created.id, file) 을 부른다.
-//      한 요청에 JSON 이랑 파일을 같이 담을 수 없어서 두 번에 나눠 보낸다.
-//      사진만 실패해도 글은 이미 올라가 있으니 되돌리지 않는다.
-//   3. navigate('/community/' + created.id) 로 방금 쓴 글로 보낸다.
-//      목록으로 보내면 등록된 모습을 바로 확인할 수 없다.
-//   4. 이미 공유한 기록이면 서버가 409 를 준다. 그때는 등록을 다시 누르게
-//      두면 안 되고(또 409 다) 에러를 보여주고 멈춰야 한다.
+// 등록이 두 번에 나뉘는 이유
+// --------------------------
+// 한 요청에 JSON 이랑 파일을 같이 담을 수 없어서 글(JSON)과 사진(multipart)을
+// 따로 보낸다. 그래서 사진만 실패할 수 있는데, 그때 되돌리지 않는다 -
+// 남는 것은 '사진 없는 멀쩡한 글' 이고 사진은 원래 선택 사항이다.
 
 // 사진 한 장만 붙는다. 서버 설정이랑 같은 값이다.
 // 서버가 어차피 다시 검사한다. 여기서 한 번 더 보는 건
@@ -40,6 +37,12 @@ export default function PostWritePage() {
   const [file, setFile] = useState(null)
 
   const [errors, setErrors] = useState({})
+
+  // 등록 중인지. 두 번 눌러 글이 두 개 올라가는 것을 막는다.
+  // DB 의 uq_reviews_meal 이 결국 막아주지만 그때는 409 를 보게 된다.
+  const [saving, setSaving] = useState(false)
+
+  const navigate = useNavigate()
 
   const [histories, setHistories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -116,8 +119,12 @@ export default function PostWritePage() {
   }
 
   // 등록 버튼을 눌렀을 때
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
+
+    if (saving) {
+      return
+    }
 
     const next = {}
     if (!title.trim()) {
@@ -136,8 +143,41 @@ export default function PostWritePage() {
       return
     }
 
-    // TODO: 여기서 createPost 와 uploadPostFile 을 부른다. 위 주석 참고.
-    window.alert('글쓰기 기능은 아직 준비 중입니다.')
+    setSaving(true)
+
+    let created
+    try {
+      created = await createPost({
+        mealHistoryId: historyId,
+        title: title.trim(),
+        content: content,
+      })
+    } catch (err) {
+      // 이미 공유한 기록이면 409 다. 다시 눌러도 또 409 라서 재시도시키지
+      // 않고, 어느 칸이 문제인지 드롭다운 아래에 붙여준다.
+      const parsed = parseApiError(err)
+      let message = parsed.message
+      if (!message) {
+        message = '글을 등록하지 못했습니다.'
+      }
+
+      setErrors({ historyId: message })
+      setSaving(false)
+      return
+    }
+
+    // 사진은 따로 보낸다. 실패해도 글은 이미 올라가 있으니 되돌리지 않는다 -
+    // 남는 것은 '사진 없는 멀쩡한 글' 이고, 상세 화면에서 다시 붙일 수 있다.
+    if (file) {
+      try {
+        await uploadPostFile(created.id, file)
+      } catch (err) {
+        window.alert('글은 올라갔지만 사진을 올리지 못했습니다. 상세 화면에서 다시 붙여주세요.')
+      }
+    }
+
+    // 목록이 아니라 방금 쓴 글로 보낸다. 등록된 모습을 바로 확인할 수 있어야 한다.
+    navigate('/community/' + created.id)
   }
 
   let fileHelp = '한 장까지 올릴 수 있어요. ' + MAX_MB + 'MB 이하 이미지.'
@@ -225,8 +265,8 @@ export default function PostWritePage() {
           </label>
 
           <div className="write__actions">
-            <button type="submit" className="btn">
-              등록
+            <button type="submit" className="btn" disabled={saving}>
+              {saving ? '등록 중…' : '등록'}
             </button>
           </div>
         </form>
