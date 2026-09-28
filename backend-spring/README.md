@@ -55,20 +55,44 @@ gradlew bootRun
 
 확인: <http://localhost:8080/api/health> → `{"status":"ok", ..., "database":"ok"}`
 
-### 3. 테스트
+### 3. 데모 데이터 채우기
+
+```
+gradlew seedDemo
+```
+
+빈 DB 로는 화면을 볼 수가 없다. 글을 쓰려면 식사를 먼저 확정해야 해서 손으로
+채우려면 한참 걸린다. 이게 그 한 바퀴를 대신 돌아준다 — 회원 2명(관리자 · 일반) ·
+공지 4건 · 식사 기록 3건 · 후기 2건(첨부 1건).
+
+**여러 번 돌려도 안전하다.** 이미 있는 것은 건너뛴다. 게시판과 공지는 아직
+501 이라 그 단계만 건너뛰고, 담당자가 구현하면 다시 돌릴 때 채워진다.
+
+```
+로그인    admin@meokji.com (관리자) / minji@example.com
+비밀번호  meokji1234!
+```
+
+`app.env` 가 `local` 이 아니면 **아무것도 하지 않고 멈춘다.** 저장소에 적힌
+비밀번호로 관리자 계정을 만들기 때문이다.
+
+> 파이썬 쪽 `python -m scripts.seed_demo` 와 같은 자리다. 둘 중 아무거나 써도
+> 같은 데이터가 만들어진다 — 다만 파이썬 쪽은 메뉴 목록에 `크림 파스타` 가
+> 남아 있어 **빈 DB 에서는 3단계에서 멈춘다.** STEP 41 에서 레시피 100종을 다시
+> 정의할 때 빠진 메뉴라 `GET /api/recipes` 가 404 를 낸다. 스프링 쪽은
+> `비빔국수` 로 바꿔뒀다.
+
+### 4. 테스트
 
 ```
 gradlew test
 ```
 
-**실제 Oracle 에 붙는다.** 그리고 `seed_demo` 가 만든 계정
+**실제 Oracle 에 붙는다.** 그리고 위 `seedDemo` 가 만든 계정
 (`minji@example.com` / `meokji1234!`)이 있어야 한다.
 
-```
-cd ..\backend
-.venv\Scripts\activate
-python -m scripts.seed_demo
-```
+`seedDemo` 는 `gradlew test` 에서 빠진다(`@Tag("seed")`). 평소 테스트를 돌릴
+때마다 회원과 후기를 새로 만들 이유가 없다.
 
 ---
 
@@ -291,7 +315,7 @@ backend-spring/
     │       ├── data/               파이썬에서 내보낸 표 5개 (아래 설명)
     │       └── mapper/             User · History · Ban · Like · Game
     └── test/
-        ├── java/com/meokji/api/    테스트 85건 (정답지 대조 + 재설정 · 떨이 재료)
+        ├── java/com/meokji/api/    테스트 85건 + 데모 데이터(SeedDemoTest)
         └── resources/fixtures/     파이썬 응답 정답지 38개
 ```
 
