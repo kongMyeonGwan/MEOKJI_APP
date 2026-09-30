@@ -1,0 +1,30 @@
+package com.meokji.api.recipe.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * 한 시장의 조사가격.
+ *
+ * 쇼핑몰 최저가가 아니라 소매시장 조사가격이다(KAMIS). 그래서 구매 링크가
+ * 없고, link 는 사용자가 값을 직접 확인할 수 있는 KAMIS 가격 페이지다.
+ *
+ * unit 을 같이 주는 이유는 품목마다 기준이 달라서다 (쌀 20kg / 깻잎 100g).
+ * 단위 없이 숫자만 보여주면 깻잎이 쌀보다 비싸 보인다.
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PriceOffer {
+
+    private String shop;
+
+    private int price;
+
+    private String link;
+
+    private String unit;
+
+    private String surveyedAt;
+}

@@ -21,11 +21,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.meokji.api.dao.UserDAO;
-import com.meokji.api.dao.VerificationCodeDAO;
+import com.meokji.api.user.dao.UserDAO;
+import com.meokji.api.auth.dao.VerificationCodeDAO;
 import com.meokji.api.util.ResetCodeMailer;
-import com.meokji.api.vo.UserVO;
-import com.meokji.api.vo.VerificationCodeVO;
+import com.meokji.api.user.vo.UserVO;
+import com.meokji.api.auth.vo.VerificationCodeVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

@@ -174,11 +174,18 @@ MEOKJI_APP/
 │   ├── gradlew(.bat)          Gradle 을 안 깔아도 빌드된다
 │   └── src/
 │       ├── main/java/com/meokji/api/
-│       │   ├── controller/    HTTP 를 받는 자리 (12)
-│       │   ├── service/       업무 규칙과 트랜잭션 경계. 인터페이스 + Impl 14쌍 (28)
-│       │   ├── dao/           SQL 을 부르는 인터페이스 (9)
-│       │   ├── dto/           요청 · 응답 모양. 기능별로 한 겹 더 (42)
-│       │   ├── vo/            표 한 행 (10)
+│       │   │
+│       │   │  기능(화면)별로 먼저 나누고, 그 아래를 계층으로 나눈다.
+│       │   │  기능 12개 = auth · user · ban · recommend · recipe · history
+│       │   │              like · game · review · notice · catalog · health
+│       │   │
+│       │   ├── <기능>/controller/   HTTP 를 받는 자리 (12)
+│       │   ├── <기능>/service/      업무 규칙. 인터페이스 + Impl 16쌍 (32)
+│       │   ├── <기능>/dao/          SQL 을 부르는 인터페이스 (9)
+│       │   ├── <기능>/vo/           표 한 행 (10)
+│       │   ├── <기능>/dto/          요청 · 응답 모양 (42)
+│       │   │
+│       │   │  아래 셋은 기능을 가리지 않고 같이 쓴다
 │       │   ├── util/          계산 · 바깥 API · 고정 목록 읽기 (16)
 │       │   ├── common/        ApiException · 오류 핸들러 · Page · MessageResponse
 │       │   └── config/        WebConfig (CORS · 비밀번호 인코더)

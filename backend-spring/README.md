@@ -65,14 +65,32 @@ gradlew seedDemo
 
 ## 폴더 구조
 
+**기능(화면)별로 먼저 나누고, 그 아래를 계층으로 나눈다.**
+한 기능을 고칠 때 폴더 하나만 열면 되고, 팀원끼리 담당 구역이 겹치지 않는다.
+
 ```
 src/main/java/com/meokji/api/
-├── controller/   주소(URL)를 받는 곳                     BanController
-├── service/      실제 일을 하는 곳 (인터페이스)            BanService
-│                 + 그 구현                               BanServiceImpl
-├── dao/          DB 에 SQL 을 보내는 곳 (인터페이스)       BanDAO
-├── vo/           DB 테이블 한 행                          UserBanVO
-├── dto/          화면과 주고받는 요청 · 응답 모양            BanCreateRequest, BanResponse
+├── ban/                  못 먹는 재료 (기능 하나의 본보기)
+│   ├── controller/       주소(URL)를 받는 곳               BanController
+│   ├── service/          실제 일을 하는 곳 (인터페이스)      BanService
+│   │                     + 그 구현                         BanServiceImpl
+│   ├── dao/              DB 에 SQL 을 보내는 곳 (인터페이스)  BanDAO
+│   ├── vo/               DB 테이블 한 행                    UserBanVO
+│   └── dto/              화면과 주고받는 요청 · 응답 모양      BanCreateRequest, BanResponse
+│
+├── auth/                 로그인 · 회원가입 · 비밀번호 재설정
+├── user/                 내 정보 · 알림 · 탈퇴
+├── recommend/            음식 추천 (날씨 · 예산 · 검색)
+├── recipe/               레시피 + 재료 가격
+├── history/              식사 기록
+├── like/                 찜
+├── game/                 미니게임
+├── review/               커뮤니티 게시판       <- 담당자 구역
+├── notice/               공지사항             <- 담당자 구역
+├── catalog/              화면이 쓰는 고정 목록
+├── health/               서버 · DB 상태
+│
+│   아래 셋은 기능을 가리지 않고 같이 쓴다
 ├── common/       에러 처리 · 페이지 모양 같은 공통          ApiException, ApiExceptionHandler
 ├── config/       서버 설정 (CORS, 비밀번호 암호화)          WebConfig
 └── util/         여러 곳에서 쓰는 도구                      JwtUtil, Kst, 날씨 · 시세 API
@@ -159,12 +177,14 @@ private int expireMinutes;
 
 ## 새 기능 만드는 순서
 
-1. `vo/` 에 테이블 한 행을 담을 VO 가 있는지 본다 (없으면 만든다. 필드 + `@Data`)
-2. `dao/XxxDAO.java` 에 메서드를 만든다
+0. 어느 기능인지 정한다. 새 기능이면 `<기능>/` 폴더부터 만든다
+1. `<기능>/vo/` 에 테이블 한 행을 담을 VO 가 있는지 본다 (없으면 만든다. 필드 + `@Data`)
+2. `<기능>/dao/XxxDAO.java` 에 메서드를 만든다
 3. `resources/mapper/XxxMapper.xml` 에 **id 가 메서드 이름과 같은** SQL 을 쓴다
-4. `service/XxxService.java`(인터페이스)에 메서드를 적고, `XxxServiceImpl` 에서 구현한다
-5. `dto/` 에 요청 · 응답 모양을 만든다
-6. `controller/` 에 주소를 만든다
+   (XML 의 `namespace` 는 DAO 의 전체 이름과 똑같아야 한다. 예: `com.meokji.api.ban.dao.BanDAO`)
+4. `<기능>/service/XxxService.java`(인터페이스)에 메서드를 적고, `XxxServiceImpl` 에서 구현한다
+5. `<기능>/dto/` 에 요청 · 응답 모양을 만든다
+6. `<기능>/controller/` 에 주소를 만든다
 
 ---
 
@@ -174,11 +194,12 @@ private int expireMinutes;
 
 | 무엇 | 어디 |
 |---|---|
-| **채울 곳** | `service/ReviewServiceImpl.java` · `service/NoticeServiceImpl.java` (TODO 주석) |
-| DAO · SQL (예시 몇 개 들어 있음) | `dao/ReviewDAO.java` + `mapper/ReviewMapper.xml`, `dao/NoticeDAO.java` + `mapper/NoticeMapper.xml` |
-| 주소 · 로그인 필요 여부 | `controller/ReviewController.java` · `controller/NoticeController.java` (완성) |
-| 요청 · 응답 모양 | `dto/review/` · `dto/notice/` (완성) |
-| 테이블 한 행 | `vo/RecipeReviewVO` · `vo/ReviewCommentVO` · `vo/ReviewLikeVO` · `vo/NoticeVO` |
+| **담당 폴더** | **`review/` 와 `notice/` 통째로.** 다른 기능 폴더는 건드릴 일이 없다 |
+| **채울 곳** | `review/service/ReviewServiceImpl.java` · `notice/service/NoticeServiceImpl.java` (TODO 주석) |
+| DAO · SQL (예시 몇 개 들어 있음) | `review/dao/ReviewDAO.java` + `mapper/ReviewMapper.xml`, `notice/dao/NoticeDAO.java` + `mapper/NoticeMapper.xml` |
+| 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` (완성) |
+| 요청 · 응답 모양 | `review/dto/` 9개 · `notice/dto/` 4개 (완성) |
+| 테이블 한 행 | `review/vo/RecipeReviewVO` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO` |
 | 페이지 목록 본보기 | `HistoryServiceImpl.getList()` + `HistoryMapper.xml` 의 `findPageByUser` |
 | **어떻게 동작해야 하는가** | **`docs/BOARD_SPEC.md`** — 정렬 · 권한 · 첨부파일 규칙 |
 
@@ -198,7 +219,7 @@ private int expireMinutes;
 | 파일 | 하는 일 |
 |---|---|
 | `util/KamisClient` · `util/IngredientMatcher` · `util/UnitConvert` | 정부 시세 API 호출, 재료 이름 → 품목 코드, "1kg 12,000원" → "300g 3,600원" |
-| `service/PriceServiceImpl` · `service/BargainServiceImpl` | 재료 가격 모으기, "요즘 싼 재료" 찾기 (여러 개를 동시에 / 뒤에서 부른다) |
+| `recipe/service/PriceServiceImpl` · `recommend/service/BargainServiceImpl` | 재료 가격 모으기, "요즘 싼 재료" 찾기 |
 | `util/WeatherClient` | 날씨 API 호출 |
 | `util/FoodScorer` · `util/RecipeBook` | 추천 점수 매기기, 레시피 파일 읽기 |
 

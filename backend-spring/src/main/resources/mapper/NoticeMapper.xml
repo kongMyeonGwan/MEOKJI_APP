@@ -6,7 +6,7 @@
   NOTICES 테이블 SQL. namespace 는 짝이 되는 DAO 의 전체 이름이다.
   TODO(공지 담당): insert, update, delete, increaseView 를 더 만든다.
 -->
-<mapper namespace="com.meokji.api.dao.NoticeDAO">
+<mapper namespace="com.meokji.api.notice.dao.NoticeDAO">
 
     <select id="count" resultType="int">
         SELECT COUNT(*)
@@ -15,7 +15,7 @@
     </select>
 
     <!-- 오라클 12c 부터 OFFSET ... FETCH NEXT ... 로 페이지를 자를 수 있다 -->
-    <select id="findPage" resultType="com.meokji.api.vo.NoticeVO">
+    <select id="findPage" resultType="com.meokji.api.notice.vo.NoticeVO">
         SELECT id, user_id, title, content, view_count, pinned_yn, use_yn, created_at, updated_at
           FROM notices
          WHERE use_yn = 'Y'
@@ -23,7 +23,7 @@
          OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
-    <select id="findById" resultType="com.meokji.api.vo.NoticeVO">
+    <select id="findById" resultType="com.meokji.api.notice.vo.NoticeVO">
         SELECT id, user_id, title, content, view_count, pinned_yn, use_yn, created_at, updated_at
           FROM notices
          WHERE id = #{id}
@@ -32,7 +32,7 @@
     <!--
       예시) 공지 작성. useGeneratedKeys 를 켜면 insert 뒤에 notice.id 에 새 번호가 채워진다.
 
-    <insert id="insert" parameterType="com.meokji.api.vo.NoticeVO"
+    <insert id="insert" parameterType="com.meokji.api.notice.vo.NoticeVO"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO notices (user_id, title, content, pinned_yn)
         VALUES (#{userId}, #{title}, #{content}, #{pinnedYn})

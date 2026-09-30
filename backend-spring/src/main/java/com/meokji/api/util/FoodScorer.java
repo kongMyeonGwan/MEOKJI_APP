@@ -11,8 +11,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.dto.recommend.FoodItem;
-import com.meokji.api.dto.weather.WeatherResponse;
+import com.meokji.api.recommend.dto.FoodItem;
+import com.meokji.api.recommend.dto.WeatherResponse;
 
 import tools.jackson.databind.JsonNode;
 

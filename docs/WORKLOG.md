@@ -71,6 +71,23 @@ vo/XxxVO (테이블 한 행, Lombok @Data)      dto/ (요청·응답, Lombok @Da
       깨져 있었다 (주석에서만 쓰는 미사용 import 였음). 지금은 `compileJava` ·
       `compileTestJava` 둘 다 통과한다.
 
+### 자바 폴더를 기능별로 다시 나눔 (2026-10-01)
+
+계층별(`controller/` · `service/` · `dao/` · `vo/` · `dto/`)에서
+**기능별 + 그 아래 계층**으로 바꿨다. 기능 12개 —
+`auth` · `user` · `ban` · `recommend` · `recipe` · `history` · `like` · `game` ·
+`review` · `notice` · `catalog` · `health`.
+
+- 자바 101개 파일 이동 · package 선언과 import 전부 교체
+- 매퍼 XML 9개의 `namespace` 도 새 경로로 (예: `com.meokji.api.ban.dao.BanDAO`)
+- 서비스가 없던 `catalog` · `health` 에 인터페이스 + Impl 을 만들어 계층을 맞췄다.
+  컨트롤러가 직접 DAO · util 을 부르던 코드를 서비스로 내렸다
+- `common/` · `config/` · `util/` 은 기능을 안 가리므로 그대로 위에 둔다
+- `application.yml` 의 `type-aliases-package: com.meokji.api` 는 하위 패키지를 다
+  훑어서 그대로 두면 된다. 클래스 이름이 겹치는 것은 없다(확인함)
+
+게시판 담당자 구역이 `review/` · `notice/` 폴더 통째로 분리됐다.
+
 ### 아직 남은 것
 
 1. **브라우저로 직접 확인**: 로그인 → 홈 → 룰렛 모양 → 레시피 → 찜 → 이걸로 먹을래요

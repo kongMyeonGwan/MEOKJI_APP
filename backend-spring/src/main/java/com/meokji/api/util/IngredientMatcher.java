@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.service.BargainService;
+import com.meokji.api.recommend.service.BargainService;
 
 import jakarta.annotation.PostConstruct;
 import tools.jackson.databind.JsonNode;

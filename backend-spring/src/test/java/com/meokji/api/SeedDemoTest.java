@@ -35,7 +35,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.meokji.api.util.IngredientMatcher;
 import com.meokji.api.util.KamisClient;
-import com.meokji.api.vo.NoticeVO;
+import com.meokji.api.notice.vo.NoticeVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

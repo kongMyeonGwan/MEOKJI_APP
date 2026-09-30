@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.service.WeatherService;
-import com.meokji.api.vo.UserVO;
+import com.meokji.api.recommend.service.WeatherService;
+import com.meokji.api.user.vo.UserVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;

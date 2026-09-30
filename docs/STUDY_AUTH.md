@@ -1,5 +1,16 @@
 # 인증(로그인 + JWT) 학습 가이드
 
+> ⚠️ **이 문서는 옛 구조를 기준으로 쓴 학습 기록이다.** 아래에 나오는
+> `security/JwtProvider` · `@LoginUser` · 인자 리졸버 · `config/AppProperties` ·
+> `config/SecurityConfig` · 프론트의 `contexts/AuthContext.jsx` ·
+> `ProtectedRoute.jsx` 는 **지금 코드에 없다.**
+>
+> 지금은 컨트롤러가 `@RequestHeader("Authorization")` 로 토큰을 받아
+> `authService.getLoginUser(token)` / `findLoginUser` / `getAdminUser` 를 부르고,
+> 자바 폴더는 기능별(`auth/controller` · `auth/service` · `auth/dao` · `auth/vo` ·
+> `auth/dto`)로 나뉘어 있다. 흐름을 이해하는 용도로만 읽고, 파일 경로는
+> `backend-spring/README.md` 를 본다.
+
 이 프로젝트의 인증 코드를 **자기 것으로 만들기 위한** 문서다.
 읽기만 해서는 남지 않는다. 아래 순서대로 직접 해봐야 한다.
 

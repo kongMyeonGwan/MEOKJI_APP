@@ -3,10 +3,11 @@
 `backend-spring` 의 게시판 · 공지는 **501 스텁**이다. 주소 · 요청/응답 모양 · 권한은
 다 맞춰져 있고 메서드 안만 채우면 된다.
 
-자바는 계층별 폴더다 — `controller/` · `service/`(인터페이스 + `Impl`) · `dao/` ·
-`dto/<기능>/` · `vo/`. 게시판 담당자가 채울 것은 `service/ReviewServiceImpl.java` ·
-`dao/ReviewDAO.java` · `resources/mapper/ReviewMapper.xml` 이고, 나머지는 이미
-자리가 잡혀 있다.
+자바는 **기능별 폴더**다. 기능 아래에 `controller/` · `service/`(인터페이스 +
+`Impl`) · `dao/` · `vo/` · `dto/` 가 들어 있다. 게시판 담당 구역은 `review/` 와
+`notice/` 폴더 통째이고, 채울 것은 `review/service/ReviewServiceImpl.java` ·
+`review/dao/ReviewDAO.java` · `resources/mapper/ReviewMapper.xml` 이다.
+나머지(컨트롤러 · 인터페이스 · DTO)는 이미 자리가 잡혀 있다.
 
 이 문서는 **"무엇을 만들어야 하는가"** 가 아니라 **"어떻게 동작해야 하는가"** 를
 적은 것이다. 앞의 것은 `ReviewService.java` · `NoticeService.java` 주석에 있다.
@@ -224,11 +225,11 @@ DB 에 들어갔을 때를 막는 자리다.
 
 | 무엇 | 어디 |
 |---|---|
-| 만들 메서드 목록 | `service/ReviewService.java` · `service/NoticeService.java` 주석 |
-| 주소 · 로그인 필요 여부 | `controller/ReviewController.java` · `controller/NoticeController.java` |
-| 요청/응답 모양 | `dto/review/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
-| 표 한 행 | `vo/RecipeReviewVO.java` · `vo/ReviewCommentVO` · `vo/ReviewLikeVO` · `vo/NoticeVO.java` |
-| 매퍼 본보기 | `dao/UserDAO.java` + `resources/mapper/UserMapper.xml` |
+| 만들 메서드 목록 | `review/service/ReviewService.java` · `notice/service/NoticeService.java` 주석 |
+| 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` |
+| 요청/응답 모양 | `review/dto/` 9개 · `notice/dto/` 4개 (다 정의돼 있다) |
+| 표 한 행 | `review/vo/RecipeReviewVO.java` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO.java` |
+| 매퍼 본보기 | `user/dao/UserDAO.java` + `resources/mapper/UserMapper.xml` |
 | **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
 | **되살리기 본보기** | `resources/mapper/LikeMapper.xml` — 찜하기가 좋아요와 같은 구조다 |
 | 한국 날짜 | `util/Kst` |

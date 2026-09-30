@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.meokji.api.dao.HistoryDAO">
+<mapper namespace="com.meokji.api.history.dao.HistoryDAO">
 
     <select id="findStatsRows"
-            resultType="com.meokji.api.vo.MealHistoryVO">
+            resultType="com.meokji.api.history.vo.MealHistoryVO">
         SELECT selected_at AS selectedAt,
                estimated_cost AS estimatedCost
           FROM meal_histories
@@ -41,7 +41,7 @@
       OFFSET ... ROWS FETCH NEXT ... 는 오라클 12c 부터 쓸 수 있다. 21c XE 라 문제없다.
       ROWNUM 으로 자르면 정렬 전에 매겨져서 아무 행이 나온다.
     -->
-    <select id="findPageByUser" resultType="com.meokji.api.vo.MealHistoryVO">
+    <select id="findPageByUser" resultType="com.meokji.api.history.vo.MealHistoryVO">
         SELECT m.id, m.user_id, m.food_name, m.recipe_name,
                m.recipe_json, m.ingredients_json, m.substitutes_json,
                m.estimated_cost, m.use_yn, m.selected_at,
@@ -51,7 +51,7 @@
          OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
-    <select id="findById" resultType="com.meokji.api.vo.MealHistoryVO">
+    <select id="findById" resultType="com.meokji.api.history.vo.MealHistoryVO">
         SELECT id, user_id, food_name, recipe_name,
                recipe_json, ingredients_json, substitutes_json,
                estimated_cost, use_yn, selected_at
@@ -59,7 +59,7 @@
          WHERE id = #{id}
     </select>
 
-    <insert id="insert" parameterType="com.meokji.api.vo.MealHistoryVO"
+    <insert id="insert" parameterType="com.meokji.api.history.vo.MealHistoryVO"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO meal_histories (
             user_id, food_name, recipe_name,
