@@ -4,10 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
-import com.meokji.api.notice.dto.NoticeCreateRequest;
-import com.meokji.api.notice.dto.NoticeResponse;
-import com.meokji.api.notice.dto.NoticeUpdateRequest;
-import com.meokji.api.notice.dto.NoticeViewResponse;
+import com.meokji.api.notice.vo.NoticeVO;
+import com.meokji.api.notice.vo.NoticeViewVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -26,19 +24,19 @@ public class NoticeServiceImpl implements NoticeService {
     private static final String TODO = "아직 만들지 않은 기능입니다. (공지사항 담당자 작업 예정)";
 
     @Override
-    public Page<NoticeResponse> getList(int page, int size) {
+    public Page<NoticeVO> getList(int page, int size) {
         // 예시)
         // int total = noticeDAO.count();
-        // List<NoticeResponse> items = new ArrayList<>();
+        // List<NoticeVO> items = new ArrayList<>();
         // for (NoticeVO notice : noticeDAO.findPage((page - 1) * size, size)) {
-        //     items.add(NoticeResponse.from(notice));
+        //     items.add(notice);
         // }
         // int totalPages = 0;
         // if (size > 0) {
         //     totalPages = (total + size - 1) / size;
         // }
         //
-        // Page<NoticeResponse> result = new Page<>();
+        // Page<NoticeVO> result = new Page<>();
         // result.setItems(items);
         // result.setTotal(total);
         // result.setPage(page);
@@ -49,17 +47,17 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public NoticeViewResponse increaseView(Long noticeId) {
+    public NoticeViewVO increaseView(Long noticeId) {
         throw ApiException.notImplemented(TODO);
     }
 
     @Override
-    public NoticeResponse add(UserVO admin, NoticeCreateRequest request) {
+    public NoticeVO add(UserVO admin, NoticeVO request) {
         throw ApiException.notImplemented(TODO);
     }
 
     @Override
-    public NoticeResponse update(Long noticeId, NoticeUpdateRequest request) {
+    public NoticeVO update(Long noticeId, NoticeVO request) {
         throw ApiException.notImplemented(TODO);
     }
 

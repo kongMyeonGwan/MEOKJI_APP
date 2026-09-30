@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.ApiException;
-import com.meokji.api.recommend.dto.WeatherResponse;
+import com.meokji.api.recommend.vo.WeatherVO;
 import com.meokji.api.util.WeatherClient;
 
 /**
@@ -26,7 +26,7 @@ public class WeatherServiceImpl implements WeatherService {
     private double defaultLon;
 
     @Override
-    public WeatherResponse current(Double lat, Double lon) {
+    public WeatherVO current(Double lat, Double lon) {
         if (lat == null) {
             lat = defaultLat;
         }
@@ -42,7 +42,7 @@ public class WeatherServiceImpl implements WeatherService {
             throw ApiException.serviceUnavailable(e.getMessage());
         }
 
-        WeatherResponse response = new WeatherResponse();
+        WeatherVO response = new WeatherVO();
         response.setCity(weather.getCity());
         response.setTemp(weather.getTemp());
         response.setFeelsLike(weather.getFeelsLike());

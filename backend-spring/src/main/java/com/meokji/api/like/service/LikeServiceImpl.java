@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.meokji.api.like.dao.LikeDAO;
-import com.meokji.api.like.dto.LikeListResponse;
-import com.meokji.api.like.dto.LikeToggleResponse;
+import com.meokji.api.like.vo.LikeListVO;
+import com.meokji.api.like.vo.LikeToggleVO;
 import com.meokji.api.like.vo.RecipeLikeVO;
 import com.meokji.api.user.vo.UserVO;
 
@@ -21,10 +21,10 @@ public class LikeServiceImpl implements LikeService {
     private LikeDAO likeDAO;
 
     @Override
-    public LikeListResponse getList(UserVO user) {
+    public LikeListVO getList(UserVO user) {
         List<String> names = likeDAO.findActiveNames(user.getId());
 
-        LikeListResponse response = new LikeListResponse();
+        LikeListVO response = new LikeListVO();
         response.setNames(names);
         response.setCount(names.size());
         return response;
@@ -32,7 +32,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public LikeToggleResponse toggle(UserVO user, String foodName) {
+    public LikeToggleVO toggle(UserVO user, String foodName) {
         RecipeLikeVO found = likeDAO.findByUserAndFood(user.getId(), foodName);
         boolean liked;
 
@@ -59,7 +59,7 @@ public class LikeServiceImpl implements LikeService {
             liked = true;
         }
 
-        LikeToggleResponse response = new LikeToggleResponse();
+        LikeToggleVO response = new LikeToggleVO();
         response.setFoodName(foodName);
         response.setLiked(liked);
         response.setCount(likeDAO.countActive(user.getId()));
@@ -68,10 +68,10 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public LikeListResponse clear(UserVO user) {
+    public LikeListVO clear(UserVO user) {
         likeDAO.deactivateAll(user.getId());
 
-        LikeListResponse response = new LikeListResponse();
+        LikeListVO response = new LikeListVO();
         response.setNames(new ArrayList<>());
         response.setCount(0);
         return response;

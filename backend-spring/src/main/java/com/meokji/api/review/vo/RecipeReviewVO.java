@@ -1,7 +1,13 @@
 package com.meokji.api.review.vo;
 
-import lombok.Data;
 import java.time.LocalDateTime;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import lombok.Data;
 
 /**
  * RECIPE_REVIEWS 표 한 행. 레시피 후기(게시글).
@@ -12,6 +18,10 @@ import java.time.LocalDateTime;
  *
  * 첨부파일은 컬럼 여섯 개로 들고 있다. 파일 본체는 디스크(UPLOAD_DIR)에
  * 두고 DB 에는 경로만 적는다. 글 하나당 사진 하나라서 표를 나누지 않았다.
+ *
+ * 글쓰기 · 글수정 요청도 이 클래스로 받는다. 그래서 세 칸에 검증이 붙어 있다.
+ * 화면으로 나갈 때는 이 클래스를 그대로 쓰지 않는다 - 목록은 ReviewListVO,
+ * 상세는 ReviewDetailVO 다. 보여줄 칸이 표와 다르기 때문이다.
  */
 @Data
 public class RecipeReviewVO {
@@ -22,10 +32,15 @@ public class RecipeReviewVO {
     private Long userId;
 
     /** 어떤 식사의 후기인지. NOT NULL — 자기 기록만 공유할 수 있다 */
+    @NotNull(message = "어떤 식사 기록을 공유할지 골라주세요")
+    @Min(value = 1, message = "식사 기록 번호가 올바르지 않습니다")
     private Long mealHistoryId;
 
+    @NotBlank(message = "제목을 입력해주세요")
+    @Size(max = 200, message = "제목은 200자 이하여야 합니다")
     private String title;
 
+    @NotBlank(message = "내용을 입력해주세요")
     private String content;
 
     private Integer viewCount;

@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.ApiException;
-import com.meokji.api.recipe.dto.PriceItem;
-import com.meokji.api.recipe.dto.PriceOffer;
+import com.meokji.api.recipe.vo.PriceItemVO;
+import com.meokji.api.recipe.vo.PriceOfferVO;
 import com.meokji.api.util.IngredientMatcher;
 import com.meokji.api.util.KamisClient;
 import com.meokji.api.util.Numbers;
@@ -44,7 +44,7 @@ public class PriceServiceImpl implements PriceService {
     private String providers;
 
     @Override
-    public List<PriceItem> forIngredients(JsonNode ingredientsJson) {
+    public List<PriceItemVO> forIngredients(JsonNode ingredientsJson) {
         // 설정이 kamis 가 아니면 503 에러 (가격이 왜 안 나오는지 바로 알 수 있게)
         for (String provider : providers.split(",")) {
             if (!provider.trim().equalsIgnoreCase("kamis")) {
@@ -55,7 +55,7 @@ public class PriceServiceImpl implements PriceService {
 
         // 재료를 하나씩 순서대로 가격 조회한다.
         // 재료가 9개면 6초쯤 걸린다. 그동안 화면에는 "레시피를 만들고 있어요" 가 떠 있다.
-        List<PriceItem> items = new ArrayList<>();
+        List<PriceItemVO> items = new ArrayList<>();
         for (JsonNode item : ingredientsJson) {
             String name = item.path("name").asString("");
             if (!item.isObject() || name.isBlank()) {
@@ -74,7 +74,7 @@ public class PriceServiceImpl implements PriceService {
     }
 
     // 재료 한 줄의 가격
-    private PriceItem priceOf(JsonNode item) {
+    private PriceItemVO priceOf(JsonNode item) {
         String name = item.path("name").asString().trim();
 
         // 물 · 얼음처럼 사는 재료가 아니면 가격이 없다
@@ -98,17 +98,17 @@ public class PriceServiceImpl implements PriceService {
 
         // 가격마다 "더 알아보기" 링크를 붙인다
         String link = KamisClient.link(name);
-        List<PriceOffer> offers = new ArrayList<>();
-        for (PriceOffer offer : quote.getOffers()) {
-            offers.add(new PriceOffer(offer.getShop(), offer.getPrice(), link, offer.getUnit(), offer.getSurveyedAt()));
+        List<PriceOfferVO> offers = new ArrayList<>();
+        for (PriceOfferVO offer : quote.getOffers()) {
+            offers.add(new PriceOfferVO(offer.getShop(), offer.getPrice(), link, offer.getUnit(), offer.getSurveyedAt()));
         }
 
         return scaled(label(name, item), offers, quote.getTrend(), item);
     }
 
     // 가격이 없는 재료 한 줄. surveyed 가 false 면 "조사 대상 아님"
-    private PriceItem emptyItem(String name, JsonNode item, boolean surveyed) {
-        PriceItem price = new PriceItem();
+    private PriceItemVO emptyItem(String name, JsonNode item, boolean surveyed) {
+        PriceItemVO price = new PriceItemVO();
         price.setName(label(name, item));
         price.setOffers(new ArrayList<>());
         price.setSurveyed(surveyed);
@@ -116,8 +116,8 @@ public class PriceServiceImpl implements PriceService {
     }
 
     // 판매 단위 가격(1kg 12,000원)을 레시피 분량 가격(300g 3,600원)으로 바꾼다
-    private PriceItem scaled(String label, List<PriceOffer> offers, JsonNode trend, JsonNode item) {
-        PriceItem price = new PriceItem();
+    private PriceItemVO scaled(String label, List<PriceOfferVO> offers, JsonNode trend, JsonNode item) {
+        PriceItemVO price = new PriceItemVO();
         price.setName(label);
         price.setOffers(offers);
         price.setTrend(trend);

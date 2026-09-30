@@ -13,8 +13,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import com.meokji.api.recipe.dto.PriceOffer;
-import com.meokji.api.recommend.dto.BargainItem;
+import com.meokji.api.recipe.vo.PriceOfferVO;
+import com.meokji.api.recommend.vo.BargainVO;
 import com.meokji.api.util.IngredientMatcher;
 import com.meokji.api.util.KamisClient;
 import com.meokji.api.util.Numbers;
@@ -58,16 +58,16 @@ public class BargainServiceImpl implements BargainService {
     private String bargainFile; // 결과를 저장할 파일
 
     // 마지막으로 훑은 결과 (내린 것 · 오른 것 모두, 많이 내린 순)
-    private List<BargainItem> lastRows = null;
+    private List<BargainVO> lastRows = null;
     private long lastSavedAt = 0; // 훑은 시각
 
     private boolean scanning = false; // 지금 훑는 중인지
 
     @Override
-    public List<BargainItem> current() {
+    public List<BargainVO> current() {
         // 1. 서버를 켠 직후라 기억한 게 없으면, 오늘 저장해둔 파일을 읽어본다
         if (lastRows == null) {
-            List<BargainItem> saved = readFile();
+            List<BargainVO> saved = readFile();
             if (saved != null) {
                 lastRows = saved;
                 lastSavedAt = System.currentTimeMillis();
@@ -116,10 +116,10 @@ public class BargainServiceImpl implements BargainService {
 
     // 품목을 하나씩 훑어서 결과를 저장한다
     private void scan() {
-        List<BargainItem> rows = new ArrayList<>();
+        List<BargainVO> rows = new ArrayList<>();
 
         for (String name : ingredientMatcher.uniqueItemNames()) {
-            BargainItem item = fetchOne(name);
+            BargainVO item = fetchOne(name);
             if (item != null) {
                 rows.add(item);
             }
@@ -147,7 +147,7 @@ public class BargainServiceImpl implements BargainService {
     }
 
     // 품목 하나의 시세와 등락률. 값이 없으면 null
-    private BargainItem fetchOne(String name) {
+    private BargainVO fetchOne(String name) {
         IngredientMatcher.Codes codes = ingredientMatcher.findCodes(name);
         if (codes == null) {
             return null;
@@ -176,8 +176,8 @@ public class BargainServiceImpl implements BargainService {
             return null;
         }
 
-        PriceOffer cheapest = quote.getOffers().get(0); // 가장 싼 가격
-        BargainItem item = new BargainItem();
+        PriceOfferVO cheapest = quote.getOffers().get(0); // 가장 싼 가격
+        BargainVO item = new BargainVO();
         item.setName(name);
         item.setPercent(Numbers.round(quote.getTrend().path("percent").asDouble(), 1));
         item.setPrice(cheapest.getPrice());
@@ -187,9 +187,9 @@ public class BargainServiceImpl implements BargainService {
     }
 
     // 5% 이상 내린 것만, 최대 8개
-    private List<BargainItem> pickCheap(List<BargainItem> rows) {
-        List<BargainItem> cheap = new ArrayList<>();
-        for (BargainItem row : rows) {
+    private List<BargainVO> pickCheap(List<BargainVO> rows) {
+        List<BargainVO> cheap = new ArrayList<>();
+        for (BargainVO row : rows) {
             if (cheap.size() >= SHOW_COUNT) {
                 break;
             }
@@ -212,7 +212,7 @@ public class BargainServiceImpl implements BargainService {
     // 서버를 다시 켤 때마다 101개를 훑지 않으려고 오늘 결과를 파일로 남겨둔다.
 
     // 오늘 저장한 파일이 있으면 읽는다. 없거나 날짜가 다르면 null
-    private List<BargainItem> readFile() {
+    private List<BargainVO> readFile() {
         try {
             Path path = Path.of(bargainFile);
             if (!Files.exists(path)) {
@@ -226,9 +226,9 @@ public class BargainServiceImpl implements BargainService {
                 return null;
             }
 
-            List<BargainItem> rows = new ArrayList<>();
+            List<BargainVO> rows = new ArrayList<>();
             for (JsonNode row : saved.path("rows")) {
-                BargainItem item = new BargainItem();
+                BargainVO item = new BargainVO();
                 item.setName(row.path("name").asString(""));
                 item.setPercent(row.path("percent").asDouble());
                 item.setPrice(row.path("price").asInt());
@@ -250,12 +250,12 @@ public class BargainServiceImpl implements BargainService {
     }
 
     // 결과를 파일로 저장한다. 실패해도 괜찮다 (메모리에 기억한 것으로 돌아간다)
-    private void writeFile(List<BargainItem> rows) {
+    private void writeFile(List<BargainVO> rows) {
         ObjectNode root = JsonMapper.builder().build().createObjectNode();
         root.put("scanned_on", LocalDate.now().toString());
 
         ArrayNode array = root.putArray("rows");
-        for (BargainItem row : rows) {
+        for (BargainVO row : rows) {
             ObjectNode one = array.addObject();
             one.put("name", row.getName());
             one.put("percent", row.getPercent());

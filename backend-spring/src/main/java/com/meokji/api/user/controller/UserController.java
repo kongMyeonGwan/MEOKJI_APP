@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.common.MessageResponse;
-import com.meokji.api.user.dto.NotificationItem;
-import com.meokji.api.user.dto.PasswordChangeRequest;
-import com.meokji.api.user.dto.ProfileResponse;
-import com.meokji.api.user.dto.ProfileUpdateRequest;
-import com.meokji.api.user.dto.WithdrawRequest;
+import com.meokji.api.user.vo.NotificationItemVO;
+import com.meokji.api.user.vo.PasswordChangeVO;
+import com.meokji.api.user.vo.ProfileUpdateVO;
+import com.meokji.api.user.vo.WithdrawVO;
+
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.user.service.UserService;
 import com.meokji.api.user.vo.UserVO;
@@ -42,16 +42,16 @@ public class UserController {
 
     // 내 정보  GET /api/users/me
     @GetMapping("/me")
-    public ProfileResponse getProfile(@RequestHeader(value = "Authorization", required = false) String token) {
+    public UserVO getProfile(@RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
         return userService.getProfile(loginUser);
     }
 
     // 내 정보 수정  PATCH /api/users/me
     @PatchMapping("/me")
-    public ProfileResponse updateProfile(
+    public UserVO updateProfile(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody ProfileUpdateRequest request) {
+            @Valid @RequestBody ProfileUpdateVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         return userService.updateProfile(loginUser, request);
     }
@@ -60,7 +60,7 @@ public class UserController {
     @PostMapping("/me/password")
     public MessageResponse changePassword(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody PasswordChangeRequest request) {
+            @Valid @RequestBody PasswordChangeVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         userService.changePassword(loginUser, request);
         return new MessageResponse("비밀번호가 변경되었습니다.");
@@ -68,7 +68,7 @@ public class UserController {
 
     // 알림  GET /api/users/me/notifications
     @GetMapping("/me/notifications")
-    public List<NotificationItem> getNotifications(
+    public List<NotificationItemVO> getNotifications(
             @RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
         return userService.getNotifications(loginUser);
@@ -79,7 +79,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204 (돌려줄 내용 없음)
     public void withdraw(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody WithdrawRequest request) {
+            @Valid @RequestBody WithdrawVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         userService.withdraw(loginUser, request.getPassword());
     }

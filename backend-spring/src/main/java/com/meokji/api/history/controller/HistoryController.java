@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.common.Page;
-import com.meokji.api.history.dto.MealHistoryCreateRequest;
-import com.meokji.api.history.dto.MealHistoryResponse;
-import com.meokji.api.history.dto.MealHistoryStats;
+import com.meokji.api.history.vo.MealHistoryStatsVO;
+import com.meokji.api.history.vo.MealHistoryVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.history.service.HistoryService;
 import com.meokji.api.user.vo.UserVO;
@@ -42,7 +41,7 @@ public class HistoryController {
     // 내 기록 한 페이지  GET /api/histories?page=1&size=20&shared=false
     //   shared : true 면 커뮤니티에 공유한 것만, false 면 공유 안 한 것만, 안 보내면 전부
     @GetMapping
-    public Page<MealHistoryResponse> getList(
+    public Page<MealHistoryVO> getList(
             @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Page.MAX_SIZE) int size,
@@ -53,7 +52,7 @@ public class HistoryController {
 
     // 요약 (총 건수, 누적 재료비, 연속 기록일)  GET /api/histories/stats
     @GetMapping("/stats")
-    public MealHistoryStats getStats(@RequestHeader(value = "Authorization", required = false) String token) {
+    public MealHistoryStatsVO getStats(@RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
         return historyService.getStats(loginUser);
     }
@@ -61,9 +60,9 @@ public class HistoryController {
     // 기록 저장  POST /api/histories
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public MealHistoryResponse add(
+    public MealHistoryVO add(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody MealHistoryCreateRequest request) {
+            @Valid @RequestBody MealHistoryVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         return historyService.add(loginUser, request);
     }

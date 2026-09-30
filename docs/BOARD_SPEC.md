@@ -4,7 +4,9 @@
 다 맞춰져 있고 메서드 안만 채우면 된다.
 
 자바는 **기능별 폴더**다. 기능 아래에 `controller/` · `service/`(인터페이스 +
-`Impl`) · `dao/` · `vo/` · `dto/` 가 들어 있다. 게시판 담당 구역은 `review/` 와
+`Impl`) · `dao/` · `vo/` 가 들어 있다. DTO 를 따로 두지 않는다 — VO 하나가
+DB 한 행 · 화면이 보낸 요청 · 나갈 응답을 겸하고, 나가면 안 되는 칸에는
+`@JsonIgnore` 를 붙인다. 게시판 담당 구역은 `review/` 와
 `notice/` 폴더 통째이고, 채울 것은 `review/service/ReviewServiceImpl.java` ·
 `review/dao/ReviewDAO.java` · `resources/mapper/ReviewMapper.xml` 이다.
 나머지(컨트롤러 · 인터페이스 · DTO)는 이미 자리가 잡혀 있다.
@@ -227,7 +229,9 @@ DB 에 들어갔을 때를 막는 자리다.
 |---|---|
 | 만들 메서드 목록 | `review/service/ReviewService.java` · `notice/service/NoticeService.java` 주석 |
 | 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` |
-| 요청/응답 모양 | `review/dto/` 9개 · `notice/dto/` 4개 (다 정의돼 있다) |
+| 요청/응답 모양 | `review/vo/` 8개 · `notice/vo/` 2개 (다 정의돼 있다) |
+| 글 · 댓글 요청 | `RecipeReviewVO` · `ReviewCommentVO` 가 요청도 겸한다 (검증이 붙어 있다) |
+| 목록 · 상세 응답 | `ReviewListVO` · `ReviewDetailVO` — 표와 칸이 달라 따로 뒀다 |
 | 표 한 행 | `review/vo/RecipeReviewVO.java` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO.java` |
 | 매퍼 본보기 | `user/dao/UserDAO.java` + `resources/mapper/UserMapper.xml` |
 | **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |

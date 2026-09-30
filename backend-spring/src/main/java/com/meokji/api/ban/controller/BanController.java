@@ -14,10 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.meokji.api.ban.dto.BanCreateRequest;
-import com.meokji.api.ban.dto.BanResponse;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.ban.service.BanService;
+import com.meokji.api.ban.vo.UserBanVO;
 import com.meokji.api.user.vo.UserVO;
 
 import jakarta.validation.Valid;
@@ -38,7 +37,7 @@ public class BanController {
 
     // 내 목록  GET /api/bans
     @GetMapping
-    public List<BanResponse> getList(@RequestHeader(value = "Authorization", required = false) String token) {
+    public List<UserBanVO> getList(@RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
         return banService.getList(loginUser);
     }
@@ -46,9 +45,9 @@ public class BanController {
     // 추가  POST /api/bans
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public BanResponse add(
+    public UserBanVO add(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody BanCreateRequest request) {
+            @Valid @RequestBody UserBanVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         return banService.add(loginUser, request);
     }

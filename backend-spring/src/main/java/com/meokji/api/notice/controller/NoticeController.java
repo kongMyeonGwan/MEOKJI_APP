@@ -15,10 +15,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.common.Page;
-import com.meokji.api.notice.dto.NoticeCreateRequest;
-import com.meokji.api.notice.dto.NoticeResponse;
-import com.meokji.api.notice.dto.NoticeUpdateRequest;
-import com.meokji.api.notice.dto.NoticeViewResponse;
+import com.meokji.api.notice.vo.NoticeVO;
+import com.meokji.api.notice.vo.NoticeViewVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.notice.service.NoticeService;
 import com.meokji.api.user.vo.UserVO;
@@ -45,7 +43,7 @@ public class NoticeController {
 
     // 목록  GET /api/notices?page=1&size=20
     @GetMapping
-    public Page<NoticeResponse> getList(
+    public Page<NoticeVO> getList(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Page.MAX_SIZE) int size) {
         return noticeService.getList(page, size);
@@ -53,26 +51,26 @@ public class NoticeController {
 
     // 조회수 +1  POST /api/notices/3/view
     @PostMapping("/{noticeId}/view")
-    public NoticeViewResponse increaseView(@PathVariable @Min(1) Long noticeId) {
+    public NoticeViewVO increaseView(@PathVariable @Min(1) Long noticeId) {
         return noticeService.increaseView(noticeId);
     }
 
     // 작성 (관리자)  POST /api/notices
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public NoticeResponse add(
+    public NoticeVO add(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody NoticeCreateRequest request) {
+            @Valid @RequestBody NoticeVO request) {
         UserVO admin = authService.getAdminUser(token); // 관리자가 아니면 여기서 403
         return noticeService.add(admin, request);
     }
 
     // 수정 (관리자)  PUT /api/notices/3
     @PutMapping("/{noticeId}")
-    public NoticeResponse update(
+    public NoticeVO update(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long noticeId,
-            @Valid @RequestBody NoticeUpdateRequest request) {
+            @Valid @RequestBody NoticeVO request) {
         authService.getAdminUser(token);
         return noticeService.update(noticeId, request);
     }

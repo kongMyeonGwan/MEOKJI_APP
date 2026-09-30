@@ -20,11 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.recipe.dto.PriceOffer;
+import com.meokji.api.recipe.vo.PriceOfferVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -80,7 +79,7 @@ public class KamisClient {
     @AllArgsConstructor
     public static class Quote {
 
-        private List<PriceOffer> offers;
+        private List<PriceOfferVO> offers;
 
         private JsonNode trend;
 
@@ -178,7 +177,7 @@ public class KamisClient {
         JsonNode trend = priceTrend(history);
         List<JsonNode> rows = latestRows(history);
 
-        List<PriceOffer> offers = new ArrayList<>();
+        List<PriceOfferVO> offers = new ArrayList<>();
 
         for (JsonNode row : rows) {
             Integer price = toInt(row.get("exmn_dd_prc"));
@@ -187,7 +186,7 @@ public class KamisClient {
                 continue;
             }
 
-            offers.add(new PriceOffer(
+            offers.add(new PriceOfferVO(
                     marketLabel(row),
                     price,
                     // 링크는 재료 이름으로 만든다. 같은 품목코드라도 부른 이름이
@@ -198,7 +197,7 @@ public class KamisClient {
         }
 
         // 싼 곳부터 보여준다. 화면도 최저가를 먼저 읽는다.
-        offers.sort(Comparator.comparingInt(PriceOffer::getPrice));
+        offers.sort(Comparator.comparingInt(PriceOfferVO::getPrice));
 
         return new Quote(List.copyOf(offers), trend);
     }

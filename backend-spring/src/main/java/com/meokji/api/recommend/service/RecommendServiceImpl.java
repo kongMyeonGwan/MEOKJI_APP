@@ -9,11 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.meokji.api.ban.dao.BanDAO;
-import com.meokji.api.recommend.dto.BargainItem;
-import com.meokji.api.recommend.dto.FoodItem;
-import com.meokji.api.recommend.dto.RecommendRequest;
-import com.meokji.api.recommend.dto.RecommendResponse;
-import com.meokji.api.recommend.dto.WeatherResponse;
+import com.meokji.api.recommend.vo.BargainVO;
+import com.meokji.api.recommend.vo.FoodVO;
+import com.meokji.api.recommend.vo.RecommendRequestVO;
+import com.meokji.api.recommend.vo.RecommendVO;
+import com.meokji.api.recommend.vo.WeatherVO;
 import com.meokji.api.util.FoodScorer;
 import com.meokji.api.util.Numbers;
 import com.meokji.api.user.vo.UserVO;
@@ -38,7 +38,7 @@ public class RecommendServiceImpl implements RecommendService {
     private BanDAO banDAO;
 
     @Override
-    public RecommendResponse recommend(UserVO loginUser, RecommendRequest request) {
+    public RecommendVO recommend(UserVO loginUser, RecommendRequestVO request) {
         // 1. 로그인했으면 못 먹는 재료를 가져온다
         List<String> allergies = new ArrayList<>();
         List<String> dislikes = new ArrayList<>();
@@ -48,7 +48,7 @@ public class RecommendServiceImpl implements RecommendService {
         }
 
         // 2. 날씨를 보고 추천해달라고 했으면 날씨를 가져온다
-        WeatherResponse weather = null;
+        WeatherVO weather = null;
         if (Boolean.TRUE.equals(request.getUseWeather())) {
             weather = getWeather(loginUser, request);
         }
@@ -64,7 +64,7 @@ public class RecommendServiceImpl implements RecommendService {
         }
 
         // 4. 점수를 매겨서 고른다
-        List<FoodItem> items = foodScorer.recommend(limit, request.getCategory(),
+        List<FoodVO> items = foodScorer.recommend(limit, request.getCategory(),
                 request.getBudgetMin(), request.getBudgetMax(), request.getQuery(),
                 weather, allergies, dislikes, exclude);
 
@@ -76,12 +76,12 @@ public class RecommendServiceImpl implements RecommendService {
         }
 
         // 6. "요즘 싼 재료" 를 달라고 했으면 같이 준다 (첫 화면 카드용)
-        List<BargainItem> bargains = new ArrayList<>();
+        List<BargainVO> bargains = new ArrayList<>();
         if (Boolean.TRUE.equals(request.getUseBargains())) {
             bargains = bargainService.current();
         }
 
-        RecommendResponse response = new RecommendResponse();
+        RecommendVO response = new RecommendVO();
         response.setCondition(makeCondition(request, weather, bargains, allergies.size() + dislikes.size()));
         response.setItems(items);
         response.setWeather(weather);
@@ -91,7 +91,7 @@ public class RecommendServiceImpl implements RecommendService {
 
     // 어느 위치의 날씨를 볼지 정한다.
     //   1순위: 브라우저가 보낸 내 위치  2순위: 회원가입 때 고른 주소  3순위: 서울(기본값)
-    private WeatherResponse getWeather(UserVO loginUser, RecommendRequest request) {
+    private WeatherVO getWeather(UserVO loginUser, RecommendRequestVO request) {
         if (request.getLat() != null && request.getLon() != null) {
             return weatherService.current(request.getLat(), request.getLon());
         }
@@ -103,8 +103,8 @@ public class RecommendServiceImpl implements RecommendService {
 
     // 무슨 조건으로 골랐는지 한 줄로 적는다. 화면이 목록 위에 보여준다.
     //   예) "서울 · 맑음 28° · 한식 · 1만원 이하 · 못 먹는 재료 2건 제외"
-    private String makeCondition(RecommendRequest request, WeatherResponse weather,
-            List<BargainItem> bargains, int banCount) {
+    private String makeCondition(RecommendRequestVO request, WeatherVO weather,
+            List<BargainVO> bargains, int banCount) {
         List<String> parts = new ArrayList<>();
 
         if (weather != null) {
@@ -113,7 +113,7 @@ public class RecommendServiceImpl implements RecommendService {
 
         if (!bargains.isEmpty()) {
             // 예) "시세 대파 12%↓ 외 3건"
-            BargainItem first = bargains.get(0);
+            BargainVO first = bargains.get(0);
             String text = "시세 " + first.getName() + " " + Numbers.round(Math.abs(first.getPercent())) + "%↓";
             if (bargains.size() > 1) {
                 text = text + " 외 " + (bargains.size() - 1) + "건";

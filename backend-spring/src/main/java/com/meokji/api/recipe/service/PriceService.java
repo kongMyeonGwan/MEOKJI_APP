@@ -2,7 +2,7 @@ package com.meokji.api.recipe.service;
 
 import java.util.List;
 
-import com.meokji.api.recipe.dto.PriceItem;
+import com.meokji.api.recipe.vo.PriceItemVO;
 
 import tools.jackson.databind.JsonNode;
 
@@ -11,5 +11,5 @@ public interface PriceService {
 
     // 레시피 재료 목록으로 재료별 가격을 가져온다
     //   ingredientsJson : [{ "name": "돼지고기", "quantity": 300, "unit": "g", "grams": 300 }, ...]
-    List<PriceItem> forIngredients(JsonNode ingredientsJson);
+    List<PriceItemVO> forIngredients(JsonNode ingredientsJson);
 }

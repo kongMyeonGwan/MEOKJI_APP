@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.meokji.api.game.dto.GamePlayResponse;
+import com.meokji.api.game.vo.GamePlayVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.game.service.GameService;
 import com.meokji.api.user.vo.UserVO;
@@ -31,7 +31,7 @@ public class GameController {
     // 게임 시작 기록  POST /api/games/worldcup/plays
     @PostMapping("/{gameKey}/plays")
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public GamePlayResponse recordPlay(
+    public GamePlayVO recordPlay(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable String gameKey) {
         UserVO loginUser = authService.getLoginUser(token);

@@ -8,14 +8,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
-import com.meokji.api.review.dto.CommentResponse;
-import com.meokji.api.review.dto.LikeResponse;
-import com.meokji.api.review.dto.PopularItem;
-import com.meokji.api.review.dto.ReviewCreateRequest;
-import com.meokji.api.review.dto.ReviewDetailResponse;
-import com.meokji.api.review.dto.ReviewFileInfo;
-import com.meokji.api.review.dto.ReviewListItem;
-import com.meokji.api.review.dto.ReviewUpdateRequest;
+import com.meokji.api.review.vo.ReviewCommentVO;
+import com.meokji.api.review.vo.LikeStatusVO;
+import com.meokji.api.review.vo.PopularVO;
+import com.meokji.api.review.vo.RecipeReviewVO;
+import com.meokji.api.review.vo.ReviewDetailVO;
+import com.meokji.api.review.vo.ReviewFileVO;
+import com.meokji.api.review.vo.ReviewListVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -37,10 +36,10 @@ public class ReviewServiceImpl implements ReviewService {
     // ===================== 글 =====================
 
     @Override
-    public Page<ReviewListItem> getList(String keyword, int page, int size) {
+    public Page<ReviewListVO> getList(String keyword, int page, int size) {
         // 예시)
         // int total = reviewDAO.count(keyword);
-        // List<ReviewListItem> items = new ArrayList<>();
+        // List<ReviewListVO> items = new ArrayList<>();
         // for (RecipeReviewVO review : reviewDAO.findPage(keyword, (page - 1) * size, size)) {
         //     items.add(...);
         // }
@@ -49,7 +48,7 @@ public class ReviewServiceImpl implements ReviewService {
         //     totalPages = (total + size - 1) / size;
         // }
         //
-        // Page<ReviewListItem> result = new Page<>();
+        // Page<ReviewListVO> result = new Page<>();
         // result.setItems(items);
         // result.setTotal(total);
         // result.setPage(page);
@@ -60,17 +59,17 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<PopularItem> getPopular(LocalDate start, LocalDate end, int limit) {
+    public List<PopularVO> getPopular(LocalDate start, LocalDate end, int limit) {
         throw ApiException.notImplemented(TODO);
     }
 
     @Override
-    public ReviewDetailResponse getDetail(UserVO loginUser, Long reviewId) {
+    public ReviewDetailVO getDetail(UserVO loginUser, Long reviewId) {
         throw ApiException.notImplemented(TODO);
     }
 
     @Override
-    public ReviewDetailResponse add(UserVO loginUser, ReviewCreateRequest request) {
+    public ReviewDetailVO add(UserVO loginUser, RecipeReviewVO request) {
         // 예시)
         // 1. 내 식사 기록인지 확인 (historyDAO.findById)
         // 2. 이미 이 기록으로 쓴 글이 있는지 확인 → 있으면 409
@@ -80,7 +79,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDetailResponse update(UserVO loginUser, Long reviewId, ReviewUpdateRequest request) {
+    public ReviewDetailVO update(UserVO loginUser, Long reviewId, RecipeReviewVO request) {
         throw ApiException.notImplemented(TODO);
     }
 
@@ -97,19 +96,19 @@ public class ReviewServiceImpl implements ReviewService {
     // ===================== 좋아요 =====================
 
     @Override
-    public LikeResponse setLike(UserVO loginUser, Long reviewId, boolean liked) {
+    public LikeStatusVO setLike(UserVO loginUser, Long reviewId, boolean liked) {
         throw ApiException.notImplemented(TODO);
     }
 
     // ===================== 댓글 =====================
 
     @Override
-    public CommentResponse addComment(UserVO loginUser, Long reviewId, String content) {
+    public ReviewCommentVO addComment(UserVO loginUser, Long reviewId, String content) {
         throw ApiException.notImplemented(TODO);
     }
 
     @Override
-    public CommentResponse updateComment(UserVO loginUser, Long reviewId, Long commentId, String content) {
+    public ReviewCommentVO updateComment(UserVO loginUser, Long reviewId, Long commentId, String content) {
         throw ApiException.notImplemented(TODO);
     }
 
@@ -121,7 +120,7 @@ public class ReviewServiceImpl implements ReviewService {
     // ===================== 사진 =====================
 
     @Override
-    public ReviewFileInfo attachFile(UserVO loginUser, Long reviewId, MultipartFile file) {
+    public ReviewFileVO attachFile(UserVO loginUser, Long reviewId, MultipartFile file) {
         throw ApiException.notImplemented(TODO);
     }
 

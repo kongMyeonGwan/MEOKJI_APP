@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.user.dao.UserDAO;
-import com.meokji.api.auth.dto.LoginRequest;
-import com.meokji.api.auth.dto.RegisterRequest;
+import com.meokji.api.auth.vo.LoginVO;
+import com.meokji.api.auth.vo.RegisterVO;
 import com.meokji.api.util.JwtUtil;
 import com.meokji.api.util.Passwords;
 import com.meokji.api.util.RegionCatalog;
@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public UserVO register(RegisterRequest request) {
+    public UserVO register(RegisterVO request) {
         String email = request.getEmail();
         String nickname = request.getNickname().trim();
 
@@ -99,7 +99,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public UserVO login(LoginRequest request) {
+    public UserVO login(LoginVO request) {
         // 1. 이메일로 회원 찾기
         UserVO user = userDAO.findActiveByEmail(request.getEmail());
         if (user == null) {

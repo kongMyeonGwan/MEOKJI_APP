@@ -21,15 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.meokji.api.common.Page;
-import com.meokji.api.review.dto.CommentCreateRequest;
-import com.meokji.api.review.dto.CommentResponse;
-import com.meokji.api.review.dto.LikeResponse;
-import com.meokji.api.review.dto.PopularItem;
-import com.meokji.api.review.dto.ReviewCreateRequest;
-import com.meokji.api.review.dto.ReviewDetailResponse;
-import com.meokji.api.review.dto.ReviewFileInfo;
-import com.meokji.api.review.dto.ReviewListItem;
-import com.meokji.api.review.dto.ReviewUpdateRequest;
+import com.meokji.api.review.vo.ReviewCommentVO;
+import com.meokji.api.review.vo.LikeStatusVO;
+import com.meokji.api.review.vo.PopularVO;
+import com.meokji.api.review.vo.RecipeReviewVO;
+import com.meokji.api.review.vo.ReviewDetailVO;
+import com.meokji.api.review.vo.ReviewFileVO;
+import com.meokji.api.review.vo.ReviewListVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.review.service.ReviewService;
 import com.meokji.api.user.vo.UserVO;
@@ -59,7 +57,7 @@ public class ReviewController {
 
     // 목록  GET /api/reviews?keyword=김치&page=1&size=20
     @GetMapping
-    public Page<ReviewListItem> getList(
+    public Page<ReviewListVO> getList(
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Page.MAX_SIZE) int size) {
@@ -68,7 +66,7 @@ public class ReviewController {
 
     // 인기 레시피  GET /api/reviews/popular?start=2026-09-01&end=2026-09-30&limit=20
     @GetMapping("/popular")
-    public List<PopularItem> getPopular(
+    public List<PopularVO> getPopular(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
@@ -78,7 +76,7 @@ public class ReviewController {
     // 상세  GET /api/reviews/3
     // 로그인했으면 "내가 좋아요를 눌렀는지", "내 글인지" 도 알려준다
     @GetMapping("/{reviewId}")
-    public ReviewDetailResponse getDetail(
+    public ReviewDetailVO getDetail(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId) {
         UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
@@ -88,19 +86,19 @@ public class ReviewController {
     // 글쓰기  POST /api/reviews
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public ReviewDetailResponse add(
+    public ReviewDetailVO add(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody ReviewCreateRequest request) {
+            @Valid @RequestBody RecipeReviewVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         return reviewService.add(loginUser, request);
     }
 
     // 글 수정  PUT /api/reviews/3
     @PutMapping("/{reviewId}")
-    public ReviewDetailResponse update(
+    public ReviewDetailVO update(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId,
-            @Valid @RequestBody ReviewUpdateRequest request) {
+            @Valid @RequestBody RecipeReviewVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         return reviewService.update(loginUser, reviewId, request);
     }
@@ -125,7 +123,7 @@ public class ReviewController {
 
     // 좋아요 켜기  PUT /api/reviews/3/like
     @PutMapping("/{reviewId}/like")
-    public LikeResponse like(
+    public LikeStatusVO like(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId) {
         UserVO loginUser = authService.getLoginUser(token);
@@ -134,7 +132,7 @@ public class ReviewController {
 
     // 좋아요 끄기  DELETE /api/reviews/3/like
     @DeleteMapping("/{reviewId}/like")
-    public LikeResponse unlike(
+    public LikeStatusVO unlike(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId) {
         UserVO loginUser = authService.getLoginUser(token);
@@ -146,21 +144,21 @@ public class ReviewController {
     // 댓글 쓰기  POST /api/reviews/3/comments
     @PostMapping("/{reviewId}/comments")
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public CommentResponse addComment(
+    public ReviewCommentVO addComment(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId,
-            @Valid @RequestBody CommentCreateRequest request) {
+            @Valid @RequestBody ReviewCommentVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         return reviewService.addComment(loginUser, reviewId, request.getContent());
     }
 
     // 댓글 수정  PUT /api/reviews/3/comments/7
     @PutMapping("/{reviewId}/comments/{commentId}")
-    public CommentResponse updateComment(
+    public ReviewCommentVO updateComment(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId,
             @PathVariable @Min(1) Long commentId,
-            @Valid @RequestBody CommentCreateRequest request) {
+            @Valid @RequestBody ReviewCommentVO request) {
         UserVO loginUser = authService.getLoginUser(token);
         return reviewService.updateComment(loginUser, reviewId, commentId, request.getContent());
     }
@@ -180,7 +178,7 @@ public class ReviewController {
 
     // 사진 붙이기  POST /api/reviews/3/file  (form-data 의 file 칸)
     @PostMapping("/{reviewId}/file")
-    public ReviewFileInfo attachFile(
+    public ReviewFileVO attachFile(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId,
             @RequestPart("file") MultipartFile file) {

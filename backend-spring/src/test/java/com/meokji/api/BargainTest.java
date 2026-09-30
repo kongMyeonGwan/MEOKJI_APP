@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.meokji.api.recommend.dto.BargainItem;
+import com.meokji.api.recommend.vo.BargainVO;
 import com.meokji.api.recommend.service.BargainService;
 import com.meokji.api.util.IngredientMatcher;
 
@@ -92,7 +92,7 @@ class BargainTest {
         // 돌려주는 것은 정상이다.
         long started = System.currentTimeMillis();
 
-        List<BargainItem> rows = bargains.current();
+        List<BargainVO> rows = bargains.current();
 
         assertThat(System.currentTimeMillis() - started)
                 .as("바깥 API 를 기다리면 안 된다").isLessThan(3_000);
@@ -100,7 +100,7 @@ class BargainTest {
         assertThat(rows).as("null 이 아니라 빈 목록이어야 한다").isNotNull();
 
         // 내린 것만 담으므로 값이 있다면 전부 음수이고 5% 이상이어야 한다.
-        for (BargainItem row : rows) {
+        for (BargainVO row : rows) {
             assertThat(row.getPercent()).isLessThanOrEqualTo(-5.0);
             assertThat(row.getName()).isNotBlank();
             assertThat(row.getPrice()).isPositive();

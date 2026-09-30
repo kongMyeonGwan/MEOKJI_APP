@@ -88,6 +88,37 @@ vo/XxxVO (테이블 한 행, Lombok @Data)      dto/ (요청·응답, Lombok @Da
 
 게시판 담당자 구역이 `review/` · `notice/` 폴더 통째로 분리됐다.
 
+### DTO 를 없애고 VO 로 합침 (2026-10-01)
+
+"DTO 와 VO 는 결국 같은 자바 파일인데 왜 나누나" 라는 지적에 따라 `dto` 폴더를
+전부 없앴다. **자바 113개, DTO 42개가 사라졌다.**
+
+합친 방식은 기능마다 다르다.
+
+| 어떤 DTO 였나 | 어떻게 했나 | 예 |
+|---|---|---|
+| 표 한 행을 다르게 보여주던 응답 | 그 VO 로 **합쳤다** | `BanResponse` → `UserBanVO` |
+| 그 표에 값을 넣는 요청 | 그 VO 에 검증을 **얹었다** | `NoticeCreateRequest` → `NoticeVO` |
+| 표가 없는 모양 (여러 행을 센 값, 계산 결과) | `vo/` 로 옮기고 이름만 `...VO` 로 | `LikeListResponse` → `LikeListVO` |
+
+합친 VO 에서 지켜야 할 것 두 가지.
+
+1. **나가면 안 되는 칸에 `@JsonIgnore`.** `UserVO` 를 그냥 내보내면
+   `password_hash` · `login_fail_count` · `is_locked` 가 실려 나간다.
+   컴파일러가 안 잡아준다.
+2. **DB 모양과 화면 모양이 다르면 getter 로 바꾼다.** `pinned_yn('Y'/'N')`
+   → `pinned(true/false)`, `created_at(LocalDateTime)` → 글자,
+   `recipe_json(CLOB 글자)` → JSON 객체.
+
+`src/test/java/com/meokji/api/ResponseShapeTest.java` 를 새로 만들어 이 둘을
+검사한다. **DB 없이 도는 테스트다** — 실제로 JSON 을 만들어서 칸 이름을 본다.
+6개 전부 통과.
+
+합치지 못한 것도 있다. 로그인 · 회원가입 · 내 정보 수정은 **필수 칸이 서로 달라서**
+한 클래스로 못 합친다 (`RegisterVO` 는 닉네임이 필수인데 `LoginVO` 는 아니다).
+합치면 검증 그룹(`@Validated(OnRegister.class)`)을 써야 해서 오히려 어려워진다.
+그래서 `auth/vo/` · `user/vo/` 에 따로 두되 이름만 `...VO` 로 맞췄다.
+
 ### 아직 남은 것
 
 1. **브라우저로 직접 확인**: 로그인 → 홈 → 룰렛 모양 → 레시피 → 찜 → 이걸로 먹을래요

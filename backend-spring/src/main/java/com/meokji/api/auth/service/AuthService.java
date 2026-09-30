@@ -1,7 +1,7 @@
 package com.meokji.api.auth.service;
 
-import com.meokji.api.auth.dto.LoginRequest;
-import com.meokji.api.auth.dto.RegisterRequest;
+import com.meokji.api.auth.vo.LoginVO;
+import com.meokji.api.auth.vo.RegisterVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -11,10 +11,10 @@ import com.meokji.api.user.vo.UserVO;
 public interface AuthService {
 
     // 회원가입. 이메일이나 닉네임이 겹치면 409 에러
-    UserVO register(RegisterRequest request);
+    UserVO register(RegisterVO request);
 
     // 로그인. 이메일 · 비밀번호가 맞으면 회원 정보를 돌려준다
-    UserVO login(LoginRequest request);
+    UserVO login(LoginVO request);
 
     // 로그인한 사람 찾기. 토큰이 없거나 잘못됐으면 401 에러
     //   token : 요청 헤더의 Authorization 값 ("Bearer eyJhbGci...")

@@ -16,10 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.meokji.api.common.ApiException;
 import com.meokji.api.history.dao.HistoryDAO;
 import com.meokji.api.user.dao.UserDAO;
-import com.meokji.api.user.dto.NotificationItem;
-import com.meokji.api.user.dto.PasswordChangeRequest;
-import com.meokji.api.user.dto.ProfileResponse;
-import com.meokji.api.user.dto.ProfileUpdateRequest;
+import com.meokji.api.user.vo.NotificationItemVO;
+import com.meokji.api.user.vo.PasswordChangeVO;
+import com.meokji.api.user.vo.ProfileUpdateVO;
 import com.meokji.api.util.Kst;
 import com.meokji.api.util.Passwords;
 import com.meokji.api.util.RegionCatalog;
@@ -48,7 +47,7 @@ public class UserServiceImpl implements UserService {
     // ===================== 내 정보 =====================
 
     @Override
-    public ProfileResponse getProfile(UserVO user) {
+    public UserVO getProfile(UserVO user) {
         // 내 식사 기록 전부 (날짜, 금액만)
         List<MealHistoryVO> histories = historyDAO.findStatsRows(user.getId());
 
@@ -61,14 +60,17 @@ public class UserServiceImpl implements UserService {
         int streakDays = Kst.countStreak(days); // 연속 기록일
         int cookCount = histories.size(); // 요리 횟수
 
-        return ProfileResponse.of(user, streakDays, cookCount);
+        // 표에 없는 두 칸을 채워서 그대로 돌려준다
+        user.setStreakDays(streakDays);
+        user.setCookCount(cookCount);
+        return user;
     }
 
     // ===================== 내 정보 수정 =====================
 
     @Override
     @Transactional
-    public ProfileResponse updateProfile(UserVO user, ProfileUpdateRequest request) {
+    public UserVO updateProfile(UserVO user, ProfileUpdateVO request) {
         // 바꿀 값만 담는다. null 인 칸은 XML 에서 건너뛴다 (UserMapper.xml 의 updateProfile)
         UserVO changes = new UserVO();
         changes.setId(user.getId());
@@ -121,7 +123,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changePassword(UserVO user, PasswordChangeRequest request) {
+    public void changePassword(UserVO user, PasswordChangeVO request) {
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             throw ApiException.badRequest("현재 비밀번호가 올바르지 않습니다.");
         }
@@ -137,12 +139,12 @@ public class UserServiceImpl implements UserService {
     // ===================== 알림 =====================
 
     @Override
-    public List<NotificationItem> getNotifications(UserVO user) {
-        List<NotificationItem> items = new ArrayList<>();
+    public List<NotificationItemVO> getNotifications(UserVO user) {
+        List<NotificationItemVO> items = new ArrayList<>();
 
         // 1. 내 글에 달린 댓글
         for (NotificationVO row : userDAO.findCommentNotifications(user.getId(), NOTIFICATION_LIMIT)) {
-            NotificationItem item = new NotificationItem();
+            NotificationItemVO item = new NotificationItemVO();
             item.setId("COMMENT-" + row.getId());
             item.setKind("COMMENT");
             item.setIcon("💬");
@@ -155,7 +157,7 @@ public class UserServiceImpl implements UserService {
 
         // 2. 내 글이 받은 좋아요
         for (NotificationVO row : userDAO.findLikeNotifications(user.getId(), NOTIFICATION_LIMIT)) {
-            NotificationItem item = new NotificationItem();
+            NotificationItemVO item = new NotificationItemVO();
             item.setId("LIKE-" + row.getId());
             item.setKind("LIKE");
             item.setIcon("❤️");

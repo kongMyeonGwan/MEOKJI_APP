@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.meokji.api.recommend.dto.RecommendRequest;
-import com.meokji.api.recommend.dto.RecommendResponse;
+import com.meokji.api.recommend.vo.RecommendRequestVO;
+import com.meokji.api.recommend.vo.RecommendVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.recommend.service.RecommendService;
 import com.meokji.api.user.vo.UserVO;
@@ -30,9 +30,9 @@ public class RecommendController {
     private RecommendService recommendService;
 
     @PostMapping("/recommendations")
-    public RecommendResponse recommend(
+    public RecommendVO recommend(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody RecommendRequest request) {
+            @Valid @RequestBody RecommendRequestVO request) {
         UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
         return recommendService.recommend(loginUser, request);
     }

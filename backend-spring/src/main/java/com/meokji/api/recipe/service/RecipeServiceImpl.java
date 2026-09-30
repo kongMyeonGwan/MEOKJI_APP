@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.ban.dao.BanDAO;
-import com.meokji.api.recipe.dto.RecipeResponse;
+import com.meokji.api.recipe.vo.RecipeVO;
 import com.meokji.api.util.FoodCatalog;
 import com.meokji.api.util.RecipeBook;
 import com.meokji.api.user.vo.UserVO;
@@ -37,7 +37,7 @@ public class RecipeServiceImpl implements RecipeService {
     private BanDAO banDAO;
 
     @Override
-    public RecipeResponse getRecipe(UserVO loginUser, String foodName) {
+    public RecipeVO getRecipe(UserVO loginUser, String foodName) {
         foodName = foodName.trim();
         if (foodName.isEmpty()) {
             throw ApiException.unprocessable("음식 이름이 없습니다.");
@@ -66,7 +66,7 @@ public class RecipeServiceImpl implements RecipeService {
         recipeJson.set("steps", built.getSteps());
 
         // 4. 응답 만들기
-        RecipeResponse response = new RecipeResponse();
+        RecipeVO response = new RecipeVO();
         response.setFoodName(foodName);
         response.setRecipeName(built.getRecipeName());
         response.setRecipeJson(recipeJson);

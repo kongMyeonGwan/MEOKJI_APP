@@ -75,8 +75,7 @@ src/main/java/com/meokji/api/
 │   ├── service/          실제 일을 하는 곳 (인터페이스)      BanService
 │   │                     + 그 구현                         BanServiceImpl
 │   ├── dao/              DB 에 SQL 을 보내는 곳 (인터페이스)  BanDAO
-│   ├── vo/               DB 테이블 한 행                    UserBanVO
-│   └── dto/              화면과 주고받는 요청 · 응답 모양      BanCreateRequest, BanResponse
+│   └── vo/               값을 담는 상자                     UserBanVO
 │
 ├── auth/                 로그인 · 회원가입 · 비밀번호 재설정
 ├── user/                 내 정보 · 알림 · 탈퇴
@@ -183,7 +182,9 @@ private int expireMinutes;
 3. `resources/mapper/XxxMapper.xml` 에 **id 가 메서드 이름과 같은** SQL 을 쓴다
    (XML 의 `namespace` 는 DAO 의 전체 이름과 똑같아야 한다. 예: `com.meokji.api.ban.dao.BanDAO`)
 4. `<기능>/service/XxxService.java`(인터페이스)에 메서드를 적고, `XxxServiceImpl` 에서 구현한다
-5. `<기능>/dto/` 에 요청 · 응답 모양을 만든다
+5. 그 VO 에 화면이 보낼 칸과 검증(`@NotBlank` 등)을 얹는다.
+   **화면에 나가면 안 되는 칸에는 `@JsonIgnore` 를 꼭 붙인다** — 안 붙이면
+   그 값이 그대로 응답에 실려 나간다 (`ResponseShapeTest` 가 이걸 검사한다)
 6. `<기능>/controller/` 에 주소를 만든다
 
 ---
@@ -198,7 +199,7 @@ private int expireMinutes;
 | **채울 곳** | `review/service/ReviewServiceImpl.java` · `notice/service/NoticeServiceImpl.java` (TODO 주석) |
 | DAO · SQL (예시 몇 개 들어 있음) | `review/dao/ReviewDAO.java` + `mapper/ReviewMapper.xml`, `notice/dao/NoticeDAO.java` + `mapper/NoticeMapper.xml` |
 | 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` (완성) |
-| 요청 · 응답 모양 | `review/dto/` 9개 · `notice/dto/` 4개 (완성) |
+| 요청 · 응답 모양 | `review/vo/` 8개 · `notice/vo/` 2개 (완성) |
 | 테이블 한 행 | `review/vo/RecipeReviewVO` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO` |
 | 페이지 목록 본보기 | `HistoryServiceImpl.getList()` + `HistoryMapper.xml` 의 `findPageByUser` |
 | **어떻게 동작해야 하는가** | **`docs/BOARD_SPEC.md`** — 정렬 · 권한 · 첨부파일 규칙 |

@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.common.MessageResponse;
-import com.meokji.api.auth.dto.LoginRequest;
-import com.meokji.api.auth.dto.PasswordResetChangeRequest;
-import com.meokji.api.auth.dto.PasswordResetSendRequest;
-import com.meokji.api.auth.dto.PasswordResetVerifyRequest;
-import com.meokji.api.auth.dto.RegisterRequest;
-import com.meokji.api.auth.dto.TokenResponse;
-import com.meokji.api.auth.dto.UserResponse;
+import com.meokji.api.auth.vo.LoginVO;
+import com.meokji.api.auth.vo.PasswordResetChangeVO;
+import com.meokji.api.auth.vo.PasswordResetSendVO;
+import com.meokji.api.auth.vo.PasswordResetVerifyVO;
+import com.meokji.api.auth.vo.RegisterVO;
+import com.meokji.api.auth.vo.TokenVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.auth.service.PasswordResetService;
 import com.meokji.api.util.JwtUtil;
@@ -42,49 +41,49 @@ public class AuthController {
     // 회원가입  POST /api/auth/register
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public UserResponse register(@Valid @RequestBody RegisterRequest request) {
+    public UserVO register(@Valid @RequestBody RegisterVO request) {
         UserVO user = authService.register(request);
-        return UserResponse.from(user);
+        return user;
     }
 
     // 로그인  POST /api/auth/login
     // 로그인 토큰과 회원 정보를 같이 돌려준다
     @PostMapping("/login")
-    public TokenResponse login(@Valid @RequestBody LoginRequest request) {
+    public TokenVO login(@Valid @RequestBody LoginVO request) {
         UserVO user = authService.login(request);
 
-        TokenResponse response = new TokenResponse();
+        TokenVO response = new TokenVO();
         response.setAccessToken(jwtUtil.createToken(user.getId()));
         response.setTokenType("bearer");
         response.setExpiresIn(jwtUtil.getExpiresInSeconds());
-        response.setUser(UserResponse.from(user));
+        response.setUser(user);
         return response;
     }
 
     // 내 정보 (토큰이 아직 쓸 수 있는지 확인할 때도 쓴다)  GET /api/auth/me
     @GetMapping("/me")
-    public UserResponse me(@RequestHeader(value = "Authorization", required = false) String token) {
+    public UserVO me(@RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
-        return UserResponse.from(loginUser);
+        return loginUser;
     }
 
     // 비밀번호 재설정 1단계: 이메일로 인증번호 보내기
     @PostMapping("/password-reset/send")
-    public MessageResponse passwordResetSend(@Valid @RequestBody PasswordResetSendRequest request) {
+    public MessageResponse passwordResetSend(@Valid @RequestBody PasswordResetSendVO request) {
         passwordResetService.send(request.getEmail());
         return new MessageResponse("입력하신 이메일로 인증번호를 보냈습니다. 5분 안에 입력해주세요.");
     }
 
     // 비밀번호 재설정 2단계: 인증번호 확인
     @PostMapping("/password-reset/verify")
-    public MessageResponse passwordResetVerify(@Valid @RequestBody PasswordResetVerifyRequest request) {
+    public MessageResponse passwordResetVerify(@Valid @RequestBody PasswordResetVerifyVO request) {
         passwordResetService.verify(request.getEmail(), request.getCode());
         return new MessageResponse("인증되었습니다. 새 비밀번호를 입력해주세요.");
     }
 
     // 비밀번호 재설정 3단계: 새 비밀번호로 바꾸기
     @PostMapping("/password-reset/change")
-    public MessageResponse passwordResetChange(@Valid @RequestBody PasswordResetChangeRequest request) {
+    public MessageResponse passwordResetChange(@Valid @RequestBody PasswordResetChangeVO request) {
         passwordResetService.change(request.getEmail(), request.getCode(), request.getNewPassword());
         return new MessageResponse("비밀번호가 변경되었습니다. 다시 로그인해주세요.");
     }

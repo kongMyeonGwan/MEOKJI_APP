@@ -1,6 +1,5 @@
 package com.meokji.api.ban.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.ban.dao.BanDAO;
-import com.meokji.api.ban.dto.BanCreateRequest;
-import com.meokji.api.ban.dto.BanResponse;
 import com.meokji.api.ban.vo.UserBanVO;
 import com.meokji.api.user.vo.UserVO;
 
@@ -22,17 +19,13 @@ public class BanServiceImpl implements BanService {
     private BanDAO banDAO;
 
     @Override
-    public List<BanResponse> getList(UserVO user) {
-        List<BanResponse> result = new ArrayList<>();
-        for (UserBanVO ban : banDAO.findActiveByUser(user.getId())) {
-            result.add(BanResponse.from(ban));
-        }
-        return result;
+    public List<UserBanVO> getList(UserVO user) {
+        return banDAO.findActiveByUser(user.getId());
     }
 
     @Override
     @Transactional
-    public BanResponse add(UserVO user, BanCreateRequest request) {
+    public UserBanVO add(UserVO user, UserBanVO request) {
         // 종류를 안 보내면 DISLIKE(싫어함)
         String banType = request.getBanType();
         if (banType == null || banType.isBlank()) {
@@ -55,7 +48,7 @@ public class BanServiceImpl implements BanService {
         }
 
         // insert 하면 ban 에 새 id 가 채워진다. 그 id 로 다시 읽어서 돌려준다.
-        return BanResponse.from(banDAO.findById(ban.getId()));
+        return banDAO.findById(ban.getId());
     }
 
     @Override

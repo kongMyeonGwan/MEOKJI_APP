@@ -11,8 +11,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.recommend.dto.FoodItem;
-import com.meokji.api.recommend.dto.WeatherResponse;
+import com.meokji.api.recommend.vo.FoodVO;
+import com.meokji.api.recommend.vo.WeatherVO;
 
 import tools.jackson.databind.JsonNode;
 
@@ -51,13 +51,13 @@ public class FoodScorer {
      * @param dislikes  싫어하는 재료. 순위만 뒤로 미룬다
      * @param exclude   이미 보여준 메뉴
      */
-    public List<FoodItem> recommend(
+    public List<FoodVO> recommend(
             int limit,
             String category,
             Integer budgetMin,
             Integer budgetMax,
             String query,
-            WeatherResponse weather,
+            WeatherVO weather,
             List<String> allergies,
             List<String> dislikes,
             List<String> exclude) {
@@ -106,11 +106,11 @@ public class FoodScorer {
                 .thenComparingInt(Scored::getCost)
                 .thenComparing(Scored::getName));
 
-        List<FoodItem> results = new ArrayList<>();
+        List<FoodVO> results = new ArrayList<>();
         int take = Math.min(Math.max(limit, 1), MAX_FOODS);
 
         for (Scored row : scored.subList(0, Math.min(take, scored.size()))) {
-            results.add(toFoodItem(row.getFood()));
+            results.add(toFoodVO(row.getFood()));
         }
 
         return results;
@@ -148,7 +148,7 @@ public class FoodScorer {
     }
 
     /** 조건에 얼마나 맞는지. 높을수록 앞에 온다. */
-    int scoreFood(JsonNode food, String query, WeatherResponse weather) {
+    int scoreFood(JsonNode food, String query, WeatherVO weather) {
         int score = 0;
 
         boolean hasQuery = query != null && !query.isBlank();
@@ -249,7 +249,7 @@ public class FoodScorer {
     }
 
     /** 날씨에 어울리면 가산점. 기온과 하늘을 따로 재서 더한다. */
-    int scoreWeather(JsonNode food, WeatherResponse weather) {
+    int scoreWeather(JsonNode food, WeatherVO weather) {
         return scoreTemperature(food, weather.getTemp()) + scoreSky(food, weather.getCondition());
     }
 
@@ -327,7 +327,7 @@ public class FoodScorer {
     }
 
     /** 카탈로그의 음식 하나를 화면용으로. */
-    static FoodItem toFoodItem(JsonNode food) {
+    static FoodVO toFoodVO(JsonNode food) {
         List<String> tags = new ArrayList<>();
         for (JsonNode tag : food.path("tags")) {
             tags.add(tag.asString());
@@ -335,7 +335,7 @@ public class FoodScorer {
 
         JsonNode imageUrl = food.get("image_url");
 
-        return new FoodItem(
+        return new FoodVO(
                 food.path("food_name").asString(),
                 food.path("category").asString(),
                 food.path("reason").asString(),

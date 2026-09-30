@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.game.dao.GameDAO;
-import com.meokji.api.game.dto.GamePlayResponse;
+import com.meokji.api.game.vo.GamePlayVO;
 import com.meokji.api.util.Times;
 import com.meokji.api.user.vo.UserVO;
 
@@ -21,7 +21,7 @@ public class GameServiceImpl implements GameService {
 
     @Override
     @Transactional
-    public GamePlayResponse recordPlay(UserVO user, String gameKey) {
+    public GamePlayVO recordPlay(UserVO user, String gameKey) {
         // 게임 이름 → DB 에 저장하는 한 글자 코드
         String gameType;
         if (gameKey.equals("worldcup")) {
@@ -36,7 +36,7 @@ public class GameServiceImpl implements GameService {
 
         gameDAO.insertPlay(user.getId(), gameType);
 
-        GamePlayResponse response = new GamePlayResponse();
+        GamePlayVO response = new GamePlayVO();
         response.setGameKey(gameKey);
         response.setGameType(gameType);
         response.setPlayedAt(Times.toText(LocalDateTime.now(ZoneOffset.UTC))); // 지금 시각 (UTC)

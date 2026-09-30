@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.meokji.api.recipe.dto.RecipeResponse;
+import com.meokji.api.recipe.vo.RecipeVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.recipe.service.RecipeService;
 import com.meokji.api.user.vo.UserVO;
@@ -29,7 +29,7 @@ public class RecipeController {
     private RecipeService recipeService;
 
     @GetMapping("/recipes/{foodName}")
-    public RecipeResponse getRecipe(
+    public RecipeVO getRecipe(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Size(min = 1, max = 150) String foodName) {
         UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
