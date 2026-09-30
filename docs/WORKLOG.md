@@ -59,17 +59,28 @@ vo/XxxVO (테이블 한 행, Lombok @Data)      dto/ (요청·응답, Lombok @Da
 
 ## 3. 남은 일 (여기서부터 이어서)
 
-1. **루트 `README.md` 구조 설명 고치기** (170~200줄 근처)
-   - `mapper/` → `dao/`, `config/` 에서 `AppProperties · SecurityConfig` 빼기, `security/` 줄 삭제, `service/` 에 "인터페이스 + Impl" 설명
-2. **`docs/BOARD_SPEC.md` 옛 이름 고치기**
-   - 6~8줄: `mapper/ReviewMapper.java` → `dao/ReviewDAO.java`
-   - 118, 217줄: `@LoginUser(...)` → `authService.findLoginUser(token)` / `getAdminUser(token)`
-   - 229~232줄: `vo/RecipeReview.java` → `vo/RecipeReviewVO.java` 등, `mapper/UserMapper.java` → `dao/UserDAO.java`
-3. (선택) `docs/PROGRESS.md` 에 남은 `@LoginUser` · `AppProperties` 설명 정리 — 옛 기록이라 그대로 둬도 됨
-4. (선택) 테스트 코드 주석의 `@LoginUser` 언급 정리 (`StubFixtureTest.java`)
-5. **백엔드 커밋 & 푸시** (아래 5번)
-6. **브라우저로 직접 확인**: 로그인 → 홈 → 룰렛 모양 → 레시피 → 찜 → 이걸로 먹을래요 → History → 마이페이지 닉네임 변경 → 로그아웃
-7. 이 PC 의 임시 폴더(Claude 스크래치패드 `.../scratchpad/be`)는 지워도 됨 — 전부 프로젝트로 복사했음
+### 끝난 것 (2026-10-01)
+
+- [x] **백엔드 커밋 & 푸시** — `b247cba` (약 140개 파일)
+- [x] **루트 `README.md` 구조 설명** — `mapper/` → `dao/`, `security/` 줄 삭제,
+      `config/` 는 `WebConfig` 만, `service/` 에 "인터페이스 + Impl 14쌍", 개수도 실제와 맞춤
+      (dao 9 · vo 10 · util 16 · 매퍼 XML 9)
+- [x] **`docs/BOARD_SPEC.md` 옛 이름** — 6~8줄 · 118줄 · 217줄 · 229~230줄 전부 수정
+- [x] **테스트 컴파일 복구** — `StubFixtureTest.java` 가 지워진
+      `com.meokji.api.security.LoginUser` 를 import 해서 `gradlew compileTestJava` 가
+      깨져 있었다 (주석에서만 쓰는 미사용 import 였음). 지금은 `compileJava` ·
+      `compileTestJava` 둘 다 통과한다.
+
+### 아직 남은 것
+
+1. **브라우저로 직접 확인**: 로그인 → 홈 → 룰렛 모양 → 레시피 → 찜 → 이걸로 먹을래요
+   → History → 마이페이지 닉네임 변경 → 로그아웃
+2. **팀 DB 에서 `gradlew test` 한 번 더** — 컴파일이 깨져 있던 동안은 못 돌렸다.
+   기준선은 94개 중 91개 통과 (실패 3개는 정답지 회원 id 차이).
+3. (선택) `docs/STUDY_AUTH.md` · `docs/PROGRESS.md` 의 `@LoginUser` · `AppProperties`
+   설명 — 지금 코드에는 없는 것이다. 다만 파이썬→자바 대조 학습 기록이라 그대로 둬도 된다.
+   (`STUDY_AUTH.md` 는 현재 설계처럼 읽힐 수 있으니 머리말에 "옛 방식" 한 줄만 달아두면 충분)
+4. 이 PC 의 임시 폴더(Claude 스크래치패드 `.../scratchpad/be`)는 지워도 됨 — 전부 프로젝트로 복사했음
 
 ---
 
@@ -89,10 +100,11 @@ gradlew test
 
 ---
 
-## 5. 집에서 이어 하려면
+## 5. 다른 PC 에서 이어 하려면
 
-지금 백엔드 변경(약 140개 파일)은 **이 PC 에만 있고 커밋 안 됨.** 떠나기 전에:
+백엔드 변경은 **커밋 · 푸시 끝났다** (`b247cba`, `feature/kongmg`). 그래서:
 
-1. VS Code 왼쪽 **Source Control** → 메시지 입력 (예: `백엔드를 VO·Controller·Service·ServiceImpl·DAO·XML 구조로 정리`) → **Commit** → **Sync Changes**
-2. 집에서: `git fetch` → `git checkout feature/kongmg` → `git pull`
-3. 이 문서(`docs/WORKLOG.md`)의 **3. 남은 일** 부터 이어서
+1. `git fetch` → `git checkout feature/kongmg` → `git pull`
+2. 이 문서(`docs/WORKLOG.md`)의 **3. 남은 일** 부터 이어서
+3. 집에서는 팀 DB(`10.1.54.120`)가 안 붙을 수 있으니 컴파일만 확인:
+   `gradlew compileJava compileTestJava`

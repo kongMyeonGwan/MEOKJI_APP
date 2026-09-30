@@ -3,9 +3,10 @@
 `backend-spring` 의 게시판 · 공지는 **501 스텁**이다. 주소 · 요청/응답 모양 · 권한은
 다 맞춰져 있고 메서드 안만 채우면 된다.
 
-자바는 계층별 폴더다 — `controller/` · `service/` · `mapper/` · `dto/<기능>/` ·
-`vo/`. 게시판 담당자가 만들 것은 `mapper/ReviewMapper.java` 와
-`resources/mapper/ReviewMapper.xml` 이고, 나머지는 이미 자리가 잡혀 있다.
+자바는 계층별 폴더다 — `controller/` · `service/`(인터페이스 + `Impl`) · `dao/` ·
+`dto/<기능>/` · `vo/`. 게시판 담당자가 채울 것은 `service/ReviewServiceImpl.java` ·
+`dao/ReviewDAO.java` · `resources/mapper/ReviewMapper.xml` 이고, 나머지는 이미
+자리가 잡혀 있다.
 
 이 문서는 **"무엇을 만들어야 하는가"** 가 아니라 **"어떻게 동작해야 하는가"** 를
 적은 것이다. 앞의 것은 `ReviewService.java` · `NoticeService.java` 주석에 있다.
@@ -115,7 +116,7 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 - `food_name` · `recipe_json` · `ingredients_json` 은 **복사본이 아니라 원본
   `meal_histories` 에서 읽는다.** 기록은 확정한 뒤로 수정하지 않으므로 값이 흔들리지 않는다.
 - `liked` · `is_mine` 은 로그인했을 때만 계산한다. 비로그인이면 둘 다 `false`
-  (`@LoginUser(required = false)`).
+  (컨트롤러가 `authService.findLoginUser(token)` 으로 받아서 넘긴다 — 없으면 `null`).
 - 댓글은 `created_at, id` **오름차순** (목록과 반대다).
 - 댓글의 `is_mine` 은 "로그인했고 그 댓글을 내가 썼는가".
 
@@ -214,7 +215,7 @@ DB 에 들어갔을 때를 막는 자리다.
 | 정렬 | `pinned_yn DESC, created_at DESC, id DESC` — `'Y' > 'N'` 이라 내림차순이면 고정이 위로 온다 |
 | `pinned` | DB 는 `'Y'/'N'`, JSON 은 **`true`/`false`**. 양방향으로 바꿔줘야 한다 |
 | 작성자 | **요청 본문이 아니라 토큰에서** 나온 사람이다. 본문으로 받으면 남의 이름으로 공지를 쓸 수 있다 |
-| 권한 | 쓰기 · 수정 · 삭제는 `@LoginUser(admin = true)` — 목록과 조회수는 누구나 |
+| 권한 | 쓰기 · 수정 · 삭제는 `authService.getAdminUser(token)` — 관리자가 아니면 403. 목록과 조회수는 누구나 |
 | 첨부 | **없다.** 표에 파일 컬럼이 없고 붙일 API 도 없다. 첨부는 후기에만 있다 |
 
 ---
@@ -226,8 +227,8 @@ DB 에 들어갔을 때를 막는 자리다.
 | 만들 메서드 목록 | `service/ReviewService.java` · `service/NoticeService.java` 주석 |
 | 주소 · 로그인 필요 여부 | `controller/ReviewController.java` · `controller/NoticeController.java` |
 | 요청/응답 모양 | `dto/review/` 9개 · `dto/notice/` 4개 (다 정의돼 있다) |
-| 표 한 행 | `vo/RecipeReview.java` · `vo/ReviewComment` · `vo/ReviewLike` · `vo/Notice.java` |
-| 매퍼 본보기 | `mapper/UserMapper.java` + `resources/mapper/UserMapper.xml` |
+| 표 한 행 | `vo/RecipeReviewVO.java` · `vo/ReviewCommentVO` · `vo/ReviewLikeVO` · `vo/NoticeVO.java` |
+| 매퍼 본보기 | `dao/UserDAO.java` + `resources/mapper/UserMapper.xml` |
 | **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
 | **되살리기 본보기** | `resources/mapper/LikeMapper.xml` — 찜하기가 좋아요와 같은 구조다 |
 | 한국 날짜 | `util/Kst` |

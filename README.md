@@ -175,14 +175,13 @@ MEOKJI_APP/
 │   └── src/
 │       ├── main/java/com/meokji/api/
 │       │   ├── controller/    HTTP 를 받는 자리 (12)
-│       │   ├── service/       업무 규칙과 트랜잭션 경계 (14)
-│       │   ├── mapper/        SQL 을 부르는 인터페이스 (6)
+│       │   ├── service/       업무 규칙과 트랜잭션 경계. 인터페이스 + Impl 14쌍 (28)
+│       │   ├── dao/           SQL 을 부르는 인터페이스 (9)
 │       │   ├── dto/           요청 · 응답 모양. 기능별로 한 겹 더 (42)
-│       │   ├── vo/            표 한 행 (9)
-│       │   ├── util/          계산 · 바깥 API · 고정 목록 읽기 (15)
-│       │   ├── common/        ApiException · 오류 핸들러 · Page
-│       │   ├── config/        AppProperties · SecurityConfig · WebConfig
-│       │   └── security/      JwtProvider · @LoginUser · 인자 리졸버
+│       │   ├── vo/            표 한 행 (10)
+│       │   ├── util/          계산 · 바깥 API · 고정 목록 읽기 (16)
+│       │   ├── common/        ApiException · 오류 핸들러 · Page · MessageResponse
+│       │   └── config/        WebConfig (CORS · 비밀번호 인코더)
 │       ├── main/resources/
 │       │   ├── application.yml
 │       │   ├── data/          테이블이 필요 없는 고정 목록 5개
@@ -191,7 +190,7 @@ MEOKJI_APP/
 │       │   │   ├── regions.json        시·도 17개와 시·군·구 좌표
 │       │   │   ├── ingredient-rules.json  분량 환산 · 대체재료
 │       │   │   └── kamis-items.json    재료 이름 -> KAMIS 품목코드 116개
-│       │   └── mapper/        매퍼 XML 6개
+│       │   └── mapper/        매퍼 XML 9개
 │       └── test/
 │           ├── java/          테스트 94건 + 데모 데이터(SeedDemoTest)
 │           └── resources/fixtures/   파이썬 응답 정답지 38개

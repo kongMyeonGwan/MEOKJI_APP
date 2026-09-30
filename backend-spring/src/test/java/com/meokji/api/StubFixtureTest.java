@@ -23,8 +23,6 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import com.meokji.api.security.LoginUser;
-
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -151,8 +149,9 @@ class StubFixtureTest {
         for (String path : paths) {
             MvcResult result = mvc.perform(get(path)).andReturn();
 
-            // 로그인 없이도 501 이어야 한다. 401 이 나오면 @LoginUser 설정이 잘못된
-            // 것이고, 담당자가 구현한 뒤에 게스트가 목록을 못 보게 된다.
+            // 로그인 없이도 501 이어야 한다. 401 이 나오면 컨트롤러가
+            // findLoginUser(token) 대신 getLoginUser(token) 를 쓴 것이고,
+            // 담당자가 구현한 뒤에 게스트가 목록을 못 보게 된다.
             assertThat(result.getResponse().getStatus())
                     .as("%s 는 게스트도 볼 수 있어야 한다", path)
                     .isEqualTo(501);
@@ -163,7 +162,7 @@ class StubFixtureTest {
     @DisplayName("로그인이 필요한 스텁은 토큰이 없으면 501 이 아니라 401 이다")
     void loginRequiredStubsReturn401() throws Exception {
         // 글쓰기는 로그인이 필요하다. 구현 전이라도 인증은 먼저 걸려야 한다 -
-        // 여기서 501 이 나오면 @LoginUser 가 안 붙은 것이다.
+        // 여기서 501 이 나오면 authService.getLoginUser(token) 를 안 부른 것이다.
         MvcResult result = mvc.perform(post("/api/reviews")
                         .contentType("application/json")
                         .content("{\"meal_history_id\":1,\"title\":\"ㄱ\",\"content\":\"ㄴ\"}"))
