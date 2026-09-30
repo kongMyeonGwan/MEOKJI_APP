@@ -101,9 +101,9 @@ class BargainTest {
 
         // 내린 것만 담으므로 값이 있다면 전부 음수이고 5% 이상이어야 한다.
         for (BargainItem row : rows) {
-            assertThat(row.percent()).isLessThanOrEqualTo(-5.0);
-            assertThat(row.name()).isNotBlank();
-            assertThat(row.price()).isPositive();
+            assertThat(row.getPercent()).isLessThanOrEqualTo(-5.0);
+            assertThat(row.getName()).isNotBlank();
+            assertThat(row.getPrice()).isPositive();
         }
 
         assertThat(rows.size()).as("화면에 넘기는 기본 개수").isLessThanOrEqualTo(8);

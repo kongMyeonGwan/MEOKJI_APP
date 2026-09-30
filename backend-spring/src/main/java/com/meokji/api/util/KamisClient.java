@@ -1,5 +1,9 @@
 package com.meokji.api.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -17,9 +21,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.config.AppProperties;
 import com.meokji.api.dto.recipe.PriceOffer;
 
 import tools.jackson.databind.JsonNode;
@@ -29,13 +33,10 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * KAMIS 소매 조사가격을 받아온다.
  *
- * <p>공공데이터포털의 한국농수산식품유통공사 일별 도·소매 가격정보다. 파이썬 쪽
- * {@code app/integrations/price_api.py} 자리다.
- *
- * <p><b>쇼핑몰 최저가가 아니다.</b> 소매시장 조사가격이라 구매 링크가 없고 품목마다
+ * 쇼핑몰 최저가가 아니다. 소매시장 조사가격이라 구매 링크가 없고 품목마다
  * 단위가 다르다(쌀 20kg / 깻잎 100g). 그래서 화면에 단위와 조사일자를 같이 적는다.
  *
- * <p>값을 지어내지 않는다. KAMIS 에 없는 재료면 빈 목록을 돌려주고, 화면이
+ * 값을 지어내지 않는다. KAMIS 에 없는 재료면 빈 목록을 돌려주고, 화면이
  * '가격 정보 없음' 으로 표시한다 - 전에 값을 지어내던 mock 이 진짜 조사가격과
  * 구분되지 않은 채 합계까지 계산돼서 없앴다.
  */
@@ -74,18 +75,34 @@ public class KamisClient {
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     /** 한 품목의 조사가격과 추이. 링크는 재료 이름에 따라 달라서 여기 담지 않는다. */
-    public record Quote(List<PriceOffer> offers, JsonNode trend) {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Quote {
+
+        private List<PriceOffer> offers;
+
+        private JsonNode trend;
 
         public static Quote empty() {
             return new Quote(List.of(), null);
         }
+    
     }
 
-    private record Cached(long savedAt, Quote quote) {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class Cached {
+
+        private long savedAt;
+
+        private Quote quote;
     }
 
-    @Autowired
-    private AppProperties app;
+    // 공공데이터포털 인증키 (application.yml 의 app.price.service-key)
+    @Value("${app.price.service-key}")
+    private String serviceKey;
 
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(4))
@@ -94,24 +111,23 @@ public class KamisClient {
     /** 품목코드 -> 조사가격. 같은 품목을 재료 여러 개가 쓸 수 있다. */
     private final Map<String, Cached> cache = new ConcurrentHashMap<>();
 
-
     /**
      * 품목 하나의 조사가격.
      *
      * @throws IllegalStateException 인증키가 없을 때. 부르는 쪽이 503 으로 바꾼다
      */
     public Quote fetch(IngredientMatcher.Codes codes) {
-        if (app.getPrice().getServiceKey().isBlank()) {
+        if (serviceKey.isBlank()) {
             throw new IllegalStateException(
                     "app.price.service-key 가 비어 있습니다. 공공데이터포털에서 활용신청 후 "
                     + "일반 인증키의 Decoding 값을 넣으세요.");
         }
 
-        String key = codes.group() + "/" + codes.item() + "/" + codes.kind();
+        String key = codes.getGroup() + "/" + codes.getItem() + "/" + codes.getKind();
         Cached cached = cache.get(key);
 
-        if (cached != null && System.currentTimeMillis() - cached.savedAt() < CACHE_MILLIS) {
-            return cached.quote();
+        if (cached != null && System.currentTimeMillis() - cached.getSavedAt() < CACHE_MILLIS) {
+            return cached.getQuote();
         }
 
         Quote quote = call(codes);
@@ -182,7 +198,7 @@ public class KamisClient {
         }
 
         // 싼 곳부터 보여준다. 화면도 최저가를 먼저 읽는다.
-        offers.sort(Comparator.comparingInt(PriceOffer::price));
+        offers.sort(Comparator.comparingInt(PriceOffer::getPrice));
 
         return new Quote(List.copyOf(offers), trend);
     }
@@ -192,7 +208,7 @@ public class KamisClient {
         LocalDate start = today.minusDays(LOOKBACK_DAYS);
 
         StringBuilder url = new StringBuilder(URL)
-                .append("?serviceKey=").append(encode(app.getPrice().getServiceKey()))
+                .append("?serviceKey=").append(encode(serviceKey))
                 .append("&returnType=JSON")
                 .append("&pageNo=1")
                 .append("&numOfRows=").append(ROWS)
@@ -201,12 +217,12 @@ public class KamisClient {
                 .append("&").append(encode("cond[exmn_ymd::LTE]"))
                 .append("=").append(today.format(DAY))
                 .append("&").append(encode("cond[se_cd::EQ]")).append("=").append(RETAIL_CODE)
-                .append("&").append(encode("cond[ctgry_cd::EQ]")).append("=").append(codes.group())
-                .append("&").append(encode("cond[item_cd::EQ]")).append("=").append(codes.item())
+                .append("&").append(encode("cond[ctgry_cd::EQ]")).append("=").append(codes.getGroup())
+                .append("&").append(encode("cond[item_cd::EQ]")).append("=").append(codes.getItem())
                 .append("&selectable=").append(encode(COLUMNS));
 
-        if (codes.kind() != null && !codes.kind().isBlank()) {
-            url.append("&").append(encode("cond[vrty_cd::EQ]")).append("=").append(codes.kind());
+        if (codes.getKind() != null && !codes.getKind().isBlank()) {
+            url.append("&").append(encode("cond[vrty_cd::EQ]")).append("=").append(codes.getKind());
         }
 
         return url.toString();
@@ -305,7 +321,7 @@ public class KamisClient {
     /**
      * 단위가 같은 행만 남긴다.
      *
-     * <p>같은 품목인데 시장마다 단위가 다를 수 있다("1kg" 과 "100g"). 섞으면
+     * 같은 품목인데 시장마다 단위가 다를 수 있다("1kg" 과 "100g"). 섞으면
      * 최저/최고가가 시장 차이가 아니라 단위 차이가 된다.
      */
     static List<JsonNode> sameUnitRows(List<JsonNode> rows) {

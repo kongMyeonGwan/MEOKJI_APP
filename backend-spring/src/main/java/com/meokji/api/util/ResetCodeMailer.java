@@ -1,46 +1,42 @@
 package com.meokji.api.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.config.AppProperties;
-
 /**
  * 비밀번호 재설정 인증번호를 메일로 보낸다.
  *
- * <p>파이썬 쪽 {@code app/integrations/email_sender.py} 자리다.
- *
- * <h2>발송 실패로 요청을 깨뜨리지 않는다</h2>
- *
- * <p>메일이 안 나가도 예외를 올리지 않고 로그만 남긴다. 이 메서드는 <b>DB 커밋
- * 이후에</b> 불리는데, 여기서 예외를 던지면 사용자에게는 500 이 가면서 코드는
- * 이미 발급된 상태가 된다. 그러면 재발송 제한(60초)에 걸려 다시 시도할 수도 없다.
- * 파이썬도 같은 이유로 삼킨다.
+ * 발송 실패로 요청을 깨뜨리지 않는다
  */
 @Component
 public class ResetCodeMailer {
 
     private static final String SUBJECT = "[뭐먹지?] 비밀번호 재설정 인증번호";
 
-    @Autowired
-    private AppProperties app;
+    // mock 이면 콘솔에 찍기만 하고, smtp 면 진짜 메일을 보낸다 (application.yml 의 app.mail.provider)
+    @Value("${app.mail.provider}")
+    private String mailProvider;
+
+    // 보내는 사람 주소. 비워두면 spring.mail.username 이 쓰인다
+    @Value("${app.mail.from}")
+    private String mailFrom;
 
     /**
-     * {@code spring.mail.host} 를 적지 않으면 스프링이 이 빈을 아예 만들지 않는다.
-     * 그래서 직접 주입받지 않고 {@code ObjectProvider} 로 "있으면 쓴다" 로 둔다 -
+     * spring.mail.host 를 적지 않으면 스프링이 이 빈을 아예 만들지 않는다.
+     * 그래서 직접 주입받지 않고 ObjectProvider 로 "있으면 쓴다" 로 둔다 -
      * mock 으로 쓰는 사람이 메일 설정 때문에 서버를 못 띄우면 안 된다.
      */
     @Autowired
     private ObjectProvider<JavaMailSender> mailSender;
 
-
     /** 인증번호를 보낸다. provider 가 smtp 가 아니면 콘솔에 찍는다. */
     public void send(String to, String code, int expireMinutes) {
-        if ("smtp".equalsIgnoreCase(app.getMail().getProvider())) {
+        if ("smtp".equalsIgnoreCase(mailProvider)) {
             sendBySmtp(to, code, expireMinutes);
             return;
         }
@@ -77,8 +73,8 @@ public class ResetCodeMailer {
 
         // 발신자를 비워두면 spring.mail.username 이 쓰인다. 대부분의 메일 서버는
         // 로그인 계정과 다른 발신자를 거부한다.
-        if (!app.getMail().getFrom().isBlank()) {
-            message.setFrom(app.getMail().getFrom());
+        if (!mailFrom.isBlank()) {
+            message.setFrom(mailFrom);
         }
 
         message.setTo(to);

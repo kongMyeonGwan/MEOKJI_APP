@@ -1,9 +1,17 @@
 package com.meokji.api.common;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
- * 할 일을 끝냈다고만 알려주는 응답.
- *
- * <p>파이썬 쪽 {@code MessageResponse} 자리다. 화면은 이 문구를 그대로 띄운다.
+ * "잘 됐다" 는 문장 하나만 돌려주는 응답.
+ * 모양: { "message": "비밀번호가 변경되었습니다." }
  */
-public record MessageResponse(String message) {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageResponse {
+
+    private String message;
 }

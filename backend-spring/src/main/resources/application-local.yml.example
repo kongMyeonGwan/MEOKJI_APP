@@ -3,7 +3,7 @@
 #   copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 #
 # application-local.yml 은 .gitignore 에 있어 커밋되지 않는다.
-# 파이썬 쪽 backend/.env 와 같은 값을 넣으면 된다.
+# 값은 팀장에게 받는다.
 
 spring:
   datasource:

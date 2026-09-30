@@ -1,25 +1,26 @@
 package com.meokji.api.dto.ban;
 
 import com.meokji.api.util.Times;
-import com.meokji.api.vo.UserBan;
+import com.meokji.api.vo.UserBanVO;
 
-/**
- * Ban 한 건.
- *
- * <p>{@code userId} 는 내려주지 않는다. 어차피 "내 Ban" 만 조회되므로 필요 없고,
- * 내보내지 않는 값은 실수로 새어나갈 일도 없다.
- */
-public record BanResponse(
-        Long id,
-        String ingredientName,
-        String banType,
-        String createdAt) {
+import lombok.Data;
 
-    public static BanResponse from(UserBan ban) {
-        return new BanResponse(
-                ban.getId(),
-                ban.getIngredientName(),
-                ban.getBanType(),
-                Times.toText(ban.getCreatedAt()));
+// 못 먹는 재료 한 건 응답
+@Data
+public class BanResponse {
+
+    private Long id;
+    private String ingredientName;
+    private String banType;
+    private String createdAt;
+
+    // UserBanVO(DB 한 행) → 응답 모양으로 옮겨 담는다
+    public static BanResponse from(UserBanVO ban) {
+        BanResponse response = new BanResponse();
+        response.setId(ban.getId());
+        response.setIngredientName(ban.getIngredientName());
+        response.setBanType(ban.getBanType());
+        response.setCreatedAt(Times.toText(ban.getCreatedAt()));
+        return response;
     }
 }

@@ -1,5 +1,9 @@
 package com.meokji.api.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -12,13 +16,7 @@ import com.meokji.api.dto.weather.WeatherResponse;
 
 import tools.jackson.databind.JsonNode;
 
-/**
- * 카탈로그 100종에 점수를 매겨 고른다.
- *
- * <p>파이썬 쪽 {@code app/integrations/ai_api.py} 의 {@code catalog_recommend_foods}
- * 와 점수 함수들을 옮긴 것이다. 점수 값(8 · 6 · 4 · -3 …)은 그쪽에서 실제 결과를
- * 보며 맞춰둔 것이라 <b>바꾸지 않았다.</b> 바꾸면 같은 조건에 다른 메뉴가 나온다.
- */
+/** 카탈로그 100종에 점수를 매겨 고른다. */
 @Component
 public class FoodScorer {
 
@@ -31,15 +29,25 @@ public class FoodScorer {
     @Autowired
     private FoodCatalog catalog;
 
-
     /** 점수를 매긴 한 줄. 정렬에 쓴다. */
-    private record Scored(int score, int cost, String name, JsonNode food) {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class Scored {
+
+        private int score;
+
+        private int cost;
+
+        private String name;
+
+        private JsonNode food;
     }
 
     /**
      * 조건에 맞는 후보를 골라준다.
      *
-     * @param allergies 알레르기 재료. 들어간 메뉴는 <b>통째로 뺀다</b>
+     * @param allergies 알레르기 재료. 들어간 메뉴는 통째로 뺀다
      * @param dislikes  싫어하는 재료. 순위만 뒤로 미룬다
      * @param exclude   이미 보여준 메뉴
      */
@@ -94,15 +102,15 @@ public class FoodScorer {
         // 점수가 높은 순 -> 싼 순 -> 이름순.
         // 마지막 이름순이 없으면 점수가 같을 때 순서가 들쭉날쭉해 보인다.
         scored.sort(Comparator
-                .comparingInt(Scored::score).reversed()
-                .thenComparingInt(Scored::cost)
-                .thenComparing(Scored::name));
+                .comparingInt(Scored::getScore).reversed()
+                .thenComparingInt(Scored::getCost)
+                .thenComparing(Scored::getName));
 
         List<FoodItem> results = new ArrayList<>();
         int take = Math.min(Math.max(limit, 1), MAX_FOODS);
 
         for (Scored row : scored.subList(0, Math.min(take, scored.size()))) {
-            results.add(toFoodItem(row.food()));
+            results.add(toFoodItem(row.getFood()));
         }
 
         return results;
@@ -242,7 +250,7 @@ public class FoodScorer {
 
     /** 날씨에 어울리면 가산점. 기온과 하늘을 따로 재서 더한다. */
     int scoreWeather(JsonNode food, WeatherResponse weather) {
-        return scoreTemperature(food, weather.temp()) + scoreSky(food, weather.condition());
+        return scoreTemperature(food, weather.getTemp()) + scoreSky(food, weather.getCondition());
     }
 
     int scoreTemperature(JsonNode food, Integer temp) {

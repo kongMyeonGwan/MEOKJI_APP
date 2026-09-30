@@ -1,5 +1,9 @@
 package com.meokji.api.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -22,27 +26,21 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * 재료 이름을 KAMIS 품목코드로 잇는다.
  *
- * <p>파이썬 쪽 {@code app/integrations/ingredient_match.py} 자리다. 표
- * (품목 116개 · 손질 표현 34개 · 별칭 26개 …)는
- * {@code resources/data/kamis-items.json} 으로 내보내서 읽는다.
+ * 왜 이름을 다듬어야 하나
  *
- * <h2>왜 이름을 다듬어야 하나</h2>
- *
- * <p>레시피에는 "다진 마늘 (국산)" 처럼 적혀 있고 KAMIS 품목명은 "마늘" 이다.
+ * 레시피에는 "다진 마늘 (국산)" 처럼 적혀 있고 KAMIS 품목명은 "마늘" 이다.
  * 괄호를 떼고, 손질 표현을 떼고, 별칭을 펴고, 그래도 안 맞으면 부분일치로 찾는다.
  *
- * <h2>가공식품은 원물 시세를 빌려 쓰지 않는다</h2>
+ * 가공식품은 원물 시세를 빌려 쓰지 않는다
  *
- * <p>부분일치가 이름 안에서 품목명을 찾기 때문에 가공식품이 원물에 걸린다.
+ * 부분일치가 이름 안에서 품목명을 찾기 때문에 가공식품이 원물에 걸린다.
  *
- * <pre>
- *   고추장   -&gt; '고추' 시세
- *   배추김치 -&gt; '배추' 시세
- *   깨소금   -&gt; '소금' 시세
- * </pre>
+ *   고추장   -> '고추' 시세
+ *   배추김치 -> '배추' 시세
+ *   깨소금   -> '소금' 시세
  *
- * <p>값이 틀리는 것도 문제지만, 화면이 "이건 조사 대상이다" 라고 말하게 되는 게
- * 더 나쁘다(STEP 39). {@code processed} 에 적힌 이름은 부분일치를 건너뛴다.
+ * 값이 틀리는 것도 문제지만, 화면이 "이건 조사 대상이다" 라고 말하게 되는 게
+ * 더 나쁘다(STEP 39). processed 에 적힌 이름은 부분일치를 건너뛴다.
  */
 @Component
 public class IngredientMatcher {
@@ -53,8 +51,17 @@ public class IngredientMatcher {
     private static final Pattern PARENTHESES =
             Pattern.compile("[（(\\[][^）)\\]]*[）)\\]]");
 
-    /** KAMIS 조회에 필요한 코드 세 개. {@code kind} 는 없을 수 있다. */
-    public record Codes(String group, String item, String kind) {
+    /** KAMIS 조회에 필요한 코드 세 개. kind 는 없을 수 있다. */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Codes {
+
+        private String group;
+
+        private String item;
+
+        private String kind;
     }
 
     private final Map<String, Codes> itemCodes = new LinkedHashMap<>();
@@ -139,11 +146,11 @@ public class IngredientMatcher {
     /**
      * 코드가 겹치는 이름을 하나로 줄인 품목 이름 목록.
      *
-     * <p>시세를 통째로 훑을 때 쓴다({@link BargainService}). 표에는 같은 코드를
+     * 시세를 통째로 훑을 때 쓴다(BargainService). 표에는 같은 코드를
      * 가리키는 이름이 여럿이라("대파" · "쪽파" 가 같은 코드) 이름마다 물어보면
      * 같은 응답을 두 번 받는다 - 116개가 101개로 줄어든다.
      *
-     * <p>먼저 나온 이름을 대표로 쓴다. 화면의 칩에 그대로 적히는 이름이다.
+     * 먼저 나온 이름을 대표로 쓴다. 화면의 칩에 그대로 적히는 이름이다.
      */
     public List<String> uniqueItemNames() {
         Map<Codes, String> first = new LinkedHashMap<>();

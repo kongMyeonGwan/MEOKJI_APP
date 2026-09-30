@@ -3,14 +3,13 @@ package com.meokji.api.dto.like;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/** 찜하기 · 해제. 같은 이름을 다시 보내면 뒤집힌다. */
-public record LikeToggleRequest(
+import lombok.Data;
 
-        @NotBlank(message = "음식 이름을 입력해주세요")
-        @Size(max = 150, message = "음식 이름이 너무 깁니다")
-        String foodName) {
+// 하트 누르기 요청. 모양: { "food_name": "김치찌개" }
+@Data
+public class LikeToggleRequest {
 
-    public String trimmedFoodName() {
-        return foodName == null ? null : foodName.trim();
-    }
+    @NotBlank(message = "음식 이름을 입력해주세요")
+    @Size(max = 150, message = "음식 이름이 너무 깁니다")
+    private String foodName;
 }

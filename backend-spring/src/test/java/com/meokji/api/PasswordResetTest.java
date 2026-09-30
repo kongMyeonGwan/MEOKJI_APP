@@ -21,11 +21,11 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.meokji.api.mapper.UserMapper;
-import com.meokji.api.mapper.VerificationCodeMapper;
+import com.meokji.api.dao.UserDAO;
+import com.meokji.api.dao.VerificationCodeDAO;
 import com.meokji.api.util.ResetCodeMailer;
-import com.meokji.api.vo.User;
-import com.meokji.api.vo.VerificationCode;
+import com.meokji.api.vo.UserVO;
+import com.meokji.api.vo.VerificationCodeVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -64,10 +64,10 @@ class PasswordResetTest {
     private WebApplicationContext context;
 
     @Autowired
-    private UserMapper users;
+    private UserDAO users;
 
     @Autowired
-    private VerificationCodeMapper codes;
+    private VerificationCodeDAO codes;
 
     private MockMvc mvc;
 
@@ -98,12 +98,12 @@ class PasswordResetTest {
     }
 
     /** 이 회원에게 남아 있는 코드를 지운다. 재발송 제한(60초) 때문에 매번 치운다. */
-    private User cleanCodes() {
-        User me = users.findActiveByEmail(MEMBER_EMAIL);
+    private UserVO cleanCodes() {
+        UserVO me = users.findActiveByEmail(MEMBER_EMAIL);
 
         assertThat(me).as("seed_demo 로 만든 %s 계정이 있어야 한다", MEMBER_EMAIL).isNotNull();
 
-        codes.deleteByUserAndPurpose(me.getId(), VerificationCode.PURPOSE_PASSWORD_RESET);
+        codes.deleteByUserAndPurpose(me.getId(), VerificationCodeVO.PURPOSE_PASSWORD_RESET);
 
         return me;
     }
@@ -262,7 +262,7 @@ class PasswordResetTest {
     @Test
     @DisplayName("비밀번호 재설정이 잠긴 계정을 푼다")
     void changeUnlocksAccount() throws Exception {
-        User me = cleanCodes();
+        UserVO me = cleanCodes();
 
         // 20회 실패한 상태를 직접 만든다. 로그인을 20번 시키는 것보다 빠르고,
         // 확인하려는 것은 "잠금이 풀리는가" 이지 "잠기는가" 가 아니다.
@@ -283,7 +283,7 @@ class PasswordResetTest {
 
             assertThat(changed.getResponse().getStatus()).isEqualTo(200);
 
-            User after = users.findById(me.getId());
+            UserVO after = users.findById(me.getId());
 
             assertThat(after.isLockedAccount()).as("재설정이 잠금을 푸는 유일한 경로다").isFalse();
             assertThat(after.getLoginFailCount()).isZero();

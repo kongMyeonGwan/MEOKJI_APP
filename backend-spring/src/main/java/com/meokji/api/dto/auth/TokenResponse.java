@@ -1,20 +1,18 @@
 package com.meokji.api.dto.auth;
 
-/**
- * 로그인 성공 응답.
- *
- * <p>{@code tokenType} 은 소문자 "bearer" 다. 프론트가 이 값을 그대로
- * {@code Authorization} 헤더에 붙이므로 대소문자를 바꾸면 안 된다.
- *
- * <p>{@code expiresIn} 은 초 단위다. 프론트가 만료 시각을 계산할 때 쓴다.
- */
-public record TokenResponse(
-        String accessToken,
-        String tokenType,
-        long expiresIn,
-        UserResponse user) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    public static TokenResponse of(String accessToken, long expiresIn, UserResponse user) {
-        return new TokenResponse(accessToken, "bearer", expiresIn, user);
-    }
+// 로그인 성공 응답.
+// 모양: { "access_token": "eyJ...", "token_type": "bearer", "expires_in": 1800, "user": {...} }
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TokenResponse {
+
+    private String accessToken; // 로그인 토큰
+    private String tokenType; // 항상 "bearer"
+    private long expiresIn; // 토큰 유효 시간(초)
+    private UserResponse user; // 로그인한 회원 정보
 }

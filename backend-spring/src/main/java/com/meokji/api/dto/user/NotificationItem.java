@@ -1,21 +1,21 @@
 package com.meokji.api.dto.user;
 
-/**
- * 알림 한 건.
- *
- * <p><b>알림 표는 없다.</b> 내 글에 달린 댓글과 좋아요를 조회할 때 모아서 만든다.
- * 표를 함부로 늘리지 않는다는 원칙에 따른 것이고, 읽음 표시 같은 기능이 필요해지면
- * 그때 표를 만든다.
- *
- * <p>{@code id} 가 숫자가 아니라 {@code "COMMENT-12"} 같은 문자열인 이유도 여기
- * 있다 - 서로 다른 표의 id 를 한 목록에 섞기 때문에 종류를 붙여야 유일해진다.
- */
-public record NotificationItem(
-        String id,
-        String kind,
-        String icon,
-        String title,
-        String body,
-        String createdAt,
-        String link) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+// 알림 한 건 (내 글에 달린 댓글 · 좋아요).
+// id 는 "COMMENT-12", "LIKE-5" 처럼 종류를 붙인 글자다 (댓글과 좋아요의 번호가 겹칠 수 있어서).
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class NotificationItem {
+
+    private String id;
+    private String kind; // COMMENT 또는 LIKE
+    private String icon;
+    private String title;
+    private String body;
+    private String createdAt;
+    private String link; // 누르면 갈 화면 주소
 }

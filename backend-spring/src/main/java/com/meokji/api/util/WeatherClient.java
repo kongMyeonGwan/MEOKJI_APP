@@ -1,5 +1,9 @@
 package com.meokji.api.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -13,11 +17,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.meokji.api.config.AppProperties;
 import com.meokji.api.service.WeatherService;
-import com.meokji.api.vo.User;
+import com.meokji.api.vo.UserVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -25,9 +29,7 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * 바깥 날씨 API 를 부른다.
  *
- * <p>파이썬 쪽 {@code app/integrations/weather_api.py} 자리다.
- *
- * <p>{@code WebClient} 대신 JDK 의 {@link HttpClient} 를 쓴다. 부르는 곳이 한 군데고
+ * WebClient 대신 JDK 의 HttpClient 를 쓴다. 부르는 곳이 한 군데고
  * 동기 호출이라, 의존성을 늘려 얻을 것이 없다.
  */
 @Component
@@ -65,8 +67,13 @@ public class WeatherClient {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
-    @Autowired
-    private AppProperties app;
+    // mock 이면 늘 28도 맑음, openweather 면 진짜 날씨 (application.yml 의 app.weather.provider)
+    @Value("${app.weather.provider}")
+    private String weatherProvider;
+
+    // OpenWeather 인증키
+    @Value("${app.weather.api-key}")
+    private String weatherApiKey;
 
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5))
@@ -78,19 +85,34 @@ public class WeatherClient {
     /** 좌표(반올림) -> 한글 주소. 동네 이름은 안 바뀌므로 기한을 두지 않는다. */
     private final Map<String, String> addressCache = new ConcurrentHashMap<>();
 
-    private record Cached(long savedAt, Weather weather) {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class Cached {
+
+        private long savedAt;
+
+        private Weather weather;
     }
 
-    /** 바깥 API 가 준 값 그대로. 문구 만들기는 {@link WeatherService} 가 한다. */
-    public record Weather(
-            String city,
-            int temp,
-            int feelsLike,
-            int humidity,
-            String condition,
-            String conditionText) {
-    }
+    /** 바깥 API 가 준 값 그대로. 문구 만들기는 WeatherService 가 한다. */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Weather {
 
+        private String city;
+
+        private int temp;
+
+        private int feelsLike;
+
+        private int humidity;
+
+        private String condition;
+
+        private String conditionText;
+    }
 
     /**
      * 좌표로 현재 날씨를 가져온다.
@@ -99,7 +121,7 @@ public class WeatherClient {
      *         부르는 쪽이 503 으로 바꿔 내보낸다.
      */
     public Weather get(double lat, double lon) {
-        String provider = app.getWeather().getProvider().toLowerCase();
+        String provider = weatherProvider.toLowerCase();
 
         if ("mock".equals(provider)) {
             return mock();
@@ -113,7 +135,7 @@ public class WeatherClient {
                     + ". 사용 가능한 값: mock, openweather");
         }
 
-        if (app.getWeather().getApiKey().isBlank()) {
+        if (weatherApiKey.isBlank()) {
             throw new IllegalStateException(
                     "app.weather.provider=openweather 인데 api-key 가 비어 있습니다.");
         }
@@ -121,8 +143,8 @@ public class WeatherClient {
         String key = cacheKey(lat, lon);
         Cached cached = weatherCache.get(key);
 
-        if (cached != null && System.currentTimeMillis() - cached.savedAt() < CACHE_MILLIS) {
-            return cached.weather();
+        if (cached != null && System.currentTimeMillis() - cached.getSavedAt() < CACHE_MILLIS) {
+            return cached.getWeather();
         }
 
         Weather weather = fetchOpenWeather(lat, lon);
@@ -145,7 +167,7 @@ public class WeatherClient {
         String url = OPENWEATHER_URL
                 + "?lat=" + lat
                 + "&lon=" + lon
-                + "&appid=" + app.getWeather().getApiKey()
+                + "&appid=" + weatherApiKey
                 // 섭씨로 받는다. 안 주면 켈빈으로 온다.
                 + "&units=metric"
                 // 날씨 설명을 한글로 받는다.
@@ -297,9 +319,9 @@ public class WeatherClient {
     /**
      * 시·구·동을 하나로 잇는다.
      *
-     * <p>단순히 붙이지 않는다. Nominatim 이 "서귀포시" 와 "서귀포시 서홍동" 을 같이
+     * 단순히 붙이지 않는다. Nominatim 이 "서귀포시" 와 "서귀포시 서홍동" 을 같이
      * 줄 때가 있어서, 그대로 이으면 "서귀포시 서귀포시 서홍동" 이 된다. 낱말이
-     * 포함 관계면 <b>더 자세한 쪽만</b> 남긴다.
+     * 포함 관계면 더 자세한 쪽만 남긴다.
      */
     static String joinAddress(String city, String district, String dong) {
         List<String> parts = new ArrayList<>();

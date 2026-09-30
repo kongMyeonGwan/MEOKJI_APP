@@ -6,54 +6,45 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
-/**
- * 추천 요청. 전부 선택 항목이라 빈 본문({@code {}})으로도 부를 수 있다.
- *
- * <p>위경도를 받는 이유는 브라우저 위치 권한을 허용한 사람에게 지금 있는 곳의
- * 날씨를 보여주기 위해서다. 안 보내면 회원 주소의 좌표를 쓰고, 그것도 없으면
- * 서울시청 근처로 떨어뜨린다.
- */
-public record RecommendRequest(
+import lombok.Data;
 
-        /** 어디서 온 요청인지. 화면이 기록용으로 보낸다. */
-        String source,
+// 음식 추천 요청. 조건은 전부 선택이라 안 보내도 된다.
+// 모양: { "limit": 5, "category": "한식", "budget_max": 10000, "use_weather": true, ... }
+@Data
+public class RecommendRequest {
 
-        @Min(1) @Max(12) Integer limit,
+    private String source; // 어디서 온 요청인지 (화면이 기록용으로 보낸다)
 
-        @Size(max = 20) String category,
+    @Min(1)
+    @Max(12)
+    private Integer limit; // 몇 개 추천받을지 (안 보내면 5개)
 
-        @Min(0) @Max(1_000_000) Integer budgetMin,
-        @Min(0) @Max(1_000_000) Integer budgetMax,
+    @Size(max = 20)
+    private String category; // 한식, 중식 ...
 
-        @Size(max = 150) String query,
+    @Min(0)
+    @Max(1000000)
+    private Integer budgetMin; // 예산 최소
 
-        /** 이미 보여준 메뉴. 다시 뽑지 않는다 ("다른 메뉴 보기"). */
-        @Size(max = 30) List<String> exclude,
+    @Min(0)
+    @Max(1000000)
+    private Integer budgetMax; // 예산 최대
 
-        Boolean useBargains,
+    @Size(max = 150)
+    private String query; // 검색어 ("8천원 이하 파스타")
 
-        Boolean useWeather,
-        @Min(-90) @Max(90) Double lat,
-        @Min(-180) @Max(180) Double lon) {
+    @Size(max = 30)
+    private List<String> exclude; // 이미 보여준 메뉴 (다시 안 뽑는다)
 
-    /** 한 번에 만들 후보 개수. 값이 없거나 이상하면 5개. */
-    public int limitOrDefault() {
-        if (limit == null || limit < 1) {
-            return 5;
-        }
+    private Boolean useBargains; // true 면 "요즘 싼 재료" 도 같이 준다
 
-        return Math.min(limit, 12);
-    }
+    private Boolean useWeather; // true 면 날씨도 같이 보고 추천한다
 
-    public boolean weatherWanted() {
-        return Boolean.TRUE.equals(useWeather);
-    }
+    @Min(-90)
+    @Max(90)
+    private Double lat; // 내 위치 위도
 
-    public boolean bargainsWanted() {
-        return Boolean.TRUE.equals(useBargains);
-    }
-
-    public List<String> excludeOrEmpty() {
-        return exclude == null ? List.of() : exclude;
-    }
+    @Min(-180)
+    @Max(180)
+    private Double lon; // 내 위치 경도
 }

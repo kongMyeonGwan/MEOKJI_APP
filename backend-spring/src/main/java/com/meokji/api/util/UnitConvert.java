@@ -1,5 +1,9 @@
 package com.meokji.api.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -7,30 +11,25 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-
 /**
  * 레시피 필요량 ↔ KAMIS 판매 단위 환산 (STEP 17~19 · 42).
  *
- * <p>파이썬 쪽 {@code app/services/unit_convert.py} 자리다.
+ * 왜 환산이 필요한가
  *
- * <h2>왜 환산이 필요한가</h2>
- *
- * <p>레시피는 "고등어 120g" 이라고 하고 KAMIS 는 "1마리" 로 값을 매긴다. 견줄
+ * 레시피는 "고등어 120g" 이라고 하고 KAMIS 는 "1마리" 로 값을 매긴다. 견줄
  * 방법이 없으면 환산이 통째로 실패해서 고등어구이가 100원으로 나온다(STEP 37).
  *
- * <h2>쪼개 팔지 않는 것은 올려서 산다 (STEP 42)</h2>
+ * 쪼개 팔지 않는 것은 올려서 산다 (STEP 42)
  *
- * <p>레시피가 "무 0.2개" 를 요구하는데 무를 0.2개 파는 가게는 없다. 그래서 배율을
- * 살 수 있는 배율로 한 번 더 올린다. 다만 <b>전부 올리지는 않는다</b> - 판매 단위가
+ * 레시피가 "무 0.2개" 를 요구하는데 무를 0.2개 파는 가게는 없다. 그래서 배율을
+ * 살 수 있는 배율로 한 번 더 올린다. 다만 전부 올리지는 않는다 - 판매 단위가
  * 무게·부피면 저울로 달아 파니까 쪼갤 수 있다.
  *
- * <pre>
- *   무 0.2개      · 판매 1개    640원 -&gt; 3,200원   올림
- *   계란 2개      · 판매 30구   466원 -&gt; 7,000원   올림
- *   고춧가루 1큰술 · 판매 1kg    176원 -&gt;   176원   그대로
- * </pre>
+ *   무 0.2개      · 판매 1개    640원 -> 3,200원   올림
+ *   계란 2개      · 판매 30구   466원 -> 7,000원   올림
+ *   고춧가루 1큰술 · 판매 1kg    176원 ->   176원   그대로
  *
- * <p>무게 쪽까지 올리면 고춧가루 1큰술이 1kg(25,200원)이 되어, 애초에 환산이
+ * 무게 쪽까지 올리면 고춧가루 1큰술이 1kg(25,200원)이 되어, 애초에 환산이
  * 없애려던 그 문제로 되돌아간다.
  */
 @Component
@@ -61,15 +60,28 @@ public class UnitConvert {
             "장", new Count("장", 1.0));
 
     /** 쪼갠 단위. "20kg" -> size 20, token "kg" */
-    public record Unit(double size, String token) {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Unit {
+
+        private double size;
+
+        private String token;
     }
 
-    private record Count(String name, double per) {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static class Count {
+
+        private String name;
+
+        private double per;
     }
 
     @Autowired
     private IngredientRules rules;
-
 
     /** KAMIS 단위 문자열을 쪼갠다. 못 읽으면 null. */
     public static Unit parseUnit(String text) {
@@ -102,16 +114,16 @@ public class UnitConvert {
 
     /** 무게·부피 단위면 그램으로. 세는 단위면 null. */
     private static Double toGrams(Unit unit) {
-        Double factor = GRAM_PER_UNIT.get(unit.token());
+        Double factor = GRAM_PER_UNIT.get(unit.getToken());
 
-        return factor == null ? null : unit.size() * factor;
+        return factor == null ? null : unit.getSize() * factor;
     }
 
     /** 세는 단위면 (표준 이름, 개수) 로. 아니면 null. */
     private static Count toCount(Unit unit) {
-        Count alias = COUNT_ALIASES.get(unit.token());
+        Count alias = COUNT_ALIASES.get(unit.getToken());
 
-        return alias == null ? null : new Count(alias.name(), unit.size() * alias.per());
+        return alias == null ? null : new Count(alias.getName(), unit.getSize() * alias.getPer());
     }
 
     /**
@@ -149,8 +161,8 @@ public class UnitConvert {
         }
 
         // 같은 것을 세는 단위끼리만 맞춘다. "개" 를 "마리" 로 나누면 안 된다.
-        if (needCount != null && needCount.name().equals(saleCount.name())) {
-            return needCount.per() / saleCount.per();
+        if (needCount != null && needCount.getName().equals(saleCount.getName())) {
+            return needCount.getPer() / saleCount.getPer();
         }
 
         // 3) 단위가 서로 다르면 무게로 돌아간다.
@@ -165,7 +177,7 @@ public class UnitConvert {
         }
 
         // 판매 단위가 "10마리" 면 saleCount.per() 가 10 이다.
-        return grams / (per * saleCount.per());
+        return grams / (per * saleCount.getPer());
     }
 
     /** 이 판매 단위를 쪼개서 살 수 있는가. */
@@ -178,8 +190,8 @@ public class UnitConvert {
     /**
      * 필요량 배율을 '실제로 사야 하는 배율' 로 올린다.
      *
-     * <p>먼저 소수 여섯 자리로 반올림하는 이유가 있다. 2개/1개 가 부동소수점으로
-     * {@code 2.0000000000000004} 가 되는 경우가 있는데, 그대로 올리면 두 개 살 것을
+     * 먼저 소수 여섯 자리로 반올림하는 이유가 있다. 2개/1개 가 부동소수점으로
+     * 2.0000000000000004 가 되는 경우가 있는데, 그대로 올리면 두 개 살 것을
      * 세 개 사게 된다.
      */
     public static Double buyRatio(Double ratio, String saleUnit) {

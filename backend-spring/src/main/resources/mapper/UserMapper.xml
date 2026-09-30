@@ -13,7 +13,7 @@
   2) 시각은 DB 가 만들게 한다. SYS_EXTRACT_UTC(SYSTIMESTAMP) 로 UTC 를 넣는다.
      애플리케이션에서 만든 값을 보내면 JVM 시간대에 따라 9시간 어긋날 수 있다.
 -->
-<mapper namespace="com.meokji.api.mapper.UserMapper">
+<mapper namespace="com.meokji.api.dao.UserDAO">
 
     <!--
       컬럼을 * 로 받지 않고 적어둔다. 나중에 컬럼이 늘었을 때 어디를 고쳐야 하는지
@@ -25,13 +25,13 @@
         login_fail_count, is_locked, locked_at, use_yn, created_at, updated_at
     </sql>
 
-    <select id="findById" resultType="com.meokji.api.vo.User">
+    <select id="findById" resultType="com.meokji.api.vo.UserVO">
         SELECT <include refid="columns"/>
           FROM users
          WHERE id = #{id}
     </select>
 
-    <select id="findActiveByEmail" resultType="com.meokji.api.vo.User">
+    <select id="findActiveByEmail" resultType="com.meokji.api.vo.UserVO">
         SELECT <include refid="columns"/>
           FROM users
          WHERE email = #{email}
@@ -41,9 +41,8 @@
     <!--
       어느 쪽이 중복인지 알려주려고 이메일과 닉네임을 같이 본다.
       ROWNUM 으로 한 행만 받는다 - 둘 다 중복이면 이메일 쪽을 먼저 알려준다
-      (파이썬 register_user 와 같은 순서).
     -->
-    <select id="findActiveByEmailOrNickname" resultType="com.meokji.api.vo.User">
+    <select id="findActiveByEmailOrNickname" resultType="com.meokji.api.vo.UserVO">
         SELECT email, nickname
           FROM (
                 SELECT email, nickname
@@ -60,7 +59,7 @@
       user_level 은 적지 않는다 - DDL 의 DEFAULT 2(일반 회원)에 맡긴다. 가입으로
       관리자가 만들어질 길을 아예 두지 않으려는 것이다.
     -->
-    <insert id="insert" parameterType="com.meokji.api.vo.User"
+    <insert id="insert" parameterType="com.meokji.api.vo.UserVO"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO users (
             email, password_hash, nickname,
@@ -99,7 +98,7 @@
       를 판단해서 바꿀 칸만 채워 넘기고, 여기서는 그 칸만 SET 에 넣는다.
       주소를 바꿨으면 좌표도 같이 오므로 latitude/longitude 를 짝으로 본다.
     -->
-    <update id="updateProfile" parameterType="com.meokji.api.vo.User">
+    <update id="updateProfile" parameterType="com.meokji.api.vo.UserVO">
         UPDATE users
            SET updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
                <if test="nickname != null">, nickname = #{nickname}</if>
@@ -163,7 +162,7 @@
       ROWNUM 은 정렬 전에 매겨지므로 감싸지 않으면 아무 20건이 나온다.
     -->
     <select id="findCommentNotifications"
-            resultType="com.meokji.api.mapper.UserMapper$NotificationRow">
+            resultType="com.meokji.api.vo.NotificationVO">
         SELECT * FROM (
             SELECT c.id             AS id,
                    c.review_id      AS reviewId,
@@ -184,7 +183,7 @@
     </select>
 
     <select id="findLikeNotifications"
-            resultType="com.meokji.api.mapper.UserMapper$NotificationRow">
+            resultType="com.meokji.api.vo.NotificationVO">
         SELECT * FROM (
             SELECT l.id             AS id,
                    l.review_id      AS reviewId,

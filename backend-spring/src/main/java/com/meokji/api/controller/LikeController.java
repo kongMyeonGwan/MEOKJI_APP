@@ -5,55 +5,53 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.dto.like.LikeListResponse;
 import com.meokji.api.dto.like.LikeToggleRequest;
 import com.meokji.api.dto.like.LikeToggleResponse;
-import com.meokji.api.security.LoginUser;
+import com.meokji.api.service.AuthService;
 import com.meokji.api.service.LikeService;
-import com.meokji.api.vo.User;
+import com.meokji.api.vo.UserVO;
 
 import jakarta.validation.Valid;
 
 /**
- * 찜한 레시피 (STEP 36).
- *
- * <p>파이썬 쪽 {@code app/routers/likes.py} 자리다. 켜고 끄는 규칙은
- * {@link LikeService} 에 있다.
+ * 찜한 레시피.  주소: /api/likes
+ * 로그인이 필요하다.
  */
 @RestController
 @RequestMapping("/api/likes")
 public class LikeController {
 
     @Autowired
+    private AuthService authService;
+
+    @Autowired
     private LikeService likeService;
 
-    /** 내 찜 목록. 최근 찜한 순. */
+    // 내 찜 목록  GET /api/likes
     @GetMapping
-    public LikeListResponse list(@LoginUser User me) {
-        return likeService.list(me);
+    public LikeListResponse getList(@RequestHeader(value = "Authorization", required = false) String token) {
+        UserVO loginUser = authService.getLoginUser(token);
+        return likeService.getList(loginUser);
     }
 
-    /**
-     * 찜하기 · 해제. 같은 이름을 다시 보내면 뒤집힌다.
-     *
-     * <p>PUT 인데 멱등이 아니다. 하트 버튼 하나로 켜고 끄는 동작이라 화면이 지금
-     * 상태를 몰라도 되게 만든 것인데, 그 대신 같은 요청을 두 번 보내면 원래대로
-     * 돌아온다. 화면이 재시도하지 않는다는 전제가 깔려 있다.
-     */
+    // 하트 누르기 (찜돼 있으면 풀고, 아니면 찜한다)  PUT /api/likes
     @PutMapping
     public LikeToggleResponse toggle(
-            @LoginUser User me,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @Valid @RequestBody LikeToggleRequest request) {
-
-        return likeService.toggle(me, request);
+        UserVO loginUser = authService.getLoginUser(token);
+        return likeService.toggle(loginUser, request.getFoodName().trim());
     }
 
-    /** 찜 전체 비우기 (설정 화면). */
+    // 찜 전부 지우기  DELETE /api/likes
     @DeleteMapping
-    public LikeListResponse clear(@LoginUser User me) {
-        return likeService.clear(me);
+    public LikeListResponse clear(@RequestHeader(value = "Authorization", required = false) String token) {
+        UserVO loginUser = authService.getLoginUser(token);
+        return likeService.clear(loginUser);
     }
 }

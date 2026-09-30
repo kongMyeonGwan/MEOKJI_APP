@@ -1,39 +1,35 @@
 package com.meokji.api.dto.auth;
 
 import com.meokji.api.util.Times;
-import com.meokji.api.vo.User;
+import com.meokji.api.vo.UserVO;
 
-/**
- * 회원 정보 응답.
- *
- * <p><b>password_hash 를 절대 담지 않는다.</b> 담을 자리를 아예 두지 않는 것이
- * "담지 말아야 한다" 는 주석보다 안전하다.
- *
- * <p>필드는 카멜로 쓰고 나가는 JSON 은 snake 다
- * (application.yml 의 jackson property-naming-strategy).
- *
- * <p>{@code createdAt} 이 문자열인 이유는 {@link Times} 참고 - 파이썬이 내던
- * {@code 2026-09-11T21:29:42.955000Z} 와 글자까지 맞추기 위한 것이다.
- */
-public record UserResponse(
-        Long id,
-        String email,
-        String nickname,
-        String createdAt,
-        String gender,
-        String addressSido,
-        String addressSigungu,
-        boolean isAdmin) {
+import lombok.Data;
 
-    public static UserResponse from(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getNickname(),
-                Times.toText(user.getCreatedAt()),
-                user.getGender(),
-                user.getAddressSido(),
-                user.getAddressSigungu(),
-                user.isAdmin());
+// 회원 정보 응답. (비밀번호는 절대 담지 않는다)
+// 자바는 isAdmin 처럼 카멜로 쓰고, JSON 으로 나갈 때 is_admin 처럼 바뀐다 (application.yml 설정).
+@Data
+public class UserResponse {
+
+    private Long id;
+    private String email;
+    private String nickname;
+    private String createdAt; // 가입일 (예: "2026-09-11T21:29:42Z")
+    private String gender;
+    private String addressSido;
+    private String addressSigungu;
+    private Boolean isAdmin; // 관리자인지
+
+    // UserVO(DB 한 행) → 응답 모양으로 옮겨 담는다
+    public static UserResponse from(UserVO user) {
+        UserResponse response = new UserResponse();
+        response.setId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setNickname(user.getNickname());
+        response.setCreatedAt(Times.toText(user.getCreatedAt()));
+        response.setGender(user.getGender());
+        response.setAddressSido(user.getAddressSido());
+        response.setAddressSigungu(user.getAddressSigungu());
+        response.setIsAdmin(user.isAdmin());
+        return response;
     }
 }

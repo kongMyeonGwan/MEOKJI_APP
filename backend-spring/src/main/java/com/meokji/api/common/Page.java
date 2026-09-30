@@ -2,44 +2,43 @@ package com.meokji.api.common;
 
 import java.util.List;
 
+import lombok.Data;
+
 /**
- * 목록 한 페이지를 감싸는 공통 모양.
+ * 목록 한 페이지. 식사 기록, 게시판, 공지가 같이 쓴다.
  *
- * <p>파이썬 쪽 {@code app/schemas/page.py} 자리다. 게시판 · 히스토리 · 공지가
- * 같은 모양을 쓴다(STEP 31에서 세 곳을 한 모양으로 맞췄다).
+ * 응답 모양: { "total": 45, "page": 1, "size": 20, "total_pages": 3, "items": [...] }
  *
- * <p>칸 순서가 {@code total · page · size · total_pages · items} 다. record 의
- * 선언 순서가 그대로 JSON 순서가 되므로 바꾸지 않는다 - 정답지와 글자 단위로
- * 비교하는 중이다.
+ * <T> 는 "items 안에 무엇이 들었는지" 를 뜻한다.
+ *   Page<MealHistoryResponse> → items 가 식사 기록 목록
  */
-public record Page<T>(
-        int total,
-        int page,
-        int size,
-        int totalPages,
-        List<T> items) {
+@Data
+public class Page<T> {
 
-    /** 한 페이지에 보여줄 기본 개수. 라우터가 ?size= 로 덮어쓸 수 있다. */
-    public static final int DEFAULT_SIZE = 20;
+    public static final int DEFAULT_SIZE = 20; // 한 페이지 기본 개수
+    public static final int MAX_SIZE = 50; // 한 페이지 최대 개수
 
-    /** 한 페이지 상한. 더 크게 요청하면 422 로 막는다. */
-    public static final int MAX_SIZE = 50;
+    private int total; // 전체 개수
+    private int page; // 지금 페이지 번호 (1부터)
+    private int size; // 한 페이지 개수
+    private int totalPages; // 전체 페이지 수
+    private List<T> items; // 이 페이지의 목록
 
     public static <T> Page<T> of(List<T> items, int total, int page, int size) {
-        return new Page<>(total, page, size, countPages(total, size), items);
+        Page<T> result = new Page<>();
+        result.setItems(items);
+        result.setTotal(total);
+        result.setPage(page);
+        result.setSize(size);
+        result.setTotalPages(countPages(total, size));
+        return result;
     }
 
-    /**
-     * 마지막 페이지 번호.
-     *
-     * <p>0 건이면 0 페이지다. 1 로 두면 화면이 "1 / 1" 을 그려서, 비어 있는데도
-     * 페이지가 있는 것처럼 보인다.
-     */
+    // 전체 페이지 수. 45개를 20개씩 나누면 3페이지. 0개면 0페이지.
     public static int countPages(int total, int size) {
         if (size <= 0) {
             return 0;
         }
-
         return (total + size - 1) / size;
     }
 }

@@ -28,7 +28,8 @@ tasks.withType(JavaCompile).configureEach {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// 비밀번호 암호화(BCrypt)만 쓴다. 로그인 확인은 JWT 로 직접 한다.
+	implementation 'org.springframework.security:spring-security-crypto'
 
 	// 비밀번호 재설정 인증번호 메일. app.mail.provider=mock 이면 콘솔에 찍고
 	// 이 라이브러리를 쓰지 않는다 - 메일 서버 없이도 서버가 뜨고 화면이 돈다.
@@ -51,7 +52,6 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:4.0.1'
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'

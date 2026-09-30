@@ -4,64 +4,61 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.meokji.api.config.AppProperties;
+import com.meokji.api.dao.HealthDAO;
 
 /**
- * 서버와 DB 가 살아있는지 확인한다.
- *
- * <p>파이썬 쪽 {@code app/routers/health.py} 와 <b>응답이 한 글자도 다르지 않아야</b>
- * 한다. 프론트의 ApiStatus 컴포넌트가 이걸 보고 화면 상단에 상태를 띄운다.
- * 정답지는 src/test/resources/fixtures/health.json 이다.
+ * 서버와 DB 가 살아있는지 확인.  주소: GET /api/health
+ * 마이페이지 아래의 "개발용 연결 상태" 카드가 부른다.
  */
 @RestController
 @RequestMapping("/api")
 public class HealthController {
 
     @Autowired
-    private JdbcTemplate jdbc;
-    @Autowired
-    private AppProperties app;
+    private HealthDAO healthDAO;
 
+    @Value("${app.name}")
+    private String appName;
+
+    @Value("${app.version}")
+    private String appVersion;
+
+    @Value("${app.env}")
+    private String appEnv;
 
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
-        String databaseStatus = "ok";
+        // DB 에 아주 간단한 SQL(SELECT 1 FROM DUAL)을 보내본다
+        String database = "ok";
         String databaseError = null;
-
         try {
-            // 오라클은 FROM 절 없는 SELECT 를 허용하지 않는다. DUAL 이 필수다.
-            jdbc.queryForObject("SELECT 1 FROM DUAL", Integer.class);
-        } catch (Exception exc) {
-            databaseStatus = "error";
-            // 예외 타입만 남긴다. 메시지에는 커넥션 문자열이 섞여 나올 수 있다.
-            databaseError = exc.getClass().getSimpleName();
+            healthDAO.ping();
+        } catch (Exception e) {
+            database = "error";
+            databaseError = e.getClass().getSimpleName(); // 에러 종류만 (자세한 내용은 보안상 숨긴다)
         }
 
-        // DB 가 안 되면 앱은 떠 있어도 정상 서비스는 못 하는 상태다.
-        // 그래서 상태 문구와 HTTP 상태 코드를 같이 바꿔준다.
-        boolean healthy = "ok".equals(databaseStatus);
-
-        // LinkedHashMap 으로 칸 순서를 고정한다. 정답지와 글자 단위로 비교하려면
-        // status · app · version · env · database 순서가 유지돼야 한다.
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("status", healthy ? "ok" : "degraded");
-        body.put("app", app.getName());
-        body.put("version", app.getVersion());
-        body.put("env", app.getEnv());
-        body.put("database", databaseStatus);
+        body.put("status", database.equals("ok") ? "ok" : "degraded");
+        body.put("app", appName);
+        body.put("version", appVersion);
+        body.put("env", appEnv);
+        body.put("database", database);
         if (databaseError != null) {
             body.put("database_error", databaseError);
         }
 
-        HttpStatus status = healthy ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
-
-        return ResponseEntity.status(status).body(body);
+        // DB 가 안 되면 503 으로 응답한다
+        if (database.equals("ok")) {
+            return ResponseEntity.ok(body);
+        }
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(body);
     }
 }

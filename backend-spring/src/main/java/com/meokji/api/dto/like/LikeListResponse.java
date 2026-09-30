@@ -2,13 +2,12 @@ package com.meokji.api.dto.like;
 
 import java.util.List;
 
-/**
- * 내 찜 목록.
- *
- * <p>음식 이름만 준다. 레시피 전체는 화면이 필요할 때 {@code GET /api/recipes/{이름}}
- * 으로 따로 받는다 - 찜 목록에 레시피를 다 담으면 응답이 수백 KB 가 된다.
- */
-public record LikeListResponse(
-        List<String> names,
-        int count) {
+import lombok.Data;
+
+// 내 찜 목록 응답. 모양: { "names": ["김치찌개", "제육볶음"], "count": 2 }
+@Data
+public class LikeListResponse {
+
+    private List<String> names; // 찜한 음식 이름들 (최근에 찜한 것이 앞)
+    private int count;
 }

@@ -33,10 +33,9 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.meokji.api.config.AppProperties;
 import com.meokji.api.util.IngredientMatcher;
 import com.meokji.api.util.KamisClient;
-import com.meokji.api.vo.Notice;
+import com.meokji.api.vo.NoticeVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -127,27 +126,27 @@ class SeedDemoTest {
             "address_sido", "서울특별시",
             "address_sigungu", "마포구");
 
-    private record Notice(String title, String content, boolean pinned) {
+    private record NoticeVO(String title, String content, boolean pinned) {
     }
 
-    private static final List<Notice> NOTICES = List.of(
-            new Notice("커뮤니티 이용 규칙 안내", """
+    private static final List<NoticeVO> NOTICES = List.of(
+            new NoticeVO("커뮤니티 이용 규칙 안내", """
                     서로 존중하는 말투로 소통해주세요.
                     레시피는 자세히 공유해주실수록 좋아요.
                     링크 및 홍보성 글은 사전 안내 없이 삭제될 수 있습니다.
                     신고는 관리자 확인 후 조치됩니다.""", true),
 
-            new Notice("9월 15일(월) 새벽 서버 점검 안내 (02:00~04:00)", """
+            new NoticeVO("9월 15일(월) 새벽 서버 점검 안내 (02:00~04:00)", """
                     추천 기능 개선을 위한 서버 점검이 예정되어 있습니다.
                     점검 시간 동안에는 로그인과 레시피 추천을 이용하실 수 없습니다.
                     작성 중인 글은 미리 저장해두시길 권해드립니다.""", true),
 
-            new Notice("못 먹는 재료 등록 기능이 추가되었습니다", """
+            new NoticeVO("못 먹는 재료 등록 기능이 추가되었습니다", """
                     마이페이지에서 알레르기 재료와 싫어하는 재료를 등록할 수 있습니다.
                     알레르기로 등록한 재료는 추천에서 완전히 제외되고,
                     싫어하는 재료는 가능한 한 대체재료로 바꿔 제안합니다.""", false),
 
-            new Notice("가격 정보는 참고용입니다", """
+            new NoticeVO("가격 정보는 참고용입니다", """
                     재료 가격은 KAMIS 소매 조사가격을 기준으로 보여드립니다.
                     실제 결제 금액은 구입처와 판매자 사정에 따라 달라질 수 있습니다.""", false));
 
@@ -190,8 +189,8 @@ class SeedDemoTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Autowired
-    private AppProperties app;
+    @org.springframework.beans.factory.annotation.Value("${app.env}")
+    private String appEnv;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -230,9 +229,9 @@ class SeedDemoTest {
      * 틀리면 돌이킬 수 없다.
      */
     private void localOnly() {
-        if (!"local".equals(app.getEnv())) {
+        if (!"local".equals(appEnv)) {
             throw new IllegalStateException(
-                    "app.env 가 '" + app.getEnv() + "' 입니다. 이 시드는 로컬에서만 돌릴 수 있습니다.\n"
+                    "app.env 가 '" + appEnv + "' 입니다. 이 시드는 로컬에서만 돌릴 수 있습니다.\n"
                     + "  저장소에 적힌 개발용 비밀번호로 관리자 계정을 만들기 때문입니다.\n"
                     + "  정말 필요하면 APP_ENV 를 local 로 두고 다시 실행하세요.");
         }
@@ -461,7 +460,7 @@ class SeedDemoTest {
             existing.add(row.path("title").asString(""));
         }
 
-        for (Notice notice : NOTICES) {
+        for (NoticeVO notice : NOTICES) {
             if (existing.contains(notice.title())) {
                 skip("이미 있음 - " + notice.title());
                 continue;

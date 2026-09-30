@@ -1,5 +1,9 @@
 package com.meokji.api.util;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-
 import jakarta.annotation.PostConstruct;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -20,13 +23,9 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * 손으로 쓴 레시피 100종을 꺼내 쓴다 (STEP 41).
  *
- * <p>파이썬 쪽 {@code app/integrations/recipe_book.py} 자리다. 조리 순서를 만드는
- * 코드({@code steps.py} 1,004줄)는 옮기지 않았다 - {@code recipes.json} 에 순서가
- * 이미 들어 있고, 그 파일을 만들 때 쓴 코드라 조회에는 필요하지 않다.
+ * 왜 AI 를 안 부르나
  *
- * <h2>왜 AI 를 안 부르나</h2>
- *
- * <p>카탈로그 100종은 목록이 고정돼 있다. 바뀌지 않는 음식의 레시피를 열 때마다
+ * 카탈로그 100종은 목록이 고정돼 있다. 바뀌지 않는 음식의 레시피를 열 때마다
  * 새로 만들면 느리고(7~10초), 열 때마다 재료와 순서가 달라지고, 돈이 든다.
  * 어제 보고 오늘 다시 연 사람에게는 다른 요리가 된다.
  */
@@ -43,7 +42,6 @@ public class RecipeBook {
     @Autowired
     private IngredientRules rules;
 
-
     /**
      * Ban 을 반영해 다듬은 레시피 한 건.
      *
@@ -51,15 +49,26 @@ public class RecipeBook {
      * @param ingredients     [{name, quantity, unit, grams}, ...]
      * @param substitutes     [{original, substitute, reason}, ...]
      */
-    public record Built(
-            String recipeName,
-            int cookTimeMinutes,
-            int servings,
-            String difficulty,
-            int estimatedCost,
-            ArrayNode steps,
-            ArrayNode ingredients,
-            ArrayNode substitutes) {
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Built {
+
+        private String recipeName;
+
+        private int cookTimeMinutes;
+
+        private int servings;
+
+        private String difficulty;
+
+        private int estimatedCost;
+
+        private ArrayNode steps;
+
+        private ArrayNode ingredients;
+
+        private ArrayNode substitutes;
     }
 
     @PostConstruct
@@ -91,7 +100,7 @@ public class RecipeBook {
     /**
      * 미리 써둔 레시피를 Ban 재료에 맞춰 다듬어 돌려준다. 없으면 null.
      *
-     * <p>알레르기 재료는 목록에서 <b>아예 뺀다.</b> 싫어하는 재료는 그대로 두되
+     * 알레르기 재료는 목록에서 아예 뺀다. 싫어하는 재료는 그대로 두되
      * 바꿀 방법을 함께 적는다 - 빼버리면 요리가 성립하지 않을 수 있고, 대체재료를
      * 알려주면 사용자가 정할 수 있다.
      */
@@ -119,8 +128,8 @@ public class RecipeBook {
 
                 ObjectNode substitute = substitutes.addObject();
                 substitute.put("original", name);
-                substitute.put("substitute", replacement.substitute());
-                substitute.put("reason", replacement.reason());
+                substitute.put("substitute", replacement.getSubstitute());
+                substitute.put("reason", replacement.getReason());
             }
 
             JsonNode quantity = row.path("quantity");
@@ -160,13 +169,9 @@ public class RecipeBook {
     }
 
     /**
-     * 그램을 넣는다. <b>정수와 소수를 가려서 넣는다.</b>
+     * 그램을 넣는다. 정수와 소수를 가려서 넣는다.
      *
-     * <p>파이썬이 그렇게 내보내고 있어서 맞춘다. {@code round(1 * 80, 1)} 은 둘 다
-     * 정수라 {@code 80} 이고, {@code round(0.25 * 2500, 1)} 은 {@code 625.0} 이다.
-     * 언제나 소수로 내보내면 {@code "grams": 80.0} 이 되어 정답지와 글자가 달라진다.
-     *
-     * <p>화면에서는 같은 값이지만, 두 서버의 응답을 기계적으로 비교하는 동안에는
+     * 화면에서는 같은 값이지만, 두 서버의 응답을 기계적으로 비교하는 동안에는
      * 글자가 달라지면 매번 사람이 눈으로 확인해야 한다.
      */
     private void putGrams(ObjectNode item, JsonNode quantity, String unit, String name) {

@@ -1,31 +1,37 @@
 package com.meokji.api.config;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.meokji.api.security.LoginUser;
-import com.meokji.api.security.LoginUserArgumentResolver;
-import com.meokji.api.vo.User;
-
 /**
- * {@code @LoginUser} 인자를 채워주는 리졸버를 등록한다.
+ * 서버 전체 설정.
  *
- * <p>이 등록을 빼먹으면 컨트롤러의 {@code @LoginUser User me} 가 조용히 null 로
- * 들어온다 - 로그인 검사가 사라진 채로 서버가 정상 동작하는 것처럼 보인다.
+ * 1. CORS : 리액트(5173)와 이 서버(8080)는 주소가 달라서, 브라우저가 요청을 막지 않게 허락해준다.
+ * 2. BCryptPasswordEncoder : 비밀번호를 암호화하는 도구. 서비스에서 @Autowired 로 받아 쓴다.
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Autowired
-    private LoginUserArgumentResolver loginUserResolver;
-
+    // application.yml 의 app.cors-origins 값 (예: http://localhost:5173)
+    @Value("${app.cors-origins}")
+    private String corsOrigins;
 
     @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(loginUserResolver);
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins(corsOrigins.split(","))
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .exposedHeaders("Content-Disposition", "Retry-After")
+                .allowCredentials(true);
+    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
