@@ -44,7 +44,19 @@ public class HistoryServiceImpl implements HistoryService {
             items.add(toResponse(history));
         }
 
-        return Page.of(items, total, page, size);
+        // 전체 페이지 수. 45개를 20개씩 나누면 3페이지. 0개면 0페이지.
+        int totalPages = 0;
+        if (size > 0) {
+            totalPages = (total + size - 1) / size;
+        }
+
+        Page<MealHistoryResponse> result = new Page<>();
+        result.setItems(items);
+        result.setTotal(total);
+        result.setPage(page);
+        result.setSize(size);
+        result.setTotalPages(totalPages);
+        return result;
     }
 
     // ===================== 요약 =====================

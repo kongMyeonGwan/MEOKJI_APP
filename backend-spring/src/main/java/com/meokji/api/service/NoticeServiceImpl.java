@@ -33,7 +33,18 @@ public class NoticeServiceImpl implements NoticeService {
         // for (NoticeVO notice : noticeDAO.findPage((page - 1) * size, size)) {
         //     items.add(NoticeResponse.from(notice));
         // }
-        // return Page.of(items, total, page, size);
+        // int totalPages = 0;
+        // if (size > 0) {
+        //     totalPages = (total + size - 1) / size;
+        // }
+        //
+        // Page<NoticeResponse> result = new Page<>();
+        // result.setItems(items);
+        // result.setTotal(total);
+        // result.setPage(page);
+        // result.setSize(size);
+        // result.setTotalPages(totalPages);
+        // return result;
         throw ApiException.notImplemented(TODO);
     }
 

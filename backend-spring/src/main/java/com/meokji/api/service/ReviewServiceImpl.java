@@ -44,7 +44,18 @@ public class ReviewServiceImpl implements ReviewService {
         // for (RecipeReviewVO review : reviewDAO.findPage(keyword, (page - 1) * size, size)) {
         //     items.add(...);
         // }
-        // return Page.of(items, total, page, size);
+        // int totalPages = 0;
+        // if (size > 0) {
+        //     totalPages = (total + size - 1) / size;
+        // }
+        //
+        // Page<ReviewListItem> result = new Page<>();
+        // result.setItems(items);
+        // result.setTotal(total);
+        // result.setPage(page);
+        // result.setSize(size);
+        // result.setTotalPages(totalPages);
+        // return result;
         throw ApiException.notImplemented(TODO);
     }
 

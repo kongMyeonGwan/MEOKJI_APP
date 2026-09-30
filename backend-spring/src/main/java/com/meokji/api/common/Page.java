@@ -15,7 +15,6 @@ import lombok.Data;
 @Data
 public class Page<T> {
 
-    public static final int DEFAULT_SIZE = 20; // 한 페이지 기본 개수
     public static final int MAX_SIZE = 50; // 한 페이지 최대 개수
 
     private int total; // 전체 개수
@@ -23,22 +22,4 @@ public class Page<T> {
     private int size; // 한 페이지 개수
     private int totalPages; // 전체 페이지 수
     private List<T> items; // 이 페이지의 목록
-
-    public static <T> Page<T> of(List<T> items, int total, int page, int size) {
-        Page<T> result = new Page<>();
-        result.setItems(items);
-        result.setTotal(total);
-        result.setPage(page);
-        result.setSize(size);
-        result.setTotalPages(countPages(total, size));
-        return result;
-    }
-
-    // 전체 페이지 수. 45개를 20개씩 나누면 3페이지. 0개면 0페이지.
-    public static int countPages(int total, int size) {
-        if (size <= 0) {
-            return 0;
-        }
-        return (total + size - 1) / size;
-    }
 }
