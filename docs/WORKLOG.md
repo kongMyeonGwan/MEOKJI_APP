@@ -101,6 +101,12 @@ vo/XxxVO (테이블 한 행, Lombok @Data)      dto/ (요청·응답, Lombok @Da
 | 그 표에 값을 넣는 요청 | 그 VO 에 검증을 **얹었다** | `NoticeCreateRequest` → `NoticeVO` |
 | 표가 없는 모양 (여러 행을 센 값, 계산 결과) | `vo/` 로 옮기고 이름만 `...VO` 로 | `LikeListResponse` → `LikeListVO` |
 
+**한 번 잘못 합쳤다가 테스트가 잡았다.** 마이페이지 응답(`ProfileResponse`)을
+`UserVO` 에 넣었더니 로그인 응답에도 `latitude` · `cook_count: 0` 이 따라 나가서
+정답지 테스트 3개가 깨졌다 (`AuthFixtureTest` 2개 · `UserBanFixtureTest` 1개).
+요리 횟수 · 연속 기록일은 **세어서** 만드는 값이라 표와 칸이 다르다 — 위 표의
+셋째 줄에 해당한다. `ProfileVO` 로 되돌리니 100개 전부 통과.
+
 합친 VO 에서 지켜야 할 것 두 가지.
 
 1. **나가면 안 되는 칸에 `@JsonIgnore`.** `UserVO` 를 그냥 내보내면

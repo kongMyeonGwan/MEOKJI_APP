@@ -55,8 +55,6 @@ class ResponseShapeTest {
         user.setUseYn("Y");
         user.setCreatedAt(LocalDateTime.of(2026, 9, 11, 21, 29, 42));
         user.setLatitude(new BigDecimal("37.5"));
-        user.setStreakDays(3);
-        user.setCookCount(12);
 
         JsonNode json = toJson(user);
 
@@ -69,15 +67,18 @@ class ResponseShapeTest {
         assertThat(json.has("use_yn")).as("탈퇴 여부").isFalse();
         assertThat(json.has("locked_account")).as("isLockedAccount() 가 새어나감").isFalse();
 
-        // 화면이 읽는 칸 (옛 UserResponse · ProfileResponse 와 같아야 한다)
+        // 마이페이지 전용 칸은 여기 없다 (ProfileVO 가 따로 있다)
+        assertThat(json.has("latitude")).as("로그인 응답에 좌표").isFalse();
+        assertThat(json.has("longitude")).isFalse();
+        assertThat(json.has("streak_days")).as("로그인 응답에 연속 기록일").isFalse();
+        assertThat(json.has("cook_count")).as("로그인 응답에 요리 횟수").isFalse();
+
+        // 화면이 읽는 칸 (옛 UserResponse 와 같아야 한다)
         assertThat(json.get("id").asInt()).isEqualTo(7);
         assertThat(json.get("email").asString()).isEqualTo("minji@example.com");
         assertThat(json.get("nickname").asString()).isEqualTo("민지");
         assertThat(json.get("is_admin").asBoolean()).isTrue();
         assertThat(json.get("created_at").asString()).isEqualTo("2026-09-11T21:29:42Z");
-        assertThat(json.get("latitude").asDouble()).isEqualTo(37.5);
-        assertThat(json.get("streak_days").asInt()).isEqualTo(3);
-        assertThat(json.get("cook_count").asInt()).isEqualTo(12);
     }
 
     @Test

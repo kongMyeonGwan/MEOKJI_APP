@@ -13,16 +13,18 @@ import lombok.Data;
  * USERS 표 한 행.
  *
  * 화면으로 나갈 모양도 이 클래스가 겸한다.
- *   GET /api/auth/me   로그인 확인
- *   GET /api/users/me  마이페이지
+ *   POST /api/auth/login  로그인 응답 안의 user
+ *   GET  /api/auth/me     로그인 확인
+ *
+ * 마이페이지(GET /api/users/me)는 여기에 없다. 요리 횟수 · 연속 기록일을
+ * **세어서** 만드는 모양이라 표와 칸이 달라서 ProfileVO 로 따로 뒀다.
  *
  * **비밀번호 해시처럼 나가면 안 되는 칸에는 @JsonIgnore 를 붙였다.**
  * 이 표시가 없으면 로그인 응답에 password_hash 가 그대로 실려 나간다.
  * 칸을 새로 넣을 때 화면에 보여도 되는 값인지 먼저 따져야 한다.
  *
- * 나가는 모양: { "id", "email", "nickname", "gender", "address_sido",
- *               "address_sigungu", "latitude", "longitude",
- *               "streak_days", "cook_count", "is_admin", "created_at" }
+ * 나가는 모양: { "id", "email", "nickname", "created_at", "gender",
+ *               "address_sido", "address_sigungu", "is_admin" }
  */
 @Data
 public class UserVO {
@@ -44,8 +46,14 @@ public class UserVO {
     private String addressSido;
     private String addressSigungu;
 
-    /** 위도 · 경도. 날씨 API 를 실제로 부르는 값이다. */
+    /**
+     * 위도 · 경도. 날씨 API 를 실제로 부르는 값이다.
+     * 로그인 응답에는 넣지 않는다 - 마이페이지(ProfileVO)에서만 보여준다.
+     */
+    @JsonIgnore
     private BigDecimal latitude;
+
+    @JsonIgnore
     private BigDecimal longitude;
 
     /** 연속 로그인 실패 횟수. 성공하면 0 으로 되돌린다. */
@@ -68,14 +76,6 @@ public class UserVO {
 
     @JsonIgnore
     private LocalDateTime updatedAt;
-
-    // ---------- 표에 없는 칸. 마이페이지에서 서비스가 세어 넣는다 ----------
-
-    /** 연속 기록일 */
-    private int streakDays;
-
-    /** 요리 횟수 */
-    private int cookCount;
 
     // ---------- 화면이 읽는 모양 ----------
 

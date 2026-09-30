@@ -19,6 +19,7 @@ import com.meokji.api.user.dao.UserDAO;
 import com.meokji.api.user.vo.NotificationItemVO;
 import com.meokji.api.user.vo.PasswordChangeVO;
 import com.meokji.api.user.vo.ProfileUpdateVO;
+import com.meokji.api.user.vo.ProfileVO;
 import com.meokji.api.util.Kst;
 import com.meokji.api.util.Passwords;
 import com.meokji.api.util.RegionCatalog;
@@ -47,7 +48,7 @@ public class UserServiceImpl implements UserService {
     // ===================== 내 정보 =====================
 
     @Override
-    public UserVO getProfile(UserVO user) {
+    public ProfileVO getProfile(UserVO user) {
         // 내 식사 기록 전부 (날짜, 금액만)
         List<MealHistoryVO> histories = historyDAO.findStatsRows(user.getId());
 
@@ -60,17 +61,27 @@ public class UserServiceImpl implements UserService {
         int streakDays = Kst.countStreak(days); // 연속 기록일
         int cookCount = histories.size(); // 요리 횟수
 
-        // 표에 없는 두 칸을 채워서 그대로 돌려준다
-        user.setStreakDays(streakDays);
-        user.setCookCount(cookCount);
-        return user;
+        // 표 한 행(UserVO) + 세어서 만든 두 칸 -> 마이페이지 모양으로 옮겨 담는다
+        ProfileVO profile = new ProfileVO();
+        profile.setId(user.getId());
+        profile.setEmail(user.getEmail());
+        profile.setNickname(user.getNickname());
+        profile.setCreatedAt(Times.toText(user.getCreatedAt()));
+        profile.setGender(user.getGender());
+        profile.setAddressSido(user.getAddressSido());
+        profile.setAddressSigungu(user.getAddressSigungu());
+        profile.setLatitude(user.getLatitude());
+        profile.setLongitude(user.getLongitude());
+        profile.setStreakDays(streakDays);
+        profile.setCookCount(cookCount);
+        return profile;
     }
 
     // ===================== 내 정보 수정 =====================
 
     @Override
     @Transactional
-    public UserVO updateProfile(UserVO user, ProfileUpdateVO request) {
+    public ProfileVO updateProfile(UserVO user, ProfileUpdateVO request) {
         // 바꿀 값만 담는다. null 인 칸은 XML 에서 건너뛴다 (UserMapper.xml 의 updateProfile)
         UserVO changes = new UserVO();
         changes.setId(user.getId());

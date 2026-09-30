@@ -18,6 +18,7 @@ import com.meokji.api.common.MessageResponse;
 import com.meokji.api.user.vo.NotificationItemVO;
 import com.meokji.api.user.vo.PasswordChangeVO;
 import com.meokji.api.user.vo.ProfileUpdateVO;
+import com.meokji.api.user.vo.ProfileVO;
 import com.meokji.api.user.vo.WithdrawVO;
 
 import com.meokji.api.auth.service.AuthService;
@@ -42,14 +43,14 @@ public class UserController {
 
     // 내 정보  GET /api/users/me
     @GetMapping("/me")
-    public UserVO getProfile(@RequestHeader(value = "Authorization", required = false) String token) {
+    public ProfileVO getProfile(@RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
         return userService.getProfile(loginUser);
     }
 
     // 내 정보 수정  PATCH /api/users/me
     @PatchMapping("/me")
-    public UserVO updateProfile(
+    public ProfileVO updateProfile(
             @RequestHeader(value = "Authorization", required = false) String token,
             @Valid @RequestBody ProfileUpdateVO request) {
         UserVO loginUser = authService.getLoginUser(token);
