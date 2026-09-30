@@ -1,0 +1,9 @@
+{
+  "note": "내 Ban 목록",
+  "request": {
+    "method": "GET",
+    "path": "/api/bans"
+  },
+  "status": 200,
+  "body": []
+}

@@ -9,6 +9,11 @@ build/
 # IDE
 .idea/
 *.iml
+# gradlew idea 가 만드는 프로젝트 파일 (Gradle Sync 를 못 쓰는 옛 IDE 용)
+*.ipr
+*.iws
+# gradlew copyDeps 가 모으는 의존성 jar (IDE 수동 설정용, 50MB)
+libs/
 .vscode/
 .classpath
 .project
