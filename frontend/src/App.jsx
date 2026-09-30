@@ -1,111 +1,174 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { AiLogProvider } from './contexts/AiLogContext'
-import { AuthProvider } from './contexts/AuthContext'
-import { CatalogProvider } from './contexts/CatalogContext'
-import { LikesProvider } from './contexts/LikesContext'
-import { PrefsProvider } from './contexts/PrefsContext'
-import { ProfileProvider } from './contexts/ProfileContext'
-import ProtectedRoute from './components/common/ProtectedRoute'
+import { useEffect, useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
+import { getMe } from './api/auth'
+import { getSavedUser, removeToken, removeUser, saveToken, saveUser } from './utils/token'
+import { applyTheme, getSavedNotify, getSavedTheme, saveNotify } from './utils/settings'
+
+// 화면들. pages/ 아래 담당자별 폴더로 나눠져 있다 (pages/README.md 참고)
+import HomePage from './pages/home/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
 
-// 화면은 pages/ 아래 역할별 폴더로 나눠져 있다. 폴더 하나가 담당자 한 사람의
-// 자리다 (pages/README.md 참고). NotFoundPage 만 어느 역할에도 속하지 않아
-// 최상위에 둔다.
-import HomePage from './pages/home/HomePage'
-
 import LoginPage from './pages/auth/LoginPage'
-import PasswordResetPage from './pages/auth/PasswordResetPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import PasswordResetPage from './pages/auth/PasswordResetPage'
 
-import BudgetPage from './pages/recommend/BudgetPage'
-import RecipePage from './pages/recommend/RecipePage'
 import RecommendPage from './pages/recommend/RecommendPage'
+import BudgetPage from './pages/recommend/BudgetPage'
 import SearchPage from './pages/recommend/SearchPage'
+import RecipePage from './pages/recommend/RecipePage'
 
-import BalancePage from './pages/game/BalancePage'
 import GamePage from './pages/game/GamePage'
-import RoulettePage from './pages/game/RoulettePage'
 import WorldCupPage from './pages/game/WorldCupPage'
+import BalancePage from './pages/game/BalancePage'
+import RoulettePage from './pages/game/RoulettePage'
 
 import CommunityPage from './pages/community/CommunityPage'
 import PopularPage from './pages/community/PopularPage'
 import ReviewDetailPage from './pages/community/ReviewDetailPage'
 import ReviewWritePage from './pages/community/ReviewWritePage'
 
-import AiHistoryPage from './pages/mypage/AiHistoryPage'
-import HistoryPage from './pages/mypage/HistoryPage'
-import LikedPage from './pages/mypage/LikedPage'
 import MyPage from './pages/mypage/MyPage'
+import HistoryPage from './pages/mypage/HistoryPage'
+import AiHistoryPage from './pages/mypage/AiHistoryPage'
+import LikedPage from './pages/mypage/LikedPage'
 import SettingsPage from './pages/mypage/SettingsPage'
 
 // 어떤 주소에 어떤 화면을 보여줄지 정하는 곳.
-// 사이드바랑 하단 탭의 메뉴가 여기 주소랑 하나씩 짝이 맞는다.
 //
-// Provider 를 여러 겹 감싸는데 순서가 중요하다.
-//   PrefsProvider    테마·알림. 로그인이랑 상관없어서 제일 바깥에 둔다.
-//   CatalogProvider  카테고리·게임 같은 고정 목록.
-//   AuthProvider     로그인 상태.
-//   ProfileProvider  내 정보·알림. useAuth 를 써서 Auth 안쪽이어야 한다.
-//   LikesProvider    찜 목록. 이것도 useAuth 를 써서 Auth 안쪽이다.
-//   AiLogProvider    AI 추천 기록. 브라우저에만 저장한다.
+// 여러 화면이 같이 쓰는 값은 여기서 useState 로 들고 있다가 props 로 내려준다.
+//   user   : 로그인한 사람. 로그인 안 했으면 null
+//   theme  : 'light' 또는 'dark'
+//   notify : 알림 켜짐(true) / 꺼짐(false)
 export default function App() {
+  // 브라우저에 저장해둔 값으로 시작한다. 그래서 새로고침해도 로그인이 유지된다.
+  const [user, setUser] = useState(getSavedUser())
+  const [theme, setTheme] = useState(getSavedTheme())
+  const [notify, setNotify] = useState(getSavedNotify())
+
+  // ----- 로그인 · 로그아웃 -----
+  // 로그인 정보를 브라우저에 저장하고 지우는 건 전부 여기서 한다.
+  // (저장하는 함수들은 utils/token.js 에 있다)
+
+  // 로그인 성공 (LoginPage 가 부른다)
+  const handleLogin = (token, loginUser) => {
+    saveToken(token) // 브라우저에 토큰 저장
+    saveUser(loginUser) // 브라우저에 내 정보 저장
+    setUser(loginUser) // 화면에 반영 (상단바에 닉네임이 뜬다)
+  }
+
+  // 로그아웃 (상단바, 설정, 마이페이지가 부른다)
+  const handleLogout = () => {
+    removeToken()
+    removeUser()
+    setUser(null)
+  }
+
+  // 내 정보가 바뀌었을 때 (MyPage 에서 닉네임을 바꾸면 부른다)
+  const handleUserChange = (nextUser) => {
+    saveUser(nextUser)
+    setUser(nextUser)
+  }
+
+  const handleThemeChange = (nextTheme) => {
+    applyTheme(nextTheme)
+    setTheme(nextTheme)
+  }
+
+  const handleNotifyChange = (nextNotify) => {
+    saveNotify(nextNotify)
+    setNotify(nextNotify)
+  }
+
+  // 앱을 처음 켤 때 한 번, 서버에서 내 정보를 다시 받아 최신으로 맞춘다.
+  // 토큰이 만료됐으면(401) api/client.js 가 알아서 로그아웃시키고 로그인 화면으로 보낸다.
+  useEffect(() => {
+    if (user === null) {
+      return // 로그인 안 했으면 확인할 게 없다
+    }
+
+    const checkLogin = async () => {
+      try {
+        const me = await getMe()
+        handleUserChange(me)
+      } catch (err) {
+        // 서버가 꺼져 있는 경우. 저장해둔 정보를 그대로 쓴다.
+      }
+    }
+    checkLogin()
+  }, [])
+
+  // 로그인해야 볼 수 있는 화면을 감싼다.
+  // 로그인했으면 그 화면을, 안 했으면 로그인 화면으로 보낸다(<Navigate>).
+  const loginOnly = (page) => {
+    if (user) {
+      return page
+    }
+    return <Navigate to="/login" />
+  }
+
   return (
     <BrowserRouter>
-      <PrefsProvider>
-        <CatalogProvider>
-          <AuthProvider>
-            <ProfileProvider>
-              <LikesProvider>
-                <AiLogProvider>
-                  <Routes>
-                    <Route element={<MainLayout />}>
-                      <Route index element={<HomePage />} />
+      <MainLayout
+        user={user}
+        onLogout={handleLogout}
+        theme={theme}
+        onThemeChange={handleThemeChange}
+        notify={notify}
+        onNotifyChange={handleNotifyChange}
+      >
+        <Routes>
+          <Route path="/" element={<HomePage />} />
 
-                      {/* 인증 */}
-                      <Route path="login" element={<LoginPage />} />
-                      <Route path="register" element={<RegisterPage />} />
-                      <Route path="password-reset" element={<PasswordResetPage />} />
+          {/* 로그인 · 회원가입 */}
+          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/password-reset" element={<PasswordResetPage />} />
 
-                      {/* 추천 · 레시피 */}
-                      <Route path="recommend" element={<RecommendPage />} />
-                      <Route path="budget" element={<BudgetPage />} />
-                      <Route path="search" element={<SearchPage />} />
-                      <Route path="recipe/:foodName" element={<RecipePage />} />
+          {/* 추천 · 레시피 */}
+          <Route path="/recommend" element={<RecommendPage />} />
+          <Route path="/budget" element={<BudgetPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/recipe/:foodName" element={<RecipePage user={user} />} />
 
-                      {/* 메뉴 게임 */}
-                      <Route path="game" element={<GamePage />} />
-                      <Route path="game/worldcup" element={<WorldCupPage />} />
-                      <Route path="game/balance" element={<BalancePage />} />
-                      <Route path="roulette" element={<RoulettePage />} />
+          {/* 메뉴 게임 */}
+          <Route path="/game" element={<GamePage />} />
+          <Route path="/game/worldcup" element={<WorldCupPage user={user} />} />
+          <Route path="/game/balance" element={<BalancePage user={user} />} />
+          <Route path="/roulette" element={<RoulettePage />} />
 
-                      {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
-                      <Route path="popular" element={<PopularPage />} />
-                      <Route path="community" element={<CommunityPage />} />
-                      <Route path="community/:reviewId" element={<ReviewDetailPage />} />
+          {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
+          <Route path="/popular" element={<PopularPage />} />
+          <Route path="/community" element={<CommunityPage user={user} />} />
+          <Route path="/community/:reviewId" element={<ReviewDetailPage user={user} />} />
+          <Route path="/community/write" element={loginOnly(<ReviewWritePage />)} />
 
-                      {/* 설정은 브라우저에 저장되는 값이라 로그인 없이도 쓸 수 있다 */}
-                      <Route path="settings" element={<SettingsPage />} />
+          {/* 마이페이지 */}
+          <Route
+            path="/settings"
+            element={
+              <SettingsPage
+                user={user}
+                onLogout={handleLogout}
+                theme={theme}
+                onThemeChange={handleThemeChange}
+                notify={notify}
+                onNotifyChange={handleNotifyChange}
+              />
+            }
+          />
+          <Route
+            path="/mypage"
+            element={loginOnly(<MyPage user={user} onLogout={handleLogout} onUserChange={handleUserChange} />)}
+          />
+          <Route path="/history" element={loginOnly(<HistoryPage />)} />
+          <Route path="/ai-history" element={loginOnly(<AiHistoryPage />)} />
+          <Route path="/liked" element={loginOnly(<LikedPage />)} />
 
-                      {/* 로그인 필수 */}
-                      <Route element={<ProtectedRoute />}>
-                        {/* 찜은 서버에 회원별로 저장돼서 목록도 로그인이 필요하다 */}
-                        <Route path="liked" element={<LikedPage />} />
-                        <Route path="community/write" element={<ReviewWritePage />} />
-                        <Route path="history" element={<HistoryPage />} />
-                        <Route path="ai-history" element={<AiHistoryPage />} />
-                        <Route path="mypage" element={<MyPage />} />
-                      </Route>
-
-                      <Route path="*" element={<NotFoundPage />} />
-                    </Route>
-                  </Routes>
-                </AiLogProvider>
-              </LikesProvider>
-            </ProfileProvider>
-          </AuthProvider>
-        </CatalogProvider>
-      </PrefsProvider>
+          {/* 위에 없는 주소 */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </MainLayout>
     </BrowserRouter>
   )
 }

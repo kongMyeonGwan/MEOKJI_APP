@@ -6,23 +6,11 @@ import '../../styles/components/community/ReviewCard.css'
 export default function ReviewCard({ review }) {
   return (
     <article className="review-card">
-      <Link to={'/community/' + review.id} className="review-card__link">
+      <Link to={`/community/${review.id}`} className="review-card__link">
         <h3 className="review-card__title">
           {review.title}
-          {/* 사진이 붙은 글이라고 알려준다.
-              목록에서는 파일 정보까지 필요 없어서 서버가 has_file 만 준다. */}
-          {review.has_file && (
-            <span
-              className="review-card__clip"
-              title="사진 있음"
-              aria-label="사진 있음"
-            >
-              📎
-            </span>
-          )}
+          {review.has_file && <span className="review-card__clip" title="사진 있음">📎</span>}
         </h3>
-
-        {/* 본문 미리보기. 2줄까지만 보이게 CSS 로 잘랐다. */}
         <p className="muted review-card__excerpt">{review.content}</p>
       </Link>
 

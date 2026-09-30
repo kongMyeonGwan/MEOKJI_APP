@@ -1,117 +1,84 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
-import { parseApiError } from '../../utils/apiError'
+import { Link, useNavigate } from 'react-router-dom'
+import { login } from '../../api/auth'
+import { getErrorMessage } from '../../utils/apiError'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import '../../styles/pages/LoginPage.css'
 
-// 로그인 화면
-export default function LoginPage() {
+// 로그인 화면.
+//
+// 로그인 순서
+//   1. 이메일, 비밀번호를 입력했는지 확인한다
+//   2. 서버에 보낸다 → 서버가 { access_token: '토큰', user: { 내 정보 } } 를 준다
+//   3. onLogin 으로 App 에 알려준다 → App 이 브라우저에 저장하고 화면을 바꾼다
+//   4. 홈으로 이동한다
+//
+// onLogin 은 App.jsx 가 props 로 넘겨준 함수다.
+export default function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('') // 화면에 보여줄 에러 문장
+  const [submitting, setSubmitting] = useState(false) // 서버 응답을 기다리는 중인지
 
-  const [fieldErrors, setFieldErrors] = useState({})
-  const [message, setMessage] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-
-  const { login } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
 
-  // ProtectedRoute 가 넘겨준 "원래 가려던 곳". 없으면 홈으로 보낸다.
-  let redirectTo = '/'
-  if (location.state && location.state.from) {
-    redirectTo = location.state.from
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault() // 폼을 제출하면 페이지가 새로고침되는데, 그걸 막는다
 
-  // 입력칸을 고치면 그 칸의 빨간 글씨를 지운다
-  function clearError(name) {
-    const next = Object.assign({}, fieldErrors)
-    next[name] = undefined
-    setFieldErrors(next)
-    setMessage('')
-  }
-
-  // 로그인 버튼을 눌렀을 때
-  async function onSubmit(e) {
-    e.preventDefault() // 폼이 새로고침되는 걸 막는다
-    setMessage('')
-
-    // 로그인은 형식 검사를 최소한만 한다.
-    // "8자 이상" 같은 규칙을 걸면 저장된 비밀번호 형식을 알려주는 꼴이 된다.
-    const errors = {}
-    if (!email.trim()) {
-      errors.email = '이메일을 입력해주세요'
+    // 1. 입력 확인
+    if (email.trim() === '') {
+      setError('이메일을 입력해주세요')
+      return
     }
-    if (!password) {
-      errors.password = '비밀번호를 입력해주세요'
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors)
+    if (password === '') {
+      setError('비밀번호를 입력해주세요')
       return
     }
 
-    setSubmitting(true)
+    setError('')
+    setSubmitting(true) // 버튼을 잠근다 (두 번 누르지 않게)
 
     try {
-      await login(email.trim(), password)
-      navigate(redirectTo, { replace: true })
+      // 2. 서버에 로그인 요청
+      const result = await login({ email: email.trim(), password: password })
+
+      // 3. App 에 알려준다 (토큰과 내 정보)
+      onLogin(result.access_token, result.user)
+
+      // 4. 홈으로 이동
+      navigate('/')
     } catch (err) {
-      const parsed = parseApiError(err)
-      setFieldErrors(parsed.fieldErrors)
-      setMessage(parsed.message)
+      // 비밀번호가 틀렸거나, 서버가 꺼져 있는 경우
+      setError(getErrorMessage(err))
     } finally {
       setSubmitting(false)
     }
-  }
-
-  let submitLabel = '로그인'
-  if (submitting) {
-    submitLabel = '로그인 중...'
   }
 
   return (
     <div className="card login">
       <h2 className="login__title">로그인</h2>
 
-      <form onSubmit={onSubmit} noValidate>
+      <form onSubmit={handleSubmit}>
         <label className="login__field">
           <span>이메일</span>
           <input
             type="email"
-            name="email"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value)
-              clearError('email')
-            }}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            autoComplete="email"
-            autoFocus
           />
-          <ErrorMessage message={fieldErrors.email} />
         </label>
 
         <label className="login__field">
           <span>비밀번호</span>
-          <input
-            type="password"
-            name="password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value)
-              clearError('password')
-            }}
-            autoComplete="current-password"
-          />
-          <ErrorMessage message={fieldErrors.password} />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </label>
 
-        <ErrorMessage message={message} />
+        <ErrorMessage message={error} />
 
         <button type="submit" disabled={submitting} className="login__submit">
-          {submitLabel}
+          {submitting ? '로그인 중...' : '로그인'}
         </button>
       </form>
 

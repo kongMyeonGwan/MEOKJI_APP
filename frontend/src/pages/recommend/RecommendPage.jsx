@@ -4,96 +4,44 @@ import ErrorMessage from '../../components/common/ErrorMessage'
 import FoodCard from '../../components/recommendation/FoodCard'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
-import { useAiLog } from '../../contexts/AiLogContext'
-import { parseApiError } from '../../utils/apiError'
+import { addLog, foodNames } from '../../utils/aiLog'
+import { getErrorMessage } from '../../utils/apiError'
 import '../../styles/pages/ListPage.css'
 
-// AI 추천 전체 목록.
-// 첫 화면은 앞부분만 보여주고 여기서 전부 본다.
-//
-// 주소에 ?category=한식 이 붙어 있으면 그 분류만 요청한다.
-// 룰렛 결과랑 첫 화면 카테고리 칩의 "더보기" 가 이 주소로 들어온다.
-//
-// 전체를 받아서 화면에서 거르지 않고 분류를 조건으로 넘겨서 다시 요청한다.
-// 화면에서 거르면 '중식' 을 골랐을 때 12개 중 두 개만 남아서 목록이 텅 빈다.
-
-// 한 번에 받아올 개수. 전체보기 화면이라 첫 화면(5개)보다 넉넉히 잡았다.
-const PAGE_SIZE = 12
-
+// AI 추천 전체 목록 (/recommend).
+// 주소에 ?category=한식 이 붙어 있으면 그 종류만 추천받는다.
 export default function RecommendPage() {
-  const [params, setParams] = useSearchParams()
-
-  // 주소에 category 가 없으면 get() 이 null 을 준다.
-  // ?category= 처럼 빈 값이 붙어 올 수도 있어서 trim 까지 한다.
-  let category = params.get('category')
-  if (!category) {
-    category = ''
-  }
-  category = category.trim()
+  // useSearchParams: 주소의 ?뒤 값을 읽고 바꾸는 도구
+  const [searchParams, setSearchParams] = useSearchParams()
+  const category = searchParams.get('category') || ''
 
   const [items, setItems] = useState([])
-  const [condition, setCondition] = useState('')
+  const [condition, setCondition] = useState('') // 서버가 알려주는 추천 조건 요약
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
+  const [error, setError] = useState('')
 
-  const { add } = useAiLog()
-
+  // 카테고리가 바뀔 때마다 다시 받아온다
   useEffect(() => {
-    let alive = true
-    setLoading(true)
-    setLoadError('')
-
-    let categoryParam = null
-    if (category) {
-      categoryParam = category
-    }
-
-    getRecommendations({
-      source: '카테고리',
-      limit: PAGE_SIZE,
-      category: categoryParam,
-    })
-      .then(function (data) {
-        if (!alive) {
-          return
-        }
-
+    const load = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await getRecommendations({ source: '카테고리', limit: 12, category: category })
         setItems(data.items)
         setCondition(data.condition)
-
-        const names = []
-        for (let i = 0; i < data.items.length; i++) {
-          names.push(data.items[i].food_name)
-        }
-
-        add({ source: '카테고리', condition: data.condition, foods: names })
-      })
-      .catch(function (err) {
-        if (alive) {
-          setLoadError(parseApiError(err).message)
-        }
-      })
-      .finally(function () {
-        if (alive) {
-          setLoading(false)
-        }
-      })
-
-    return function () {
-      alive = false
+        addLog('카테고리', data.condition, foodNames(data.items))
+      } catch (err) {
+        setError(getErrorMessage(err))
+      } finally {
+        setLoading(false)
+      }
     }
+    load()
   }, [category])
 
-  // 카테고리 필터를 푼다.
-  // replace: true 를 주면 뒤로가기 기록이 안 쌓인다.
-  // 룰렛에서 들어온 사람이 뒤로가기를 누르면 룰렛으로 바로 가야 한다.
-  function clearCategory() {
-    setParams({}, { replace: true })
-  }
-
-  let emptyText = '추천을 찾지 못했습니다.'
-  if (category) {
-    emptyText = category + ' 추천을 찾지 못했습니다.'
+  // 카테고리 필터 풀기 (주소에서 ?category= 를 지운다)
+  const clearCategory = () => {
+    setSearchParams({})
   }
 
   return (
@@ -103,21 +51,13 @@ export default function RecommendPage() {
         {condition && <span className="muted section-more">{condition}</span>}
       </div>
 
-      <p className="muted list-page__desc">
-        등록하신 못 먹는 재료를 반영해 AI가 고른 메뉴입니다.
-      </p>
+      <p className="muted list-page__desc">등록하신 못 먹는 재료를 반영해 AI가 고른 메뉴입니다.</p>
 
-      {/* 왜 걸러졌는지 안 보이면 목록이 짧아진 이유를 알 수 없다 */}
       {category && (
         <div className="list-page__filter-bar">
           <span className="list-page__chip">
             {category}
-            <button
-              type="button"
-              className="list-page__chip-clear"
-              onClick={clearCategory}
-              aria-label={category + ' 필터 해제'}
-            >
+            <button type="button" className="list-page__chip-clear" onClick={clearCategory}>
               ×
             </button>
           </span>
@@ -125,29 +65,24 @@ export default function RecommendPage() {
         </div>
       )}
 
-      {loadError && <ErrorMessage message={loadError} />}
+      {loading && <Loading message="AI가 메뉴를 고르는 중..." />}
+      {error && <ErrorMessage message={error} />}
 
-      {!loadError && loading && <Loading message="AI가 메뉴를 고르는 중..." />}
-
-      {!loadError && !loading && items.length === 0 && (
+      {!loading && !error && items.length === 0 && (
         <p className="empty">
-          {emptyText}
+          {category} 추천을 찾지 못했습니다.
           <br />
-          <button
-            type="button"
-            className="btn btn--ghost btn--sm"
-            onClick={clearCategory}
-          >
+          <button type="button" className="btn btn--ghost btn--sm" onClick={clearCategory}>
             전체 보기
           </button>
         </p>
       )}
 
-      {!loadError && !loading && items.length > 0 && (
+      {!loading && !error && items.length > 0 && (
         <div className="list-page__cards">
-          {items.map(function (food) {
-            return <FoodCard key={food.food_name} food={food} />
-          })}
+          {items.map((food) => (
+            <FoodCard key={food.food_name} food={food} />
+          ))}
         </div>
       )}
     </div>

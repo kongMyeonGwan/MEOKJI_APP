@@ -1,7 +1,5 @@
-// 음식 그림 (SVG 를 직접 그렸다).
-// 진짜 사진이 없어서 대신 쓰는 것이다.
-// 음식마다 그리면 100개를 그려야 해서 조리 형태별로 6종만 두고
-// 서버가 주는 art 값으로 고른다.
+// 음식 그림 (SVG). 진짜 사진이 없어서 대신 쓴다.
+// 서버가 주는 art 값으로 6가지 그림 중 하나를 고른다.
 //
 //   stew     붉은 찌개    김치찌개, 순두부찌개
 //   soup     뽀얀 국물    수제비, 미역국
@@ -36,11 +34,7 @@ function Ground() {
 }
 
 // 김. 그릇 위로 올라가는 흰 곡선 3줄.
-function Steam({ y }) {
-  if (!y) {
-    y = 28
-  }
-
+function Steam({ y = 28 }) {
   return (
     <g stroke={C.white} strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.75">
       <path d={`M96 ${y + 16}c0-9 9-9 9-18s-6-10-6-10`} />
@@ -241,17 +235,13 @@ const ART = {
 }
 
 export default function FoodIllustration({ art, className }) {
-  // 모르는 값이 와도 화면이 비지 않게 기본 그림을 둔다
-  let Art = ART[art]
-  if (!Art) {
-    Art = Soup
-  }
+  // 모르는 값이 오면 기본 그림(Soup)을 쓴다
+  const Art = ART[art] || Soup
 
   return (
     <svg
       className={className}
       viewBox="0 0 240 150"
-      // 카드 비율이 제각각이라 잘리지 않고 가운데 오게 meet 을 쓴다
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >

@@ -38,8 +38,8 @@ pages/
 | `RegisterPage.jsx` | `/register` | 회원가입 |
 | `PasswordResetPage.jsx` | `/password-reset` | 인증번호 3단계 (발송 → 확인 → 교체) |
 
-로그인 상태는 화면이 직접 들고 있지 않다. `contexts/AuthContext` 가 갖고 있고
-토큰은 `utils/token` 이 다룬다.
+로그인한 사람(`user`)은 `App.jsx` 가 `useState` 로 들고 있다가 필요한 화면에
+props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하는 건 `utils/token` 이 한다.
 
 ### `recommend/` — 추천 · 레시피
 
@@ -62,7 +62,7 @@ pages/
 | `RoulettePage.jsx` | `/roulette` | 룰렛 |
 
 게임에 나오는 후보와 질문은 코드에 박혀 있지 않다. 서버가 주는
-`GET /api/catalog` 를 `contexts/CatalogContext` 가 받아둔다.
+`GET /api/catalog` 를 각 화면이 `useEffect` 로 직접 받아온다.
 
 ### `community/` — 게시판 · 공지
 
@@ -97,11 +97,13 @@ pages/
 | `SettingsPage.jsx` | `/settings` | 테마 · 알림 |
 
 `SettingsPage` 만 **로그인 없이** 쓸 수 있다. 브라우저에 저장되는 값이라서다.
-나머지는 `ProtectedRoute` 안에 있다.
+나머지는 `App.jsx` 의 `loginOnly()` 로 감싸서 로그인 안 했으면 `/login` 으로 보낸다.
 
 ---
 
 ## 고칠 때 알아둘 것
+
+코드 모양(화살표 함수, async/await, 폼 검사 등)은 `frontend/CODE_STYLE.md` 를 따른다.
 
 ### 상대경로가 한 겹 더 깊다
 
@@ -109,7 +111,7 @@ pages/
 
 ```jsx
 import Loading from '../../components/common/Loading'
-import { useAuth } from '../../contexts/AuthContext'
+import { getLikes } from '../../api/likes'
 import '../../styles/pages/MyPage.css'
 ```
 
@@ -125,7 +127,7 @@ import '../../styles/pages/MyPage.css'
 
 1. 맡은 폴더에 `XxxPage.jsx` 를 만든다
 2. `src/App.jsx` 에 import 와 `<Route>` 를 추가한다 — **두 곳 다 고쳐야 한다**
-3. 로그인이 필요하면 `<ProtectedRoute>` 안에 넣는다
+3. 로그인이 필요하면 `element={loginOnly(<XxxPage />)}` 로 감싼다
 4. 사이드바·하단 탭에도 보이게 하려면 `components/common/` 의 메뉴를 고친다
 
 ### 화면끼리 직접 부르지 않는다

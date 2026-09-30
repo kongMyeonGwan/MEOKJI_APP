@@ -1,52 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import '../../styles/components/common/DateRangeFilter.css'
 
-// 기간 고르는 필터.
-// 값은 'YYYY-MM-DD' 문자열로 주고받는다 (<input type="date"> 형식).
-//
-// 날짜를 고를 때마다 조회하지 않고 '검색' 을 눌러야 조회한다.
-// 시작일만 바꾼 상태로 조회하면 중간값으로 한 번 더 부르게 되기 때문이다.
+// 기간 고르는 필터. 날짜는 'YYYY-MM-DD' 글자로 주고받는다.
+// 날짜를 바꾸고 '검색' 을 눌러야 부모에게 알려준다.
 export default function DateRangeFilter({ start, end, onSearch }) {
   const [draftStart, setDraftStart] = useState(start)
   const [draftEnd, setDraftEnd] = useState(end)
 
-  // 부모가 값을 바꾸면 입력칸도 따라간다
-  useEffect(() => {
-    setDraftStart(start)
-    setDraftEnd(end)
-  }, [start, end])
-
-  // 검색 버튼을 누르면 고른 기간을 부모에게 알려준다
-  function onSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
     onSearch(draftStart, draftEnd)
   }
 
   return (
-    <form className="range" onSubmit={onSubmit}>
+    <form className="range" onSubmit={handleSubmit}>
       <input
         type="date"
         className="range__input"
         value={draftStart}
-        // 시작일이 종료일보다 뒤로 못 가게 브라우저가 막아준다
         max={draftEnd}
         onChange={(e) => setDraftStart(e.target.value)}
-        aria-label="시작일"
       />
-
-      <span className="range__tilde" aria-hidden="true">
-        ~
-      </span>
-
+      <span className="range__tilde">~</span>
       <input
         type="date"
         className="range__input"
         value={draftEnd}
         min={draftStart}
         onChange={(e) => setDraftEnd(e.target.value)}
-        aria-label="종료일"
       />
-
       <button type="submit" className="btn btn--ghost btn--sm range__submit">
         검색
       </button>

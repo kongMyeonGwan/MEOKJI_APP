@@ -1,25 +1,27 @@
 import { useEffect, useState } from 'react'
 import { fetchHealth } from '../../api/health'
+import { getErrorMessage } from '../../utils/apiError'
 import Loading from './Loading'
 import ErrorMessage from './ErrorMessage'
 
-// 백엔드랑 DB 가 연결됐는지 보여주는 개발용 카드.
+// 백엔드랑 DB 가 연결됐는지 보여주는 개발용 카드
 export default function ApiStatus() {
   const [health, setHealth] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchHealth()
-      .then(function (data) {
+    const load = async () => {
+      try {
+        const data = await fetchHealth()
         setHealth(data)
-      })
-      .catch(function (err) {
-        setError(err.message)
-      })
-      .finally(function () {
+      } catch (err) {
+        setError(getErrorMessage(err))
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    load()
   }, [])
 
   if (loading) {
@@ -30,13 +32,6 @@ export default function ApiStatus() {
   }
 
   const dbOk = health.database === 'ok'
-
-  let dbColor = 'var(--color-error)'
-  let dbText = '연결 실패'
-  if (dbOk) {
-    dbColor = 'var(--color-ok)'
-    dbText = '연결됨'
-  }
 
   return (
     <div className="card" style={{ fontSize: 14 }}>
@@ -49,11 +44,12 @@ export default function ApiStatus() {
           </span>
         </li>
         <li>
-          DB: <span style={{ color: dbColor }}>{dbText}</span>
-          {!dbOk && (
-            <span className="muted">
-              {' '}
-              — 백엔드 .env의 DB 설정과 db/01_schema.sql 실행 여부를 확인하세요
+          DB:{' '}
+          {dbOk ? (
+            <span style={{ color: 'var(--color-ok)' }}>연결됨</span>
+          ) : (
+            <span style={{ color: 'var(--color-error)' }}>
+              연결 실패 — 백엔드의 DB 설정을 확인하세요
             </span>
           )}
         </li>

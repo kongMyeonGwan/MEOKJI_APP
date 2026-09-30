@@ -1,57 +1,40 @@
-// 백엔드가 보낸 에러를 화면에서 쓰기 좋게 바꿔주는 함수.
+// 에러를 화면에 보여줄 문장 하나로 바꾼다.
 //
-// FastAPI 는 detail 을 두 가지 모양으로 보낸다.
-//   1. 문자열 - 우리가 직접 낸 에러
-//   2. 배열   - 입력값 검증 실패(422)
+// 쓰는 법:
+//   try {
+//     await login(...)
+//   } catch (err) {
+//     setError(getErrorMessage(err))
+//   }
 //
-// 항상 { fieldErrors, message } 모양으로 돌려준다.
+// axios 에러(err) 안에 들어 있는 것
+//   err.response         서버가 보낸 응답. 서버가 꺼져 있으면 없다(undefined).
+//   err.response.status  상태 코드 (400, 401, 404, 409 ...)
+//   err.response.data    서버가 보낸 내용. 우리 서버는 { detail: '에러 문장' } 으로 보낸다.
+export const getErrorMessage = (err) => {
+  // 1. 서버가 응답을 보내준 경우 → 서버가 적어준 문장을 쓴다
+  if (err.response) {
+    const detail = err.response.data.detail
 
-export function parseApiError(err) {
-  let detail = null
-  if (err && err.raw) {
-    detail = err.raw.detail
-  }
-
-  // 검증 실패(422) 일 때는 입력칸별로 나눠준다
-  if (Array.isArray(detail)) {
-    const fieldErrors = {}
-
-    for (let i = 0; i < detail.length; i++) {
-      const item = detail[i]
-
-      // loc 는 ["body", "nickname"] 모양이라 마지막 것이 칸 이름이다
-      let loc = item.loc
-      if (!loc) {
-        loc = []
-      }
-      const field = loc[loc.length - 1]
-
-      if (!field) {
-        continue
-      }
-
-      // 한 칸에 에러가 여러 개면 첫 번째만 보여준다
-      if (fieldErrors[field]) {
-        continue
-      }
-
-      // Pydantic 이 앞에 붙이는 "Value error, " 를 떼어낸다
-      const message = String(item.msg).replace(/^Value error,\s*/, '')
-      fieldErrors[field] = message
+    // 보통은 문장 하나다. 예) "이미 가입된 이메일입니다."
+    if (typeof detail === 'string') {
+      return detail
     }
 
-    return { fieldErrors: fieldErrors, message: '' }
+    // 입력값 검사에 실패하면 배열로 온다. 첫 번째 문장만 보여준다.
+    // 예) [{ msg: "닉네임을 입력해주세요" }, ...]
+    if (Array.isArray(detail) && detail.length > 0) {
+      return detail[0].msg
+    }
+
+    return '요청을 처리하지 못했습니다.'
   }
 
-  // 문자열이면 그대로 쓴다
-  if (typeof detail === 'string') {
-    return { fieldErrors: {}, message: detail }
+  // 2. 서버가 응답을 안 한 경우 (백엔드를 안 켰거나, 30초가 지남)
+  if (err.request) {
+    return '서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.'
   }
 
-  let message = '요청을 처리하지 못했습니다.'
-  if (err && err.message) {
-    message = err.message
-  }
-
-  return { fieldErrors: {}, message: message }
+  // 3. 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+  return err.message
 }

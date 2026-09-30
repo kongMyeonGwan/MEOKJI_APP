@@ -1,8 +1,6 @@
-// 아이콘 모음 (SVG 를 직접 그렸다).
-//
-// 이모지를 쓰면 OS 마다 모양이 달라져서 SVG 로 만들었다.
-// currentColor 를 쓰기 때문에 글자 색이 바뀌면 아이콘 색도 같이 바뀐다.
-// 전부 24x24 기준이고 선 굵기는 1.8 로 맞췄다.
+// 아이콘 모음 (SVG).
+// 쓰는 법: <Icon name="heart" size={20} />
+// 글자 색(color)을 바꾸면 아이콘 색도 같이 바뀐다.
 
 const PATHS = {
   home: <path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z" />,
@@ -139,22 +137,17 @@ const PATHS = {
   plus: <path d="M12 5.5v13M5.5 12h13" />,
 }
 
-export default function Icon({ name, size, className }) {
+export default function Icon({ name, size = 20, className }) {
   const path = PATHS[name]
   if (!path) {
     return null
   }
 
-  let iconSize = size
-  if (!iconSize) {
-    iconSize = 20
-  }
-
   return (
     <svg
       className={className}
-      width={iconSize}
-      height={iconSize}
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -168,16 +161,10 @@ export default function Icon({ name, size, className }) {
   )
 }
 
-// 로고. 주황 네모 위에 요리사 모자를 얹었다.
-// 네모 색은 currentColor 라서 부모가 정한다.
-export function LogoMark({ size }) {
-  let logoSize = size
-  if (!logoSize) {
-    logoSize = 26
-  }
-
+// 로고. 주황 네모 위에 요리사 모자
+export function LogoMark({ size = 26 }) {
   return (
-    <svg width={logoSize} height={logoSize} viewBox="0 0 32 32" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
       <rect width="32" height="32" rx="9" fill="currentColor" />
       {/* 모자 윗부분 — 원 세 개를 겹쳐 부풀린 형태를 만든다 */}
       <g fill="#fff">

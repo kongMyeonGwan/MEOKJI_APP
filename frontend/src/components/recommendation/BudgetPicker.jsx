@@ -1,78 +1,41 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BudgetRange, { BUDGET_MAX, BUDGET_MIN } from './BudgetRange'
-import { useCatalog } from '../../contexts/CatalogContext'
 import '../../styles/components/recommendation/BudgetPicker.css'
 
-// 첫 화면의 예산 설정 카드.
-//
-// 자주 쓰는 금액을 칩으로 먼저 보여주고 슬라이더는 그 다음이다.
-// "만원 이하" 처럼 이미 생각이 정해진 사람이 많아서
-// 굳이 손잡이를 두 번 끌게 할 이유가 없다.
-//
-// 칩이랑 슬라이더는 같은 값을 본다. 칩을 누르면 슬라이더가 따라 움직이고,
-// 슬라이더를 끌어서 어느 칩이랑도 안 맞으면 칩 선택이 풀린다.
-//
-// '상관없음' 만 성격이 다르다. 금액이 아니라 예산 조건을 끄는 거라서
-// 이때는 /budget 이 아니라 /recommend 로 보낸다.
-export default function BudgetPicker() {
+// 첫 화면의 예산 설정 카드. 금액 칩을 누르거나 슬라이더를 끌어서 예산을 정한다.
+//   budgetPresets : [{ key: 'UNDER_10K', label: '1만원 이하', max: 10000 }, ...]
+//                   '상관없음' 칩은 key 가 'ANY' 이고 max 가 null 이다.
+export default function BudgetPicker({ budgetPresets }) {
   const [min, setMin] = useState(BUDGET_MIN)
   const [max, setMax] = useState(BUDGET_MAX)
-  const [preset, setPreset] = useState('UNDER_20K')
+  const [preset, setPreset] = useState('UNDER_20K') // 지금 켜진 칩의 key
 
   const navigate = useNavigate()
-  const { budgetPresets } = useCatalog()
 
-  // 금액 칩(5천원 이하, 1만원 이하 ...)을 눌렀을 때
-  function choosePreset(item) {
+  // 금액 칩을 눌렀을 때 슬라이더도 같이 맞춘다
+  const choosePreset = (item) => {
     setPreset(item.key)
     setMin(BUDGET_MIN)
-
-    // '상관없음' 은 슬라이더를 끝까지 펼쳐서 보여준다.
-    // 조건이 없다는 걸 손잡이 위치로도 보여주는 게 빠르다.
-    if (item.max === null) {
-      setMax(BUDGET_MAX)
-    } else {
-      setMax(item.max)
-    }
+    setMax(item.max === null ? BUDGET_MAX : item.max)
   }
 
-  // 슬라이더를 직접 끌었을 때
-  function dragRange(nextMin, nextMax) {
+  // 슬라이더를 직접 끌었을 때. 어느 칩과도 안 맞으면 칩 선택을 끈다.
+  const dragRange = (nextMin, nextMax) => {
     setMin(nextMin)
     setMax(nextMax)
 
-    // 끌어서 만든 구간이 우연히 칩이랑 같으면 그 칩을 켠 채로 둔다
-    let matchedKey = null
-    for (let i = 0; i < budgetPresets.length; i++) {
-      const item = budgetPresets[i]
-      if (item.max !== null && nextMin === BUDGET_MIN && nextMax === item.max) {
-        matchedKey = item.key
-        break
-      }
-    }
-
-    setPreset(matchedKey)
+    const matched = budgetPresets.find((item) => nextMin === BUDGET_MIN && item.max === nextMax)
+    setPreset(matched ? matched.key : null)
   }
 
-  const noLimit = preset === 'ANY'
-
-  // 찾기 버튼을 누르면 예산을 들고 추천 화면으로 넘어간다
-  function submit() {
-    if (noLimit) {
+  const handleSubmit = () => {
+    // '상관없음' 이면 예산 조건 없이 추천 화면으로
+    if (preset === 'ANY') {
       navigate('/recommend')
       return
     }
-
-    // 상한이 최대치여도 max 를 그대로 붙인다.
-    // "최대치 = 제한 없음" 이라는 해석은 받는 쪽(BudgetPage)에서만 한다.
-    // 여기서 빼면 BudgetPage 가 상한을 0원으로 읽어서 전체 목록이 나온다.
-    navigate('/budget?min=' + min + '&max=' + max)
-  }
-
-  let submitLabel = '이 예산으로 추천받기'
-  if (noLimit) {
-    submitLabel = '전체 메뉴 추천받기'
+    navigate(`/budget?min=${min}&max=${max}`)
   }
 
   return (
@@ -81,36 +44,24 @@ export default function BudgetPicker() {
 
       <div className="bpick__row">
         <div className="chip-row bpick__presets">
-          {budgetPresets.map(function (item) {
-            let chipClass = 'chip'
-            if (preset === item.key) {
-              chipClass = 'chip is-active'
-            }
-
-            return (
-              <button
-                key={item.key}
-                type="button"
-                className={chipClass}
-                onClick={() => choosePreset(item)}
-              >
-                {item.label}
-              </button>
-            )
-          })}
+          {budgetPresets.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={preset === item.key ? 'chip is-active' : 'chip'}
+              onClick={() => choosePreset(item)}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
 
         <div className="bpick__slider">
-          <BudgetRange
-            variant="inline"
-            min={min}
-            max={max}
-            onChange={dragRange}
-          />
+          <BudgetRange variant="inline" min={min} max={max} onChange={dragRange} />
         </div>
 
-        <button type="button" className="btn bpick__submit" onClick={submit}>
-          {submitLabel}
+        <button type="button" className="btn bpick__submit" onClick={handleSubmit}>
+          {preset === 'ANY' ? '전체 메뉴 추천받기' : '이 예산으로 추천받기'}
         </button>
       </div>
     </section>

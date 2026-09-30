@@ -201,12 +201,11 @@ MEOKJI_APP/
     └── src/
         ├── api/               axios 클라이언트 + API별 함수
         ├── components/        공통 · 기능별 컴포넌트
-        ├── contexts/          앱 전체가 공유하는 상태
-        │                      (로그인 · 프로필/알림 · 찜 · AI 기록 · 카탈로그 · 설정)
         ├── pages/             라우팅 대상 화면. 역할별 폴더로 나뉜다
         │                      (home · auth · recommend · game · community · mypage)
-        ├── layouts/           사이드바 + 상단바 + Outlet
-        └── utils/             token(로그인 토큰) · apiError · format
+        ├── layouts/           사이드바 + 상단바 + 본문(children)
+        └── utils/             token(로그인 토큰·사용자) · aiLog(AI 기록) · settings(테마·알림)
+                               · apiError · format
 ```
 
 
