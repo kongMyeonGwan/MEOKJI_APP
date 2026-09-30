@@ -2,7 +2,6 @@ import { useState } from 'react'
 import AddressPicker from '../common/AddressPicker'
 import ErrorMessage from '../common/ErrorMessage'
 import { updateProfile } from '../../api/users'
-import { getErrorMessage } from '../../utils/apiError'
 
 // 내 정보 수정 폼 (닉네임, 성별, 사는 곳). 마이페이지에서 쓴다.
 //   profile : 서버에서 받은 내 정보. 입력칸을 이 값으로 채워서 시작한다.
@@ -56,7 +55,22 @@ export default function ProfileForm({ profile, onSaved }) {
       setDone(true)
       onSaved(nickname.trim())
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setSaving(false)
     }

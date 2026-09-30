@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import ErrorMessage from '../common/ErrorMessage'
 import { withdraw } from '../../api/users'
-import { getErrorMessage } from '../../utils/apiError'
 
 // 회원 탈퇴 폼. 마이페이지의 AccountSection 안에서 열린다.
 //   onWithdrawn : 탈퇴에 성공하면 부를 함수 (로그아웃하고 홈으로 보낸다)
@@ -27,7 +26,22 @@ export default function WithdrawForm({ onWithdrawn }) {
       alert('탈퇴 처리되었습니다. 그동안 이용해주셔서 감사합니다.')
       onWithdrawn()
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setSaving(false)
     }

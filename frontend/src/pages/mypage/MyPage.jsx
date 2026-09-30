@@ -6,7 +6,6 @@ import ProfileForm from '../../components/mypage/ProfileForm'
 import AccountSection from '../../components/mypage/AccountSection'
 import { addBan, getBans, removeBan } from '../../api/bans'
 import { getProfile } from '../../api/users'
-import { getErrorMessage } from '../../utils/apiError'
 import { formatDate } from '../../utils/format'
 import '../../styles/pages/MyPage.css'
 
@@ -39,7 +38,22 @@ export default function MyPage({ user, onLogout, onUserChange }) {
       const data = await getProfile()
       setProfile(data)
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     }
   }
 
@@ -49,7 +63,22 @@ export default function MyPage({ user, onLogout, onUserChange }) {
       const data = await getBans()
       setBans(data)
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setLoading(false)
     }
@@ -92,7 +121,22 @@ export default function MyPage({ user, onLogout, onUserChange }) {
       setBans([...bans, created]) // 서버가 돌려준 재료를 목록 뒤에 붙인다
       setBanName('')
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     }
   }
 
@@ -102,7 +146,22 @@ export default function MyPage({ user, onLogout, onUserChange }) {
       await removeBan(ban.id)
       setBans(bans.filter((item) => item.id !== ban.id)) // 지운 것만 빼고 남긴다
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     }
   }
 

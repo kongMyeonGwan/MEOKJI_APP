@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { changePassword, sendResetCode, verifyResetCode } from '../../api/auth'
-import { getErrorMessage } from '../../utils/apiError'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import '../../styles/pages/PasswordResetPage.css'
 
@@ -37,7 +36,22 @@ export default function PasswordResetPage() {
       setNotice(result.message)
       setStep(2)
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setSubmitting(false)
     }
@@ -59,7 +73,22 @@ export default function PasswordResetPage() {
       setNotice(result.message)
       setStep(3)
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setSubmitting(false)
     }
@@ -74,7 +103,22 @@ export default function PasswordResetPage() {
       setCode('')
       setNotice(result.message)
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setSubmitting(false)
     }
@@ -99,7 +143,22 @@ export default function PasswordResetPage() {
       await changePassword(email.trim(), code, newPassword)
       setStep(4)
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setSubmitting(false)
     }
