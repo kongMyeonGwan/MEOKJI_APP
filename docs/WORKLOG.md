@@ -146,21 +146,34 @@ vo/XxxVO (테이블 한 행, Lombok @Data)      dto/ (요청·응답, Lombok @Da
 룰렛 돌리기, 로그아웃은 자동화 도구가 없어 못 눌렀다. 그 데이터를 내려주는
 API 는 전부 확인했으니, 사람이 한 번 훑으면 된다.
 
+### 잡것 정리 (2026-10-01)
+
+- `catalog.json` 의 게임 설명 3개에 역슬래시가 **글자로** 박혀 있어 화면에
+  그대로 보였다. 공백으로 바꿨다 (줄바꿈은 화면 폭에 맞춰 접힌다).
+  다른 데이터 파일 4개에는 같은 흔적이 없다. 테스트 정답지도 같이 고쳤다.
+- 옛 이름 `shared_post_id` → `recipe_review_id` (`sharedPostId` →
+  `recipeReviewId`). 표 이름이 `posts` 에서 `recipe_reviews` 로 바뀔 때 남은
+  것이다. **DB 컬럼이 아니라 `HistoryMapper.xml` 에서 `r.id` 에 붙이던
+  별칭**이라 DDL 은 필요 없었다. 고친 곳은 VO · XML · 테스트 2개 ·
+  정답지 2개 · 프론트 `HistoryPage`.
+- `docs/PROGRESS.md` · `BOARD_SPEC` 의 `post_service.py` · `/api/posts` 는
+  **그대로 뒀다.** 파이썬 시절의 사실 기록이고, `git show` 명령에 쓰는 실제
+  경로다. 이름을 바꾸면 그 명령이 안 먹는다.
+- `StubFixtureTest` 의 안 쓰는 import 삭제. `backend-spring/bin/`(IDE 빌드
+  산출물 1.8M, git 제외)도 지웠다 — 패키지를 옮기기 전의 `.class` 가 남아
+  있어 IDE 를 헷갈리게 한다. 빌드하면 다시 생긴다.
+
 ### 아직 남은 것
 
 1. **브라우저로 직접 클릭해 보기** — 위에서 못 누른 것들.
    로그인 → 홈 → 룰렛 → 레시피 → 찜 → 이걸로 먹을래요 → History 펼치기
    → 마이페이지 닉네임 변경 → 로그아웃
-2. **`catalog.json` 의 게임 설명에 `\n` 이 글자로 들어 있다.**
-   화면에 `두 메뉴 중 하나를 골라\n최종 우승 메뉴를 정해요!` 로 그대로 보인다.
-   파이썬 시절 데이터에서 넘어온 것이다. 줄바꿈을 살리려면 데이터에서 빼고
-   화면에서 `white-space: pre-line` 을 쓰거나, 아예 한 줄로 고친다. (`games` 3개)
-3. **`develop` 병합** — `feature/kongmg` 가 35개 앞서 있다. 팀원이 `develop` 를
+2. **`develop` 병합** — `feature/kongmg` 가 35개 앞서 있다. 팀원이 `develop` 를
    받으면 기능별 패키지도 VO 통합도 없는 코드를 본다.
-4. (선택) `RecipeReviewVO` 에 `@JsonIgnore` 붙이기 — `ReviewCommentVO` ·
+3. (선택) `RecipeReviewVO` 에 `@JsonIgnore` 붙이기 — `ReviewCommentVO` ·
    `NoticeVO` 와 달리 아직 하나도 없어서 15칸이 전부 요청으로 들어온다.
    `docs/BOARD_SPEC.md` 3절에 적어뒀다. 담당자가 쓸 칸을 정할 때 같이 하면 된다.
-5. (선택) `docs/PROGRESS.md` 의 `@LoginUser` · `AppProperties` 설명 — 지금 코드에
+4. (선택) `docs/PROGRESS.md` 의 `@LoginUser` · `AppProperties` 설명 — 지금 코드에
    없는 것이다. 파이썬→자바 대조 학습 기록이라 그대로 둬도 된다.
    (`STUDY_AUTH.md` 에는 머리말에 "옛 구조 기준" 경고를 달아뒀다)
 
