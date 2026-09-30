@@ -223,7 +223,59 @@ DB 에 들어갔을 때를 막는 자리다.
 
 ---
 
-## 3. 만들 때 볼 것
+## 3. 요청으로 받은 VO 를 그대로 DB 에 넣지 말 것
+
+DTO 를 없애면서 **`RecipeReviewVO` · `ReviewCommentVO` · `NoticeVO` 가
+`@RequestBody` 를 겸한다.** 표 한 행의 모든 칸이 그 클래스에 있으므로,
+화면이 보낸 객체에는 **화면이 정할 권한이 없는 칸까지 들어올 수 있다.**
+
+```
+화면이 이렇게 보낼 수 있다
+  POST /api/reviews
+  { "meal_history_id": 5, "title": "제목", "content": "내용",
+    "view_count": 99999, "user_id": 1, "file_yn": "Y" }
+```
+
+지금 세 VO 의 상태가 다르다.
+
+| VO | `@JsonIgnore` | 뜻 |
+|---|:--:|---|
+| `ReviewCommentVO` | 5칸 | `reviewId` · `userId` · `useYn` · 날짜는 **받을 때도 막힌다** |
+| `NoticeVO` | 6칸 | `userId` · `pinnedYn` · `useYn` · 날짜는 막힌다 |
+| **`RecipeReviewVO`** | **0칸** | **15칸이 전부 들어온다** — `userId` · `viewCount` · 첨부 6칸까지 |
+
+`@JsonIgnore` 는 내보낼 때뿐 아니라 **받을 때도 막는다.** 그래서 붙어 있는
+칸은 화면이 아무리 보내도 null 로 남는다. `RecipeReviewVO` 에는 아직 하나도
+없으니, 후기 쪽은 특히 조심해야 한다.
+
+**`request` 를 통째로 DAO 에 넘기면 안 된다.** 쓸 칸만 골라 새 VO 에 옮겨
+담는다 — `BanServiceImpl.add()` 와 `HistoryServiceImpl.add()` 가 그렇게 한다.
+
+```java
+// 이렇게 (BanServiceImpl 방식)
+UserBanVO ban = new UserBanVO();
+ban.setUserId(user.getId());                        // 토큰에서 나온 값
+ban.setIngredientName(request.getIngredientName()); // 화면이 정해도 되는 값만
+banDAO.insert(ban);
+
+// 이렇게 하면 안 된다
+reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 화면이 정하게 된다
+```
+
+조회수는 `POST /api/reviews/{id}/view` 에서만 올리고, 작성자는 언제나
+토큰에서 나온 사람이다 — 위 「공지」 표의 **작성자** 항목과 같은 이유다.
+
+첨부 여부(`fileYn`)와 파일 칸 다섯 개도 마찬가지다. 파일을 실제로 저장한
+`attachFile()` 만 그 칸을 건드려야 한다 (1-5 의 「첨부파일 컬럼 여섯 개는
+한 몸이다」 참고).
+
+> `RecipeReviewVO` 에도 `ReviewCommentVO` 처럼 `@JsonIgnore` 를 붙이면
+> 이 실수를 아예 막을 수 있다. 아직 안 붙인 것은 담당자가 어떤 칸을
+> 쓸지 정하지 않아서다. 구현을 시작할 때 정해서 붙이는 것을 권한다.
+
+---
+
+## 4. 만들 때 볼 것
 
 | 무엇 | 어디 |
 |---|---|
@@ -246,7 +298,7 @@ DB 에 들어갔을 때를 막는 자리다.
 
 ---
 
-## 4. 확인
+## 5. 확인
 
 `src/test/java/.../StubFixtureTest.java` 가 **주소 20개가 파이썬과 같은지** 검사한다.
 구현하면서 주소를 바꿨다면 이 테스트도 같이 고쳐야 한다 — 프론트가 그 주소를 쓴다.

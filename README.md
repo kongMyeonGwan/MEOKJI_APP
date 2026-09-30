@@ -226,17 +226,11 @@ MEOKJI_APP/
 로그인 칸의 ● 는 로그인 필수, ▲ 는 관리자(`users.user_level = 1`) 전용이다.
 
 **✗ 가 붙은 20개는 아직 서버에 없다(501).** 후기 게시판(`reviews`)과
-공지(`notices`)는 팀원이 직접 구현할 자리라 주소와 DTO 만 남기고 메서드
-안을 비워뒀다. 화면은 `frontend/src/data/sampleBoard.js` 의 가데이터를
-그리고 있어서 그대로 볼 수 있다.
+공지(`notices`)는 팀원이 직접 구현할 자리라 주소 · VO · 컨트롤러만 만들어 두고
+서비스의 메서드 안을 비워뒀다. 화면은 `frontend/src/data/sampleBoard.js` 의
+가데이터를 그리고 있어서 그대로 볼 수 있다.
 
 어떻게 동작해야 하는지는 [docs/BOARD_SPEC.md](docs/BOARD_SPEC.md) 에 있다.
-
-**✗ 가 붙은 20개는 아직 서버에 없다(501).** 게시판(`posts`)과
-공지(`notices`)는 팀원이 직접 구현할 자리라 주소와 스키마만 남기고 함수
-안을 비워뒀다. 화면은 `frontend/src/data/sampleBoard.js` 의 가데이터를
-그리고 있어서 그대로 볼 수 있다. 자세한 사정은
-[docs/PROGRESS.md](docs/PROGRESS.md) 의 「게시판 · 공지를 담당자에게 넘김」 참고.
 
 | 그룹 | 엔드포인트 | 로그인 | 설명 |
 |---|---|:--:|---|

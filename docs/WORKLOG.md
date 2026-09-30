@@ -125,16 +125,44 @@ vo/XxxVO (테이블 한 행, Lombok @Data)      dto/ (요청·응답, Lombok @Da
 합치면 검증 그룹(`@Validated(OnRegister.class)`)을 써야 해서 오히려 어려워진다.
 그래서 `auth/vo/` · `user/vo/` 에 따로 두되 이름만 `...VO` 로 맞췄다.
 
+### 화면부터 서버까지 실제로 태워봄 (2026-10-01)
+
+로컬 Oracle + `gradlew bootRun`(8080) + `npm run dev`(5173) 를 같이 띄우고
+헤드리스 Chrome 으로 화면까지 확인했다. **전 구간 통과.**
+
+| 확인한 것 | 결과 |
+|---|---|
+| CORS 프리플라이트 (5173 → 8080) | `Allow-Headers` 에 `authorization` 있음 |
+| 로그인 · `/api/auth/me` | `user` 8칸, `password_hash` 안 나감 |
+| `/api/users/me` · `PATCH` | `ProfileVO` 11칸, `cook_count` 실제 값 |
+| Ban · 찜 · 게임 · History · 추천 · 레시피 · 카탈로그 | 전부 200/201/204 |
+| `/api/reviews` · `/api/notices` | **501** (게스트도 401 아님) |
+| 화면 | 홈 · 마이페이지 · History · 커뮤니티 정상 렌더 |
+
+홈의 추천이 API 응답(냉우동 2,100원)과 일치했고, 마이페이지에 "요리 3회" 가
+떴다 — `ProfileVO` 를 분리하지 않았다면 0회로 떴을 자리다.
+
+**클릭이 필요한 것은 아직 못 봤다.** History 행 펼치기, "이걸로 먹을래요",
+룰렛 돌리기, 로그아웃은 자동화 도구가 없어 못 눌렀다. 그 데이터를 내려주는
+API 는 전부 확인했으니, 사람이 한 번 훑으면 된다.
+
 ### 아직 남은 것
 
-1. **브라우저로 직접 확인**: 로그인 → 홈 → 룰렛 모양 → 레시피 → 찜 → 이걸로 먹을래요
-   → History → 마이페이지 닉네임 변경 → 로그아웃
-2. **팀 DB 에서 `gradlew test` 한 번 더** — 컴파일이 깨져 있던 동안은 못 돌렸다.
-   기준선은 94개 중 91개 통과 (실패 3개는 정답지 회원 id 차이).
-3. (선택) `docs/STUDY_AUTH.md` · `docs/PROGRESS.md` 의 `@LoginUser` · `AppProperties`
-   설명 — 지금 코드에는 없는 것이다. 다만 파이썬→자바 대조 학습 기록이라 그대로 둬도 된다.
-   (`STUDY_AUTH.md` 는 현재 설계처럼 읽힐 수 있으니 머리말에 "옛 방식" 한 줄만 달아두면 충분)
-4. 이 PC 의 임시 폴더(Claude 스크래치패드 `.../scratchpad/be`)는 지워도 됨 — 전부 프로젝트로 복사했음
+1. **브라우저로 직접 클릭해 보기** — 위에서 못 누른 것들.
+   로그인 → 홈 → 룰렛 → 레시피 → 찜 → 이걸로 먹을래요 → History 펼치기
+   → 마이페이지 닉네임 변경 → 로그아웃
+2. **`catalog.json` 의 게임 설명에 `\n` 이 글자로 들어 있다.**
+   화면에 `두 메뉴 중 하나를 골라\n최종 우승 메뉴를 정해요!` 로 그대로 보인다.
+   파이썬 시절 데이터에서 넘어온 것이다. 줄바꿈을 살리려면 데이터에서 빼고
+   화면에서 `white-space: pre-line` 을 쓰거나, 아예 한 줄로 고친다. (`games` 3개)
+3. **`develop` 병합** — `feature/kongmg` 가 35개 앞서 있다. 팀원이 `develop` 를
+   받으면 기능별 패키지도 VO 통합도 없는 코드를 본다.
+4. (선택) `RecipeReviewVO` 에 `@JsonIgnore` 붙이기 — `ReviewCommentVO` ·
+   `NoticeVO` 와 달리 아직 하나도 없어서 15칸이 전부 요청으로 들어온다.
+   `docs/BOARD_SPEC.md` 3절에 적어뒀다. 담당자가 쓸 칸을 정할 때 같이 하면 된다.
+5. (선택) `docs/PROGRESS.md` 의 `@LoginUser` · `AppProperties` 설명 — 지금 코드에
+   없는 것이다. 파이썬→자바 대조 학습 기록이라 그대로 둬도 된다.
+   (`STUDY_AUTH.md` 에는 머리말에 "옛 구조 기준" 경고를 달아뒀다)
 
 ---
 
