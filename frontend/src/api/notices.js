@@ -6,8 +6,12 @@
 //   3. CommunityPage 에서 SAMPLE_NOTICES 대신 이 함수를 부른다
 
 // import client from './client'
+// import { authHeader } from '../utils/token'
 
 const NOT_READY = '공지사항 기능은 아직 준비 중입니다.'
+
+// 작성 · 수정 · 삭제는 관리자만 된다. { headers: authHeader() } 를 같이 넘긴다.
+// 목록과 조회수는 누구나 볼 수 있어서 넘기지 않아도 된다.
 
 // 공지 목록 한 페이지. 고정 공지가 위, 그 다음 최신순.
 export const getNotices = async (options) => {

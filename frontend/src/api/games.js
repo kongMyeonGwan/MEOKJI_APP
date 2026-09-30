@@ -1,4 +1,5 @@
 import client from './client'
+import { authHeader } from '../utils/token'
 
 // 미니게임 기록 API. "누가 어떤 게임을 했는지" 를 남긴다.
 
@@ -13,7 +14,7 @@ export const GAME_KEYS = {
 // 실패해도 게임은 계속해야 해서 에러를 밖으로 던지지 않는다.
 export const recordGamePlay = async (gameKey) => {
   try {
-    await client.post(`/api/games/${gameKey}/plays`)
+    await client.post(`/api/games/${gameKey}/plays`, null, { headers: authHeader() })
   } catch (err) {
     // 기록이 안 남아도 괜찮다
   }

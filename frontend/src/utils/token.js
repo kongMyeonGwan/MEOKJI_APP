@@ -30,6 +30,23 @@ export const removeToken = () => {
   localStorage.removeItem(TOKEN_KEY)
 }
 
+// 로그인이 필요한 API 를 부를 때 쓰는 헤더.
+//
+// 쓰는 법: await client.get('/api/bans', { headers: authHeader() })
+// 모양:    Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
+//
+// 로그인 안 했으면 빈 객체를 돌려준다. 그래야 로그인 없이도 되는 API
+// (추천 · 레시피 · 게시판 조회)를 게스트가 부를 때 문제가 없다.
+export const authHeader = () => {
+  const token = getToken()
+
+  if (!token) {
+    return {}
+  }
+
+  return { Authorization: `Bearer ${token}` }
+}
+
 // ----- 사용자 정보 -----
 // localStorage 에는 글자(문자열)만 저장된다.
 // 그래서 객체를 저장할 때는 JSON.stringify 로 글자로 바꾸고,

@@ -1,4 +1,5 @@
 import client from './client'
+import { authHeader } from '../utils/token'
 
 // 회원가입 · 로그인 · 비밀번호 재설정 API
 
@@ -26,7 +27,7 @@ export const login = async (form) => {
 
 // 내 정보. 토큰이 아직 살아있는지 확인할 때도 쓴다.
 export const getMe = async () => {
-  const response = await client.get('/api/auth/me')
+  const response = await client.get('/api/auth/me', { headers: authHeader() })
   return response.data
 }
 

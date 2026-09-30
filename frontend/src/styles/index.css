@@ -71,7 +71,7 @@
 /*
  * 다크 모드.
  *
- * <html data-theme="dark"> 하나로 갈린다(contexts/PrefsContext.jsx).
+ * <html data-theme="dark"> 하나로 갈린다 (utils/settings.js 의 applyTheme).
  * 컴포넌트 CSS는 전부 var()만 쓰므로 여기 값만 바꾸면 화면 전체가 따라온다.
  * 새 화면을 만들 때 다크 모드를 따로 손볼 일이 없게 하려는 구조라,
  * 컴포넌트 쪽에 색상 리터럴(#fff 등)을 새로 적지 않는 게 중요하다.

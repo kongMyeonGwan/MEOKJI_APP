@@ -2,9 +2,6 @@ package com.meokji.api.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,7 +15,6 @@ import com.meokji.api.util.KamisClient;
 import com.meokji.api.util.Numbers;
 import com.meokji.api.util.UnitConvert;
 
-import jakarta.annotation.PreDestroy;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -29,7 +25,7 @@ import tools.jackson.databind.JsonNode;
  *   2. 품목 코드 → 시장별 가격 받아오기         (KamisClient)
  *   3. "1kg 에 12,000원" → "300g 에 3,600원"  (UnitConvert, 레시피 분량만큼으로 바꾸기)
  *
- * ※ 이 파일은 조금 어렵다. 팀원이 고칠 일은 거의 없는 영역이다.
+ * 재료를 하나씩 순서대로 조회한다. 재료가 많으면 그만큼 느리다.
  */
 @Service
 public class PriceServiceImpl implements PriceService {
@@ -47,16 +43,6 @@ public class PriceServiceImpl implements PriceService {
     @Value("${app.price.providers}")
     private String providers;
 
-    // 재료 가격을 "동시에" 가져오기 위한 일꾼 6명 (스레드 6개).
-    // 재료가 9개면 하나씩 부를 때 6초 넘게 걸려서, 여러 개를 한꺼번에 부른다.
-    private ExecutorService workers = Executors.newFixedThreadPool(6);
-
-    // 서버가 꺼질 때 일꾼들도 정리한다
-    @PreDestroy
-    public void shutdown() {
-        workers.shutdownNow();
-    }
-
     @Override
     public List<PriceItem> forIngredients(JsonNode ingredientsJson) {
         // 설정이 kamis 가 아니면 503 에러 (가격이 왜 안 나오는지 바로 알 수 있게)
@@ -67,25 +53,21 @@ public class PriceServiceImpl implements PriceService {
             }
         }
 
-        // 1. 재료마다 "가격 가져오기" 일을 일꾼에게 맡긴다 (기다리지 않고 바로 다음 재료로)
-        List<CompletableFuture<PriceItem>> jobs = new ArrayList<>();
+        // 재료를 하나씩 순서대로 가격 조회한다.
+        // 재료가 9개면 6초쯤 걸린다. 그동안 화면에는 "레시피를 만들고 있어요" 가 떠 있다.
+        List<PriceItem> items = new ArrayList<>();
         for (JsonNode item : ingredientsJson) {
             String name = item.path("name").asString("");
-            if (item.isObject() && !name.isBlank()) {
-                jobs.add(CompletableFuture.supplyAsync(() -> priceOf(item), workers));
+            if (!item.isObject() || name.isBlank()) {
+                continue;
             }
-        }
 
-        // 2. 맡긴 일이 끝나기를 순서대로 기다렸다가 결과를 모은다 (join = 끝날 때까지 기다리기)
-        List<PriceItem> items = new ArrayList<>();
-        for (CompletableFuture<PriceItem> job : jobs) {
             try {
-                items.add(job.join());
+                items.add(priceOf(item));
+            } catch (ApiException e) {
+                throw e; // 설정 문제 · KAMIS 접속 문제는 그대로 알린다
             } catch (Exception e) {
-                // 설정 문제(503)는 그대로 알린다. 재료 하나가 실패한 건 빼고 나머지만 보여준다.
-                if (e.getCause() instanceof ApiException) {
-                    throw (ApiException) e.getCause();
-                }
+                // 재료 하나가 실패한 것은 건너뛰고 나머지만 보여준다
             }
         }
         return items;

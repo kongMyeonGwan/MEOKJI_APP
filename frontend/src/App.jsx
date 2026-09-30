@@ -81,7 +81,6 @@ export default function App() {
   }
 
   // 앱을 처음 켤 때 한 번, 서버에서 내 정보를 다시 받아 최신으로 맞춘다.
-  // 토큰이 만료됐으면(401) api/client.js 가 알아서 로그아웃시키고 로그인 화면으로 보낸다.
   useEffect(() => {
     if (user === null) {
       return // 로그인 안 했으면 확인할 게 없다
@@ -92,7 +91,11 @@ export default function App() {
         const me = await getMe()
         handleUserChange(me)
       } catch (err) {
-        // 서버가 꺼져 있는 경우. 저장해둔 정보를 그대로 쓴다.
+        // 401 이면 토큰이 만료된 것이다 (토큰은 30분 뒤 만료된다) → 로그아웃 상태로
+        if (err.response && err.response.status === 401) {
+          handleLogout()
+        }
+        // 서버가 꺼져 있는 경우는 저장해둔 정보를 그대로 쓴다
       }
     }
     checkLogin()
