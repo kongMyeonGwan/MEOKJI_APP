@@ -547,8 +547,8 @@ class SeedDemoTest {
             }
 
             // 한 기록에는 후기를 한 번만 쓸 수 있다(uq_reviews_meal).
-            // 이미 썼으면 shared_post_id 가 채워져 있으니 그 글을 이어서 쓴다.
-            JsonNode shared = history.path("shared_post_id");
+            // 이미 썼으면 recipe_review_id 가 채워져 있으니 그 글을 이어서 쓴다.
+            JsonNode shared = history.path("recipe_review_id");
             Long reviewId = shared.isNull() || shared.isMissingNode() ? null : shared.asLong();
 
             if (reviewId != null) {

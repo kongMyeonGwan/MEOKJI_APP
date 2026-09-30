@@ -45,7 +45,7 @@
         SELECT m.id, m.user_id, m.food_name, m.recipe_name,
                m.recipe_json, m.ingredients_json, m.substitutes_json,
                m.estimated_cost, m.use_yn, m.selected_at,
-               r.id AS shared_post_id
+               r.id AS recipe_review_id
         <include refid="mineWithShared"/>
          ORDER BY m.selected_at DESC, m.id DESC
          OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY

@@ -176,8 +176,8 @@ export default function HistoryPage() {
                   />
 
                   <p className="muted history__share">
-                    {item.shared_post_id ? (
-                      <Link to={`/community/${item.shared_post_id}`} className="history__link">
+                    {item.recipe_review_id ? (
+                      <Link to={`/community/${item.recipe_review_id}`} className="history__link">
                         커뮤니티에 공유한 글 보기 →
                       </Link>
                     ) : (

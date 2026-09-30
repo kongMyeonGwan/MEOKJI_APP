@@ -70,8 +70,13 @@ public class MealHistoryVO {
     @JsonIgnore
     private LocalDateTime selectedAt;
 
-    /** 테이블 컬럼이 아니다. 목록 조회 때 JOIN 으로 같이 가져온다 (없으면 null) */
-    private Long sharedPostId;
+    /**
+     * 이 기록으로 쓴 커뮤니티 후기의 번호. 없으면 null.
+     *
+     * MEAL_HISTORIES 의 컬럼이 아니다. 목록을 조회할 때 RECIPE_REVIEWS 를
+     * LEFT JOIN 해서 그 글의 id 를 같이 가져온다 (HistoryMapper.xml).
+     */
+    private Long recipeReviewId;
 
     /** 테이블 컬럼이 아니다. 썸네일 그림 종류 - 서비스가 카탈로그에서 찾아 넣는다 */
     private String art;

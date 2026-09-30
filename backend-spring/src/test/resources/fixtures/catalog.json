@@ -103,21 +103,21 @@
         "to": "/game/worldcup",
         "emoji": "🏆",
         "title": "음식 월드컵",
-        "desc": "두 메뉴 중 하나를 골라\\n최종 우승 메뉴를 정해요!"
+        "desc": "두 메뉴 중 하나를 골라 최종 우승 메뉴를 정해요!"
       },
       {
         "key": "balance",
         "to": "/game/balance",
         "emoji": "⚖️",
         "title": "취향 밸런스",
-        "desc": "몇 가지 질문으로\\n딱 맞는 메뉴를 추천!"
+        "desc": "몇 가지 질문으로 딱 맞는 메뉴를 추천!"
       },
       {
         "key": "roulette",
         "to": "/roulette",
         "emoji": "🎡",
         "title": "랜덤 돌림판",
-        "desc": "운명의 돌림판을 돌려\\n오늘의 메뉴를 결정해요!"
+        "desc": "운명의 돌림판을 돌려 오늘의 메뉴를 결정해요!"
       }
     ],
     "balance_questions": [

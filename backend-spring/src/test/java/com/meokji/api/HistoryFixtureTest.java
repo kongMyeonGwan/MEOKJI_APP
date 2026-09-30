@@ -219,7 +219,7 @@ class HistoryFixtureTest {
         long historyId = item.get("id").asLong();
 
         assertThat(item.get("food_name").asString()).isEqualTo("테스트확정용음식");
-        assertThat(item.get("shared_post_id").isNull())
+        assertThat(item.get("recipe_review_id").isNull())
                 .as("방금 만든 기록은 아직 공유했을 수 없다").isTrue();
         assertThat(item.get("art").isNull())
                 .as("카탈로그에 없는 이름이라 썸네일이 없다").isTrue();
