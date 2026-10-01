@@ -1,5 +1,5 @@
 {
-  "note": "후기 게시판 목록 501. 파이썬은 /api/posts 였다 - 표 이름(recipe_reviews)에 맞춰 주소를 바꿨다",
+  "note": "후기 게시판 목록 501. 예전 주소 /api/posts 를 표 이름(recipe_reviews)에 맞춰 바꿨다",
   "request": {
     "method": "GET",
     "path": "/api/reviews"

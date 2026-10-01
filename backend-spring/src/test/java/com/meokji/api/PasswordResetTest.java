@@ -137,7 +137,7 @@ class PasswordResetTest {
     // -------------------------------------------------------------------- 검사
 
     @Test
-    @DisplayName("가입되지 않은 이메일은 404 이고 본문이 파이썬과 같다")
+    @DisplayName("가입되지 않은 이메일은 404 이고 본문이 정답지와 같다")
     void unknownEmailMatchesFixture() throws Exception {
         JsonNode want = fixture("password_reset_unknown");
 

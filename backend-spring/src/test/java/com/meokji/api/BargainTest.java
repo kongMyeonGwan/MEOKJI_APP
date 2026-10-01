@@ -34,7 +34,7 @@ import tools.jackson.databind.json.JsonMapper;
  * 테스트가 바깥 시세에 따라 빨강과 초록을 오간다.
  *
  * <p>그래서 여기서는 <b>모양</b>만 본다 - 켜면 칸이 있는지, 끄면 비어 있는지,
- * 훑을 대상이 파이썬과 같은 101개인지. 값이 맞는지는 KAMIS 응답을 다루는
+ * 훑을 대상이 정해진 101개인지. 값이 맞는지는 KAMIS 응답을 다루는
  * {@code PriceTest} 와 {@code RecipeFixtureTest} 가 이미 대조한다.
  */
 @SpringBootTest
@@ -73,11 +73,11 @@ class BargainTest {
 
     @Test
     @DisplayName("훑을 품목은 116개가 아니라 101개다 (코드가 겹치는 이름을 줄인다)")
-    void uniqueItemsMatchPython() {
+    void uniqueItemsAre101() {
         assertThat(matcher.itemCount())
                 .as("kamis-items.json 의 품목 수").isEqualTo(116);
 
-        // 파이썬 bargain_service.unique_items() 와 같은 숫자여야 한다. 같은 코드를
+        // 이름은 116개지만 품목코드는 101개다. 같은 코드를
         // 가리키는 이름이 여럿이라("대파"·"쪽파") 이름마다 물어보면 같은 응답을
         // 두 번 받는다.
         assertThat(matcher.uniqueItemNames())
@@ -87,7 +87,7 @@ class BargainTest {
     @Test
     @DisplayName("current() 는 기다리지 않고 바로 돌려준다")
     void currentDoesNotBlock() {
-        // 파이썬과 달라진 곳이다. 훑기는 1분 가까이 걸리므로 부르는 쪽을 묶어두지
+        // 훑기는 1분 가까이 걸리므로 부르는 쪽을 묶어두지
         // 않는다 - 가진 것을 주고 훑기는 뒤에서 돈다. 그래서 첫 호출이 빈 목록을
         // 돌려주는 것은 정상이다.
         long started = System.currentTimeMillis();
@@ -116,8 +116,8 @@ class BargainTest {
 
         JsonNode rows = body.get("bargains");
 
-        // 칸 자체는 늘 있어야 한다. 파이썬(Pydantic)이 default_factory=list 로
-        // 늘 내보내고 있어서, 빼버리면 화면이 "없음" 과 "빈 목록" 을 구분 못 한다.
+        // 칸 자체는 늘 있어야 한다. 비어 있어도 빈 목록([])으로 내보낸다 -
+        // 빼버리면 화면이 "없음" 과 "빈 목록" 을 구분 못 한다.
         assertThat(rows).as("bargains 칸은 늘 있어야 한다").isNotNull();
         assertThat(rows.isArray()).isTrue();
         assertThat(rows).isEmpty();
@@ -131,7 +131,7 @@ class BargainTest {
         assertThat(body.get("bargains").isArray()).isTrue();
 
         // 떨이 재료는 고른 메뉴에 영향을 주지 않는다. STEP 43 에서 AI 호출을
-        // 걷어내며 그 길이 끊겼고, 파이썬도 지금 같은 상태다.
+        // 걷어내며 그 길이 끊겼다.
         assertThat(body.get("items")).isNotEmpty();
         assertThat(body.get("condition").asString()).isNotBlank();
 

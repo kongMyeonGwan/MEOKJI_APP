@@ -25,7 +25,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 레시피 응답을 파이썬 정답지와 대조한다.
+ * 레시피 응답을 정답지(fixtures)와 대조한다.
  *
  * <p>가격({@code prices})은 아직 옮기지 않아 빈 목록이라 비교하지 않는다. 나머지
  * 칸은 <b>글자까지</b> 같아야 한다 - 특히 {@code grams} 의 정수/소수 구분이 그렇다.
@@ -86,7 +86,7 @@ class RecipeFixtureTest {
         assertThat(actual.get("recipe_json")).isEqualTo(want.get("recipe_json"));
 
         // 재료. grams 의 정수/소수 구분까지 같아야 한다 -
-        // 파이썬은 quantity 가 정수면 grams 도 정수로 내보낸다 (80), 소수면 소수다 (625.0).
+        // quantity 가 정수면 grams 도 정수(80), 소수면 소수(625.0)로 내보낸다.
         assertThat(actual.get("ingredients_json")).isEqualTo(want.get("ingredients_json"));
 
         assertThat(actual.get("substitutes_json")).isEqualTo(want.get("substitutes_json"));

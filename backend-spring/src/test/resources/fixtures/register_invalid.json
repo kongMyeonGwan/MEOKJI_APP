@@ -1,5 +1,5 @@
 {
-  "note": "검증 실패 422 - Pydantic 오류 모양",
+  "note": "검증 실패 422 - detail 배열 모양",
   "request": {
     "method": "POST",
     "path": "/api/auth/register"

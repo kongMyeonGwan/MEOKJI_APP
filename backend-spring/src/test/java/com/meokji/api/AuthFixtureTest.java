@@ -22,7 +22,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 인증 응답을 파이썬 정답지와 대조한다.
+ * 인증 응답을 정답지(fixtures)와 대조한다.
  *
  * <p>DB 에 붙는다. {@code minji@example.com} 계정이 있어야 한다 -
  * {@code gradlew seedDemo} 가 만들어준다 ({@link SeedDemoTest}).
@@ -74,7 +74,7 @@ class AuthFixtureTest {
     }
 
     @Test
-    @DisplayName("POST /api/auth/login - 회원 정보가 파이썬과 같다")
+    @DisplayName("POST /api/auth/login - 회원 정보가 정답지와 같다")
     void loginMatchesFixture() throws Exception {
         JsonNode want = fixture("auth_login").get("body");
 
@@ -97,7 +97,7 @@ class AuthFixtureTest {
                 .isEqualTo(want.get("expires_in").asInt());
 
         // 회원 정보는 글자까지 같아야 한다. bcrypt 해시가 그대로 통한다는 확인도 된다 -
-        // 이 계정의 비밀번호는 파이썬이 만들어 저장한 것이다.
+        // 이 계정의 비밀번호 해시는 다른 bcrypt 구현($2b$)이 만든 것이다.
         assertThat(actual.get("user")).isEqualTo(want.get("user"));
     }
 

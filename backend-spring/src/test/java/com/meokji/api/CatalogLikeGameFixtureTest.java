@@ -24,7 +24,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 카탈로그 · 찜 · 미니게임 응답을 파이썬 정답지와 대조한다.
+ * 카탈로그 · 찜 · 미니게임 응답을 정답지(fixtures)와 대조한다.
  */
 @SpringBootTest
 @DisplayName("카탈로그 · 찜 · 게임 정답지 대조")

@@ -23,7 +23,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 식사 기록 응답을 파이썬 정답지와 대조한다.
+ * 식사 기록 응답을 정답지(fixtures)와 대조한다.
  *
  * <p>확정한 기록은 테스트 끝에 지운다. 데모 계정을 그대로 쓰기 때문에, 남겨두면
  * 요리 횟수와 누적 비용이 계속 올라가 다음 실행의 대조가 어긋난다.
@@ -88,7 +88,7 @@ class HistoryFixtureTest {
     }
 
     @Test
-    @DisplayName("GET /api/histories - 페이지 칸과 항목 칸이 파이썬과 같다")
+    @DisplayName("GET /api/histories - 페이지 칸과 항목 칸이 정답지와 같다")
     void listMatchesFixture() throws Exception {
         JsonNode want = fixture("histories_list").get("body");
 
@@ -123,7 +123,7 @@ class HistoryFixtureTest {
                 .as("ingredients_json 은 배열이어야 한다").isTrue();
         assertThat(item.get("recipe_json").has("steps")).isTrue();
 
-        // 시각 형식이 파이썬과 같아야 한다 (뒤에 Z, 마이크로초 여섯 자리)
+        // 시각 형식이 정답지와 같아야 한다 (util/Times: 뒤에 Z, 마이크로초 여섯 자리)
         assertThat(item.get("selected_at").asString()).endsWith("Z");
     }
 

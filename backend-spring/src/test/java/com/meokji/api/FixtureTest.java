@@ -21,17 +21,16 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 파이썬 서버의 응답(정답지)과 글자 단위로 대조한다.
+ * 서버 응답을 정답지(fixtures)와 글자 단위로 대조한다.
  *
- * <p>정답지는 {@code src/test/resources/fixtures/*.json} 이고,
- * {@code backend/} 의 FastAPI 서버에서 떠온 것이다. 스프링이 같은 JSON 을 내는지
- * 여기서 확인한다. 이게 없으면 포팅이 "돌아가는 것 같다" 로 끝난다.
+ * <p>정답지는 {@code src/test/resources/fixtures/*.json} 이고, 화면이 기대하는 응답
+ * 모양이다. 서버가 같은 JSON 을 내는지 여기서 확인한다. 이게 없으면 응답 모양이
+ * 바뀌어도 "돌아가는 것 같다" 로 끝난다.
  *
- * <p>DB 에 붙는다. 파이썬 쪽 {@code tests/test_api.py} 와 같은 성격이다.
- * 옮기는 엔드포인트가 늘어날 때마다 이 파일에 대조 하나를 추가한다.
+ * <p>DB 에 붙는다. 엔드포인트가 늘어날 때마다 이 파일에 대조 하나를 추가한다.
  */
 @SpringBootTest
-@DisplayName("파이썬 응답 정답지 대조")
+@DisplayName("응답 정답지 대조")
 class FixtureTest {
 
     private static final ObjectMapper MAPPER = JsonMapper.builder().build();
@@ -58,7 +57,7 @@ class FixtureTest {
     }
 
     @Test
-    @DisplayName("GET /api/health - 상태코드와 본문이 파이썬과 같다")
+    @DisplayName("GET /api/health - 상태코드와 본문이 정답지와 같다")
     void healthMatchesFixture() throws Exception {
         JsonNode want = fixture("health");
 

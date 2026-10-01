@@ -43,7 +43,7 @@ dependencies {
 	// Oracle 21c XE. Thin 드라이버라 Instant Client 를 따로 깔지 않는다.
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc17'
 
-	// JWT. 파이썬 쪽 python-jose 자리다. api 만 컴파일에 쓰고 나머지는 런타임.
+	// JWT 로그인 토큰 (util/JwtUtil). api 만 컴파일에 쓰고 나머지는 런타임.
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
@@ -70,7 +70,7 @@ tasks.named('test') {
 	environment 'WARM_BARGAINS', 'false'
 }
 
-// 데모 데이터 채우기. 파이썬 쪽 `python -m scripts.seed_demo` 자리다.
+// 데모 데이터 채우기 (SeedDemoTest 를 돌린다).
 //
 //     gradlew seedDemo
 //

@@ -9,14 +9,6 @@
 .env*
 !.env.example
 
-# python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-*.egg-info/
-.pytest_cache/
-
 # node
 node_modules/
 dist/
@@ -34,16 +26,10 @@ Thumbs.db
 # 실수로 하위 폴더에 다시 클론된 중첩 저장소 (자체 .git 보유)
 MEOKJI_APP/
 
-# 후기 첨부파일 (backend/.env 의 UPLOAD_DIR)
-# 파일 본체는 DB 가 아니라 디스크에 저장한다. 사람이 올린 사진이라
-# 저장소에 넣을 것이 아니고, 팀원마다 내용이 달라 충돌만 난다.
-backend/uploads/
-
-# 시세 훑기 캐시 (backend/app/services/bargain_service.py 가 스스로 쓴다)
-# 사람이 적는 값이 아니라 서버가 KAMIS 를 훑어 남기는 캐시다. 훑은 날짜가
-# 팀원마다 달라 충돌만 나고, 없으면 서버가 다시 만든다.
-# 같은 폴더의 catalog.json 은 사람이 적는 고정 목록이라 추적한다.
-backend/app/data/bargains.json
+# 옛 백엔드 폴더(backend/)가 아직 남아 있는 PC 용.
+# 코드는 git 기록에만 있고(8597a9a 에서 걷어냄), 폴더에 남은 것은 실행 환경 · 캐시뿐이다.
+# 팀원 모두 backend/ 를 지우면 이 줄도 지운다.
+backend/
 
 # Git Bash 가 비정상 종료할 때 떨어뜨리는 크래시 덤프
 # 코드도 설정도 아니고, 그날 셸이 한 번 죽었다는 흔적일 뿐이다.

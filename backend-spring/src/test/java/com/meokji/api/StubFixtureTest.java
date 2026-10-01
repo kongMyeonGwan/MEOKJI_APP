@@ -40,7 +40,7 @@ class StubFixtureTest {
     /**
      * 담당자가 채울 주소 20개. 프론트가 이 주소를 그대로 부른다.
      *
-     * <p><b>후기 쪽은 파이썬과 주소가 다르다.</b> 파이썬은 {@code /api/posts} 였는데
+     * <p><b>후기 주소는 {@code /api/reviews} 다.</b> 예전에는 {@code /api/posts} 였는데
      * 표 이름이 {@code recipe_reviews} 라서 {@code /api/reviews} 로 바꿨다 - "post" 와
      * "review" 가 섞여 있으면 어느 쪽이 무엇인지 매번 확인해야 한다. 공지(notices)는
      * 표 이름이 그대로라 손대지 않았다.
@@ -85,8 +85,8 @@ class StubFixtureTest {
     }
 
     @Test
-    @DisplayName("게시판 · 공지 주소 20개가 파이썬과 같다")
-    void stubRoutesMatchPython() {
+    @DisplayName("게시판 · 공지 주소 20개가 정해진 목록과 같다")
+    void stubRoutesMatchSpec() {
         List<String> actual = new ArrayList<>();
 
         handlerMapping.getHandlerMethods().forEach((info, method) -> {
@@ -119,7 +119,7 @@ class StubFixtureTest {
     }
 
     @Test
-    @DisplayName("GET /api/reviews - 501 이고 문구가 파이썬과 같다")
+    @DisplayName("GET /api/reviews - 501 이고 문구가 정답지와 같다")
     void postsListIsNotImplemented() throws Exception {
         JsonNode want = fixture("reviews_not_implemented");
 
@@ -130,7 +130,7 @@ class StubFixtureTest {
     }
 
     @Test
-    @DisplayName("GET /api/notices - 501 이고 문구가 파이썬과 같다")
+    @DisplayName("GET /api/notices - 501 이고 문구가 정답지와 같다")
     void noticesListIsNotImplemented() throws Exception {
         JsonNode want = fixture("notices_not_implemented");
 

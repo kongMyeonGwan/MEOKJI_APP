@@ -1,5 +1,5 @@
 {
-  "captured_at_server": "FastAPI (backend/)",
+  "captured_at_server": "옛 백엔드 (커밋 8597a9a 이전)",
   "count": 37,
   "files": [
     {
@@ -115,7 +115,7 @@
     {
       "name": "register_invalid",
       "status": 422,
-      "note": "검증 실패 422 - Pydantic 오류 모양"
+      "note": "검증 실패 422 - detail 배열 모양"
     },
     {
       "name": "password_reset_unknown",

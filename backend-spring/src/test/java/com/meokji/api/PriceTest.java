@@ -219,7 +219,7 @@ class PriceTest {
             assertThat(item.get("name").asString()).contains(" ");
 
             // need_text 는 조사가격이 있을 때만 채운다. 값은 알 수 있지만
-            // 파이썬이 그렇게 내보내고 있어서 맞춘다 (PriceService 주석 참고).
+            // 정답지가 그 모양이라 맞춘다 (PriceServiceImpl: 가격이 없으면 그 전에 돌려준다).
             if (item.get("offers").isEmpty()) {
                 assertThat(item.get("need_text").isNull()).as("%s", item.get("name")).isTrue();
             } else {

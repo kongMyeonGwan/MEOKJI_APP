@@ -23,7 +23,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 추천 결과를 파이썬 정답지와 대조한다.
+ * 추천 결과를 정답지(fixtures)와 대조한다.
  *
  * <p>점수 계산이 이 포팅에서 가장 조용히 틀릴 수 있는 부분이다. 결과가 나오기는
  * 하는데 순서가 다르면 아무도 모른다. 그래서 <b>고른 메뉴와 순서까지</b> 본다.
@@ -78,7 +78,7 @@ class RecommendFixtureTest {
     }
 
     @Test
-    @DisplayName("조건 없음 - 고른 메뉴와 순서가 파이썬과 같다")
+    @DisplayName("조건 없음 - 고른 메뉴와 순서가 정답지와 같다")
     void plainRecommendMatchesFixture() throws Exception {
         JsonNode want = fixture("recommend_plain").get("body");
 
@@ -97,7 +97,7 @@ class RecommendFixtureTest {
     }
 
     @Test
-    @DisplayName("항목 칸이 파이썬과 같다")
+    @DisplayName("항목 칸이 정답지와 같다")
     void itemFieldsMatchFixture() throws Exception {
         JsonNode want = fixture("recommend_plain").get("body").get("items").get(0);
 
@@ -157,7 +157,7 @@ class RecommendFixtureTest {
     }
 
     @Test
-    @DisplayName("검색어 - 점수 순서가 파이썬과 같다")
+    @DisplayName("검색어 - 점수 순서가 정답지와 같다")
     void queryScoringMatchesFixture() throws Exception {
         JsonNode want = fixture("recommend_query").get("body");
 

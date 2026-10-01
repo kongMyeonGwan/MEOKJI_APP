@@ -44,7 +44,7 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * 데모 데이터 채우기 — 회원 · 공지 · 식사 기록 · 후기(첨부 포함).
  *
- * <p>파이썬 쪽 {@code backend/scripts/seed_demo.py} 자리다. 빈 DB 로는 화면을 볼 수가
+ * <p>{@code gradlew seedDemo} 가 이 클래스를 돌린다. 빈 DB 로는 화면을 볼 수가
  * 없다. 게시판도 공지도 비어 있고, 글을 쓰려면 식사를 먼저 확정해야 해서 손으로
  * 채우려면 한참 걸린다. 이 클래스가 그 한 바퀴를 대신 돌아준다.
  *
@@ -73,7 +73,7 @@ import tools.jackson.databind.node.ObjectNode;
  * 화면에서는 멀쩡해 보이는데 API 로는 만들 수 없는 데이터가 섞인다. 덤으로
  * "이 흐름이 지금도 도는가" 가 한 번 확인된다.
  *
- * <p>그래서 {@code MockMvc} 를 쓴다. 파이썬의 {@code TestClient} 와 같은 자리다 -
+ * <p>그래서 {@code MockMvc} 를 쓴다 -
  * 서버를 따로 띄우지 않으면서도 컨트롤러 · 검증기 · 매퍼를 다 지난다.
  *
  * <h2>왜 테스트 폴더에 있나</h2>
@@ -154,7 +154,7 @@ class SeedDemoTest {
      * 확정할 메뉴 셋.
      *
      * <p><b>{@code recipes.json} 에 있는 이름이어야 한다.</b> 없는 메뉴를 적으면
-     * {@code GET /api/recipes} 가 404 로 끝난다. 파이썬 시드는 여기에 "크림 파스타" 가
+     * {@code GET /api/recipes} 가 404 로 끝난다. 예전 시드에는 여기에 "크림 파스타" 가
      * 적혀 있는데 STEP 41 에서 레시피 100종을 다시 정의할 때 빠진 메뉴라, 빈 DB 에
      * 돌리면 그 단계에서 죽는다 - 기존 DB 에는 옛날에 만들어진 행이 남아 있어
      * "이미 있음" 으로 건너뛰는 바람에 드러나지 않았다.
@@ -196,7 +196,7 @@ class SeedDemoTest {
     private JdbcTemplate jdbc;
 
     /**
-     * 가격 조회를 막는다. 파이썬이 {@code price_api.kamis_offers} 를 갈아끼우는 자리다.
+     * 가격 조회를 막는다 (KAMIS 를 부르지 않게 바꿔 끼운다).
      *
      * <p>인증키가 비어 있으면 {@code GET /api/recipes} 가 재료마다 KAMIS 를 부르다
      * 503 으로 끝난다. 키가 있어도 재료 아홉 개를 바깥에 물어보느라 느려진다.
@@ -347,9 +347,7 @@ class SeedDemoTest {
      * 데 필요한 건 "진짜 열리는 이미지" 하나뿐인데, 그걸 위해 바이너리를 커밋하면
      * diff 에도 안 잡히는 파일이 하나 늘어난다.
      *
-     * <p>파이썬은 의존성을 늘리지 않으려고 zlib 과 struct 로 PNG 를 직접 조립한다.
-     * 자바는 {@code ImageIO} 가 표준이라 그럴 필요가 없다 - 감아 올린 면을 그리는
-     * 방식은 그대로 두고 인코딩만 맡긴다.
+     * <p>PNG 인코딩은 자바 표준 {@code ImageIO} 에 맡긴다 - 라이브러리를 늘릴 필요가 없다.
      */
     private static byte[] drawNoodlePng() {
         int width = 640;
@@ -579,7 +577,7 @@ class SeedDemoTest {
                 continue;
             }
 
-            // 글쓰기(JSON)와 파일 업로드가 따로인 이유는 파이썬 post_service 상단 참고.
+            // 글쓰기(JSON)와 파일 업로드는 API 가 따로다.
             // 업로드가 실패해도 남는 건 '첨부 없는 멀쩡한 글' 이고, 첨부는 원래
             // 선택 사항이라 그게 정상 상태다.
             MockMultipartFile file = new MockMultipartFile(

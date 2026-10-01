@@ -31,9 +31,9 @@
 --   - Boolean   : NUMBER(1) + CHECK (0=FALSE, 1=TRUE)
 --   - Y/N 플래그: CHAR(1) + CHECK ('Y','N')
 --   - 날짜/시간 : TIMESTAMP(6) + SYS_EXTRACT_UTC(SYSTIMESTAMP). 항상 UTC로 저장한다.
---                python-oracledb가 타임존 정보를 저장/조회 양방향에서 버리기 때문에
---                WITH TIME ZONE을 써도 파이썬에서는 offset을 볼 수 없다.
---                오히려 세션 타임존에 따라 값이 조용히 어긋나므로 UTC 단일 정책으로 간다.
+--                자바에서는 LocalDateTime(시간대 없음)으로 읽으므로 WITH TIME ZONE 의
+--                offset 을 쓸 곳이 없고, 오히려 세션 타임존에 따라 값이 조용히 어긋난다.
+--                그래서 UTC 단일 정책으로 간다. 응답에 Z 를 붙이는 일은 util/Times 가 한다.
 --   - JSON      : CLOB + CHECK (... IS JSON)
 --   - 제약조건  : 전부 명시적으로 이름 부여 (미지정 시 SYS_C0099999 형태가 되어 판독 불가)
 --
@@ -122,7 +122,8 @@ CREATE INDEX idx_users_nickname ON users (nickname, use_yn);
 -- USER_LEVEL 은 '권한'이지 화면의 '요리 레벨'이 아니다
 --   화면 마이페이지에 나오는 레벨(1 → 2 → 3 …)은 이 컬럼과 아무 상관이 없다.
 --   그쪽은 식사 기록 · 후기로 쌓인 경험치에서 매번 계산하는 값이고
---   (services/user_service.py 의 make_level), DB 에 저장하지 않는다.
+--   DB 에 저장하지 않는다. (지금 자바 서버에는 이 계산이 없다 - 마이페이지는
+--   레벨 대신 "요리 n회 · 연속 n일" 을 보여준다)
 --   이름이 비슷해서 헷갈리기 쉬운데, 여기 숫자는 오직 관리자 여부만 가른다.
 --
 -- 왜 CHECK 로 1·2 만 허용하나

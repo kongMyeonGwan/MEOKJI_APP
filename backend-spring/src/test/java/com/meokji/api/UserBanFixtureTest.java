@@ -24,11 +24,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 내 정보 · 알림 · Ban 응답을 파이썬 정답지와 대조한다.
+ * 내 정보 · 알림 · Ban 응답을 정답지(fixtures)와 대조한다.
  *
- * <p>값을 바꾸는 테스트는 <b>바꾼 것을 되돌려 놓는다.</b> 파이썬 쪽
- * {@code tests/conftest.py} 가 앞뒤로 정리하던 것과 같은 이유인데, 여기서는
- * 데모 계정을 그대로 쓰기 때문에 남겨두면 다음 실행의 정답지가 어긋난다.
+ * <p>값을 바꾸는 테스트는 <b>바꾼 것을 되돌려 놓는다.</b> 데모 계정을 그대로
+ * 쓰기 때문에 남겨두면 다음 실행의 정답지가 어긋난다.
  */
 @SpringBootTest
 @DisplayName("내 정보 · Ban 정답지 대조")
@@ -71,7 +70,7 @@ class UserBanFixtureTest {
     }
 
     @Test
-    @DisplayName("GET /api/users/me - 칸 이름과 값이 파이썬과 같다")
+    @DisplayName("GET /api/users/me - 칸 이름과 값이 정답지와 같다")
     void profileMatchesFixture() throws Exception {
         JsonNode want = fixture("users_me").get("body");
 
@@ -123,7 +122,7 @@ class UserBanFixtureTest {
     }
 
     @Test
-    @DisplayName("Ban 추가 -> 목록 -> 해제가 파이썬과 같은 모양이다")
+    @DisplayName("Ban 추가 -> 목록 -> 해제가 정답지와 같은 모양이다")
     void banRoundTripMatchesFixture() throws Exception {
         JsonNode wantCreate = fixture("bans_create");
 
