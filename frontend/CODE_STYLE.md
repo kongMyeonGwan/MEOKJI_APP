@@ -48,7 +48,22 @@ useEffect(() => {
       const data = await getSomething()
       setItems(data)
     } catch (err) {
-      setError(getErrorMessage(err))
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
     } finally {
       setLoading(false)
     }
@@ -58,7 +73,8 @@ useEffect(() => {
 ```
 
 - API 함수는 `src/api/` 에 있습니다. 화면에서 axios 를 직접 부르지 않습니다.
-- 에러 문구는 `getErrorMessage(err)` (`src/utils/apiError.js`) 로 꺼냅니다.
+- 에러 문구는 위 `catch` 안의 `if / else` 를 **그대로 복사해서** 꺼냅니다.
+  (예전의 `getErrorMessage` · `utils/apiError.js` 는 지웠습니다. 문구를 바꿀 때는 모든 화면을 같이 고쳐야 합니다.)
 
 ## 3. 화면 그리기: 로딩 → 에러 → 빈 목록 → 목록
 
@@ -92,12 +108,35 @@ const handleSubmit = async (e) => {
   try {
     await createSomething({ title: title.trim() })
   } catch (err) {
-    setError(getErrorMessage(err))
+    // 2번의 catch 안 if / else 를 그대로 넣는다
   } finally {
     setSaving(false)
   }
 }
 ```
+
+## 4-1. 입력칸이 여럿이면 useForm
+
+입력칸마다 `useState` 를 따로 두지 않고 `src/hook/useForm.js` 하나로 모읍니다.
+입력칸의 `name` 이 `values` 의 키와 같아야 합니다. 체크박스도 같은 `handleChange` 로 됩니다.
+
+```jsx
+const { values, handleChange, reset } = useForm({ email: '', password: '' })
+
+<input name="email" value={values.email} onChange={handleChange} />
+```
+
+칸마다 에러를 따로 보여줄 때는 `validate(values)` 가 `{ 칸이름: '문구' }` 를 돌려주게 하고,
+`touched`(건드린 칸)일 때만 보여줍니다. 예) `pages/auth/RegisterPage.jsx`
+
+같이 쓰는 부품
+
+| 부품 | 쓰는 곳 |
+|---|---|
+| `common/PasswordInput` | 비밀번호 칸 + 보기/숨기기 버튼. `ref` 를 넘기면 포커스를 줄 수 있다 |
+| `common/FormField` | 라벨 + 입력칸 + 에러 문구 틀 |
+| `common/Modal` | 확인 창. `window.confirm` 대신 쓴다 (`{open && <Modal onClose={...}>...</Modal>}`) |
+| `auth/CodeInput` | 인증번호 칸. 숫자를 치면 다음 칸으로 넘어간다 |
 
 ## 5. 자주 쓰는 문법
 

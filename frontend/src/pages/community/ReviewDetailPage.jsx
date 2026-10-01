@@ -4,8 +4,11 @@ import RecipeView from '../../components/recipe/RecipeView'
 import ReviewAttachment from '../../components/community/ReviewAttachment'
 import CommentItem from '../../components/community/CommentItem'
 import { SAMPLE_REVIEW_DETAIL } from '../../data/sampleBoard'
+import useForm from '../../hook/useForm'
 import { formatDateTime } from '../../utils/format'
 import '../../styles/pages/ReviewDetailPage.css'
+
+const COMMENT_MAX = 1000 // 댓글 최대 글자 수
 
 // 게시글 상세 (/community/3) + 좋아요 + 댓글.
 // 보는 건 로그인 없이 되고, 좋아요/댓글은 로그인해야 된다. 수정/삭제는 내 글만.
@@ -27,10 +30,13 @@ export default function ReviewDetailPage({ user }) {
   // 댓글 입력칸
   const [commentText, setCommentText] = useState('')
 
-  // 글 수정
+  // 글 수정. useForm 이 돌려준 이름이 위의 것들과 겹치지 않게 edit~ 로 바꿔 받는다
   const [editing, setEditing] = useState(false)
-  const [editTitle, setEditTitle] = useState(review.title)
-  const [editContent, setEditContent] = useState(review.content)
+  const {
+    values: editValues,
+    handleChange: handleEditChange,
+    reset: resetEdit,
+  } = useForm({ title: review.title, content: review.content })
 
   // 좋아요 누르기
   // TODO: setReviewLike(review.id, !liked) 를 부르고 서버가 준 { liked, like_count } 를 넣는다
@@ -62,7 +68,7 @@ export default function ReviewDetailPage({ user }) {
     }
   }
 
-  // 글 수정 저장 — TODO: updateReview(review.id, { title: editTitle, content: editContent })
+  // 글 수정 저장 — TODO: updateReview(review.id, { title: editValues.title, content: editValues.content })
   const handleEditSave = (e) => {
     e.preventDefault()
     alert('게시판 기능은 아직 준비 중입니다.')
@@ -71,12 +77,12 @@ export default function ReviewDetailPage({ user }) {
 
   // 글 수정 취소 (원래 값으로 되돌린다)
   const handleEditCancel = () => {
-    setEditTitle(review.title)
-    setEditContent(review.content)
+    resetEdit()
     setEditing(false)
   }
 
-  // 글 삭제 — TODO: removeReview(review.id) 후 navigate('/community')
+  // 글 삭제 — TODO: removeReview(review.id) 후 navigate('/community', { replace: true })
+  //   replace: 지워진 글 주소를 방문 기록에서 빼서, 뒤로 가기를 눌러도 다시 안 오게 한다
   const handleDelete = () => {
     if (window.confirm('이 글을 지울까요?')) {
       alert('게시판 기능은 아직 준비 중입니다.')
@@ -107,11 +113,11 @@ export default function ReviewDetailPage({ user }) {
           <form className="review__edit" onSubmit={handleEditSave}>
             <label className="review__edit-field">
               <span>제목</span>
-              <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} maxLength={200} />
+              <input type="text" name="title" value={editValues.title} onChange={handleEditChange} maxLength={200} />
             </label>
             <label className="review__edit-field">
               <span>내용</span>
-              <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={12} />
+              <textarea name="content" value={editValues.content} onChange={handleEditChange} rows={12} />
             </label>
             <div className="review__edit-actions">
               <button type="submit" className="btn btn--sm">
@@ -205,11 +211,14 @@ export default function ReviewDetailPage({ user }) {
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="댓글을 입력하세요"
-              maxLength={1000}
+              maxLength={COMMENT_MAX}
               rows={3}
             />
             <div className="review__form-foot">
-              <span className="muted">{commentText.length} / 1000</span>
+              {/* 거의 다 차면 빨간 글씨로 알려준다 */}
+              <span className={commentText.length > COMMENT_MAX - 100 ? 'review__count-warn' : 'muted'}>
+                {commentText.length} / {COMMENT_MAX}
+              </span>
               <button type="submit" className="btn btn--sm" disabled={!commentText.trim()}>
                 등록
               </button>

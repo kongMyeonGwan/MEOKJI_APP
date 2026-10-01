@@ -115,6 +115,12 @@
   font-size: 13px;
 }
 
+/* 글자 수가 거의 다 찼을 때 */
+.review__count-warn {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
 .review__login-ask {
   margin: 0;
   padding: 16px 0 0;

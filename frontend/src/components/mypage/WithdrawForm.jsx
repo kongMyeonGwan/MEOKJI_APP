@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import ErrorMessage from '../common/ErrorMessage'
+import Modal from '../common/Modal'
+import PasswordInput from '../common/PasswordInput'
 import { withdraw } from '../../api/users'
 
 // 회원 탈퇴 폼. 마이페이지의 AccountSection 안에서 열린다.
@@ -8,16 +10,24 @@ export default function WithdrawForm({ onWithdrawn }) {
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false) // "정말 탈퇴할까요?" 창이 떠 있는지
 
-  const handleSubmit = async (e) => {
+  // 탈퇴하기 버튼: 되돌릴 수 없으니까 바로 탈퇴하지 않고 확인 창부터 띄운다
+  const handleSubmit = (e) => {
     e.preventDefault() // 폼을 제출하면 페이지가 새로고침되는데, 그걸 막는다
 
-    // 되돌릴 수 없으니까 한 번 더 물어본다 (확인을 누르면 true)
-    const ok = window.confirm('정말 탈퇴하시겠어요?\n작성하신 글과 기록이 모두 보이지 않게 됩니다.')
-    if (!ok) {
+    if (password === '') {
+      setError('비밀번호를 입력해주세요')
       return
     }
 
+    setError('')
+    setConfirmOpen(true)
+  }
+
+  // 확인 창에서 "탈퇴하기" 를 눌렀을 때 진짜로 탈퇴한다
+  const handleWithdraw = async () => {
+    setConfirmOpen(false)
     setSaving(true)
     setError('')
 
@@ -56,7 +66,11 @@ export default function WithdrawForm({ onWithdrawn }) {
 
       <label className="mypage__field">
         <span>비밀번호 확인</span>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <PasswordInput
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
       </label>
 
       <div className="mypage__field-actions">
@@ -66,6 +80,21 @@ export default function WithdrawForm({ onWithdrawn }) {
       </div>
 
       <ErrorMessage message={error} />
+
+      {confirmOpen && (
+        <Modal onClose={() => setConfirmOpen(false)}>
+          <h3 className="modal__title">정말 탈퇴하시겠어요?</h3>
+          <p className="muted">작성하신 글과 기록이 모두 보이지 않게 됩니다.</p>
+          <div className="modal__actions">
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setConfirmOpen(false)}>
+              취소
+            </button>
+            <button type="button" className="btn btn--sm" onClick={handleWithdraw}>
+              탈퇴하기
+            </button>
+          </div>
+        </Modal>
+      )}
     </form>
   )
 }

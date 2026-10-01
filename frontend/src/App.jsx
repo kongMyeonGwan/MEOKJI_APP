@@ -70,15 +70,25 @@ export default function App() {
     setUser(nextUser)
   }
 
+  // 테마 · 알림은 state 만 바꾼다. 화면에 적용하고 저장하는 건 아래 useEffect 가 한다.
   const handleThemeChange = (nextTheme) => {
-    applyTheme(nextTheme)
     setTheme(nextTheme)
   }
 
   const handleNotifyChange = (nextNotify) => {
-    saveNotify(nextNotify)
     setNotify(nextNotify)
   }
+
+  // theme 이 바뀔 때마다 <html data-theme="..."> 를 바꾸고 브라우저에 저장한다
+  // (React 가 그리는 화면 밖에 있는 <html> 을 건드리는 일이라 useEffect 에서 한다)
+  useEffect(() => {
+    applyTheme(theme)
+  }, [theme])
+
+  // notify 가 바뀔 때마다 브라우저에 저장한다
+  useEffect(() => {
+    saveNotify(notify)
+  }, [notify])
 
   // 앱을 처음 켤 때 한 번, 서버에서 내 정보를 다시 받아 최신으로 맞춘다.
   useEffect(() => {

@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { register } from '../../api/auth'
 import AddressPicker from '../../components/common/AddressPicker'
 import ErrorMessage from '../../components/common/ErrorMessage'
+import FormField from '../../components/common/FormField'
+import PasswordInput from '../../components/common/PasswordInput'
+import useForm from '../../hook/useForm'
 import '../../styles/pages/RegisterPage.css'
 
 // 회원가입 화면
@@ -15,21 +18,84 @@ const GENDERS = [
   { value: 'OTHER', label: '기타' },
 ]
 
-export default function RegisterPage() {
-  // 필수 항목
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [passwordConfirm, setPasswordConfirm] = useState('')
-  const [nickname, setNickname] = useState('')
+// 이메일 모양 검사용 정규식: "글자@글자.글자"
+const EMAIL_RULE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  // 선택 항목
-  const [gender, setGender] = useState('')
+// 입력값을 검사해서 칸별 에러 문구를 돌려준다. 에러가 없으면 빈 객체 {}
+const validate = (v) => {
+  const errors = {}
+
+  if (!v.email.trim()) {
+    errors.email = '이메일을 입력해주세요'
+  } else if (!EMAIL_RULE.test(v.email.trim())) {
+    errors.email = '이메일 형식이 아니에요 (예: you@example.com)'
+  }
+
+  if (v.password.length < 8) {
+    errors.password = '비밀번호는 8자 이상이어야 합니다'
+  }
+
+  if (v.passwordConfirm !== v.password) {
+    errors.passwordConfirm = '비밀번호가 일치하지 않습니다'
+  }
+
+  if (!v.nickname.trim()) {
+    errors.nickname = '닉네임을 입력해주세요'
+  }
+
+  return errors
+}
+
+// 비밀번호 강도 점수 (0~4점): 조건 하나를 만족할 때마다 +1
+const getStrength = (pw) => {
+  let score = 0
+  if (pw.length >= 8) score++ // 8자 이상
+  if (/[a-zA-Z]/.test(pw)) score++ // 영문 포함
+  if (/\d/.test(pw)) score++ // 숫자 포함
+  if (/[^a-zA-Z\d]/.test(pw)) score++ // 특수문자 포함
+  return score
+}
+
+const STRENGTH_LABELS = ['', '약함', '보통', '강함', '아주 강함']
+
+export default function RegisterPage() {
+  // 입력칸 값들 (성별은 선택 항목)
+  const { values, handleChange } = useForm({
+    email: '',
+    password: '',
+    passwordConfirm: '',
+    nickname: '',
+    gender: '',
+  })
+
+  // 사는 곳(선택). AddressPicker 가 두 값을 같이 바꿔서 따로 둔다
   const [sido, setSido] = useState('')
   const [sigungu, setSigungu] = useState('')
 
-  const [error, setError] = useState('')
+  // 사용자가 한 번이라도 건드린 칸. 예) { email: true }
+  // 아직 안 건드린 칸에는 처음부터 빨간 글씨를 띄우지 않으려고 쓴다
+  const [touched, setTouched] = useState({})
+
+  const [error, setError] = useState('') // 서버가 보낸 에러 문구
   const [submitting, setSubmitting] = useState(false)
   const [doneUser, setDoneUser] = useState(null) // 가입이 끝나면 가입한 사람 정보
+
+  // 지금 입력값으로 검사한 결과 (입력할 때마다 다시 계산된다)
+  const errors = validate(values)
+  const strength = getStrength(values.password)
+
+  // 입력칸에서 빠져나오면 그 칸을 건드렸다고 기록한다
+  const handleBlur = (e) => {
+    setTouched((prev) => ({
+      ...prev,
+      [e.target.name]: true,
+    }))
+  }
+
+  // 건드린 칸의 에러만 돌려준다
+  const errorOf = (name) => {
+    return touched[name] ? errors[name] : ''
+  }
 
   // 주소를 골랐을 때 (AddressPicker 가 시/도, 시/군/구를 같이 알려준다)
   const changeAddress = (nextSido, nextSigungu) => {
@@ -40,21 +106,11 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
 
-    // 서버에 보내기 전에 먼저 검사한다
-    if (!email.trim()) {
-      setError('이메일을 입력해주세요')
-      return
-    }
-    if (password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다')
-      return
-    }
-    if (password !== passwordConfirm) {
-      setError('비밀번호가 일치하지 않습니다')
-      return
-    }
-    if (!nickname.trim()) {
-      setError('닉네임을 입력해주세요')
+    // 제출하면 모든 칸을 건드린 것으로 처리 → 숨어 있던 에러가 전부 보인다
+    setTouched({ email: true, password: true, passwordConfirm: true, nickname: true })
+
+    // 에러가 하나라도 있으면 서버에 보내지 않는다
+    if (Object.keys(errors).length > 0) {
       return
     }
 
@@ -62,11 +118,11 @@ export default function RegisterPage() {
     setSubmitting(true)
     try {
       const user = await register({
-        email: email.trim(),
-        password: password,
-        nickname: nickname.trim(),
+        email: values.email.trim(),
+        password: values.password,
+        nickname: values.nickname.trim(),
         // 선택 안 한 항목은 null 로 보낸다
-        gender: gender || null,
+        gender: values.gender || null,
         addressSido: sido || null,
         addressSigungu: sigungu || null,
       })
@@ -118,46 +174,61 @@ export default function RegisterPage() {
     <div className="card register">
       <h2 className="register__title">회원가입</h2>
 
-      <form onSubmit={handleSubmit}>
-        <label className="register__field">
-          <span>이메일</span>
+      {/* noValidate: 브라우저 기본 검사 말풍선 대신 아래 에러 문구로 보여준다 */}
+      <form onSubmit={handleSubmit} noValidate>
+        <FormField className="register__field" label="이메일" required error={errorOf('email')}>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            value={values.email}
+            onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="you@example.com"
           />
-        </label>
+        </FormField>
 
-        <label className="register__field">
-          <span>비밀번호</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+        <FormField className="register__field" label="비밀번호" required error={errorOf('password')}>
+          <PasswordInput
+            name="password"
+            autoComplete="new-password"
+            value={values.password}
+            onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="8자 이상"
           />
-        </label>
 
-        <label className="register__field">
-          <span>비밀번호 확인</span>
-          <input
-            type="password"
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
+          {/* 비밀번호 강도 막대. 점수만큼 칸이 채워진다 */}
+          {values.password && (
+            <div className={`register__strength is-level-${strength}`}>
+              {[1, 2, 3, 4].map((level) => (
+                <span key={level} className={level <= strength ? 'is-on' : ''} />
+              ))}
+              <em className="muted">강도: {STRENGTH_LABELS[strength]}</em>
+            </div>
+          )}
+        </FormField>
+
+        <FormField className="register__field" label="비밀번호 확인" required error={errorOf('passwordConfirm')}>
+          <PasswordInput
+            name="passwordConfirm"
+            autoComplete="new-password"
+            value={values.passwordConfirm}
+            onChange={handleChange}
+            onBlur={handleBlur}
           />
-        </label>
+        </FormField>
 
-        <label className="register__field">
-          <span>닉네임</span>
+        <FormField className="register__field" label="닉네임" required error={errorOf('nickname')}>
           <input
             type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
+            name="nickname"
+            value={values.nickname}
+            onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="최대 50자"
             maxLength={50}
           />
-        </label>
+        </FormField>
 
         <p className="muted register__optional">
           아래는 선택 항목이에요. 사는 곳을 골라두면 그 지역 날씨로 메뉴를 추천해드립니다.
@@ -165,7 +236,7 @@ export default function RegisterPage() {
 
         <label className="register__field">
           <span>성별 (선택)</span>
-          <select value={gender} onChange={(e) => setGender(e.target.value)}>
+          <select name="gender" value={values.gender} onChange={handleChange}>
             {GENDERS.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}

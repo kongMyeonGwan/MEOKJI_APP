@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../../api/auth'
 import ErrorMessage from '../../components/common/ErrorMessage'
+import PasswordInput from '../../components/common/PasswordInput'
+import useForm from '../../hook/useForm'
 import '../../styles/pages/LoginPage.css'
 
 // 로그인 화면.
@@ -14,23 +16,33 @@ import '../../styles/pages/LoginPage.css'
 //
 // onLogin 은 App.jsx 가 props 로 넘겨준 함수다.
 export default function LoginPage({ onLogin }) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const { values, handleChange } = useForm({ email: '', password: '' })
   const [error, setError] = useState('') // 화면에 보여줄 에러 문장
   const [submitting, setSubmitting] = useState(false) // 서버 응답을 기다리는 중인지
 
+  const emailRef = useRef(null)
+  const passwordRef = useRef(null)
+
   const navigate = useNavigate()
+
+  // 화면이 열리면 이메일 칸에 커서
+  useEffect(() => {
+    emailRef.current.focus()
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault() // 폼을 제출하면 페이지가 새로고침되는데, 그걸 막는다
 
     // 1. 입력 확인
-    if (email.trim() === '') {
+    // 비어 있는 칸이 있으면 그 칸으로 커서를 옮긴다
+    if (values.email.trim() === '') {
       setError('이메일을 입력해주세요')
+      emailRef.current.focus()
       return
     }
-    if (password === '') {
+    if (values.password === '') {
       setError('비밀번호를 입력해주세요')
+      passwordRef.current.focus()
       return
     }
 
@@ -39,7 +51,7 @@ export default function LoginPage({ onLogin }) {
 
     try {
       // 2. 서버에 로그인 요청
-      const result = await login({ email: email.trim(), password: password })
+      const result = await login({ email: values.email.trim(), password: values.password })
 
       // 3. App 에 알려준다 (토큰과 내 정보)
       onLogin(result.access_token, result.user)
@@ -64,6 +76,9 @@ export default function LoginPage({ onLogin }) {
         // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
         setError(err.message)
       }
+
+      // 비밀번호를 다시 치기 쉽게 입력한 글자 전체를 선택해 둔다
+      passwordRef.current.select()
     } finally {
       setSubmitting(false)
     }
@@ -77,16 +92,18 @@ export default function LoginPage({ onLogin }) {
         <label className="login__field">
           <span>이메일</span>
           <input
+            ref={emailRef}
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            name="email"
+            value={values.email}
+            onChange={handleChange}
             placeholder="you@example.com"
           />
         </label>
 
         <label className="login__field">
           <span>비밀번호</span>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput ref={passwordRef} name="password" value={values.password} onChange={handleChange} />
         </label>
 
         <ErrorMessage message={error} />

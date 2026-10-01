@@ -71,6 +71,33 @@
   font-size: 14px;
 }
 
+/* 비밀번호 강도 막대: 칸 4개 + 글자. 점수(is-level-1~4)에 따라 색이 바뀐다 */
+.register__strength {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.register__strength > span {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+
+.register__strength em {
+  margin-left: 6px;
+  font-size: 12px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.register__strength.is-level-1 > span.is-on { background: var(--color-error); }
+.register__strength.is-level-2 > span.is-on { background: var(--color-warn); }
+.register__strength.is-level-3 > span.is-on { background: var(--color-accent-soft); }
+.register__strength.is-level-4 > span.is-on { background: var(--color-ok); }
+
 /* 선택 항목 안내. 필수 칸들과 시각적으로 끊어주려고 위에 선을 긋는다. */
 .register__optional {
   margin: 20px 0 12px;

@@ -155,6 +155,13 @@ button { font-family: inherit; }
 }
 
 .muted { color: var(--color-muted); }
+
+/* 필수 입력 표시 (FormField) */
+.form-field__required {
+  margin-left: 2px;
+  color: var(--color-accent);
+  font-style: normal;
+}
 /* 섹션 제목 + 우측 '더보기' */
 .section-head {
   display: flex;

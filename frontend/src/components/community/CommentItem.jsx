@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { formatDateTime } from '../../utils/format'
 
+const COMMENT_MAX = 1000 // 댓글 최대 글자 수
+
 // 댓글 한 줄. 게시글 상세(ReviewDetailPage)에서 댓글마다 하나씩 그린다.
 // 댓글마다 "지금 수정 중인지" 를 따로 가지고 있어야 해서 컴포넌트로 뺐다.
 //   comment  : 댓글 { id, nickname, content, created_at, is_mine }
@@ -48,9 +50,12 @@ export default function CommentItem({ comment, onEdit, onDelete }) {
 
       {editing ? (
         <form className="review__form" onSubmit={handleSubmit}>
-          <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={1000} rows={3} />
+          <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={COMMENT_MAX} rows={3} />
           <div className="review__form-foot">
-            <span className="muted">{text.length} / 1000</span>
+            {/* 거의 다 차면 빨간 글씨로 알려준다 */}
+            <span className={text.length > COMMENT_MAX - 100 ? 'review__count-warn' : 'muted'}>
+              {text.length} / {COMMENT_MAX}
+            </span>
             <span className="review__edit-actions">
               <button type="submit" className="btn btn--sm">
                 저장

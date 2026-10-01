@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Loading from '../../components/common/Loading'
+import useForm from '../../hook/useForm'
 import { getHistories } from '../../api/histories'
 import { createReview, uploadReviewFile } from '../../api/reviews'
 import '../../styles/pages/ReviewWritePage.css'
@@ -12,10 +13,10 @@ import '../../styles/pages/ReviewWritePage.css'
 // TODO(게시판 담당): 서버의 글쓰기 API 가 아직 없어서 등록을 누르면 "준비 중" 에러가 뜬다.
 //   api/reviews.js 의 createReview, uploadReviewFile 을 채우면 이 화면은 그대로 동작한다.
 export default function ReviewWritePage() {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [historyId, setHistoryId] = useState('') // 고른 식사 기록 id
+  // historyId : 고른 식사 기록 id
+  const { values, handleChange } = useForm({ title: '', historyId: '', content: '' })
   const [file, setFile] = useState(null) // 고른 사진 파일
+  const [photoUrl, setPhotoUrl] = useState('') // 고른 사진 미리보기 주소
 
   const [histories, setHistories] = useState([]) // 드롭다운에 보여줄 내 기록들
   const [loading, setLoading] = useState(true)
@@ -54,6 +55,15 @@ export default function ReviewWritePage() {
     load()
   }, [])
 
+  // 미리보기 주소가 바뀌거나 화면을 떠나면, 쓰던 주소를 지워 메모리를 돌려준다
+  useEffect(() => {
+    return () => {
+      if (photoUrl) {
+        URL.revokeObjectURL(photoUrl)
+      }
+    }
+  }, [photoUrl])
+
   // 사진을 골랐을 때. 5MB 가 넘으면 안 받는다.
   const handleFileChange = (e) => {
     const picked = e.target.files[0]
@@ -62,25 +72,28 @@ export default function ReviewWritePage() {
       alert('5MB 이하 사진만 올릴 수 있어요')
       e.target.value = '' // 입력칸 비우기
       setFile(null)
+      setPhotoUrl('')
       return
     }
 
     setFile(picked || null)
+    // 파일이 있으면 브라우저 안에서만 쓰는 임시 주소를 만들어 <img> 로 보여준다
+    setPhotoUrl(picked ? URL.createObjectURL(picked) : '')
   }
 
   // 등록 버튼
   const handleSubmit = async (e) => {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
 
-    if (!title.trim()) {
+    if (!values.title.trim()) {
       setError('제목을 입력해주세요')
       return
     }
-    if (!historyId) {
+    if (!values.historyId) {
       setError('공유할 내 기록을 선택해주세요')
       return
     }
-    if (!content.trim()) {
+    if (!values.content.trim()) {
       setError('내용을 입력해주세요')
       return
     }
@@ -90,9 +103,9 @@ export default function ReviewWritePage() {
     try {
       // 1. 글 등록
       const created = await createReview({
-        mealHistoryId: historyId,
-        title: title.trim(),
-        content: content,
+        mealHistoryId: values.historyId,
+        title: values.title.trim(),
+        content: values.content,
       })
 
       // 2. 사진이 있으면 따로 올린다
@@ -150,8 +163,9 @@ export default function ReviewWritePage() {
             <span>제목</span>
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              name="title"
+              value={values.title}
+              onChange={handleChange}
               placeholder="어떤 이야기인가요?"
               maxLength={200}
             />
@@ -159,7 +173,7 @@ export default function ReviewWritePage() {
 
           <label className="write__field">
             <span>공유할 내 기록</span>
-            <select value={historyId} onChange={(e) => setHistoryId(e.target.value)}>
+            <select name="historyId" value={values.historyId} onChange={handleChange}>
               <option value="">기록을 선택해주세요</option>
               {histories.map((history) => (
                 <option key={history.id} value={history.id}>
@@ -173,8 +187,9 @@ export default function ReviewWritePage() {
           <label className="write__field">
             <span>내용</span>
             <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              name="content"
+              value={values.content}
+              onChange={handleChange}
               placeholder="만들면서 있었던 일, 팁, 후기를 자유롭게 적어주세요."
               rows={12}
             />
@@ -186,6 +201,7 @@ export default function ReviewWritePage() {
             <p className="muted write__help">
               {file ? `${file.name} — 등록하면 함께 올라갑니다` : '한 장까지 올릴 수 있어요. 5MB 이하 이미지.'}
             </p>
+            {photoUrl && <img className="write__preview" src={photoUrl} alt="올릴 사진 미리보기" />}
           </label>
 
           <ErrorMessage message={error} />

@@ -52,3 +52,11 @@
   display: flex;
   justify-content: flex-end;
 }
+
+/* 고른 사진 미리보기 */
+.write__preview {
+  display: block;
+  max-height: 200px;
+  margin-top: 10px;
+  border-radius: var(--radius-sm);
+}

@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { changePassword, sendResetCode, verifyResetCode } from '../../api/auth'
+import CodeInput from '../../components/auth/CodeInput'
 import ErrorMessage from '../../components/common/ErrorMessage'
+import PasswordInput from '../../components/common/PasswordInput'
+import useForm from '../../hook/useForm'
 import '../../styles/pages/PasswordResetPage.css'
 
 // 비밀번호 재설정. 한 화면 안에서 단계(step)만 바꾼다.
@@ -9,12 +12,17 @@ import '../../styles/pages/PasswordResetPage.css'
 //   2: 인증번호 6자리 확인
 //   3: 새 비밀번호 입력
 //   4: 완료
+
+const CODE_LENGTH = 6 // 인증번호 자릿수
+
 export default function PasswordResetPage() {
   const [step, setStep] = useState(1)
-  const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const { values, handleChange } = useForm({ email: '', newPassword: '', passwordConfirm: '' })
+
+  // 인증번호는 칸마다 한 글자씩 배열로 들고 있다. 예) ['1', '2', '3', '', '', '']
+  const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(''))
+  const code = digits.join('') // 서버에 보낼 때는 이어 붙인 글자로
+  const codeRef = useRef(null) // CodeInput 의 칸에 커서를 넣을 때 쓴다
 
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('') // 서버가 보내준 안내 문구
@@ -24,7 +32,7 @@ export default function PasswordResetPage() {
   const handleSend = async (e) => {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
 
-    if (!email.trim()) {
+    if (!values.email.trim()) {
       setError('이메일을 입력해주세요')
       return
     }
@@ -32,7 +40,7 @@ export default function PasswordResetPage() {
     setError('')
     setSubmitting(true)
     try {
-      const result = await sendResetCode(email.trim())
+      const result = await sendResetCode(values.email.trim())
       setNotice(result.message)
       setStep(2)
     } catch (err) {
@@ -61,15 +69,18 @@ export default function PasswordResetPage() {
   const handleVerify = async (e) => {
     e.preventDefault()
 
-    if (code.length !== 6) {
-      setError('인증번호 6자리를 입력해주세요')
+    // 빈 칸이 있으면 그 칸으로 커서를 옮긴다
+    const emptyIndex = digits.findIndex((d) => d === '') // 첫 번째 빈 칸 번호 (없으면 -1)
+    if (emptyIndex !== -1) {
+      setError(`${emptyIndex + 1}번째 칸이 비었어요`)
+      codeRef.current.focus(emptyIndex)
       return
     }
 
     setError('')
     setSubmitting(true)
     try {
-      const result = await verifyResetCode(email.trim(), code)
+      const result = await verifyResetCode(values.email.trim(), code)
       setNotice(result.message)
       setStep(3)
     } catch (err) {
@@ -89,6 +100,10 @@ export default function PasswordResetPage() {
         // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
         setError(err.message)
       }
+
+      // 틀렸으면 전부 지우고 첫 칸부터 다시 입력하게 한다
+      setDigits(Array(CODE_LENGTH).fill(''))
+      codeRef.current.focus(0)
     } finally {
       setSubmitting(false)
     }
@@ -99,8 +114,9 @@ export default function PasswordResetPage() {
     setError('')
     setSubmitting(true)
     try {
-      const result = await sendResetCode(email.trim())
-      setCode('')
+      const result = await sendResetCode(values.email.trim())
+      setDigits(Array(CODE_LENGTH).fill('')) // 전부 지우고
+      codeRef.current.focus(0) // 첫 칸으로
       setNotice(result.message)
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.
@@ -125,14 +141,14 @@ export default function PasswordResetPage() {
   }
 
   // 3단계: 새 비밀번호로 바꾸기
-  const handleChange = async (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault()
 
-    if (newPassword.length < 8) {
+    if (values.newPassword.length < 8) {
       setError('비밀번호는 8자 이상이어야 합니다')
       return
     }
-    if (newPassword !== passwordConfirm) {
+    if (values.newPassword !== values.passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다')
       return
     }
@@ -140,7 +156,7 @@ export default function PasswordResetPage() {
     setError('')
     setSubmitting(true)
     try {
-      await changePassword(email.trim(), code, newPassword)
+      await changePassword(values.email.trim(), code, values.newPassword)
       setStep(4)
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.
@@ -185,8 +201,9 @@ export default function PasswordResetPage() {
             <span>이메일</span>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={values.email}
+              onChange={handleChange}
               placeholder="you@example.com"
             />
           </label>
@@ -200,17 +217,10 @@ export default function PasswordResetPage() {
       {step === 2 && (
         <form onSubmit={handleVerify}>
           {notice && <p className="reset__notice">{notice}</p>}
-          <label className="reset__field">
+          <div className="reset__field">
             <span>인증번호 6자리</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="000000"
-              maxLength={6}
-            />
-          </label>
+            <CodeInput ref={codeRef} digits={digits} onChange={setDigits} />
+          </div>
           <ErrorMessage message={error} />
           <button type="submit" disabled={submitting} className="reset__submit">
             {submitting ? '확인 중...' : '확인'}
@@ -222,23 +232,25 @@ export default function PasswordResetPage() {
       )}
 
       {step === 3 && (
-        <form onSubmit={handleChange}>
+        <form onSubmit={handleChangePassword}>
           {notice && <p className="reset__notice">{notice}</p>}
           <label className="reset__field">
             <span>새 비밀번호</span>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+            <PasswordInput
+              name="newPassword"
+              autoComplete="new-password"
+              value={values.newPassword}
+              onChange={handleChange}
               placeholder="8자 이상"
             />
           </label>
           <label className="reset__field">
             <span>새 비밀번호 확인</span>
-            <input
-              type="password"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
+            <PasswordInput
+              name="passwordConfirm"
+              autoComplete="new-password"
+              value={values.passwordConfirm}
+              onChange={handleChange}
             />
           </label>
           <ErrorMessage message={error} />

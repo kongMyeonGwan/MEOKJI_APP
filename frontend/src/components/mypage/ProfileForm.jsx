@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AddressPicker from '../common/AddressPicker'
 import ErrorMessage from '../common/ErrorMessage'
+import useForm from '../../hook/useForm'
 import { updateProfile } from '../../api/users'
 
 // 내 정보 수정 폼 (닉네임, 성별, 사는 곳). 마이페이지에서 쓴다.
@@ -17,8 +18,12 @@ const GENDERS = [
 
 export default function ProfileForm({ profile, onSaved }) {
   // 서버 값이 null 이면 빈 글자('')로 바꿔서 넣는다 (입력칸에는 null 을 못 넣는다)
-  const [nickname, setNickname] = useState(profile.nickname)
-  const [gender, setGender] = useState(profile.gender || '')
+  const { values, handleChange } = useForm({
+    nickname: profile.nickname,
+    gender: profile.gender || '',
+  })
+
+  // 사는 곳. AddressPicker 가 두 값을 같이 바꿔서 따로 둔다
   const [sido, setSido] = useState(profile.address_sido || '')
   const [sigungu, setSigungu] = useState(profile.address_sigungu || '')
 
@@ -35,7 +40,7 @@ export default function ProfileForm({ profile, onSaved }) {
   const handleSubmit = async (e) => {
     e.preventDefault() // 폼을 제출하면 페이지가 새로고침되는데, 그걸 막는다
 
-    if (nickname.trim() === '') {
+    if (values.nickname.trim() === '') {
       setError('닉네임을 입력해주세요')
       return
     }
@@ -46,14 +51,14 @@ export default function ProfileForm({ profile, onSaved }) {
 
     try {
       await updateProfile({
-        nickname: nickname.trim(),
+        nickname: values.nickname.trim(),
         // 선택 안 한 항목(빈 글자)은 null 로 보내야 서버에서도 비워진다
-        gender: gender || null,
+        gender: values.gender || null,
         addressSido: sido || null,
         addressSigungu: sigungu || null,
       })
       setDone(true)
-      onSaved(nickname.trim())
+      onSaved(values.nickname.trim())
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.
       if (err.response) {
@@ -86,12 +91,12 @@ export default function ProfileForm({ profile, onSaved }) {
       <form className="mypage__profile" onSubmit={handleSubmit}>
         <label className="mypage__field">
           <span>닉네임</span>
-          <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} maxLength={50} />
+          <input type="text" name="nickname" value={values.nickname} onChange={handleChange} maxLength={50} />
         </label>
 
         <label className="mypage__field">
           <span>성별</span>
-          <select value={gender} onChange={(e) => setGender(e.target.value)}>
+          <select name="gender" value={values.gender} onChange={handleChange}>
             {GENDERS.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}

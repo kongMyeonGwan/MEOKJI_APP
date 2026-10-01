@@ -127,6 +127,11 @@
   color: var(--color-subtle);
 }
 
+/* 비밀번호 칸(PasswordInput)도 다른 칸처럼 가로를 꽉 채운다. 보기 버튼은 칸 오른쪽 안에 붙는다 */
+.mypage__field > .pw-input input {
+  width: 100%;
+}
+
 .mypage__field-actions {
   display: flex;
   align-items: center;
