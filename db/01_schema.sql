@@ -463,7 +463,7 @@ CREATE TABLE game_histories (
 --
 -- 글자 하나로 두는 이유는 이 표가 '누가 · 무엇을 · 언제' 만 남기는 로그라
 -- 종류 이름까지 매 행에 넣을 이유가 없어서다. 글자와 게임의 대응은
--- backend/app/services/game_service.py 의 GAME_TYPES 한 곳에만 적어둔다.
+-- backend-spring 의 GameServiceImpl.recordPlay 한 곳에만 적어둔다.
 --
 -- 게임이 늘어나면 이 CHECK 에 글자를 추가해야 INSERT 가 통과한다.
 -- (제약을 빼면 아무 글자나 들어가므로, 값을 늘리는 쪽으로 관리한다)

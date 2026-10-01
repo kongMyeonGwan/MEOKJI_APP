@@ -21,7 +21,7 @@ spring:
 app:
   jwt:
     # 아무 랜덤 문자열. 다만 HS256 이라 32바이트(영문 32자) 이상이어야 한다 -
-    # 짧으면 서버가 뜨다가 WeakKeyException 으로 죽는다.
+    # 짧아도 서버는 뜨지만, 로그인할 때 WeakKeyException 으로 500 이 난다.
     secret-key: 여기에_32자_이상의_랜덤_문자열
 
   price:

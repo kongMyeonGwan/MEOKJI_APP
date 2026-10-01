@@ -23,7 +23,8 @@
 --
 --   · 큰따옴표(")는 지우지 말고 그대로 두세요.
 --   · & 문자는 쓰지 마세요 (SQL*Plus가 특수문자로 해석합니다).
---   · 여기 적은 값을 backend/.env 의 DB_PASSWORD 에도 똑같이 넣어야 합니다.
+--   · 여기 적은 값을 backend-spring 의 application-local.yml
+--     (spring.datasource.password) 에도 똑같이 넣어야 합니다.
 --   · 이 파일은 git에 올라갑니다. 실행이 끝나면 비밀번호를 다시 지워두세요.
 -- =========================================================
 
@@ -216,15 +217,19 @@ SELECT privilege FROM dba_sys_privs WHERE grantee = 'MEOKJI_APP' ORDER BY privil
 --
 --      확인:  SELECT table_name FROM user_tables;   -> 7줄이 나오면 성공
 --
---   3) backend/.env 를 수정합니다.
+--   3) backend-spring 의 설정 파일을 만듭니다.
 --
---        DB_HOST=localhost
---        DB_PASSWORD=위에서 정한 값
+--        cd backend-spring
+--        copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
+--
+--      열어서 두 칸을 채웁니다.
+--        spring.datasource.password : 위에서 정한 값
+--        app.jwt.secret-key         : 영문 32자 이상의 아무 문자열
 --
 --   4) 백엔드를 실행하고 확인합니다.
 --
---        uvicorn app.main:app --reload --port 8000
+--        gradlew bootRun
 --
---      브라우저에서 http://127.0.0.1:8000/api/health 를 열어
---      {"status":"ok","database":"ok"} 가 나오면 전부 완료입니다.
+--      브라우저에서 http://localhost:8080/api/health 를 열어
+--      "database":"ok" 가 나오면 전부 완료입니다.
 -- =========================================================

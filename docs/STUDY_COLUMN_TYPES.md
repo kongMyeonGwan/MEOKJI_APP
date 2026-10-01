@@ -135,25 +135,29 @@ Oracle 21c 에 JSON 타입이 따로 있지만 쓰지 않았다. `CLOB + CHECK` 
 
 ### 자바에서는 String 과 JsonNode 를 나눠 들었다
 
+DTO 를 없애고 VO 하나로 합친 뒤로는 `history/vo/MealHistoryVO` 한 클래스 안에서 나눈다.
+
 ```
-vo/MealHistory        String     DB 와 주고받는 모양 그대로
-dto/MealHistoryResponse  JsonNode   화면에 나가는 모양
+recipeJson          String     DB 와 주고받는 칸 (@JsonIgnore — 화면에는 안 나간다)
+getRecipeJsonNode() JsonNode   화면과 주고받는 칸 (@JsonProperty("recipe_json"))
         ↑ 그 사이를 util/Json 이 잇는다
 ```
 
-`HistoryService` 가 경계에서 한 줄씩 부른다.
-
 ```java
-// 저장할 때
-history.setRecipeJson(Json.text(request.recipeJson()));
+// 화면으로 내보낼 때 (getter)
+public JsonNode getRecipeJsonNode() {
+    return Json.node(recipeJson);
+}
 
-// 응답을 만들 때
-Json.node(history.getRecipeJson())
+// 화면이 보낸 값을 받을 때 (setter)
+public void setRecipeJsonNode(JsonNode node) {
+    this.recipeJson = Json.text(node);
+}
 ```
 
-### 왜 DTO 가 String 이면 안 되나
+### 왜 화면으로 나가는 칸이 String 이면 안 되나
 
-응답 DTO 가 `String` 을 들고 있으면 JSON 안에 **따옴표 붙은 문자열**이 나간다.
+화면으로 나가는 칸이 `String` 이면 JSON 안에 **따옴표 붙은 문자열**이 나간다.
 
 ```json
 "recipe_json": "{\"steps\":[\"재료를 씻는다\"]}"     ← 이러면
@@ -238,7 +242,7 @@ UPDATE meal_histories SET recipe_json = '{망가진' WHERE id = (SELECT MIN(id) 
 - DDL 의 `DEFAULT SYS_EXTRACT_UTC(...)` 가 있는데 UPDATE 문에서 또 써야 하는 이유는?
 - `Times.toText()` 가 마이크로초 여섯 자리를 맞추는 이유는? 화면에는 영향이 없는데도?
 - `Kst` 를 안 쓰고 UTC 날짜로 자르면 어떤 기능이 어떻게 틀리나?
-- 응답 DTO 가 `String` 이면 화면에서 무슨 일이 벌어지나? 에러는 나나?
+- 화면으로 나가는 칸이 `String` 이면 화면에서 무슨 일이 벌어지나? 에러는 나나?
 - `Json.node()` 가 예외를 삼키고 null 을 주는 이유는? 어떤 경우에 그게 나쁜가?
 - MyBatis 의 `TypeHandler` 로 옮기면 무엇이 좋아지고 무엇을 잃나?
 - 논리 삭제(`use_yn='N'`)를 쓰면 조회 코드에서 뭘 절대 빠뜨리면 안 되나?

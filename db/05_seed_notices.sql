@@ -9,7 +9,8 @@
 -- 실행 방법 : 파일 전체 선택 후 Alt+X (DBeaver) / F5 (SQL Developer)
 --
 -- 어디서 온 내용인가요?
---   backend/app/data/catalog.json 에 하드코딩돼 있던 공지입니다.
+--   예전 파이썬 백엔드(지금은 지운 backend/)의 app/data/catalog.json 에
+--   하드코딩돼 있던 공지입니다.
 --   공지를 파일에서 DB 로 옮기면서 화면에 보이던 내용을 그대로 옮겼습니다.
 --
 -- 작성자(USER_ID)는 누구로 들어가나요?

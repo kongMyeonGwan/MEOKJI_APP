@@ -7,8 +7,8 @@
 >
 > 지금은 컨트롤러가 `@RequestHeader("Authorization")` 로 토큰을 받아
 > `authService.getLoginUser(token)` / `findLoginUser` / `getAdminUser` 를 부르고,
-> 자바 폴더는 기능별(`auth/controller` · `auth/service` · `auth/dao` · `auth/vo` ·
-> `auth/dto`)로 나뉘어 있다. 흐름을 이해하는 용도로만 읽고, 파일 경로는
+> 자바 폴더는 기능별(`auth/controller` · `auth/service` · `auth/dao` · `auth/vo`)로
+> 나뉘어 있다(DTO 는 VO 로 합쳤다). 토큰은 `util/JwtUtil` 이 만들고 읽는다. 흐름을 이해하는 용도로만 읽고, 파일 경로는
 > `backend-spring/README.md` 를 본다.
 
 이 프로젝트의 인증 코드를 **자기 것으로 만들기 위한** 문서다.
@@ -113,9 +113,10 @@
 - 확인할 것: 왜 그렇게 되나? 서버는 토큰을 어디에 저장해두고 비교하는가?
 - **핵심**: JWT는 서버가 저장하지 않는다. **서명을 다시 계산해서 맞는지 볼 뿐이다.**
 
-> 키를 32자보다 짧게 만들면 아예 뜨지 않는다. `JwtProvider.init()` 이
-> `@PostConstruct` 에서 `WeakKeyException` 을 낸다. 토큰을 만들 때마다 실패하는
-> 것보다 시작할 때 멈추는 편이 낫다는 판단이다.
+> 키를 32자보다 짧게 만들면? 옛 구조(`JwtProvider.init()`)는 `@PostConstruct` 에서
+> `WeakKeyException` 을 내서 서버가 아예 뜨지 않았다. 지금의 `JwtUtil` 은 토큰을
+> 만들 때마다 키를 만들기 때문에 **서버는 뜨고, 로그인할 때 500** 이 난다.
+> 어느 쪽이 나은지 생각해 보자.
 
 ### 실험 2 — 토큰 내용을 직접 읽어본다
 

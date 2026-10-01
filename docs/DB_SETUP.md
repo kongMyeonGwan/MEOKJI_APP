@@ -32,7 +32,7 @@
         |
 [4] 테이블 만들기               <- db/01_schema.sql
         |
-[5] backend/.env 설정           <- DB_HOST=localhost
+[5] 스프링 설정 파일 만들기      <- application-local.yml
         |
 [6] 백엔드 실행 + 확인          <- /api/health
 ```
@@ -179,7 +179,7 @@ CREATE USER meokji_app
 |---|---|
 | 큰따옴표 `"` 는 지우지 말 것 | 지우면 `ORA-00922` 에러 |
 | `&` 는 쓰지 말 것 | SQL*Plus가 변수 기호로 해석함 |
-| 이 값을 어딘가 메모 | 5단계에서 `.env` 에 똑같이 넣어야 함 |
+| 이 값을 어딘가 메모 | 5단계에서 `application-local.yml` 에 똑같이 넣어야 함 |
 
 > 로컬 전용 DB라 이 비밀번호가 외부에 노출될 일은 없지만,
 > **이 파일은 git에 올라갑니다.** 실행이 끝나면 원래 자리표시자로 되돌려놓으세요.
@@ -323,32 +323,34 @@ FROM dual;
 
 ---
 
-## [5] backend/.env 설정
+## [5] 스프링 설정 파일 만들기
 
-`backend` 폴더에서 템플릿을 복사합니다.
+`backend-spring` 폴더에서 템플릿을 복사합니다.
 
 ```cmd
-cd backend
-copy .env.example .env
+cd backend-spring
+copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 ```
 
-`.env` 를 열어 **세 줄**을 고칩니다.
+`application-local.yml` 을 열어 **두 칸**을 채웁니다.
 
-```env
-DB_HOST=localhost
-DB_PASSWORD=3-1에서_정한_비번
-JWT_SECRET_KEY=아무_랜덤_문자열
+```yaml
+spring:
+  datasource:
+    password: 3-1에서_정한_비번
+app:
+  jwt:
+    secret-key: 영문_32자_이상의_아무_문자열
 ```
 
 | 항목 | 값 | 설명 |
 |---|---|---|
-| `DB_HOST` | `localhost` | 템플릿에는 예전 공용 서버 IP가 적혀 있습니다. **반드시 바꾸세요** |
-| `DB_PASSWORD` | 3-1에서 정한 값 | |
-| `JWT_SECRET_KEY` | 아무 문자열 | **비우면 서버가 아예 안 켜집니다.** 로컬은 `dev-secret-key` 정도로 충분 |
+| `spring.datasource.password` | 3-1에서 정한 값 | |
+| `app.jwt.secret-key` | 영문 32자 이상 | **비우면 서버가 안 켜지고, 짧으면 로그인할 때 500 이 납니다** |
 
-나머지(`DB_PORT=1521`, `DB_SERVICE=XEPDB1`, `DB_USER=meokji_app`)는 그대로 두면 됩니다.
+DB 주소(`localhost:1521/XEPDB1`)와 계정(`meokji_app`)은 `application.yml` 의 기본값이라 따로 적지 않아도 됩니다.
 
-> `.env` 는 git에 올라가지 않습니다. 각자 자기 PC에서 만드는 파일입니다.
+> `application-local.yml` 은 git에 올라가지 않습니다. 각자 자기 PC에서 만드는 파일입니다.
 > 비밀번호에 `@` `:` `/` 가 들어 있어도 그대로 적으면 됩니다 —
 > YAML 에서 따옴표로 감싸면(`password: "a@b"`) 그대로 전달됩니다.
 
@@ -358,8 +360,6 @@ JWT_SECRET_KEY=아무_랜덤_문자열
 
 ```cmd
 cd backend-spring
-copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
-:: 열어서 datasource.password 와 app.jwt.secret-key 를 채웁니다
 gradlew bootRun
 ```
 
@@ -375,7 +375,7 @@ gradlew bootRun
 > `ojdbc17` 을 Thin 모드로 쓰기 때문에 JDK 17 만 있으면 됩니다.
 > Gradle 도 안 깔아도 됩니다 — `gradlew` 가 알아서 받아 씁니다.
 
-> 비밀키가 32자보다 짧으면 서버가 뜨다가 `WeakKeyException` 으로 죽습니다.
+> 비밀키가 32자보다 짧으면 서버는 뜨지만, 로그인할 때 `WeakKeyException` 으로 500 이 납니다.
 > HS256 의 요구사항입니다.
 
 ### 데모 데이터 채우기 (선택)
@@ -428,7 +428,7 @@ gradlew seedDemo
 | `ORA-01031: insufficient privileges` | cmd를 **관리자 권한으로 실행**한 뒤 재시도 |
 | `ORA-12541: TNS:no listener` | 리스너가 꺼짐 → `net start OracleOraDB21Home1TNSListener` |
 | `ORA-12505` / `ORA-12514` | `XEPDB1` 을 SID로 취급한 것. `@localhost:1521/XEPDB1` 처럼 **슬래시**로 |
-| `ORA-01017: invalid username/password` | 비밀번호 오타. SQL 파일에 적은 값과 `.env` 값이 같은지 확인 |
+| `ORA-01017: invalid username/password` | 비밀번호 오타. SQL 파일에 적은 값과 `application-local.yml` 의 `password` 가 같은지 확인 |
 | `ORA-28000: account is locked` | `sqlplus / as sysdba` 접속 후 `ALTER SESSION SET CONTAINER=XEPDB1;` → `ALTER USER meokji_app ACCOUNT UNLOCK;` |
 
 ### 계정 생성 단계
@@ -448,8 +448,9 @@ gradlew seedDemo
 | `CREATE TABLE` 에서 `ORA-01031` | SYS로 `01_schema.sql` 을 실행함. **`meokji_app` 으로** 접속해서 실행해야 합니다 |
 | `ORA-00955: name is already used` | 테이블이 이미 있음. `00_drop_all.sql` 먼저 → [처음부터 다시 하기](#처음부터-다시-하기) |
 | `ORA-00900: invalid SQL statement` | DBeaver의 "Blank line is statement delimiter" 설정을 `Never` 로 |
-| 서버 실행 시 `ValidationError: JWT_SECRET_KEY Field required` | `.env` 의 `JWT_SECRET_KEY` 가 비어 있음 |
-| `/api/health` 가 `"database":"error"` | `.env` 의 `DB_HOST` 가 아직 `10.1.54.120` 일 가능성이 큽니다. `localhost` 로 |
+| 서버 실행 시 `Could not resolve placeholder 'JWT_SECRET_KEY'` | `application-local.yml` 이 없거나 `app.jwt.secret-key` 가 비어 있음 |
+| 로그인하면 500, 서버 로그에 `WeakKeyException` | `app.jwt.secret-key` 가 32자보다 짧음 |
+| `/api/health` 가 `"database":"error"` | Oracle 이 꺼져 있거나 `application-local.yml` 의 `password` 가 다름. 환경변수 `DB_HOST` 가 `10.1.54.120` 으로 잡혀 있지 않은지도 확인 |
 | 재부팅 후 갑자기 접속 안 됨 | XEPDB1이 닫힘. `SAVE STATE` 를 안 해둔 경우 → [2단계](#이어서--xepdb1이-열려-있는지-확인) |
 
 ### 그래도 안 될 때 — 상태 한 번에 확인

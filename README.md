@@ -74,7 +74,7 @@
 
 ### 0. 사전 준비
 
-- Python 3.11+
+- JDK 17+
 - Node.js 20+
 - Oracle DB 접속 정보 (팀에 문의)
 
@@ -99,8 +99,8 @@ gradlew bootRun
 
 확인: <http://localhost:8080/api/health> → `{"status":"ok", ..., "database":"ok"}`
 
-JWT 비밀키는 **32바이트(영문 32자) 이상**이어야 한다. 짧으면 서버가 뜨다가
-`WeakKeyException` 으로 죽는다.
+JWT 비밀키는 **32바이트(영문 32자) 이상**이어야 한다. 짧아도 서버는 뜨지만,
+로그인할 때 `WeakKeyException` 으로 500 이 난다.
 
 더 자세한 것은 `backend-spring/README.md` 에 있다.
 
@@ -211,9 +211,10 @@ MEOKJI_APP/
         ├── components/        공통 · 기능별 컴포넌트
         ├── pages/             라우팅 대상 화면. 역할별 폴더로 나뉜다
         │                      (home · auth · recommend · game · community · mypage)
+        ├── hook/              useForm (입력칸 여러 개를 한 번에 다루는 훅)
         ├── layouts/           사이드바 + 상단바 + 본문(children)
         └── utils/             token(로그인 토큰·사용자) · aiLog(AI 기록) · settings(테마·알림)
-                               · apiError · format
+                               · format(날짜·금액)
 ```
 
 
@@ -418,9 +419,9 @@ VITE_API_BASE_URL=http://localhost:8080
 
 [kamis]: https://www.data.go.kr/data/15156057/openapi.do
 
-`FOODS_SCHEMA` · `RECIPE_SCHEMA`(`ai_api.py`)는 AI 에게 "이 모양으로 답하라" 고
-주던 값인데, AI 를 끈 지금은 **카탈로그가 맞춰야 할 응답 모양**으로 남겨뒀다.
-화면이 기대하는 필드가 무엇인지는 이 둘을 보면 된다.
+화면이 기대하는 응답 모양(필드 이름)은 `backend-spring/src/test/resources/fixtures/`
+의 `recommend_*.json` · `recipe_*.json` 을 보면 된다. 파이썬 시절 `ai_api.py` 의
+`FOODS_SCHEMA` · `RECIPE_SCHEMA` 가 하던 역할인데, 그 파일은 `backend/` 와 함께 지웠다.
 
 ### frontend/.env
 
