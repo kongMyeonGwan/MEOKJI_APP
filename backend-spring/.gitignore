@@ -9,6 +9,8 @@ build/
 # IDE
 .idea/
 *.iml
+# IntelliJ 가 빌드할 때 만드는 폴더 (Gradle 의 build/ 와 같은 성격)
+out/
 # gradlew idea 가 만드는 프로젝트 파일 (Gradle Sync 를 못 쓰는 옛 IDE 용)
 *.ipr
 *.iws
