@@ -1,10 +1,10 @@
-# backend-spring — 뭐먹지? API (Spring Boot)
+# backend — 뭐먹지? API (Spring Boot)
 
 React 화면(`frontend/`)이 부르는 API 서버다. 주소는 `http://localhost:8080`.
 
 ```
 frontend/         React     :5173
-backend-spring/   Spring    :8080   ← 여기
+backend/          Spring    :8080   ← 여기
 db/                                 ← Oracle 테이블 만드는 SQL
 ```
 

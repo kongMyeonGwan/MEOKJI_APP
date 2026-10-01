@@ -325,10 +325,10 @@ FROM dual;
 
 ## [5] 스프링 설정 파일 만들기
 
-`backend-spring` 폴더에서 템플릿을 복사합니다.
+`backend` 폴더에서 템플릿을 복사합니다.
 
 ```cmd
-cd backend-spring
+cd backend
 copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 ```
 
@@ -359,7 +359,7 @@ DB 주소(`localhost:1521/XEPDB1`)와 계정(`meokji_app`)은 `application.yml` 
 ## [6] 백엔드 실행 + 최종 확인
 
 ```cmd
-cd backend-spring
+cd backend
 gradlew bootRun
 ```
 
@@ -535,7 +535,7 @@ exit
 
 ```cmd
 :: [5][6] 백엔드
-cd backend-spring
+cd backend
 copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 :: application-local.yml 에서 datasource.password / app.jwt.secret-key 수정
 gradlew bootRun

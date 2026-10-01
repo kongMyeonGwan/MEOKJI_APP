@@ -26,10 +26,13 @@ Thumbs.db
 # 실수로 하위 폴더에 다시 클론된 중첩 저장소 (자체 .git 보유)
 MEOKJI_APP/
 
-# 옛 백엔드 폴더(backend/)가 아직 남아 있는 PC 용.
-# 코드는 git 기록에만 있고(8597a9a 에서 걷어냄), 폴더에 남은 것은 실행 환경 · 캐시뿐이다.
-# 팀원 모두 backend/ 를 지우면 이 줄도 지운다.
-backend/
+# 옛 백엔드 찌꺼기. 지금 backend/ 는 스프링 서버인데, 예전 backend/ 폴더를 안 지운
+# PC 에서는 그 실행 환경 · 캐시가 같은 폴더에 섞여 남는다. 스프링 구조(src/)와
+# 겹치지 않는 이름만 막는다. (코드는 git 기록에만 있다 - 8597a9a 에서 걷어냄)
+backend/.venv/
+backend/.pytest_cache/
+backend/app/
+backend/tests/
 
 # Git Bash 가 비정상 종료할 때 떨어뜨리는 크래시 덤프
 # 코드도 설정도 아니고, 그날 셸이 한 번 죽었다는 흔적일 뿐이다.

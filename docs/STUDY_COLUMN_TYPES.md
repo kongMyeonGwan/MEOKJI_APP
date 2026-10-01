@@ -254,9 +254,9 @@ UPDATE meal_histories SET recipe_json = '{망가진' WHERE id = (SELECT MIN(id) 
 | 무엇 | 어디 |
 |---|---|
 | UTC 규칙 · 오라클 함정 | `docs/PROGRESS.md` 의 「오라클 관련 함정」 |
-| 시각 변환 | `backend-spring/.../util/Times.java` · `util/Kst.java` |
-| JSON 변환 | `backend-spring/.../util/Json.java` |
-| 커넥션 설정 | `backend-spring/src/main/resources/application.yml` |
+| 시각 변환 | `backend/.../util/Times.java` · `util/Kst.java` |
+| JSON 변환 | `backend/.../util/Json.java` |
+| 커넥션 설정 | `backend/src/main/resources/application.yml` |
 | 스키마 | `db/01_schema.sql` |
 
 > 이 문서는 원래 파이썬 SQLAlchemy 의 `TypeDecorator`(`UtcTimestamp` ·

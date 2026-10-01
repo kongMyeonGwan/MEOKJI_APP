@@ -13,7 +13,7 @@
 - **테이블을 함부로 늘리지 않는다.**
   AI 추천 기록처럼 테이블이 필요해 보이는 것은 브라우저 localStorage 에 두고,
   카테고리처럼 사용자가 만들지 않는 목록은 서버 파일
-  (`backend-spring/src/main/resources/data/catalog.json`)에서 내려준다
+  (`backend/src/main/resources/data/catalog.json`)에서 내려준다
 
   > 테이블은 **10개**다.
   > `users` · `verification_codes` · `user_bans` · `meal_histories` ·
@@ -65,7 +65,7 @@
 > 처리하고, 검색은 `LOWER(col) LIKE LOWER(?)` 다. JPA 로 우회하는 것보다 SQL 을
 > 직접 쓰는 쪽이 맞다.
 >
-> 돌리는 법과 담당자용 안내는 [backend-spring/README.md](backend-spring/README.md),
+> 돌리는 법과 담당자용 안내는 [backend/README.md](backend/README.md),
 > 옮기면서 걸린 것들은 [docs/PROGRESS.md](docs/PROGRESS.md) 에 있다.
 
 ---
@@ -88,7 +88,7 @@ cd MEOKJI_APP
 ### 2. Backend
 
 ```bash
-cd backend-spring
+cd backend
 copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 #  열어서 DB 비밀번호와 JWT 비밀키를 채운다 (git 에 올라가지 않는 파일)
 
@@ -102,7 +102,7 @@ gradlew bootRun
 JWT 비밀키는 **32바이트(영문 32자) 이상**이어야 한다. 짧아도 서버는 뜨지만,
 로그인할 때 `WeakKeyException` 으로 500 이 난다.
 
-더 자세한 것은 `backend-spring/README.md` 에 있다.
+더 자세한 것은 `backend/README.md` 에 있다.
 
 ### 3. Frontend
 
@@ -150,7 +150,7 @@ npm run dev
 | 1 | `db/00_create_user_local.sql` | **SYS AS SYSDBA** | 파일 안의 비밀번호 자리를 먼저 수정 |
 | 2 | `db/01_schema.sql` | meokji_app | 10개 테이블 생성 |
 
-그리고 `backend-spring/src/main/resources/application-local.yml` 의 접속 정보를
+그리고 `backend/src/main/resources/application-local.yml` 의 접속 정보를
 로컬에 맞춘다(기본값이 이미 `localhost`라 비밀번호만 채우면 된다).
 
 **DBeaver 접속 설정 주의**
@@ -169,7 +169,7 @@ npm run dev
 
 ```
 MEOKJI_APP/
-├── backend-spring/            Spring Boot 서버
+├── backend/                   Spring Boot 서버
 │   ├── build.gradle           Boot 4.0.8 · Java 17 · MyBatis · ojdbc17 · jjwt · mail
 │   ├── gradlew(.bat)          Gradle 을 안 깔아도 빌드된다
 │   └── src/
@@ -283,7 +283,7 @@ MEOKJI_APP/
 먼저 확정해야 해서 손으로 채우려면 한참 걸린다.
 
 ```bash
-cd backend-spring
+cd backend
 gradlew seedDemo
 ```
 
@@ -315,7 +315,7 @@ UNIQUE 가 그대로 돌고, API 로는 만들 수 없는 데이터가 섞이지
 ## 테스트
 
 ```bash
-cd backend-spring
+cd backend
 gradlew test
 ```
 
@@ -346,7 +346,7 @@ npm run build      # 못 찾는 import 가 있으면 여기서 걸린다
 
 사람마다 다른 값은 git 에 올라가지 않는다. `.example` 파일을 복사해서 쓴다.
 
-### backend-spring/src/main/resources/application-local.yml
+### backend/src/main/resources/application-local.yml
 
 ```yaml
 spring:
@@ -419,9 +419,8 @@ VITE_API_BASE_URL=http://localhost:8080
 
 [kamis]: https://www.data.go.kr/data/15156057/openapi.do
 
-화면이 기대하는 응답 모양(필드 이름)은 `backend-spring/src/test/resources/fixtures/`
-의 `recommend_*.json` · `recipe_*.json` 을 보면 된다. 파이썬 시절 `ai_api.py` 의
-`FOODS_SCHEMA` · `RECIPE_SCHEMA` 가 하던 역할인데, 그 파일은 `backend/` 와 함께 지웠다.
+화면이 기대하는 응답 모양(필드 이름)은 `backend/src/test/resources/fixtures/`
+의 `recommend_*.json` · `recipe_*.json` 을 보면 된다.
 
 ### frontend/.env
 

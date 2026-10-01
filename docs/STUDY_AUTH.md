@@ -9,7 +9,7 @@
 > `authService.getLoginUser(token)` / `findLoginUser` / `getAdminUser` 를 부르고,
 > 자바 폴더는 기능별(`auth/controller` · `auth/service` · `auth/dao` · `auth/vo`)로
 > 나뉘어 있다(DTO 는 VO 로 합쳤다). 토큰은 `util/JwtUtil` 이 만들고 읽는다. 흐름을 이해하는 용도로만 읽고, 파일 경로는
-> `backend-spring/README.md` 를 본다.
+> `backend/README.md` 를 본다.
 
 이 프로젝트의 인증 코드를 **자기 것으로 만들기 위한** 문서다.
 읽기만 해서는 남지 않는다. 아래 순서대로 직접 해봐야 한다.
@@ -38,7 +38,7 @@
                                         |
                                      HTTP POST
                                         |
-[백엔드 — backend-spring]
+[백엔드 — backend]
 5  controller/AuthController       login()  - HTTP 껍데기
 6  dto/auth/LoginRequest           @Valid 가 요청 본문을 검증
 7  service/AuthService             login() - 이 사람이 맞는가 판정
@@ -97,7 +97,7 @@
 준비:
 
 ```
-터미널 1:  cd backend-spring  →  gradlew bootRun          (8080)
+터미널 1:  cd backend  →  gradlew bootRun          (8080)
 터미널 2:  cd frontend        →  npm run dev              (5173)
 ```
 
@@ -106,7 +106,7 @@
 
 ### 실험 1 — JWT 비밀키를 바꾼다
 
-`backend-spring/src/main/resources/application-local.yml` 의
+`backend/src/main/resources/application-local.yml` 의
 `app.jwt.secret-key` 뒤에 아무 글자나 붙이고 **서버 재시작**.
 
 - 예상: 이미 로그인된 상태에서 새로고침하면 ?

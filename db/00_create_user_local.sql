@@ -23,7 +23,7 @@
 --
 --   · 큰따옴표(")는 지우지 말고 그대로 두세요.
 --   · & 문자는 쓰지 마세요 (SQL*Plus가 특수문자로 해석합니다).
---   · 여기 적은 값을 backend-spring 의 application-local.yml
+--   · 여기 적은 값을 backend 의 application-local.yml
 --     (spring.datasource.password) 에도 똑같이 넣어야 합니다.
 --   · 이 파일은 git에 올라갑니다. 실행이 끝나면 비밀번호를 다시 지워두세요.
 -- =========================================================
@@ -217,9 +217,9 @@ SELECT privilege FROM dba_sys_privs WHERE grantee = 'MEOKJI_APP' ORDER BY privil
 --
 --      확인:  SELECT table_name FROM user_tables;   -> 7줄이 나오면 성공
 --
---   3) backend-spring 의 설정 파일을 만듭니다.
+--   3) backend 의 설정 파일을 만듭니다.
 --
---        cd backend-spring
+--        cd backend
 --        copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 --
 --      열어서 두 칸을 채웁니다.
