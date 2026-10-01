@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Loading from '../../components/common/Loading'
-import useForm from '../../hook/useForm'
+import useForm from '../../hooks/useForm'
 import { getHistories } from '../../api/histories'
 import { createReview, uploadReviewFile } from '../../api/reviews'
-import '../../styles/pages/ReviewWritePage.css'
+import './ReviewWritePage.css'
 
 // 글쓰기 화면 (/community/write).
 // 글은 내 식사 기록(History) 하나를 골라서 쓴다. 사진은 선택.

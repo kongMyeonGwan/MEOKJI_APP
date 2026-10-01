@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { changePassword, sendResetCode, verifyResetCode } from '../../api/auth'
-import CodeInput from '../../components/auth/CodeInput'
+import CodeInput from './components/CodeInput'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import PasswordInput from '../../components/common/PasswordInput'
-import useForm from '../../hook/useForm'
-import '../../styles/pages/PasswordResetPage.css'
+import useForm from '../../hooks/useForm'
+import './PasswordResetPage.css'
 
 // 비밀번호 재설정. 한 화면 안에서 단계(step)만 바꾼다.
 //   1: 이메일 입력 → 인증번호 받기

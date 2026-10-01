@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import RecipeView from '../../components/recipe/RecipeView'
-import ReviewAttachment from '../../components/community/ReviewAttachment'
-import CommentItem from '../../components/community/CommentItem'
+import RecipeView from '../../components/common/RecipeView'
+import ReviewAttachment from './components/ReviewAttachment'
+import CommentItem from './components/CommentItem'
 import { SAMPLE_REVIEW_DETAIL } from '../../data/sampleBoard'
-import useForm from '../../hook/useForm'
+import useForm from '../../hooks/useForm'
 import { formatDateTime } from '../../utils/format'
-import '../../styles/pages/ReviewDetailPage.css'
+import './ReviewDetailPage.css'
 
 const COMMENT_MAX = 1000 // 댓글 최대 글자 수
 

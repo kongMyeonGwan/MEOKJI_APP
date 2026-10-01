@@ -5,8 +5,8 @@ import AddressPicker from '../../components/common/AddressPicker'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import FormField from '../../components/common/FormField'
 import PasswordInput from '../../components/common/PasswordInput'
-import useForm from '../../hook/useForm'
-import '../../styles/pages/RegisterPage.css'
+import useForm from '../../hooks/useForm'
+import './RegisterPage.css'
 
 // 회원가입 화면
 

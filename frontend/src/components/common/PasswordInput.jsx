@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import '../../styles/components/common/PasswordInput.css'
+import './PasswordInput.css'
 
 // 비밀번호 입력칸 + 보기/숨기기 버튼.
 //   ref      : 부모가 이 입력칸에 포커스를 줄 때 쓴다 (React 19 는 ref 를 props 로 바로 받는다)

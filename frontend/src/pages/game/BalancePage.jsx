@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
-import FoodCard from '../../components/recommendation/FoodCard'
+import FoodCard from '../../components/common/FoodCard'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { getCatalog } from '../../api/catalog'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { addLog, foodNames } from '../../utils/aiLog'
-import '../../styles/pages/ListPage.css'
-import '../../styles/pages/GamePage.css'
+import '../../styles/ListPage.css'
+import './GamePage.css'
 
 // 취향 밸런스 게임.
 // 둘 중 하나 고르는 질문 5개에 답하면, 고른 답을 문장으로 이어서 AI 에게 추천받는다.

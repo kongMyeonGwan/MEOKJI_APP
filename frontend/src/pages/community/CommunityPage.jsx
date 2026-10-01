@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import ReviewCard from '../../components/community/ReviewCard'
-import NoticeList from '../../components/community/NoticeList'
-import NoticeForm from '../../components/community/NoticeForm'
+import ReviewCard from './components/ReviewCard'
+import NoticeList from './components/NoticeList'
+import NoticeForm from './components/NoticeForm'
 import Pagination from '../../components/common/Pagination'
 import Icon from '../../components/common/Icon'
 import { SAMPLE_NOTICES, SAMPLE_REVIEWS } from '../../data/sampleBoard'
-import '../../styles/pages/CommunityPage.css'
+import './CommunityPage.css'
 
 // 커뮤니티 목록. 탭 두 개: 레시피 추천(게시글) / 공지사항
 //

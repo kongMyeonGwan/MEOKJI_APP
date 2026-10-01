@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Icon from '../../components/common/Icon'
-import FoodCard from '../../components/recommendation/FoodCard'
+import FoodCard from '../../components/common/FoodCard'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { getCatalog } from '../../api/catalog'
 import { addLog, foodNames } from '../../utils/aiLog'
-import '../../styles/pages/ListPage.css'
-import '../../styles/pages/SearchPage.css'
+import '../../styles/ListPage.css'
+import './SearchPage.css'
 
 // 레시피 검색 (/search?q=김치찌개).
 // "8천원 이하 파스타" 같은 문장도 서버(AI)가 알아서 해석해준다.

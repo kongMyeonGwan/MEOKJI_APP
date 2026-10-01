@@ -1,4 +1,4 @@
-import '../../styles/components/common/Pagination.css'
+import './Pagination.css'
 
 // 페이지 번호 버튼.   ‹  1  2  [3]  4  5  ›
 // 페이지가 많으면 화면을 덮으니까 지금 페이지 앞뒤 2개씩만 보여준다.

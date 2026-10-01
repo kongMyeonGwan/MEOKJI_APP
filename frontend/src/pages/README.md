@@ -5,6 +5,10 @@
 
 어느 주소에 어느 화면이 붙는지는 `src/App.jsx` 가 정한다.
 
+기능 폴더 안에는 화면(`XxxPage.jsx`)과 **그 기능에서만 쓰는 조각(`components/`)** 이
+같이 들어 있다. 스프링에서 `auth/` 패키지 안에 controller · service · dao · vo 를
+같이 두는 것과 같은 생각이다. 여러 기능이 같이 쓰는 조각만 `src/components/common/` 에 있다.
+
 ```
 pages/
 ├── home/         대시보드 (첫 화면)
@@ -28,7 +32,7 @@ pages/
 
 **다른 폴더의 컴포넌트를 많이 불러 쓴다.** 날씨 추천 · 시세 추천 · 미니게임 ·
 예산 선택이 전부 여기 한 화면에 모인다. 카드 자체는
-`components/recommendation/` 에 있으니, 카드 안을 고칠 일이면 그쪽을 본다.
+`home/components/` 에 있으니, 카드 안을 고칠 일이면 그쪽을 본다.
 
 ### `auth/` — 로그인 · 가입
 
@@ -50,7 +54,7 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 | `SearchPage.jsx` | `/search` | 문장으로 찾기 |
 | `RecipePage.jsx` | `/recipe/:foodName` | 레시피 + 재료 최저/최고가 |
 
-`RecipePage` 가 가장 크다. 가격표는 `components/price/` 에 따로 있다.
+`RecipePage` 가 가장 크다. 가격표는 `recommend/components/` 에 따로 있다.
 
 ### `game/` — 메뉴 정하기
 
@@ -110,29 +114,33 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 화면이 폴더 안으로 들어가서 `../` 가 아니라 `../../` 다.
 
 ```jsx
-import Loading from '../../components/common/Loading'
+import Loading from '../../components/common/Loading'   // 공통
+import ProfileForm from './components/ProfileForm'      // 이 기능 전용
 import { getLikes } from '../../api/likes'
-import '../../styles/pages/MyPage.css'
+import './MyPage.css'                                     // 화면 CSS 는 바로 옆
 ```
 
-### 스타일은 아직 한 곳에 모여 있다
+### 스타일은 화면 · 조각 바로 옆에 있다
 
-`styles/pages/*.css` 는 나누지 않았다. 파일 이름이 화면 이름과 같으니
-`MyPage.jsx` 는 `styles/pages/MyPage.css` 를 본다.
+파일 이름이 같다. `MyPage.jsx` 는 같은 폴더의 `MyPage.css` 를,
+`components/ProfileForm.jsx` 는 `components/ProfileForm.css` 를 본다.
 
-여러 목록 화면이 `ListPage.css` 를 같이 쓴다(11개). **고칠 때 다른 화면이
-같이 바뀐다** — 한 화면만 바꾸려면 그 화면 전용 CSS 를 새로 만든다.
+예외 둘만 `src/styles/` 에 있다.
+- `index.css` — 전체 색(라이트/다크) · 카드 · 버튼 같은 공통 클래스
+- `ListPage.css` — 여러 목록 화면이 같이 쓴다(4개 기능, 11개 화면). **고칠 때 다른 화면이
+  같이 바뀐다** — 한 화면만 바꾸려면 그 화면 전용 CSS 를 새로 만든다.
 
 ### 화면을 새로 만들면
 
 1. 맡은 폴더에 `XxxPage.jsx` 를 만든다
 2. `src/App.jsx` 에 import 와 `<Route>` 를 추가한다 — **두 곳 다 고쳐야 한다**
 3. 로그인이 필요하면 `element={loginOnly(<XxxPage />)}` 로 감싼다
-4. 사이드바·하단 탭에도 보이게 하려면 `components/common/` 의 메뉴를 고친다
+4. 사이드바·하단 탭에도 보이게 하려면 `layouts/components/` 의 메뉴를 고친다
 
 ### 화면끼리 직접 부르지 않는다
 
 지금 `pages/` 안에서 서로를 import 하는 곳은 한 군데도 없다. 화면을 부르는 건
 `App.jsx` 뿐이다. 이 규칙이 지켜져야 폴더를 옮겨도 남의 화면이 안 깨진다.
 
-여러 화면이 같이 쓰는 조각은 `components/` 로 뺀다.
+조각도 마찬가지다. **다른 기능 폴더의 `components/` 를 import 하지 않는다.**
+두 기능 이상이 쓰게 되면 그 조각을 `src/components/common/` 으로 옮긴다.

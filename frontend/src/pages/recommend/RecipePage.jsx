@@ -3,14 +3,14 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Icon from '../../components/common/Icon'
 import Loading from '../../components/common/Loading'
-import RecipeView from '../../components/recipe/RecipeView'
-import PriceTable, { getPriceSummary } from '../../components/price/PriceTable'
+import RecipeView from '../../components/common/RecipeView'
+import PriceTable, { getPriceSummary } from './components/PriceTable'
 import { getRecipe } from '../../api/recommendations'
 import { createHistory } from '../../api/histories'
 import { getLikes, toggleLike } from '../../api/likes'
 import { markPicked } from '../../utils/aiLog'
 import { formatPrice } from '../../utils/format'
-import '../../styles/pages/RecipePage.css'
+import './RecipePage.css'
 
 // 레시피 상세 (/recipe/김치찌개).
 // AI 가 레시피를 만들고, 재료 가격도 같이 보여준다.

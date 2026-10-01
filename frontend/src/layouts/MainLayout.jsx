@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import Sidebar from '../components/common/Sidebar'
-import TopBar from '../components/common/TopBar'
-import BottomNav from '../components/common/BottomNav'
-import '../styles/layouts/MainLayout.css'
+import Sidebar from './components/Sidebar'
+import TopBar from './components/TopBar'
+import BottomNav from './components/BottomNav'
+import './MainLayout.css'
 
 // 모든 화면이 같이 쓰는 틀.
 //   PC     : [사이드바][상단바 + 본문]

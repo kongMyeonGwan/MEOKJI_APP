@@ -202,17 +202,18 @@ MEOKJI_APP/
 │       │   └── mapper/        매퍼 XML 9개
 │       └── test/
 │           ├── java/          테스트 94건 + 데모 데이터(SeedDemoTest)
-│           └── resources/fixtures/   파이썬 응답 정답지 38개
+│           └── resources/fixtures/   응답 정답지 38개
 └── frontend/
     ├── package.json
     ├── .env.example
     └── src/
         ├── api/               axios 클라이언트 + API별 함수
-        ├── components/        공통 · 기능별 컴포넌트
-        ├── pages/             라우팅 대상 화면. 역할별 폴더로 나뉜다
+        ├── components/common/ 여러 기능이 같이 쓰는 컴포넌트 (+ 같은 이름의 .css)
+        ├── pages/             기능별 폴더. 화면 + 그 기능 전용 components/ 가 함께 있다
         │                      (home · auth · recommend · game · community · mypage)
-        ├── hook/              useForm (입력칸 여러 개를 한 번에 다루는 훅)
-        ├── layouts/           사이드바 + 상단바 + 본문(children)
+        ├── hooks/             useForm (입력칸 여러 개를 한 번에 다루는 훅)
+        ├── layouts/           MainLayout + components/ (사이드바 · 상단바 · 하단 탭)
+        ├── styles/            index.css (전체 색 · 공통 클래스) · ListPage.css
         └── utils/             token(로그인 토큰·사용자) · aiLog(AI 기록) · settings(테마·알림)
                                · format(날짜·금액)
 ```

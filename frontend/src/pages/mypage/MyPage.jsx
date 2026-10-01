@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import ApiStatus from '../../components/common/ApiStatus'
+import ApiStatus from './components/ApiStatus'
 import ErrorMessage from '../../components/common/ErrorMessage'
-import ProfileForm from '../../components/mypage/ProfileForm'
-import AccountSection from '../../components/mypage/AccountSection'
+import ProfileForm from './components/ProfileForm'
+import AccountSection from './components/AccountSection'
 import { addBan, getBans, removeBan } from '../../api/bans'
 import { getProfile } from '../../api/users'
 import { formatDate } from '../../utils/format'
-import '../../styles/pages/MyPage.css'
+import './MyPage.css'
 
 // 마이페이지. 위에서부터 이렇게 쌓인다.
 //   1. 내 정보 (이 파일)
-//   2. 정보 수정 폼     → components/mypage/ProfileForm.jsx
+//   2. 정보 수정 폼     → components/ProfileForm.jsx
 //   3. 못 먹는 재료 (이 파일)
-//   4. 비밀번호 · 탈퇴  → components/mypage/AccountSection.jsx
+//   4. 비밀번호 · 탈퇴  → components/AccountSection.jsx
 //
 // 못 먹는 재료는 두 종류다.
 //   ALLERGY(알레르기) - AI 추천에서 반드시 뺀다

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getRegions } from '../../api/catalog'
-import '../../styles/components/common/AddressPicker.css'
+import './AddressPicker.css'
 
 // 주소 고르기. 시/도 → 시/군/구 드롭다운 두 개. 회원가입과 마이페이지에서 쓴다.
 //   <AddressPicker sido={sido} sigungu={sigungu} onChange={(sido, sigungu) => ...} />

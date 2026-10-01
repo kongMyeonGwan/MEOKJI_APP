@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
-import FoodCard from '../../components/recommendation/FoodCard'
+import FoodCard from '../../components/common/FoodCard'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { addLog, foodNames } from '../../utils/aiLog'
-import '../../styles/pages/ListPage.css'
+import '../../styles/ListPage.css'
 
 // AI 추천 전체 목록 (/recommend).
 // 주소에 ?category=한식 이 붙어 있으면 그 종류만 추천받는다.

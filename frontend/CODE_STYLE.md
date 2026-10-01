@@ -28,10 +28,27 @@ const isUnread = (noti) => {
 const names = items.map((item) => item.food_name)
 ```
 
-## 1-1. 파일 하나에 컴포넌트 하나
+## 1-1. 파일 하나에 컴포넌트 하나 · 기능 폴더에 모으기
 
-화면(`pages/`)이 길어지면 조각을 `components/<폴더>/` 로 빼서 import 합니다.
-예) 마이페이지의 폼들 → `components/mypage/ProfileForm.jsx`, `PasswordForm.jsx` ...
+스프링에서 기능별 패키지(`auth/controller · service · dao · vo`) 안에 그 기능 것만
+두는 것처럼, 화면도 **기능 폴더 하나에 그 기능 것을 다 모읍니다.**
+
+```
+src/
+├── components/common/     여러 기능이 같이 쓰는 것 (Modal, Loading, FoodCard ...)
+├── pages/<기능>/
+│   ├── components/        이 기능에서만 쓰는 조각 (+ 같은 이름의 .css)
+│   ├── XxxPage.jsx        화면 (+ XxxPage.css)
+├── layouts/               MainLayout + layouts/components (Sidebar, TopBar, BottomNav)
+├── hooks/                 useForm
+└── styles/                index.css (전체 색 · 공통 클래스), ListPage.css (여러 목록 화면이 같이 씀)
+```
+
+- 화면이 길어지면 조각을 `pages/<기능>/components/` 로 빼서 import 합니다.
+  예) 마이페이지의 폼들 → `pages/mypage/components/ProfileForm.jsx`, `PasswordForm.jsx` ...
+- **두 기능 이상이 쓰게 되면** `components/common/` 으로 옮깁니다.
+  다른 기능 폴더(`pages/다른기능/components`)를 직접 import 하지 않습니다.
+- CSS 는 같은 이름으로 바로 옆에 둡니다. `ProfileForm.jsx` ↔ `ProfileForm.css`
 
 (예외: `components/common/FoodIllustration.jsx` 는 SVG 그림 모음이라 한 파일에 둡니다.)
 
@@ -117,7 +134,7 @@ const handleSubmit = async (e) => {
 
 ## 4-1. 입력칸이 여럿이면 useForm
 
-입력칸마다 `useState` 를 따로 두지 않고 `src/hook/useForm.js` 하나로 모읍니다.
+입력칸마다 `useState` 를 따로 두지 않고 `src/hooks/useForm.js` 하나로 모읍니다.
 입력칸의 `name` 이 `values` 의 키와 같아야 합니다. 체크박스도 같은 `handleChange` 로 됩니다.
 
 ```jsx
@@ -136,7 +153,7 @@ const { values, handleChange, reset } = useForm({ email: '', password: '' })
 | `common/PasswordInput` | 비밀번호 칸 + 보기/숨기기 버튼. `ref` 를 넘기면 포커스를 줄 수 있다 |
 | `common/FormField` | 라벨 + 입력칸 + 에러 문구 틀 |
 | `common/Modal` | 확인 창. `window.confirm` 대신 쓴다 (`{open && <Modal onClose={...}>...</Modal>}`) |
-| `auth/CodeInput` | 인증번호 칸. 숫자를 치면 다음 칸으로 넘어간다 |
+| `pages/auth/components/CodeInput` | 인증번호 칸. 숫자를 치면 다음 칸으로 넘어간다 (재설정 화면 전용) |
 
 ## 5. 자주 쓰는 문법
 

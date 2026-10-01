@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import DateRangeFilter from '../../components/common/DateRangeFilter'
-import LikedList from '../../components/recommendation/LikedList'
+import LikedList from '../../components/common/LikedList'
 import { SAMPLE_POPULAR } from '../../data/sampleBoard'
 import { shiftDays, toDateKey } from '../../utils/format'
-import '../../styles/pages/ListPage.css'
+import '../../styles/ListPage.css'
 
 // 인기 레시피 전체 목록 + 기간 검색.
 //

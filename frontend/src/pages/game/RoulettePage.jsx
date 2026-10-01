@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import Roulette from '../../components/recommendation/Roulette'
+import Roulette from './components/Roulette'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { getToken } from '../../utils/token'
-import '../../styles/pages/ListPage.css'
+import '../../styles/ListPage.css'
 
 // 음식 추천 룰렛 화면
 export default function RoulettePage() {

@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Loading from '../../components/common/Loading'
-import RecipeView from '../../components/recipe/RecipeView'
+import RecipeView from '../../components/common/RecipeView'
 import Pagination from '../../components/common/Pagination'
 import { getHistories, getHistoryStats, removeHistory } from '../../api/histories'
 import { formatDate, formatPrice } from '../../utils/format'
-import '../../styles/pages/HistoryPage.css'
+import './HistoryPage.css'
 
 // 내 식사 기록 (History). "이걸로 먹을래요" 를 누른 레시피가 쌓인다.
 // 줄을 누르면 그 자리에서 레시피가 펼쳐진다.
