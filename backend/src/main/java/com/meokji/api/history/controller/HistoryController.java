@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.common.Page;
+import com.meokji.api.common.Paging;
 import com.meokji.api.history.vo.MealHistoryStatsVO;
 import com.meokji.api.history.vo.MealHistoryVO;
 import com.meokji.api.auth.service.AuthService;
@@ -44,7 +45,7 @@ public class HistoryController {
     public Page<MealHistoryVO> getList(
             @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(defaultValue = "1") @Min(1) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(Page.MAX_SIZE) int size,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size,
             @RequestParam(required = false) Boolean shared) {
         UserVO loginUser = authService.getLoginUser(token);
         return historyService.getList(loginUser, page, size, shared);

@@ -25,23 +25,17 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public Page<NoticeVO> getList(int page, int size) {
-        // 예시)
-        // int total = noticeDAO.count();
+        // 예시) offset 과 total_pages 는 직접 계산하지 않는다. common/Paging.java 가 한다.
+        // Paging paging = new Paging(page, size);
+        // paging.setTotal(noticeDAO.count());
+        //
         // List<NoticeVO> items = new ArrayList<>();
-        // for (NoticeVO notice : noticeDAO.findPage((page - 1) * size, size)) {
+        // for (NoticeVO notice : noticeDAO.findPage(paging.getOffset(), paging.getSize())) {
         //     items.add(notice);
-        // }
-        // int totalPages = 0;
-        // if (size > 0) {
-        //     totalPages = (total + size - 1) / size;
         // }
         //
         // Page<NoticeVO> result = new Page<>();
-        // result.setItems(items);
-        // result.setTotal(total);
-        // result.setPage(page);
-        // result.setSize(size);
-        // result.setTotalPages(totalPages);
+        // result.fill(paging, items);
         // return result;
         throw ApiException.notImplemented(TODO);
     }

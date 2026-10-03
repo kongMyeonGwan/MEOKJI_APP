@@ -37,23 +37,17 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Page<ReviewListVO> getList(String keyword, int page, int size) {
-        // 예시)
-        // int total = reviewDAO.count(keyword);
+        // 예시) offset 과 total_pages 는 직접 계산하지 않는다. common/Paging.java 가 한다.
+        // Paging paging = new Paging(page, size);
+        // paging.setTotal(reviewDAO.count(keyword));
+        //
         // List<ReviewListVO> items = new ArrayList<>();
-        // for (RecipeReviewVO review : reviewDAO.findPage(keyword, (page - 1) * size, size)) {
+        // for (RecipeReviewVO review : reviewDAO.findPage(keyword, paging.getOffset(), paging.getSize())) {
         //     items.add(...);
-        // }
-        // int totalPages = 0;
-        // if (size > 0) {
-        //     totalPages = (total + size - 1) / size;
         // }
         //
         // Page<ReviewListVO> result = new Page<>();
-        // result.setItems(items);
-        // result.setTotal(total);
-        // result.setPage(page);
-        // result.setSize(size);
-        // result.setTotalPages(totalPages);
+        // result.fill(paging, items);
         // return result;
         throw ApiException.notImplemented(TODO);
     }

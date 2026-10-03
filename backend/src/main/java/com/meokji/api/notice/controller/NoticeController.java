@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.common.Page;
+import com.meokji.api.common.Paging;
 import com.meokji.api.notice.vo.NoticeVO;
 import com.meokji.api.notice.vo.NoticeViewVO;
 import com.meokji.api.auth.service.AuthService;
@@ -45,7 +46,7 @@ public class NoticeController {
     @GetMapping
     public Page<NoticeVO> getList(
             @RequestParam(defaultValue = "1") @Min(1) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(Page.MAX_SIZE) int size) {
+            @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size) {
         return noticeService.getList(page, size);
     }
 

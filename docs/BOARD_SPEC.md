@@ -287,6 +287,7 @@ reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 �
 | 표 한 행 | `review/vo/RecipeReviewVO.java` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO.java` |
 | 매퍼 본보기 | `user/dao/UserDAO.java` + `resources/mapper/UserMapper.xml` |
 | **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |
+| **페이징 계산** | `common/Paging.java` — offset · total_pages 를 직접 계산하지 않는다. `HistoryServiceImpl.getList` 가 쓰는 모양을 그대로 따른다 |
 | **되살리기 본보기** | `resources/mapper/LikeMapper.xml` — 찜하기가 좋아요와 같은 구조다 |
 | 한국 날짜 | `util/Kst` |
 | 오류 내는 법 | `common/ApiException` — `ResponseEntity` 로 직접 만들지 않는다 |

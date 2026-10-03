@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.meokji.api.common.Page;
+import com.meokji.api.common.Paging;
 import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.LikeStatusVO;
 import com.meokji.api.review.vo.PopularVO;
@@ -60,7 +61,7 @@ public class ReviewController {
     public Page<ReviewListVO> getList(
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(defaultValue = "1") @Min(1) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(Page.MAX_SIZE) int size) {
+            @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size) {
         return reviewService.getList(keyword, page, size);
     }
 

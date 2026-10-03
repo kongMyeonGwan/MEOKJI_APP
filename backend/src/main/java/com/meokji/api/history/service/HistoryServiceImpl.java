@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
+import com.meokji.api.common.Paging;
 import com.meokji.api.history.dao.HistoryDAO;
 import com.meokji.api.history.vo.MealHistoryStatsVO;
 import com.meokji.api.util.FoodCatalog;
@@ -32,26 +33,18 @@ public class HistoryServiceImpl implements HistoryService {
 
     @Override
     public Page<MealHistoryVO> getList(UserVO user, int page, int size, Boolean shared) {
-        int total = historyDAO.countByUser(user.getId(), shared);
+        // offset 과 total_pages 계산은 Paging 이 한다 (common/Paging.java)
+        Paging paging = new Paging(page, size);
+        paging.setTotal(historyDAO.countByUser(user.getId(), shared));
 
-        int offset = (page - 1) * size; // 앞에서 몇 개를 건너뛸지 (2페이지면 20개)
         List<MealHistoryVO> items = new ArrayList<>();
-        for (MealHistoryVO history : historyDAO.findPageByUser(user.getId(), shared, offset, size)) {
+        for (MealHistoryVO history : historyDAO.findPageByUser(user.getId(), shared, paging.getOffset(),
+                paging.getSize())) {
             items.add(withArt(history));
         }
 
-        // 전체 페이지 수. 45개를 20개씩 나누면 3페이지. 0개면 0페이지.
-        int totalPages = 0;
-        if (size > 0) {
-            totalPages = (total + size - 1) / size;
-        }
-
         Page<MealHistoryVO> result = new Page<>();
-        result.setItems(items);
-        result.setTotal(total);
-        result.setPage(page);
-        result.setSize(size);
-        result.setTotalPages(totalPages);
+        result.fill(paging, items);
         return result;
     }
 
