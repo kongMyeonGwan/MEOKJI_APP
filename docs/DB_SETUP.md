@@ -363,7 +363,7 @@ cd backend
 gradlew bootRun
 ```
 
-브라우저에서 <http://localhost:8080/api/health> 를 엽니다.
+브라우저에서 <http://localhost:8090/api/health> 를 엽니다.
 
 ```json
 {"status":"ok","app":"뭐먹지? API","version":"0.1.0","env":"local","database":"ok"}
@@ -539,7 +539,7 @@ cd backend
 copy src\main\resources\application-local.yml.example src\main\resources\application-local.yml
 :: application-local.yml 에서 datasource.password / app.jwt.secret-key 수정
 gradlew bootRun
-:: http://localhost:8080/api/health  ->  "database":"ok"
+:: http://localhost:8090/api/health  ->  "database":"ok"
 
 :: (선택) 데모 데이터
 gradlew seedDemo

@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * 뭐먹지? API 서버의 시작점. 이 main 을 실행하면 서버가 8080 포트로 뜬다.
+ * 뭐먹지? API 서버의 시작점. 이 main 을 실행하면 서버가 8090 포트로 뜬다.
  *
  * 폴더는 기능(화면)별로 먼저 나뉘고, 그 아래가 계층이다.
  * 예) ban/  = 못 먹는 재료 기능 한 벌

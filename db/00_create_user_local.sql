@@ -230,6 +230,6 @@ SELECT privilege FROM dba_sys_privs WHERE grantee = 'MEOKJI_APP' ORDER BY privil
 --
 --        gradlew bootRun
 --
---      브라우저에서 http://localhost:8080/api/health 를 열어
+--      브라우저에서 http://localhost:8090/api/health 를 열어
 --      "database":"ok" 가 나오면 전부 완료입니다.
 -- =========================================================

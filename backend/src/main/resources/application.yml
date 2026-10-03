@@ -78,7 +78,7 @@ mybatis:
   type-aliases-package: com.meokji.api
 
 server:
-  port: 8080
+  port: 8090
   # 스프링 기본 에러 화면을 끈다. 에러는 ApiExceptionHandler 가 {"detail": ...} 로 보낸다.
   error:
     whitelabel:

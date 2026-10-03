@@ -1,10 +1,10 @@
 # backend — 뭐먹지? API (Spring Boot)
 
-React 화면(`frontend/`)이 부르는 API 서버다. 주소는 `http://localhost:8080`.
+React 화면(`frontend/`)이 부르는 API 서버다. 주소는 `http://localhost:8090`.
 
 ```
 frontend/         React     :5173
-backend/          Spring    :8080   ← 여기
+backend/          Spring    :8090   ← 여기
 db/                                 ← Oracle 테이블 만드는 SQL
 ```
 
@@ -46,7 +46,7 @@ app:
 gradlew bootRun
 ```
 
-확인: <http://localhost:8080/api/health> → `{"status":"ok", ..., "database":"ok"}`
+확인: <http://localhost:8090/api/health> → `{"status":"ok", ..., "database":"ok"}`
 
 ### 3. 데모 데이터 채우기
 

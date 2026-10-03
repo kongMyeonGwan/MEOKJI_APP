@@ -97,7 +97,7 @@ gradlew bootRun
 
 **Gradle 은 안 깔아도 된다.** `gradlew` 가 알아서 받아 쓴다. JDK 17 이상만 있으면 된다.
 
-확인: <http://localhost:8080/api/health> → `{"status":"ok", ..., "database":"ok"}`
+확인: <http://localhost:8090/api/health> → `{"status":"ok", ..., "database":"ok"}`
 
 JWT 비밀키는 **32바이트(영문 32자) 이상**이어야 한다. 짧아도 서버는 뜨지만,
 로그인할 때 `WeakKeyException` 으로 500 이 난다.
@@ -367,7 +367,7 @@ app:
 ### frontend/.env
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8090
 ```
 
 ### 외부 연동 켜기 (전부 선택)
@@ -426,7 +426,7 @@ VITE_API_BASE_URL=http://localhost:8080
 ### frontend/.env
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8090
 ```
 
 `VITE_` 접두사가 붙은 값은 **브라우저에 그대로 노출된다.** API 키를 넣지 말 것.

@@ -97,7 +97,7 @@
 준비:
 
 ```
-터미널 1:  cd backend  →  gradlew bootRun          (8080)
+터미널 1:  cd backend  →  gradlew bootRun          (8090)
 터미널 2:  cd frontend        →  npm run dev              (5173)
 ```
 
