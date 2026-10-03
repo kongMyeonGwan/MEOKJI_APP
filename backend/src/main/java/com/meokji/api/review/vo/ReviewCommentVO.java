@@ -12,7 +12,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 /**
- * REVIEW_COMMENTS 표 한 행. 후기에 달린 댓글.
+ * POST_COMMENTS 표 한 행 중 레시피리뷰 것(BOARD_TYPE='R').
+ *
+ * 자유게시판 댓글과 표를 같이 쓴다. 매퍼를 만들 때 모든 문장에
+ * BOARD_TYPE='R' 을 넣어야 한다 — 빠뜨리면 자유게시판 댓글이 섞여 나온다.
+ * (본보기: resources/mapper/FreeCommentMapper.xml)
  *
  * 대댓글은 없다. 한 단계만 두기로 한 결정이고, 필요해지면
  * parent_id 를 추가하는 것이 아니라 화면 설계부터 다시 봐야 한다.
@@ -25,9 +29,9 @@ public class ReviewCommentVO {
 
     private Long id;
 
-    /** 어떤 후기의 댓글인지 */
+    /** 어떤 후기의 댓글인지. 표에서는 POST_ID 이고 BOARD_TYPE='R' 과 짝으로 본다 */
     @JsonIgnore
-    private Long reviewId;
+    private Long postId;
 
     @JsonIgnore
     private Long userId;

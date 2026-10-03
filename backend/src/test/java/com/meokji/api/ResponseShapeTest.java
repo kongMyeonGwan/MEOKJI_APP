@@ -163,11 +163,11 @@ class ResponseShapeTest {
     }
 
     @Test
-    @DisplayName("ReviewCommentVO 는 review_id 와 user_id 를 감춘다")
+    @DisplayName("ReviewCommentVO 는 post_id 와 user_id 를 감춘다")
     void commentVoShape() {
         ReviewCommentVO comment = new ReviewCommentVO();
         comment.setId(4L);
-        comment.setReviewId(12L);
+        comment.setPostId(12L);
         comment.setUserId(7L);
         comment.setContent("맛있어 보여요");
         comment.setNickname("민지");
@@ -176,7 +176,7 @@ class ResponseShapeTest {
 
         JsonNode json = toJson(comment);
 
-        assertThat(json.has("review_id")).isFalse();
+        assertThat(json.has("post_id")).isFalse();
         assertThat(json.has("user_id")).isFalse();
         assertThat(json.get("nickname").asString()).isEqualTo("민지");
         assertThat(json.get("is_mine").asBoolean()).isTrue();

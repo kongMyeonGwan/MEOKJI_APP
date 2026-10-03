@@ -11,6 +11,9 @@ public interface NoticeService {
     // 목록 한 페이지 (고정 공지가 위, 그 다음 최신순)
     Page<NoticeVO> getList(int page, int size);
 
+    // 공지 하나 (상세 화면). 없거나 지워진 공지면 404 를 던진다
+    NoticeVO getDetail(Long noticeId);
+
     // 조회수 +1
     NoticeViewVO increaseView(Long noticeId);
 

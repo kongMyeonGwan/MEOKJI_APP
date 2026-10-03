@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+  FREE_POSTS 표 SQL (자유게시판 글). namespace 는 짝이 되는 DAO 의 전체 이름이다.
+  표 정의는 db/01_schema.sql 의 11번, db/09_add_free_posts.sql 에 있다.
+-->
+<mapper namespace="com.meokji.api.free.dao.FreePostDAO">
+
+    <!--
+      검색 조건. 개수와 목록이 이 조각을 같이 쓴다 - 따로 적으면
+      한쪽만 고치는 실수가 난다.
+
+      keyword 는 LIKE 로 찾는다. 대소문자를 가리지 않게 양쪽을 LOWER 로 내린다.
+      content 는 CLOB 이라 LIKE 가 되지만 느리다. 글이 많아지면 제목만
+      찾도록 줄이거나 오라클 텍스트 색인을 붙이는 것이 맞다.
+    -->
+    <sql id="searchWhere">
+         WHERE p.use_yn = 'Y'
+        <if test="keyword != null and keyword != ''">
+           AND (LOWER(p.title) LIKE '%' || LOWER(#{keyword}) || '%'
+                OR LOWER(p.content) LIKE '%' || LOWER(#{keyword}) || '%')
+        </if>
+    </sql>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(p.id)
+          FROM free_posts p
+        <include refid="searchWhere"/>
+    </select>
+
+    <!--
+      OFFSET ... ROWS FETCH NEXT ... 는 오라클 12c 부터 쓸 수 있다. 21c XE 라 문제없다.
+      ROWNUM 으로 자르면 정렬 전에 매겨져서 아무 행이나 나온다.
+
+      DBMS_LOB.SUBSTR 로 본문 앞 200자만 가져온다. 목록에 본문 전체를 실어
+      보내면 글이 길어질수록 응답이 통째로 무거워지는데, 화면은 두 줄만 쓴다.
+      (CLOB 을 그냥 자를 수 없어서 오라클 함수를 쓴다)
+
+      댓글 수는 스칼라 서브쿼리로 센다. 컬럼으로 들고 있으면 댓글을 지웠을 때
+      같이 줄이는 것을 잊어 조용히 어긋난다.
+    -->
+    <select id="findPage" resultType="com.meokji.api.free.vo.FreePostListVO">
+        SELECT p.id,
+               p.title,
+               DBMS_LOB.SUBSTR(p.content, 200, 1) AS content,
+               u.nickname,
+               p.view_count,
+               (SELECT COUNT(c.id)
+                  FROM post_comments c
+                 WHERE c.board_type = 'F'
+                   AND c.post_id = p.id
+                   AND c.use_yn = 'Y')          AS comment_count,
+               TO_CHAR(p.created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS created_at,
+               CASE WHEN p.file_yn = 'Y' THEN 1 ELSE 0 END         AS has_file
+          FROM free_posts p
+          JOIN users u ON u.id = p.user_id
+        <include refid="searchWhere"/>
+         ORDER BY p.created_at DESC, p.id DESC
+         OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
+    </select>
+
+    <select id="findById" resultType="com.meokji.api.free.vo.FreePostVO">
+        SELECT p.id, p.user_id, p.title, p.content,
+               p.file_yn, p.file_name, p.file_org_name, p.file_path, p.file_ext, p.file_size,
+               p.view_count, p.use_yn, p.created_at, p.updated_at,
+               u.nickname
+          FROM free_posts p
+          JOIN users u ON u.id = p.user_id
+         WHERE p.id = #{id}
+    </select>
+
+    <!--
+      useGeneratedKeys 로 방금 넣은 id 를 post.id 에 받아온다.
+      그래야 글을 쓴 뒤 바로 그 글을 다시 읽어 상세로 돌려줄 수 있다.
+    -->
+    <insert id="insert" parameterType="com.meokji.api.free.vo.FreePostVO"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO free_posts (user_id, title, content)
+        VALUES (#{userId}, #{title}, #{content})
+    </insert>
+
+    <update id="update" parameterType="com.meokji.api.free.vo.FreePostVO">
+        UPDATE free_posts
+           SET title = #{title},
+               content = #{content},
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+    <update id="deactivate">
+        UPDATE free_posts
+           SET use_yn = 'N',
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+    <update id="increaseView">
+        UPDATE free_posts
+           SET view_count = view_count + 1
+         WHERE id = #{id}
+           AND use_yn = 'Y'
+    </update>
+
+    <select id="findViewCount" resultType="int">
+        SELECT view_count
+          FROM free_posts
+         WHERE id = #{id}
+    </select>
+
+    <!--
+      첨부 정보를 한 문장으로 바꾼다. 나눠서 UPDATE 하면 중간 상태가
+      ck_free_posts_file_set 제약에 걸린다 (file_yn='Y' 인데 경로가 빈 행 금지).
+    -->
+    <update id="setFile" parameterType="com.meokji.api.free.vo.FreePostVO">
+        UPDATE free_posts
+           SET file_yn = 'Y',
+               file_name = #{fileName},
+               file_org_name = #{fileOrgName},
+               file_path = #{filePath},
+               file_ext = #{fileExt},
+               file_size = #{fileSize},
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+    <update id="clearFile">
+        UPDATE free_posts
+           SET file_yn = 'N',
+               file_name = NULL,
+               file_org_name = NULL,
+               file_path = NULL,
+               file_ext = NULL,
+               file_size = NULL,
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+</mapper>

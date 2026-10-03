@@ -32,7 +32,17 @@ import tools.jackson.databind.json.JsonMapper;
  * 않는다. 정답지는 실제 OpenWeather 로 뜬 것이라 기온이 달라서, 날씨를 켠 경우는
  * 값 대신 <b>규칙</b>을 확인한다 - 더운 날엔 시원한 것이 위로 온다.
  */
-@SpringBootTest
+/*
+ * 날씨는 mock 으로 못박는다.
+ *
+ * 정답지가 mock 기준(28도 맑음)이라, 이 줄이 없으면 application-local.yml 에
+ * openweather 를 켜둔 PC 에서만 테스트가 깨진다. 실제 날씨는 날마다 달라서
+ * 정답지를 둘 수가 없다 - 그래서 "날씨 값" 이 아니라 "받은 기온으로 메뉴를
+ * 고르는 규칙" 을 본다.
+ *
+ * 앱을 실제로 돌릴 때는 openweather 가 맞다. 여기 설정은 이 테스트 안에서만 쓴다.
+ */
+@SpringBootTest(properties = "app.weather.provider=mock")
 @DisplayName("추천 정답지 대조")
 class RecommendFixtureTest {
 

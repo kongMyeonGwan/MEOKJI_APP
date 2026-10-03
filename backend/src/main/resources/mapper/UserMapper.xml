@@ -154,6 +154,10 @@
     <!--
       알림. 내 글(recipe_reviews)에 달린 댓글과 좋아요를 모은다.
 
+      댓글 표(POST_COMMENTS)는 자유게시판과 같이 쓰므로 BOARD_TYPE='R' 을 꼭 건다.
+      빼면 자유게시판 댓글의 POST_ID 가 우연히 같은 후기 번호와 맞아떨어져
+      엉뚱한 알림이 섞인다.
+
       게시판 기능이 아직 서버에 없어서 지금은 결과가 비어 있다. 그래도 옮겨두는
       이유는 이 엔드포인트가 게시판이 아니라 users 쪽이고, 담당자가 게시판을
       구현하면 손대지 않고 바로 값이 채워지기 때문이다.
@@ -165,15 +169,16 @@
             resultType="com.meokji.api.user.vo.NotificationVO">
         SELECT * FROM (
             SELECT c.id             AS id,
-                   c.review_id      AS reviewId,
+                   c.post_id        AS reviewId,
                    r.title          AS reviewTitle,
                    u.nickname       AS nickname,
                    c.content        AS content,
                    c.created_at     AS createdAt
-              FROM review_comments c
-              JOIN recipe_reviews  r ON r.id = c.review_id
+              FROM post_comments   c
+              JOIN recipe_reviews  r ON r.id = c.post_id
               JOIN users           u ON u.id = c.user_id
-             WHERE r.user_id = #{userId}
+             WHERE c.board_type = 'R'
+               AND r.user_id = #{userId}
                AND r.use_yn = 'Y'
                AND c.use_yn = 'Y'
                AND c.user_id != #{userId}

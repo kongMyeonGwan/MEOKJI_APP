@@ -48,7 +48,16 @@ import tools.jackson.databind.json.JsonMapper;
  * 비밀번호로</b> 바꿔서 다른 테스트가 깨지지 않게 한다. 재설정 경로에는 "이전과
  * 달라야 한다" 는 규칙이 없다 - 그 규칙은 로그인한 채로 바꾸는 쪽에만 있다.
  */
-@SpringBootTest
+/*
+ * 메일은 mock 으로 못박는다.
+ *
+ * 이 테스트는 콘솔에 찍힌 인증번호를 주워서 다음 단계로 넘어간다. smtp 로 켜둔
+ * PC 에서는 번호가 콘솔에 안 찍히고 진짜 메일이 나가서, 테스트가 깨지는 것은
+ * 물론 돌릴 때마다 메일함에 인증번호가 쌓인다.
+ *
+ * 앱을 실제로 돌릴 때는 smtp 가 맞다. 여기 설정은 이 테스트 안에서만 쓴다.
+ */
+@SpringBootTest(properties = "app.mail.provider=mock")
 @DisplayName("비밀번호 재설정")
 class PasswordResetTest {
 

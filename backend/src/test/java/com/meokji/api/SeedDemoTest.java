@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -183,6 +184,40 @@ class SeedDemoTest {
                     양념은 면을 삶기 전에 미리 섞어두세요. 면이 익은 뒤에 양념을 만들면
                     그 1분 사이에 면이 불어버립니다.
                     얼음 두 개를 올린 게 아래 사진입니다.""", true));
+
+    /** 자유게시판 글. 식사 기록이 없어도 쓸 수 있어서 후기보다 넣기가 간단하다 */
+    private record FreePost(String title, String content, List<String> comments) {
+    }
+
+    private static final List<FreePost> FREE_POSTS = List.of(
+            new FreePost("혼밥하기 괜찮은 식당 공유해요", """
+                    회사 근처에 혼자 가도 눈치 안 보이는 곳이 생각보다 많더라고요.
+                    바 자리가 있는 집은 거의 괜찮았습니다.
+
+                    국밥집은 애초에 혼자 오는 사람이 많아서 제일 편하고,
+                    요즘은 1인 화로를 두는 고깃집도 늘었어요. 다들 자주 가는 곳 있으면 알려주세요.
+                    """,
+                    List.of("저도 국밥집 자주 가요. 주인분이 아예 신경을 안 쓰셔서 편합니다",
+                            "회전초밥도 괜찮습니다. 혼자 앉는 자리가 기본이라서요")),
+
+            new FreePost("냉장고에 두부만 세 모 남았습니다", """
+                    유통기한이 모레인데 뭘 해야 할까요.
+                    부침은 어제 했고 찌개는 좀 질렸어요. 두부로 할 수 있는 거 아무거나 받습니다.
+                    """,
+                    List.of("으깨서 두부면 비빔국수 해보세요. 생각보다 괜찮습니다",
+                            "두부조림 추천합니다. 간장 양념에 조리면 밑반찬으로 며칠 갑니다")),
+
+            new FreePost("자취 2년 만에 산 물건 중 제일 잘 산 것", """
+                    전기 그릴이요. 설거지가 프라이팬보다 훨씬 편하고 기름도 덜 튑니다.
+                    고기 말고 야채 구울 때도 쓸 만해요.
+                    """,
+                    List.of("기름받이 닦는 게 일이긴 한데 그래도 프라이팬보단 낫죠")),
+
+            new FreePost("다들 밥은 몇 인분씩 해두시나요", """
+                    한 번에 많이 해서 냉동했다가 먹으려는데 얼마나 해둬야 할지 모르겠어요.
+                    2인분씩 소분하면 금방 떨어지고, 많이 하면 맛이 떨어지는 느낌입니다.
+                    """,
+                    List.of()));
 
     private static final String ATTACH_NAME = "비빔국수.png";
 
@@ -434,6 +469,9 @@ class SeedDemoTest {
         step("4·5", "레시피 후기 작성 (첨부 없는 글 · 첨부 있는 글)");
         seedPosts(member, histories);
 
+        step("6", "자유게시판 글 · 댓글 작성 (회원)");
+        seedFreePosts(member);
+
         report(member);
     }
 
@@ -526,6 +564,53 @@ class SeedDemoTest {
         }
 
         return histories;
+    }
+
+    /**
+     * 6) 자유게시판. 글을 쓰는 조건이 없어서 식사 기록 없이 바로 쓴다.
+     *
+     * <p>여러 번 돌려도 글이 쌓이지 않게 제목으로 먼저 찾아본다. 후기는
+     * "한 기록에 한 글"(uq_reviews_meal)이라 DB 가 막아주지만, 자유게시판은
+     * 같은 제목으로 몇 개든 쓸 수 있어서 여기서 직접 봐야 한다.
+     */
+    private void seedFreePosts(String member) throws Exception {
+        MvcResult listed = getJson("/api/free-posts?size=50", null);
+
+        if (notReady(listed)) {
+            skip("자유게시판이 아직 서버에 없다(501).");
+            return;
+        }
+
+        Set<String> already = new HashSet<>();
+        for (JsonNode row : body(listed).path("items")) {
+            already.add(row.path("title").asString());
+        }
+
+        for (FreePost item : FREE_POSTS) {
+            if (already.contains(item.title())) {
+                skip("이미 있는 글 - " + item.title());
+                continue;
+            }
+
+            MvcResult created = postJson("/api/free-posts", member, Map.of(
+                    "title", item.title(),
+                    "content", item.content()));
+
+            assertThat(created.getResponse().getStatus())
+                    .as("자유게시판 글쓰기 - %s", item.title())
+                    .isEqualTo(201);
+
+            long postId = body(created).path("id").asLong();
+            ok("#" + postId + " " + item.title());
+
+            for (String comment : item.comments()) {
+                MvcResult added = postJson(
+                        "/api/free-posts/" + postId + "/comments", member, Map.of("content", comment));
+
+                assertThat(added.getResponse().getStatus()).as("댓글").isEqualTo(201);
+                ok("  댓글: " + comment);
+            }
+        }
     }
 
     /** 4·5) 후기. 하나는 첨부 없이, 하나는 첨부를 붙여서. */

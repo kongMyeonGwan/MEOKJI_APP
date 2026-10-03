@@ -38,7 +38,7 @@ class StubFixtureTest {
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     /**
-     * 담당자가 채울 주소 20개. 프론트가 이 주소를 그대로 부른다.
+     * 담당자가 채울 주소 21개. 프론트가 이 주소를 그대로 부른다.
      *
      * <p><b>후기 주소는 {@code /api/reviews} 다.</b> 예전에는 {@code /api/posts} 였는데
      * 표 이름이 {@code recipe_reviews} 라서 {@code /api/reviews} 로 바꿨다 - "post" 와
@@ -63,6 +63,7 @@ class StubFixtureTest {
             "DELETE /api/reviews/{reviewId}/file",
             "GET    /api/notices",
             "POST   /api/notices",
+            "GET    /api/notices/{noticeId}",
             "POST   /api/notices/{noticeId}/view",
             "PUT    /api/notices/{noticeId}",
             "DELETE /api/notices/{noticeId}");
@@ -85,7 +86,7 @@ class StubFixtureTest {
     }
 
     @Test
-    @DisplayName("게시판 · 공지 주소 20개가 정해진 목록과 같다")
+    @DisplayName("게시판 · 공지 주소 21개가 정해진 목록과 같다")
     void stubRoutesMatchSpec() {
         List<String> actual = new ArrayList<>();
 

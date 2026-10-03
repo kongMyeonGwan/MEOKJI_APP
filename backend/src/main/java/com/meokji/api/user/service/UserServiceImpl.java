@@ -211,9 +211,11 @@ public class UserServiceImpl implements UserService {
         }
 
         // 행을 지우지 않고 use_yn 을 'N' 으로 바꾼다. 내가 쓴 글 · 댓글 · 기록도 같이.
+        // post_comments 는 두 게시판이 같이 쓰는 표라 한 번만 부르면 둘 다 꺼진다.
         userDAO.withdrawChildren("review_likes", user.getId());
-        userDAO.withdrawChildren("review_comments", user.getId());
+        userDAO.withdrawChildren("post_comments", user.getId());
         userDAO.withdrawChildren("recipe_reviews", user.getId());
+        userDAO.withdrawChildren("free_posts", user.getId());
         userDAO.withdrawChildren("meal_histories", user.getId());
         userDAO.withdrawChildren("user_bans", user.getId());
 

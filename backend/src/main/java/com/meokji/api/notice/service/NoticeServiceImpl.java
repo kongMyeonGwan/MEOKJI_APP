@@ -41,6 +41,17 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
+    public NoticeVO getDetail(Long noticeId) {
+        // 예시) 없거나 use_yn='N' 이면 404 다. 조회수는 여기서 올리지 않는다 (increaseView 가 한다)
+        // NoticeVO notice = noticeDAO.findById(noticeId);
+        // if (notice == null || !"Y".equals(notice.getUseYn())) {
+        //     throw ApiException.notFound("공지를 찾을 수 없습니다.");
+        // }
+        // return notice;
+        throw ApiException.notImplemented(TODO);
+    }
+
+    @Override
     public NoticeViewVO increaseView(Long noticeId) {
         throw ApiException.notImplemented(TODO);
     }

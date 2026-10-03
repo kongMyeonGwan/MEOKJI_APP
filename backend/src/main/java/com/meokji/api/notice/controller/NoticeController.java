@@ -50,6 +50,13 @@ public class NoticeController {
         return noticeService.getList(page, size);
     }
 
+    // 상세  GET /api/notices/3
+    // 보기는 누구나 된다. 조회수는 화면이 따로 /view 를 불러 올린다
+    @GetMapping("/{noticeId}")
+    public NoticeVO getDetail(@PathVariable @Min(1) Long noticeId) {
+        return noticeService.getDetail(noticeId);
+    }
+
     // 조회수 +1  POST /api/notices/3/view
     @PostMapping("/{noticeId}/view")
     public NoticeViewVO increaseView(@PathVariable @Min(1) Long noticeId) {

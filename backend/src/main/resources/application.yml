@@ -54,6 +54,13 @@ spring:
       # 에러가 나지 않아서 알아채기 어렵다 (docs/PROGRESS.md 의 오라클 함정 2번).
       connection-init-sql: ALTER SESSION SET TIME_ZONE='+00:00'
 
+  servlet:
+    multipart:
+      # 자유게시판 사진 업로드. 한 장 5MB 가 한도라 요청 전체도 그 언저리면 된다.
+      # 이 값을 넘기면 스프링이 컨트롤러에 들어가기 전에 끊는다.
+      max-file-size: 5MB
+      max-request-size: 6MB
+
   jackson:
     # 프론트가 food_name · cook_time_minutes · has_file 처럼 snake_case 로 읽는다.
     # 자바 필드는 카멜(foodName)로 쓰고 나갈 때만 snake 로 바꾼다.
@@ -73,12 +80,12 @@ mybatis:
     map-underscore-to-camel-case: true
     # null 값을 DB 에 넣을 때 쓸 타입. 오라클은 기본값(OTHER)을 받지 않아서 NULL 로 바꾼다.
     # 따옴표를 꼭 붙인다. YAML 은 따옴표 없는 NULL 을 "값 없음" 으로 읽어서 설정이 무시된다.
-    jdbc-type-for-null: 'NULL'
+    jdbc-type-for-null: "NULL"
   mapper-locations: classpath:mapper/**/*.xml
   type-aliases-package: com.meokji.api
 
 server:
-  port: 8090
+  port: ${PORT:8090}
   # 스프링 기본 에러 화면을 끈다. 에러는 ApiExceptionHandler 가 {"detail": ...} 로 보낸다.
   error:
     whitelabel:
@@ -89,6 +96,10 @@ app:
   version: 0.1.0
   env: ${APP_ENV:local}
   cors-origins: ${CORS_ORIGINS:http://localhost:5173}
+
+  # 올린 사진을 저장할 폴더. 서버를 켠 자리(backend/) 기준의 상대 경로다.
+  # 날마다 늘어나는 파일이라 resources 가 아니라 바깥에 둔다 (data/bargains.json 과 같은 자리).
+  upload-dir: ${UPLOAD_DIR:data/uploads}
 
   jwt:
     secret-key: ${JWT_SECRET_KEY}
