@@ -16,6 +16,7 @@ pages/
 ├── recommend/    추천 · 검색 · 예산 · 레시피 상세
 ├── game/         메뉴 정하기 게임
 ├── community/    게시판 · 공지 · 인기 레시피
+├── free/         자유게시판
 ├── mypage/       내 정보 · 기록 · 찜 · 설정
 └── NotFoundPage.jsx    없는 주소. 어느 역할에도 속하지 않아 여기 둔다
 ```
@@ -90,6 +91,27 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 >
 > 서버 쪽이 어떻게 동작해야 하는지는 `docs/BOARD_SPEC.md` 에 있다.
 
+### `free/` — 자유게시판
+
+| 파일 | 주소 | 하는 일 |
+|---|---|---|
+| `FreePage.jsx` | `/free` | 글 목록 · 검색 |
+| `FreeDetailPage.jsx` | `/free/:postId` | 글 + 첨부 사진 (내 글이면 수정 · 삭제) |
+| `FreeWritePage.jsx` | `/free/write` | 글쓰기 (로그인 필요) |
+
+`community/` 와 화면 모양이 거의 같지만 **글을 쓰는 조건이 없다.** 후기는 내
+식사 기록(`MEAL_HISTORIES`)을 하나 골라야 쓸 수 있는데, 자유게시판은 로그인만
+했으면 아무 주제나 쓴다. 표도 그렇게 만들었다 — `FREE_POSTS` 에는 부모 FK 가 없다
+(`db/09_add_free_posts.sql`).
+
+좋아요 · 댓글이 없다. 그 표(`FREE_POST_LIKES` · `FREE_POST_COMMENTS`)를 안 만들었다.
+첨부 사진은 후기와 같이 **글 하나당 한 장**이고, 표의 `FILE_*` 컬럼에 들어간다.
+
+> **퍼블리싱까지만 돼 있다.** 세 화면 모두 `src/data/sampleFree.js` 의 가데이터를
+> 그리고, 등록 · 수정 · 삭제 · 사진 첨부를 누르면 "준비 중" 안내만 뜬다.
+> `api/freePosts.js` 를 만들어 각 화면의 `TODO(자유게시판 담당)` 자리를 채우고
+> `sampleFree.js` 를 지우면 된다. 받아오는 코드 모양은 `CODE_STYLE.md` 2번에 있다.
+
 ### `mypage/` — 내 정보
 
 | 파일 | 주소 | 하는 일 |
@@ -117,18 +139,22 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 import Loading from '../../components/common/Loading'   // 공통
 import ProfileForm from './components/ProfileForm'      // 이 기능 전용
 import { getLikes } from '../../api/likes'
-import './MyPage.css'                                     // 화면 CSS 는 바로 옆
 ```
 
-### 스타일은 화면 · 조각 바로 옆에 있다
+### 스타일은 `src/styles/index.css` 한 파일에 다 있다
 
-파일 이름이 같다. `MyPage.jsx` 는 같은 폴더의 `MyPage.css` 를,
-`components/ProfileForm.jsx` 는 `components/ProfileForm.css` 를 본다.
+원래는 화면마다 `.css` 를 옆에 뒀는데 파일이 45개까지 늘어서 하나로 합쳤다.
+그래서 화면 파일에는 `import './XxxPage.css'` 가 없다.
 
-예외 둘만 `src/styles/` 에 있다.
-- `index.css` — 전체 색(라이트/다크) · 카드 · 버튼 같은 공통 클래스
-- `ListPage.css` — 여러 목록 화면이 같이 쓴다(4개 기능, 11개 화면). **고칠 때 다른 화면이
-  같이 바뀐다** — 한 화면만 바꾸려면 그 화면 전용 CSS 를 새로 만든다.
+고칠 곳은 Ctrl+F 로 찾는다. 파일 안이 `/* ----- XxxPage ----- */` 로 나뉘어 있다.
+새 화면을 만들었으면 그 화면 이름으로 구역을 하나 만들어 아래쪽에 붙인다
+(예: `/* ----- FreePage (목록) ----- */`).
+
+- 여러 화면이 같이 쓰는 클래스(`.card` · `.btn` · `.muted` · `.tag` · `.empty` ·
+  `.divided`)는 파일 맨 아래 **전역** 구역에 있다. **고치면 모든 화면이 같이 바뀐다.**
+- 다른 기능의 클래스를 그대로 쓰지 않는다. 자유게시판이 후기의 `.review-card` 를
+  같이 쓰면 한쪽을 고칠 때 다른 게시판이 같이 바뀐다 — `.free-card` 처럼 따로 둔다.
+- 순서가 의미를 갖는다. 같은 힘(명시도)끼리 부딪히면 **나중에 쓴 쪽이 이긴다.**
 
 ### 화면을 새로 만들면
 
@@ -136,6 +162,7 @@ import './MyPage.css'                                     // 화면 CSS 는 바�
 2. `src/App.jsx` 에 import 와 `<Route>` 를 추가한다 — **두 곳 다 고쳐야 한다**
 3. 로그인이 필요하면 `element={loginOnly(<XxxPage />)}` 로 감싼다
 4. 사이드바·하단 탭에도 보이게 하려면 `layouts/components/` 의 메뉴를 고친다
+5. 스타일은 `src/styles/index.css` 아래쪽에 `/* ----- XxxPage ----- */` 구역을 만들어 적는다
 
 ### 화면끼리 직접 부르지 않는다
 

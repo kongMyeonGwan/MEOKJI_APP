@@ -28,6 +28,10 @@ import PopularPage from './pages/community/PopularPage'
 import ReviewDetailPage from './pages/community/ReviewDetailPage'
 import ReviewWritePage from './pages/community/ReviewWritePage'
 
+import FreePage from './pages/free/FreePage'
+import FreeDetailPage from './pages/free/FreeDetailPage'
+import FreeWritePage from './pages/free/FreeWritePage'
+
 import MyPage from './pages/mypage/MyPage'
 import HistoryPage from './pages/mypage/HistoryPage'
 import AiHistoryPage from './pages/mypage/AiHistoryPage'
@@ -155,6 +159,11 @@ export default function App() {
           <Route path="/community" element={<CommunityPage user={user} />} />
           <Route path="/community/:reviewId" element={<ReviewDetailPage user={user} />} />
           <Route path="/community/write" element={loginOnly(<ReviewWritePage />)} />
+
+          {/* 자유게시판. 후기와 달리 아무 주제나 쓸 수 있다. 보는 것은 로그인 없이도 된다 */}
+          <Route path="/free" element={<FreePage user={user} />} />
+          <Route path="/free/write" element={loginOnly(<FreeWritePage />)} />
+          <Route path="/free/:postId" element={<FreeDetailPage user={user} />} />
 
           {/* 마이페이지 */}
           <Route

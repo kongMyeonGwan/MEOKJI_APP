@@ -9,7 +9,7 @@
  * 찾을 때는 Ctrl+F 로 아래 제목을 치면 된다.
  *
  *   레이아웃 / 공통 컴포넌트 / 홈 / 로그인 · 회원가입 / 목록 화면 공통
- *   추천 · 레시피 / 게임 / 게시판 · 후기 / 마이페이지 / 전역
+ *   추천 · 레시피 / 게임 / 게시판 · 후기 / 자유게시판 / 마이페이지 / 전역
  *
  * 하이브리드 레이아웃 기준
  *   ~ 1023px  앱 모드 : 상단 앱바 + 하단 탭. 본문 1단
@@ -4328,6 +4328,313 @@ a.btn {
   max-height: 200px;
   margin-top: 10px;
   border-radius: var(--radius-sm);
+}
+
+/* ==========================================================
+   자유게시판
+   ========================================================== */
+
+/* 레시피 후기(위쪽 '게시판 · 후기')와 모양이 거의 같지만 클래스를 따로 뒀다.
+   같은 .review-card 를 같이 쓰면 한쪽을 고칠 때 다른 게시판이 같이 바뀐다.
+   둘은 앞으로 다르게 자랄 자리다 — 후기에는 좋아요 · 댓글 · 레시피가 붙고,
+   자유게시판에는 안 붙는다. */
+
+/* ----- FreePage (목록) ----- */
+.free__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.free__desc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+.free__hint { font-size: 14px; }
+.free__hint:hover { color: var(--color-accent); }
+
+.free__search {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.free__search:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.free__list { margin-top: 16px; }
+
+/* ----- FreePostCard (목록 한 줄) ----- */
+.free-card { padding: 4px 0; }
+
+.free-card__title {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.free-card__link:hover .free-card__title { color: var(--color-accent); }
+
+/* 제목 옆 클립. 제목을 밀어내지 않게 작게 둔다 */
+.free-card__clip {
+  margin-left: 5px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+/* 본문 미리보기를 2줄로 자른다 */
+.free-card__excerpt {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.free-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.free-card__counts { margin-left: auto; }
+
+@media (max-width: 520px) {
+  .free-card__counts { margin-left: 0; flex-basis: 100%; }
+}
+
+/* ----- FreeAttachment (첨부 사진 한 장) ----- */
+/* 글 하나당 파일 하나라(DB 의 FILE_* 컬럼) 갤러리가 아니다. 본문 아래에 한 장만 놓인다. */
+.free-attach {
+  margin: 1.1rem 0 0;
+}
+
+.free-attach__figure {
+  margin: 0;
+}
+
+/* 세로로 긴 사진이 화면을 다 먹지 않게 높이를 묶는다.
+   contain 이라 잘리지 않고 통째로 줄어든다 — 글쓴이가 보여주려던 것이 안 보이면 안 된다. */
+.free-attach__image {
+  display: block;
+  width: 100%;
+  max-height: 26rem;
+  object-fit: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-soft);
+}
+
+.free-attach__caption {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+  margin-top: 0.45rem;
+  font-size: 0.82rem;
+}
+
+/* 한글 파일명이 길면 줄을 통째로 밀어낸다. 한 줄로 자른다. */
+.free-attach__name {
+  display: inline-block;
+  max-width: 20rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* 파일 입력칸을 label 로 감싸서 숨겼기 때문에, 버튼처럼 보이려면 커서를 직접 지정해야 한다 */
+.free-attach__actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.free-attach__actions label { cursor: pointer; }
+
+/* 되돌릴 수 없는 동작만 색을 달리한다 */
+.free-attach__danger { color: var(--color-error); }
+
+/* ----- FreeDetailPage (상세) ----- */
+.free-detail {
+  display: grid;
+  gap: 20px;
+}
+
+.free-detail__back { margin: 0; font-size: 14px; }
+.free-detail__back a:hover { color: var(--color-accent); }
+
+.free-detail__title {
+  margin: 0 0 10px;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.free-detail__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+/* 작성자가 입력한 줄바꿈을 그대로 보여준다 */
+.free-detail__content {
+  padding: 20px 0;
+  font-size: 15px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.free-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* 수정 · 삭제는 오른쪽 끝에 붙인다. '목록' 옆에 나란히 두면 잘못 누른다 */
+.free-detail__owner-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.free-detail__danger { color: var(--color-error); }
+
+/* ===== 글 수정 폼 ===== */
+.free-detail__edit {
+  display: grid;
+  gap: 12px;
+}
+
+.free-detail__edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.free-detail__edit-field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-subtle);
+}
+
+.free-detail__edit-field input,
+.free-detail__edit-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.free-detail__edit-field textarea { resize: vertical; }
+
+.free-detail__edit-field input:focus,
+.free-detail__edit-field textarea:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.free-detail__edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ----- FreeWritePage (글쓰기) ----- */
+.free-write__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.free-write__cancel { font-size: 14px; }
+.free-write__cancel:hover { color: var(--color-accent); }
+
+.free-write__field {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.free-write__field > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.free-write__field input,
+.free-write__field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.free-write__field textarea { resize: vertical; }
+
+.free-write__field input:focus,
+.free-write__field textarea:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.free-write__help {
+  margin: 6px 0 0;
+  font-size: 13px;
+}
+
+/* 글자 수가 거의 다 찼을 때 */
+.free-write__count-warn {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+/* 고른 사진 미리보기 */
+.free-write__preview {
+  display: block;
+  max-height: 200px;
+  margin-top: 10px;
+  border-radius: var(--radius-sm);
+}
+
+.free-write__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 /* ==========================================================
