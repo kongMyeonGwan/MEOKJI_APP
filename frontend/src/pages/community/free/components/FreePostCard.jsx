@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { formatDate } from '../../../utils/format'
+import { formatDate } from '../../../../utils/format'
 
 // 자유게시판 목록의 한 줄.
-// 레시피 후기와 달리 음식 이름 · 좋아요 · 댓글 수가 없어서 조회수만 보여준다.
+// 레시피 후기와 달리 음식 이름 · 좋아요가 없어서 조회수와 댓글 수만 보여준다.
 export default function FreePostCard({ post }) {
   return (
     <article className="free-card">
@@ -14,6 +14,7 @@ export default function FreePostCard({ post }) {
               📎
             </span>
           )}
+          {post.comment_count > 0 && <span className="free-card__comments">[{post.comment_count}]</span>}
         </h3>
         <p className="muted free-card__excerpt">{post.content}</p>
       </Link>
@@ -21,7 +22,9 @@ export default function FreePostCard({ post }) {
       <footer className="free-card__meta">
         <span className="muted">{post.nickname}</span>
         <span className="muted">{formatDate(post.created_at)}</span>
-        <span className="muted free-card__counts">조회 {post.view_count}</span>
+        <span className="muted free-card__counts">
+          💬 {post.comment_count} · 조회 {post.view_count}
+        </span>
       </footer>
     </article>
   )

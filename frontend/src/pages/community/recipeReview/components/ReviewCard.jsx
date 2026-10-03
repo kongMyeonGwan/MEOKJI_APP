@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { formatDate } from '../../../utils/format'
+import { formatDate } from '../../../../utils/format'
 
 // 게시글 목록의 한 줄
 export default function ReviewCard({ review }) {

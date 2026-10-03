@@ -3,7 +3,7 @@
 // TODO(게시판 담당): 아직 서버가 501(미구현)을 돌려준다.
 //   1. 서버의 공지 기능을 만든다
 //   2. 아래 import 주석을 풀고, 함수 안의 throw 를 client 호출로 바꾼다
-//   3. CommunityPage 에서 SAMPLE_NOTICES 대신 이 함수를 부른다
+//   3. pages/community/notice/ 의 화면들에서 SAMPLE_NOTICE* 대신 이 함수를 부른다
 
 // import client from './client'
 // import { authHeader } from '../utils/token'
@@ -15,6 +15,11 @@ const NOT_READY = '공지사항 기능은 아직 준비 중입니다.'
 
 // 공지 목록 한 페이지. 고정 공지가 위, 그 다음 최신순.
 export const getNotices = async (options) => {
+  throw new Error(NOT_READY)
+}
+
+// 공지 하나. 상세 화면이 부른다.
+export const getNotice = async (noticeId) => {
   throw new Error(NOT_READY)
 }
 

@@ -9,6 +9,13 @@
 // 필드 이름은 서버 스키마(backend 의 review/vo · notice/vo)와 똑같다.
 // 그래서 나중에 이 배열 대신 API 응답을 넣기만 하면 화면은 안 고쳐도 된다.
 
+// 첨부 사진 미리보기용 임시 그림. 서버가 생기면 file.url 에 서버 주소가 들어온다.
+export const SAMPLE_PHOTO =
+  "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='480' height='300'>" +
+  "<rect width='480' height='300' fill='%23e8e2d6'/>" +
+  "<circle cx='240' cy='130' r='56' fill='%23cfc4ae'/>" +
+  "<rect x='150' y='196' width='180' height='14' rx='7' fill='%23cfc4ae'/></svg>"
+
 // ===== 게시글 목록 (GET /api/reviews) =====
 // 서버는 { items, total, page, size, total_pages } 모양으로 준다.
 export const SAMPLE_REVIEWS = [
@@ -111,18 +118,22 @@ export const SAMPLE_REVIEW_DETAIL = {
     { name: '식용유', quantity: 3, unit: '큰술' },
   ],
 
-  // 첨부 사진. url 은 서버가 주는 상대 주소다.
-  file: null,
+  // 첨부 사진 한 장. 없는 모양을 보려면 null 로 바꾼다.
+  file: {
+    url: SAMPLE_PHOTO,
+    name: '김치전_완성.jpg',
+    size_text: '184 KB',
+  },
 
   liked: false,
-  is_mine: false,
+  is_mine: true, // false 로 바꾸면 남의 글 모양 (수정 · 삭제 · 첨부 버튼이 사라진다)
   comments: [
     {
       id: 11,
       nickname: '자취생김씨',
       content: '오징어 넣으면 물이 나와서 반죽을 좀 되게 잡으셔야 해요!',
       created_at: '2026-09-16T11:02:00Z',
-      is_mine: false,
+      is_mine: true, // 내 댓글 모양(수정 · 삭제 버튼)을 볼 수 있게 하나만 true 로 뒀다
     },
     {
       id: 12,
@@ -140,6 +151,14 @@ export const SAMPLE_REVIEW_DETAIL = {
     },
   ],
 }
+
+// ===== 글쓰기 화면의 "공유할 내 기록" 드롭다운 (GET /api/histories?shared=false) =====
+// 후기는 내 식사 기록 하나를 골라서 쓴다. 고를 거리가 있어야 화면이 그려진다.
+export const SAMPLE_WRITE_HISTORIES = [
+  { id: 101, food_name: '김치전', recipe_name: '바삭한 묵은지 김치전' },
+  { id: 102, food_name: '제육볶음', recipe_name: '자취 3년차 제육볶음' },
+  { id: 103, food_name: '미역국', recipe_name: '뽀얀 미역국' },
+]
 
 // ===== 공지사항 (GET /api/notices) =====
 export const SAMPLE_NOTICES = [
@@ -180,6 +199,19 @@ export const SAMPLE_NOTICES = [
     created_at: '2026-09-05T07:00:00Z',
   },
 ]
+
+// ===== 공지 상세 (GET /api/notices/{id}) =====
+// 목록 항목과 칸이 같고 수정 시각만 더 붙는다.
+export const SAMPLE_NOTICE_DETAIL = {
+  id: 1,
+  title: '[안내] 재료 시세 정보가 업데이트되었습니다',
+  content:
+    '한국농수산식품유통공사(KAMIS) 조사가격 기준으로 매일 아침 갱신됩니다.\n주말과 공휴일은 조사가 없어 직전 영업일 값이 표시될 수 있습니다.\n\n가격은 전국 평균 소매가이며, 지역을 고르면 그 지역 값으로 바뀝니다.\n조사되지 않는 재료는 가격 대신 "-" 로 표시됩니다.',
+  view_count: 412,
+  pinned: true,
+  created_at: '2026-09-15T01:00:00Z',
+  updated_at: '2026-09-15T01:00:00Z',
+}
 
 // ===== 인기 레시피 (GET /api/reviews/popular) =====
 // 고른 기간에 새로 받은 좋아요가 많은 순.

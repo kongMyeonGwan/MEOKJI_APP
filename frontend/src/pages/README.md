@@ -15,10 +15,42 @@ pages/
 ├── auth/         로그인 · 회원가입 · 비밀번호 재설정
 ├── recommend/    추천 · 검색 · 예산 · 레시피 상세
 ├── game/         메뉴 정하기 게임
-├── community/    게시판 · 공지 · 인기 레시피
-├── free/         자유게시판
+├── community/    게시판 셋. 아래에 또 나눠져 있다
+│   ├── recipeReview/   레시피리뷰 · 인기 레시피
+│   ├── free/           자유게시판
+│   └── notice/         공지사항
 ├── mypage/       내 정보 · 기록 · 찜 · 설정
 └── NotFoundPage.jsx    없는 주소. 어느 역할에도 속하지 않아 여기 둔다
+```
+
+`community/` 만 한 겹 더 깊다. 게시판이 셋인데 화면 모양과 쓰는 가데이터가
+비슷해서 한 자리에 모았고, 그 안에서 **담당자별로 다시 나눴다.** 세 폴더가
+각각 화면(`XxxPage.jsx`)과 `components/` 를 따로 가진다.
+
+```
+community/recipeReview/
+├── CommunityPage.jsx       /community
+├── ReviewDetailPage.jsx    /community/:reviewId
+├── ReviewWritePage.jsx     /community/write
+├── PopularPage.jsx         /popular
+└── components/             ReviewCard · ReviewAttachment · CommentItem
+```
+
+주소는 폴더 이름을 따라가지 않는다. 자유게시판은 `community/free/` 에 있지만
+주소는 `/free` 다. 어느 주소에 어느 화면이 붙는지는 `src/App.jsx` 만 정한다.
+
+세 게시판이 **같이 쓰는 조각은 `community/components/` 에 둔다.** 지금은
+`CommunityTabs` 하나다 — 레시피 추천 · 공지사항 · 자유게시판을 오가는 탭이고,
+세 목록 화면이 똑같이 올려 쓴다. 사이드바에는 '커뮤니티' 하나만 있으므로
+게시판 사이를 옮겨 다니는 길은 이 탭뿐이다. 하나를 지우면 그 게시판에
+들어갈 방법이 없어진다.
+
+```
+community/
+├── components/         세 게시판이 같이 쓰는 조각 (CommunityTabs)
+├── recipeReview/
+├── free/
+└── notice/
 ```
 
 ---
@@ -69,48 +101,108 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 게임에 나오는 후보와 질문은 코드에 박혀 있지 않다. 서버가 주는
 `GET /api/catalog` 를 각 화면이 `useEffect` 로 직접 받아온다.
 
-### `community/` — 게시판 · 공지
+### `community/recipeReview/` — 레시피리뷰 · 인기 레시피
 
 | 파일 | 주소 | 하는 일 |
 |---|---|---|
-| `CommunityPage.jsx` | `/community` | 글 목록 · 공지 |
+| `CommunityPage.jsx` | `/community` | 글 목록 · 검색 (공지 탭은 `/notice` 로 가는 링크) |
 | `ReviewDetailPage.jsx` | `/community/:reviewId` | 글 + 댓글 + 좋아요 |
 | `ReviewWritePage.jsx` | `/community/write` | 글쓰기 (로그인 필요) |
 | `PopularPage.jsx` | `/popular` | 인기 레시피 |
 
-> **아직 서버가 없다.** 게시판과 공지 API 는 501 이다.
->
-> `ReviewWritePage` 만 `api/reviews.js` 를 **이미 부르고 있다.** 서버가 501 이라
-> `createReview` 가 그 전에 막혀서 "게시판 기능은 아직 준비 중입니다." 가 뜬다 -
-> 서버와 `api/reviews.js` 가 채워지면 이 화면은 고칠 것 없이 그대로 돈다.
->
-> 나머지 셋(`CommunityPage` · `ReviewDetailPage` · `PopularPage`)은 아직
-> `src/data/sampleBoard.js` 의 가데이터로 그려진다. `SAMPLE_*` 대신
-> `api/reviews.js` · `api/notices.js` 를 부르게 바꾸고 `sampleBoard.js` 를
-> 지우면 된다.
->
-> 서버 쪽이 어떻게 동작해야 하는지는 `docs/BOARD_SPEC.md` 에 있다.
+조각은 `recipeReview/components/` 에 셋 있다 — `ReviewCard`(목록 한 줄) ·
+`ReviewAttachment`(첨부 사진 한 장) · `CommentItem`(댓글 한 줄).
+공지 조각(`NoticeList` · `NoticeForm`)은 `community/notice/` 로 옮겼다.
 
-### `free/` — 자유게시판
+> **퍼블리싱까지만 돼 있다. 기능은 팀원들이 붙인다.**
+>
+> 화면은 `src/data/sampleBoard.js` 의 가데이터로 그려진다. 모양은 다 나오지만
+> 입력 · 검증 · 저장은 **일부러 비워 뒀다.** 버튼을 눌러도 아무 일도 안 난다.
+>
+> 남아 있는 것은 **보기 전환뿐**이다 — 탭(레시피 추천 ↔ 공지사항), 공지 펼치기,
+> 수정 폼 열고 닫기, 페이지 번호 눌렀을 때 색 바뀌기. 전부 `useState` 하나씩이다.
+>
+> 없는 것 — 입력칸 값 묶기(`value` + `onChange`), 입력값 검사, `alert` ·
+> `window.confirm`, API 호출, 좋아요 숫자 증감, 글자 수 세기, 로딩 · 오류 상태.
+> 입력칸은 `value` 대신 `defaultValue` 나 `placeholder` 만 쓴다.
+>
+> 무엇을 채워야 하는지는 **각 파일 맨 위 `TODO(게시판 담당)`**
+> 에 항목으로 적혀 있다. 코드는 안 적어 뒀다. 받아오는 모양은 `CODE_STYLE.md` 2번,
+> 서버가 어떻게 동작해야 하는지는 `docs/BOARD_SPEC.md` 를 본다.
+>
+> `api/reviews.js` 는 지금 아무 화면도 부르지 않는다. 함수 목록과 주소는 그대로
+> 있으니 지우지 말고 채워서 쓴다 (서버도 아직 501 이다).
+>
+> `App.jsx` 의 `<Route>` 에서 `user={user}` 를 안 넘기고 있다. 로그인 여부로
+> 버튼을 가리려면 그것부터 붙여야 한다.
+
+### `community/free/` — 자유게시판
 
 | 파일 | 주소 | 하는 일 |
 |---|---|---|
-| `FreePage.jsx` | `/free` | 글 목록 · 검색 |
-| `FreeDetailPage.jsx` | `/free/:postId` | 글 + 첨부 사진 (내 글이면 수정 · 삭제) |
+| `FreePage.jsx` | `/free` | 글 목록 · 검색 · 페이징 |
+| `FreeDetailPage.jsx` | `/free/:postId` | 글 + 첨부 사진 + 댓글 (내 글이면 수정 · 삭제) |
 | `FreeWritePage.jsx` | `/free/write` | 글쓰기 (로그인 필요) |
 
-`community/` 와 화면 모양이 거의 같지만 **글을 쓰는 조건이 없다.** 후기는 내
+조각은 `free/components/` 에 셋 — `FreePostCard`(목록 한 줄) ·
+`FreeAttachment`(첨부 사진 한 장) · `FreeCommentItem`(댓글 한 줄).
+
+`recipeReview/` 와 화면 모양이 거의 같지만 **글을 쓰는 조건이 없다.** 후기는 내
 식사 기록(`MEAL_HISTORIES`)을 하나 골라야 쓸 수 있는데, 자유게시판은 로그인만
 했으면 아무 주제나 쓴다. 표도 그렇게 만들었다 — `FREE_POSTS` 에는 부모 FK 가 없다
 (`db/09_add_free_posts.sql`).
 
-좋아요 · 댓글이 없다. 그 표(`FREE_POST_LIKES` · `FREE_POST_COMMENTS`)를 안 만들었다.
-첨부 사진은 후기와 같이 **글 하나당 한 장**이고, 표의 `FILE_*` 컬럼에 들어간다.
+좋아요는 없다. 그 표(`FREE_POST_LIKES`)를 안 만들었다. 댓글은 있고, 표는
+레시피리뷰와 **같이 쓴다** — `POST_COMMENTS` 의 `BOARD_TYPE='F'` 가 자유게시판
+몫이다(`db/10_post_comments.sql`). 첨부 사진은 후기와 같이 **글 하나당 한 장**
+이고 표의 `FILE_*` 컬럼에 들어간다.
 
-> **퍼블리싱까지만 돼 있다.** 세 화면 모두 `src/data/sampleFree.js` 의 가데이터를
-> 그리고, 등록 · 수정 · 삭제 · 사진 첨부를 누르면 "준비 중" 안내만 뜬다.
-> `api/freePosts.js` 를 만들어 각 화면의 `TODO(자유게시판 담당)` 자리를 채우고
-> `sampleFree.js` 를 지우면 된다. 받아오는 코드 모양은 `CODE_STYLE.md` 2번에 있다.
+> **여기만 서버까지 다 돼 있다.** 세 게시판 중 자유게시판만 실제 API 를 부른다.
+> 목록 · 상세 · 글쓰기 · 수정 · 삭제 · 조회수 · 댓글 CRUD · 사진 업로드/교체/삭제가
+> 전부 동작한다. 서버 코드는 `backend/.../api/free/` 에 있고, 테스트는
+> `FreePostTest` 다.
+>
+> 그래서 **후기 · 공지를 붙일 때 본보기로 쓰면 된다.** 받아오는 모양
+> (`useEffect` + `async/await` + `catch` 의 if/else), 오류 문구 꺼내는 법,
+> 사진을 `FormData` 로 보내는 법이 `api/freePosts.js` 와 세 화면에 그대로 있다.
+>
+> `src/data/sampleFree.js` 는 더 이상 쓰지 않는다. 지워도 되는데, 서버 없이
+> 화면만 보고 싶을 때 되돌릴 자리라 남겨 뒀다.
+
+### `community/notice/` — 공지사항
+
+| 파일 | 주소 | 하는 일 |
+|---|---|---|
+| `NoticePage.jsx` | `/notice` | 공지 목록 (고정 공지가 위) |
+| `NoticeDetailPage.jsx` | `/notice/:noticeId` | 공지 본문 + (관리자) 수정 · 삭제 |
+| `NoticeWritePage.jsx` | `/notice/write` | 공지 작성 |
+
+조각은 `community/notice/components/` 에 둘이다 — `NoticeCard`(목록 한 줄) ·
+`NoticeForm`(작성 · 수정 폼). **폼은 작성 화면과 상세 화면이 같이 쓴다.**
+`notice` props 를 넘기면 '공지 수정', 안 넘기면 '새 공지 작성' 모양이 된다.
+
+원래 공지는 `recipeReview/CommunityPage` 의 공지 탭 안에서 제목을 누르면 그 자리에서 펼쳐지는
+아코디언이었다. 목록 · 상세 · 작성이 다 있는 게시판으로 바꾸면서 폴더를 따로
+뺐다. 커뮤니티의 공지 탭은 `/notice` 로 보내는 링크로 남아 있다.
+
+> **퍼블리싱까지만 돼 있다.** `src/data/sampleBoard.js` 의 `SAMPLE_NOTICES` ·
+> `SAMPLE_NOTICE_DETAIL` 을 그린다. 남은 동작은 수정 폼 열고 닫기, 페이지 번호
+> 색 바뀌기뿐이고 등록 · 수정 · 삭제는 아무 일도 하지 않는다. 할 일은 각 파일
+> 맨 위 `TODO(공지 담당)` 에 있다.
+>
+> 관리자 전용 버튼(공지 작성 · 수정 · 삭제)이 **지금은 늘 보인다.** 가릴 때는
+> `App.jsx` 에서 `user={user}` 를 받아 `user.is_admin` 으로 판단한다. 작성 화면은
+> `loginOnly()` 처럼 `adminOnly()` 를 만들어 감싸는 것이 맞다.
+>
+> 서버는 `api/notices.js` 의 여섯 함수를 쓴다 — `getNotices` · `getNotice` ·
+> `countNoticeView` · `createNotice` · `updateNotice` · `deleteNotice`. 아직 전부
+> 501 이다. 상세 조회(`GET /api/notices/{noticeId}`)는 아코디언 시절에 없던
+> 주소라 이번에 백엔드 컨트롤러에 같이 넣었다. 규칙은 `docs/BOARD_SPEC.md` 의
+> 공지 표에 있다.
+>
+> 조회수는 상세를 받아올 때 자동으로 오르지 않는다. 화면이 `countNoticeView` 를
+> 따로 불러야 한다 — 목록을 열 때마다 모든 공지의 조회수가 오르면 숫자가
+> 의미를 잃기 때문에 서버가 그렇게 나눠 뒀다.
 
 ### `mypage/` — 내 정보
 
@@ -131,14 +223,24 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 
 코드 모양(화살표 함수, async/await, 폼 검사 등)은 `frontend/CODE_STYLE.md` 를 따른다.
 
-### 상대경로가 한 겹 더 깊다
+### 상대경로는 폴더 깊이만큼 깊어진다
 
-화면이 폴더 안으로 들어가서 `../` 가 아니라 `../../` 다.
+`../` 를 몇 개 쓰는지는 그 파일이 `src/` 에서 몇 칸 들어가 있는지로 정해진다.
+헷갈리면 같은 폴더의 다른 파일을 열어 그대로 베끼면 된다.
 
 ```jsx
-import Loading from '../../components/common/Loading'   // 공통
-import ProfileForm from './components/ProfileForm'      // 이 기능 전용
-import { getLikes } from '../../api/likes'
+// pages/mypage/MyPage.jsx            — 화면
+import Loading from '../../components/common/Loading'
+import ProfileForm from './components/ProfileForm'     // 이 기능 전용은 언제나 './'
+
+// pages/mypage/components/ProfileForm.jsx — 조각 (한 겹 더)
+import { getLikes } from '../../../api/likes'
+
+// pages/community/free/FreePage.jsx  — 게시판은 community 아래라 또 한 겹
+import Pagination from '../../../components/common/Pagination'
+
+// pages/community/free/components/FreePostCard.jsx — 그 조각
+import { formatDate } from '../../../../utils/format'
 ```
 
 ### 스타일은 `src/styles/index.css` 한 파일에 다 있다

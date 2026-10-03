@@ -23,14 +23,18 @@ import WorldCupPage from './pages/game/WorldCupPage'
 import BalancePage from './pages/game/BalancePage'
 import RoulettePage from './pages/game/RoulettePage'
 
-import CommunityPage from './pages/community/CommunityPage'
-import PopularPage from './pages/community/PopularPage'
-import ReviewDetailPage from './pages/community/ReviewDetailPage'
-import ReviewWritePage from './pages/community/ReviewWritePage'
+import CommunityPage from './pages/community/recipeReview/CommunityPage'
+import PopularPage from './pages/community/recipeReview/PopularPage'
+import ReviewDetailPage from './pages/community/recipeReview/ReviewDetailPage'
+import ReviewWritePage from './pages/community/recipeReview/ReviewWritePage'
 
-import FreePage from './pages/free/FreePage'
-import FreeDetailPage from './pages/free/FreeDetailPage'
-import FreeWritePage from './pages/free/FreeWritePage'
+import NoticePage from './pages/community/notice/NoticePage'
+import NoticeDetailPage from './pages/community/notice/NoticeDetailPage'
+import NoticeWritePage from './pages/community/notice/NoticeWritePage'
+
+import FreePage from './pages/community/free/FreePage'
+import FreeDetailPage from './pages/community/free/FreeDetailPage'
+import FreeWritePage from './pages/community/free/FreeWritePage'
 
 import MyPage from './pages/mypage/MyPage'
 import HistoryPage from './pages/mypage/HistoryPage'
@@ -156,9 +160,16 @@ export default function App() {
 
           {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
           <Route path="/popular" element={<PopularPage />} />
-          <Route path="/community" element={<CommunityPage user={user} />} />
-          <Route path="/community/:reviewId" element={<ReviewDetailPage user={user} />} />
+          {/* 레시피리뷰 · 공지는 퍼블리싱만 돼 있다. 로그인한 사람(user)을 아직 쓰지 않아
+              props 를 넘기지 않는다 — 기능 담당이 user={user} 를 붙이는 자리다 */}
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/community/:reviewId" element={<ReviewDetailPage />} />
           <Route path="/community/write" element={loginOnly(<ReviewWritePage />)} />
+
+          {/* 공지사항. 보기는 누구나, 작성 · 수정 · 삭제는 관리자만 (지금은 퍼블리싱만) */}
+          <Route path="/notice" element={<NoticePage />} />
+          <Route path="/notice/write" element={<NoticeWritePage />} />
+          <Route path="/notice/:noticeId" element={<NoticeDetailPage />} />
 
           {/* 자유게시판. 후기와 달리 아무 주제나 쓸 수 있다. 보는 것은 로그인 없이도 된다 */}
           <Route path="/free" element={<FreePage user={user} />} />

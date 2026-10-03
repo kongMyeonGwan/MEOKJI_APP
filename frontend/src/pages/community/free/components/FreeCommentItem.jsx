@@ -1,24 +1,21 @@
 import { useState } from 'react'
-import { formatDateTime } from '../../../utils/format'
+import { formatDateTime } from '../../../../utils/format'
 
 const COMMENT_MAX = 1000 // 댓글 최대 글자 수
 
-// 댓글 한 줄. 게시글 상세(ReviewDetailPage)에서 댓글마다 하나씩 그린다.
+// 댓글 한 줄. 글 상세(FreeDetailPage)에서 댓글마다 하나씩 그린다.
 // 댓글마다 "지금 수정 중인지" 를 따로 가지고 있어야 해서 컴포넌트로 뺐다.
 //   comment  : 댓글 { id, nickname, content, created_at, is_mine }
 //   onEdit   : 수정 저장을 누르면 부를 함수 (comment, 새 내용)
 //   onDelete : 삭제를 누르면 부를 함수 (comment)
-export default function CommentItem({ comment, onEdit, onDelete }) {
+export default function FreeCommentItem({ comment, onEdit, onDelete }) {
   const [editing, setEditing] = useState(false) // 수정 중인지
   const [text, setText] = useState(comment.content) // 수정 입력칸 글자
 
-  const handleSubmit = (e) => {
-    e.preventDefault() // 폼을 제출하면 페이지가 새로고침되는데, 그걸 막는다
-
-    if (text.trim() === '') {
+  const handleSave = () => {
+    if (!text.trim()) {
       return
     }
-
     onEdit(comment, text.trim())
     setEditing(false)
   }
@@ -31,17 +28,17 @@ export default function CommentItem({ comment, onEdit, onDelete }) {
 
   return (
     <li>
-      <div className="review__comment-head">
+      <div className="free-detail__comment-head">
         <strong>{comment.nickname}</strong>
         <span className="muted">{formatDateTime(comment.created_at)}</span>
 
         {/* 내 댓글이면 수정/삭제 버튼 */}
         {comment.is_mine && !editing && (
-          <span className="review__comment-actions">
+          <span className="free-detail__comment-actions">
             <button type="button" onClick={() => setEditing(true)}>
               수정
             </button>
-            <button type="button" className="review__danger" onClick={() => onDelete(comment)}>
+            <button type="button" className="free-detail__danger" onClick={() => onDelete(comment)}>
               삭제
             </button>
           </span>
@@ -49,15 +46,15 @@ export default function CommentItem({ comment, onEdit, onDelete }) {
       </div>
 
       {editing ? (
-        <form className="review__form" onSubmit={handleSubmit}>
+        <div className="free-detail__form">
           <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={COMMENT_MAX} rows={3} />
-          <div className="review__form-foot">
+          <div className="free-detail__form-foot">
             {/* 거의 다 차면 빨간 글씨로 알려준다 */}
-            <span className={text.length > COMMENT_MAX - 100 ? 'review__count-warn' : 'muted'}>
+            <span className={text.length > COMMENT_MAX - 100 ? 'free-detail__count-warn' : 'muted'}>
               {text.length} / {COMMENT_MAX}
             </span>
-            <span className="review__edit-actions">
-              <button type="submit" className="btn btn--sm">
+            <span className="free-detail__edit-actions">
+              <button type="button" className="btn btn--sm" onClick={handleSave} disabled={!text.trim()}>
                 저장
               </button>
               <button type="button" className="btn btn--ghost btn--sm" onClick={handleCancel}>
@@ -65,9 +62,9 @@ export default function CommentItem({ comment, onEdit, onDelete }) {
               </button>
             </span>
           </div>
-        </form>
+        </div>
       ) : (
-        <p className="review__comment-body">{comment.content}</p>
+        <p className="free-detail__comment-body">{comment.content}</p>
       )}
     </li>
   )

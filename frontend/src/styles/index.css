@@ -9,7 +9,7 @@
  * 찾을 때는 Ctrl+F 로 아래 제목을 치면 된다.
  *
  *   레이아웃 / 공통 컴포넌트 / 홈 / 로그인 · 회원가입 / 목록 화면 공통
- *   추천 · 레시피 / 게임 / 게시판 · 후기 / 자유게시판 / 마이페이지 / 전역
+ *   추천 · 레시피 / 게임 / 게시판 · 후기 / 자유게시판 / 공지사항 / 마이페이지 / 전역
  *
  * 하이브리드 레이아웃 기준
  *   ~ 1023px  앱 모드 : 상단 앱바 + 하단 탭. 본문 1단
@@ -2400,6 +2400,12 @@
   outline-offset: -1px;
 }
 
+/* 성별 드롭다운. 모양은 전역 select 규칙이 잡아주고, 여기서는 위아래 입력칸과
+   같은 폭이 되게만 한다 — 폭이 다르면 폼이 들쭉날쭉해 보인다 */
+.register__field select {
+  width: 100%;
+}
+
 .register__submit,
 .register__actions button {
   width: 100%;
@@ -3721,8 +3727,13 @@ a.price-table__best:hover { text-decoration: underline; }
   font-size: 15px;
   font-family: inherit;
   line-height: 1.6;
-  background: var(--color-surface);
+  /* background 단축으로 쓰면 전역이 깔아준 select 화살표(background-image)까지
+     지워진다. 색만 바꾸고 싶으므로 background-color 로 적는다 */
+  background-color: var(--color-surface);
 }
+
+/* 드롭다운은 오른쪽에 화살표가 앉으므로 그만큼 비워 둔다 (위 padding 을 덮는다) */
+.notice-form__field select { padding-right: 34px; }
 
 .notice-form__field textarea { resize: vertical; }
 
@@ -4300,8 +4311,12 @@ a.btn {
   font-size: 15px;
   font-family: inherit;
   line-height: 1.6;
-  background: var(--color-bg);
+  /* background 단축은 전역이 깔아준 select 화살표까지 지운다 */
+  background-color: var(--color-bg);
 }
+
+/* 드롭다운은 오른쪽에 화살표가 앉으므로 그만큼 비워 둔다 */
+.write__field select { padding-right: 34px; }
 
 .write__field textarea { resize: vertical; }
 
@@ -4524,6 +4539,111 @@ a.btn {
 
 .free-detail__danger { color: var(--color-error); }
 
+/* ----- 자유게시판 댓글 ----- */
+/* 글 상세 아래에 붙는 댓글 목록과 입력칸. 레시피 후기의 .review__comment* 와
+   모양이 같지만 클래스를 따로 뒀다 — 한쪽을 고칠 때 다른 게시판이 같이
+   바뀌면 안 된다. */
+
+.free-detail__comments {
+  margin: 16px 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.free-detail__comment-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.free-detail__comment-head span { font-size: 12px; }
+
+/* 쓴 사람이 넣은 줄바꿈을 그대로 보여준다 */
+.free-detail__comment-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 내 댓글에만 나오는 수정 · 삭제. 오른쪽 끝에 붙여 이름과 안 붙게 한다 */
+.free-detail__comment-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.free-detail__comment-actions button {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.free-detail__comment-actions button:hover { color: var(--color-accent); }
+.free-detail__comment-actions .free-detail__danger:hover { color: var(--color-error); }
+
+/* ----- 댓글 입력칸 ----- */
+.free-detail__form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.free-detail__form textarea:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.free-detail__form-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+/* 1000자에 가까워지면 빨갛게 알린다 */
+.free-detail__count-warn {
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+.free-detail__login-ask {
+  margin: 0;
+  font-size: 14px;
+}
+
+.free-detail__link {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* 목록 한 줄의 제목 옆 댓글 수 */
+.free-card__comments {
+  margin-left: 6px;
+  font-size: 13px;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* 검색 결과 건수 */
+.free__count {
+  margin: 14px 0 0;
+  font-size: 13px;
+}
+
 /* ===== 글 수정 폼 ===== */
 .free-detail__edit {
   display: grid;
@@ -4638,6 +4758,88 @@ a.btn {
 }
 
 /* ==========================================================
+   공지사항 (목록 · 상세 · 작성)
+   ========================================================== */
+
+/* 공지는 커뮤니티 탭 안의 아코디언이었다가 목록 · 상세 · 작성이 다 있는
+   게시판(pages/notice/)으로 독립했다. 목록 한 줄의 모양(.notice-list ·
+   .notice · .notice__head ...)과 폼(.notice-form ...)은 위쪽 "게시판 · 후기"
+   구역에 그대로 있다 — 거기서 옮겨오면 .tag 와의 순서가 바뀌어 고정 배지
+   색이 달라지므로 건드리지 않았다. 여기에는 새로 생긴 것만 둔다. */
+
+/* ----- NoticePage (목록) ----- */
+.notice-page__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.notice-page__desc {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* ----- NoticeDetailPage (상세) ----- */
+.notice-detail {
+  display: grid;
+  gap: 20px;
+}
+
+.notice-detail__back { margin: 0; font-size: 14px; }
+.notice-detail__back a:hover { color: var(--color-accent); }
+
+/* 고정 배지가 제목 앞에 붙는다. 제목이 길어 줄이 넘어가도 배지만 따로 떨어지지 않게
+   baseline 이 아니라 가운데로 맞춘다 */
+.notice-detail__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.notice-detail__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+/* 본문. 줄바꿈을 그대로 보여주는 것은 .notice__content 가 하고,
+   여기서는 상세 화면에 맞게 여백과 크기만 키운다 */
+.notice-detail__content {
+  padding: 20px 0;
+  font-size: 15px;
+  line-height: 1.75;
+  word-break: break-word;
+}
+
+.notice-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* 수정 · 삭제는 오른쪽 끝에 붙인다. '목록' 옆에 나란히 두면 잘못 누른다 */
+.notice-detail__admin {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+/* 되돌릴 수 없는 동작만 색을 달리한다 */
+.notice-detail__danger { color: var(--color-error); }
+
+/* ==========================================================
    공통 컴포넌트
    ========================================================== */
 
@@ -4721,8 +4923,12 @@ a.btn {
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
-  background: var(--color-bg);
+  /* background 단축은 전역이 깔아준 select 화살표까지 지운다 */
+  background-color: var(--color-bg);
 }
+
+/* 드롭다운은 오른쪽에 화살표가 앉으므로 그만큼 비워 둔다 */
+.mypage__form select { padding-right: 34px; }
 
 .mypage__form input:focus,
 .mypage__form select:focus {
@@ -5167,6 +5373,12 @@ a.btn {
   --tint-rain: #e9eef3;
   --tint-snow: #eaf1f8;
 
+  /* 드롭다운(select) 오른쪽 화살표. 브라우저 기본 화살표는 OS 마다 모양이 달라
+     끄고(appearance:none) 직접 그린다. 배경 이미지라 var() 를 못 쓰므로
+     색을 넣은 그림 자체를 변수로 둔다 — 다크 모드는 아래에서 다시 적는다 */
+  --select-arrow:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23857d74' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+
   --radius: 20px;                 /* 카드 공통 */
   --radius-sm: 12px;              /* 카드 안의 작은 요소 */
   --radius-pill: 999px;           /* 버튼 · 칩 */
@@ -5219,6 +5431,9 @@ a.btn {
   /* 일러스트가 밝은 색이라 배경까지 밝으면 카드에서 그 칸만 떠 보인다 */
   --thumb-bg: linear-gradient(150deg, #2e241c 0%, #3b2c22 100%);
 
+  --select-arrow:
+    url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23a89e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+
   --tint-clear: #2b2119;
   --tint-clouds: #202225;
   --tint-rain: #1a2028;
@@ -5250,6 +5465,103 @@ a { color: inherit; text-decoration: none; }
 img, video { max-width: 100%; height: auto; }
 
 button { font-family: inherit; }
+
+/* ===== 드롭다운 · 파일 선택 =====
+ *
+ * 이 둘은 브라우저가 자기 모양으로 그린다. 그대로 두면 크롬 · 사파리 · 윈도우가
+ * 제각각이고, 옆에 있는 우리 입력칸(테두리 1px · 라운드 8px)과 따로 논다.
+ * 그래서 여기서 한 번만 모양을 잡아 둔다.
+ *
+ * 선택자를 클래스가 아니라 요소(select)로 쓴 이유
+ *   클래스 하나짜리 규칙(.write__field select 등)이 이것보다 세다. 그래서
+ *   화면별로 이미 잡아둔 폭 · 여백은 그대로 살고, 아무도 안 잡아준 곳만
+ *   이 규칙이 채운다. 새 화면을 만들 때 select 스타일을 다시 안 써도 된다.
+ */
+
+select {
+  /* 기본 화살표를 끄고 --select-arrow 로 직접 그린다 */
+  appearance: none;
+  -webkit-appearance: none;
+
+  padding: 10px 34px 10px 12px; /* 오른쪽은 화살표 자리 */
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-bg);
+  background-image: var(--select-arrow);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 11px;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease);
+}
+
+select:hover:not(:disabled) {
+  border-color: var(--color-subtle);
+}
+
+select:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+/* 고를 것이 없을 때(시 · 도를 아직 안 고른 시 · 군 · 구). 눌리지 않는다는 걸
+   흐림으로 알린다 — 테두리만 흐리면 글자가 멀쩡해 보여서 계속 누르게 된다 */
+select:disabled {
+  background-color: var(--color-soft);
+  color: var(--color-subtle);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ----- 파일 선택 ----- */
+/* 칸 전체를 입력칸처럼 두르고, 그 안의 '파일 선택' 버튼만 알약 버튼으로 바꾼다.
+   옆의 '선택된 파일 없음' 글자는 브라우저가 쓰는 것이라 CSS 로 못 바꾼다 —
+   그래서 그 줄이 설명글처럼 읽히게 muted 색으로 눕힌다. */
+input[type='file'] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+input[type='file']:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+input[type='file']::file-selector-button {
+  margin-right: 12px;
+  padding: 7px 15px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+input[type='file']::file-selector-button:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+input[type='file']:disabled,
+input[type='file']:disabled::file-selector-button {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* ===== 공통 요소 ===== */
 

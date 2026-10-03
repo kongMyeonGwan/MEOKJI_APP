@@ -37,18 +37,21 @@ const names = items.map((item) => item.food_name)
 src/
 ├── components/common/     여러 기능이 같이 쓰는 것 (Modal, Loading, FoodCard ...)
 ├── pages/<기능>/
-│   ├── components/        이 기능에서만 쓰는 조각 (+ 같은 이름의 .css)
-│   ├── XxxPage.jsx        화면 (+ XxxPage.css)
+│   ├── components/        이 기능에서만 쓰는 조각
+│   ├── XxxPage.jsx        화면
+├── pages/community/<게시판>/   게시판 셋(recipeReview · free · notice)은 한 겹 더
+│   ├── components/        그 게시판에서만 쓰는 조각
+│   ├── XxxPage.jsx        화면
 ├── layouts/               MainLayout + layouts/components (Sidebar, TopBar, BottomNav)
 ├── hooks/                 useForm
-└── styles/                index.css (전체 색 · 공통 클래스), ListPage.css (여러 목록 화면이 같이 씀)
+└── styles/                index.css — 화면 스타일 전부 (한 파일)
 ```
 
 - 화면이 길어지면 조각을 `pages/<기능>/components/` 로 빼서 import 합니다.
   예) 마이페이지의 폼들 → `pages/mypage/components/ProfileForm.jsx`, `PasswordForm.jsx` ...
 - **두 기능 이상이 쓰게 되면** `components/common/` 으로 옮깁니다.
   다른 기능 폴더(`pages/다른기능/components`)를 직접 import 하지 않습니다.
-- CSS 는 같은 이름으로 바로 옆에 둡니다. `ProfileForm.jsx` ↔ `ProfileForm.css`
+- CSS 는 `src/styles/index.css` 한 파일에 다 있습니다. 화면 옆에 `.css` 를 새로 만들지 않습니다.
 
 (예외: `components/common/FoodIllustration.jsx` 는 SVG 그림 모음이라 한 파일에 둡니다.)
 
