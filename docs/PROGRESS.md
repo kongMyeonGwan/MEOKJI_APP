@@ -619,7 +619,6 @@ raw SQL 이다.
 | 비밀번호 재설정 3개 | SMTP 발송 + `verification_codes` 표 + OTP 재발송 60초 제한 |
 | 떨이 재료(`bargains`) | KAMIS 품목 116개를 훑어 일주일 전과 비교. 추천의 `use_bargains` 를 켜도 지금은 빈 목록이고, 화면은 빈 목록을 견딘다 |
 | 프론트 전환 | `VITE_API_BASE_URL` 을 8080 으로. 되돌리는 것도 한 줄이다 |
-| `backend/` 정리 | 파이썬 서버를 지우고 `backend-spring/` 을 `backend/` 로 옮기는 일. **포팅이 끝나고 프론트가 스프링으로 돌아가는 것을 확인한 뒤에** 한다 |
 
 ### `develop` 에 합치지 않는다
 

@@ -182,7 +182,7 @@ API 는 전부 확인했으니, 사람이 한 번 훑으면 된다.
 ## 4. 테스트 돌리는 법
 
 ```
-cd backend-spring
+cd backend
 set EMAIL_PROVIDER=mock        ← 꼭! smtp 면 테스트가 진짜 메일을 보내려고 한다
 set WEATHER_PROVIDER=mock      ← 실제 날씨면 기온 비교 테스트가 틀린다
 (DB 접속 정보 환경변수: DB_HOST, DB_PASSWORD, JWT_SECRET_KEY 등)
@@ -190,7 +190,7 @@ gradlew seedDemo               ← 처음 한 번 (데모 계정 만들기)
 gradlew test
 ```
 
-- DB 접속 정보는 이 PC 의 `backend/.env` 에 있었음 (git 에 안 올라감).
+- DB 접속 정보는 이 PC 의 옛 파이썬 `backend/.env` 에 있었음. 지금은 `backend/src/main/resources/application-local.yml` 이다 (둘 다 git 에 안 올라감).
 - 팀 DB `10.1.54.120` 은 **학원 내부망이라 집에서는 안 될 수 있음.** 집에서는 컴파일만 확인: `gradlew compileJava compileTestJava`
 
 ---
