@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 import FoodIllustration from '../../../components/common/FoodIllustration'
-import './CategoryBar.css'
 
 // 카테고리 칩을 가로로 늘어놓는다. 넘치면 옆으로 스크롤된다.
 //   categories : [{ key: 'KR', label: '한식', art: 'stew' }, ...]

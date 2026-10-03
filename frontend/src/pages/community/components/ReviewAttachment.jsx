@@ -1,6 +1,5 @@
 import { reviewFileUrl } from '../../../api/reviews'
 import ErrorMessage from '../../../components/common/ErrorMessage'
-import './ReviewAttachment.css'
 
 // 게시글에 붙은 사진 한 장. 내 글이면(isMine) 바꾸기 / 지우기 버튼이 보인다.
 // 실제 업로드는 부모(ReviewDetailPage)의 onPick, onRemove 에서 한다.

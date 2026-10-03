@@ -6,7 +6,6 @@ import RecipeView from '../../components/common/RecipeView'
 import Pagination from '../../components/common/Pagination'
 import { getHistories, getHistoryStats, removeHistory } from '../../api/histories'
 import { formatDate, formatPrice } from '../../utils/format'
-import './HistoryPage.css'
 
 // 내 식사 기록 (History). "이걸로 먹을래요" 를 누른 레시피가 쌓인다.
 // 줄을 누르면 그 자리에서 레시피가 펼쳐진다.

@@ -7,7 +7,6 @@ import AccountSection from './components/AccountSection'
 import { addBan, getBans, removeBan } from '../../api/bans'
 import { getProfile } from '../../api/users'
 import { formatDate } from '../../utils/format'
-import './MyPage.css'
 
 // 마이페이지. 위에서부터 이렇게 쌓인다.
 //   1. 내 정보 (이 파일)

@@ -8,8 +8,6 @@ import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { getLikes, toggleLike } from '../../api/likes'
 import { addLog, foodNames, markPicked } from '../../utils/aiLog'
 import { formatMinutes, formatPrice } from '../../utils/format'
-import '../../styles/ListPage.css'
-import './GamePage.css'
 
 // 음식 월드컵. 후보 8개를 둘씩 붙여서 하나를 고르면 다음 라운드로 올라간다.
 //   8강(4번 대결) → 4강(2번) → 결승(1번) → 우승

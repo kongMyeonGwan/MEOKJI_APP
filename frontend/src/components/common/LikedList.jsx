@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import FoodThumb from './FoodThumb'
 import { formatDate } from '../../utils/format'
-import './LikedList.css'
 
 // 좋아요를 많이 받은 레시피 목록 (인기 레시피 화면)
 export default function LikedList({ items }) {

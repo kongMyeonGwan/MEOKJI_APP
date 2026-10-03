@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 import Icon from '../../components/common/Icon'
-import './BottomNav.css'
 
 // 모바일에서만 보이는 하단 탭. 로그인 여부에 따라 탭이 달라진다.
 

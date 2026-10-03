@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import ErrorMessage from '../../../components/common/ErrorMessage'
 import useForm from '../../../hooks/useForm'
-import './NoticeForm.css'
 
 // 공지 쓰기 / 고치기 폼 (관리자만 보인다).
 // notice 를 넘기면 고치기, 안 넘기면 새로 쓰기다.

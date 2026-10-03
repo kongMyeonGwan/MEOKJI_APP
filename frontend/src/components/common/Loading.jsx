@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import './Loading.css'
 
 // 기다리는 동안 보여주는 표시 (도는 원 + 문구).
 //

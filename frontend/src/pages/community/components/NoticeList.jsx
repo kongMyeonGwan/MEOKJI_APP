@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { formatDate } from '../../../utils/format'
-import './NoticeList.css'
 
 // 공지사항 목록. 제목을 누르면 그 자리에서 본문이 펼쳐진다.
 // canManage 가 true 면(관리자) 수정/삭제 버튼이 보인다.

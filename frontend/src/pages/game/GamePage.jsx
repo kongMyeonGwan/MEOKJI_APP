@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getCatalog } from '../../api/catalog'
-import '../../styles/ListPage.css'
-import './GamePage.css'
 
 // 메뉴 게임 목록 (월드컵 / 밸런스 / 룰렛). 게임 목록은 서버에서 온다.
 export default function GamePage() {

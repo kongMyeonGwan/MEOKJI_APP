@@ -7,8 +7,6 @@ import { getRecommendations } from '../../api/recommendations'
 import { getCatalog } from '../../api/catalog'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { addLog, foodNames } from '../../utils/aiLog'
-import '../../styles/ListPage.css'
-import './GamePage.css'
 
 // 취향 밸런스 게임.
 // 둘 중 하나 고르는 질문 5개에 답하면, 고른 답을 문장으로 이어서 AI 에게 추천받는다.

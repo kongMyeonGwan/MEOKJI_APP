@@ -6,7 +6,6 @@ import CommentItem from './components/CommentItem'
 import { SAMPLE_REVIEW_DETAIL } from '../../data/sampleBoard'
 import useForm from '../../hooks/useForm'
 import { formatDateTime } from '../../utils/format'
-import './ReviewDetailPage.css'
 
 const COMMENT_MAX = 1000 // 댓글 최대 글자 수
 

@@ -5,7 +5,6 @@ import FoodCard from '../../components/common/FoodCard'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { addLog, foodNames } from '../../utils/aiLog'
-import '../../styles/ListPage.css'
 
 // AI 추천 전체 목록 (/recommend).
 // 주소에 ?category=한식 이 붙어 있으면 그 종류만 추천받는다.

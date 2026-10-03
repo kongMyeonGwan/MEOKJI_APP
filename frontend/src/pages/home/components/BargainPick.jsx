@@ -5,7 +5,6 @@ import Loading from '../../../components/common/Loading'
 import { getRecommendations } from '../../../api/recommendations'
 import { addLog, foodNames } from '../../../utils/aiLog'
 import { formatPrice } from '../../../utils/format'
-import './BargainPick.css'
 
 // "지금 싼 재료로" 카드 (첫 화면).
 // 일주일 전보다 값이 내린 재료(bargains)와 그 재료로 만드는 메뉴(items)를 보여준다.

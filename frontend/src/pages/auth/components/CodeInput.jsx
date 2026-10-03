@@ -1,5 +1,4 @@
 import { useEffect, useImperativeHandle, useRef } from 'react'
-import './CodeInput.css'
 
 // 인증번호 칸 (숫자 한 칸에 하나). 숫자를 치면 다음 칸으로 자동으로 넘어간다.
 //   digits   : 칸마다 들어 있는 숫자 배열. 예) ['1', '2', '', '', '', '']

@@ -3,8 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import Icon from '../../components/common/Icon'
 import { clearLikes, getLikes } from '../../api/likes'
 import { clearLogs, getLogs } from '../../utils/aiLog'
-import '../../styles/ListPage.css'
-import './SettingsPage.css'
 
 // 설정 화면. 로그인 없이도 열린다 (테마, 알림은 브라우저에 저장되는 값이라).
 // user, theme, notify 와 바꾸는 함수들은 App.jsx 가 props 로 넘겨준다.

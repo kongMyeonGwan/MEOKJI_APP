@@ -4,7 +4,6 @@ import FoodThumb from '../../../components/common/FoodThumb'
 import DateRangeFilter from '../../../components/common/DateRangeFilter'
 import { SAMPLE_POPULAR } from '../../../data/sampleBoard'
 import { shiftDays, toDateKey } from '../../../utils/format'
-import './PopularRecipes.css'
 
 // 인기 레시피 순위 (첫 화면 오른쪽). 기간 안에 좋아요를 많이 받은 순.
 //

@@ -13,7 +13,6 @@ import Loading from '../../components/common/Loading'
 import { getCatalog } from '../../api/catalog'
 import { getRecommendations } from '../../api/recommendations'
 import { addLog, foodNames } from '../../utils/aiLog'
-import './HomePage.css'
 
 // 첫 화면 (대시보드).
 //   왼쪽 : 날씨 추천 → 싼 재료 추천 → 메뉴 게임 → 검색 → 예산 → 카테고리 → 오늘의 추천

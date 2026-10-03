@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import './GamePromo.css'
 
 // 첫 화면의 메뉴 게임 배너.
 //   games : [{ key, to, emoji, title, desc }, ...]

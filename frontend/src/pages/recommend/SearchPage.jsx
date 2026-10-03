@@ -7,8 +7,6 @@ import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { getCatalog } from '../../api/catalog'
 import { addLog, foodNames } from '../../utils/aiLog'
-import '../../styles/ListPage.css'
-import './SearchPage.css'
 
 // 레시피 검색 (/search?q=김치찌개).
 // "8천원 이하 파스타" 같은 문장도 서버(AI)가 알아서 해석해준다.

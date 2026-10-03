@@ -1,6 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
 import Icon, { LogoMark } from '../../components/common/Icon'
-import './Sidebar.css'
 
 // 왼쪽 사이드바. 모바일에서는 상단바의 ☰ 를 누르면 서랍처럼 열린다.
 // auth: true 인 메뉴는 로그인했을 때만 보인다.

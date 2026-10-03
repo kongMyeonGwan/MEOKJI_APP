@@ -1,5 +1,4 @@
 import { formatMinutes } from '../../utils/format'
-import './RecipeView.css'
 
 // 레시피 상세 (재료, 만드는 법, 대체 재료).
 // RecipePage(추천)와 HistoryPage(저장된 기록) 에서 같이 쓴다.

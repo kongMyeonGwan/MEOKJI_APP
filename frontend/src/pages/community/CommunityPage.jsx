@@ -6,7 +6,6 @@ import NoticeForm from './components/NoticeForm'
 import Pagination from '../../components/common/Pagination'
 import Icon from '../../components/common/Icon'
 import { SAMPLE_NOTICES, SAMPLE_REVIEWS } from '../../data/sampleBoard'
-import './CommunityPage.css'
 
 // 커뮤니티 목록. 탭 두 개: 레시피 추천(게시글) / 공지사항
 //

@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import './Modal.css'
 
 // 화면 가운데 뜨는 창.
 //   onClose  : 닫을 때 부를 함수 (바깥을 누르거나 ESC 를 누르면 불린다)

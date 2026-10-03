@@ -1,6 +1,5 @@
 import PriceRow from './PriceRow'
 import { formatPrice } from '../../../utils/format'
-import './PriceTable.css'
 
 // 재료별 최저가 / 최고가 표 (정부 KAMIS 시장 조사가격). 레시피 화면에서 쓴다.
 // 한 줄 한 줄은 PriceRow.jsx 가 그린다.

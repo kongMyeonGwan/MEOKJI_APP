@@ -5,7 +5,6 @@ import FoodThumb from '../../../components/common/FoodThumb'
 import { getRecommendations } from '../../../api/recommendations'
 import { addLog, foodNames } from '../../../utils/aiLog'
 import { formatMinutes, formatPrice, priceBand } from '../../../utils/format'
-import './WeatherPick.css'
 
 // 첫 화면 맨 위 카드. 왼쪽에 오늘 날씨, 오른쪽에 날씨에 맞는 메뉴 5개.
 // 메뉴 카드는 CSS 애니메이션으로 옆으로 천천히 흐르고, 마우스를 올리면 멈춘다.

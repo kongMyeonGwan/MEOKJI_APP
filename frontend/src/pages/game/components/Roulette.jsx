@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCatalog } from '../../../api/catalog'
-import './Roulette.css'
 
 // 음식 추천 룰렛. 돌려서 나온 종류(한식, 중식...)로 추천 화면에 넘어간다.
 //

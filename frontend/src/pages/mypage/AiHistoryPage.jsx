@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { clearLogs, getLogs } from '../../utils/aiLog'
 import { formatDateTime } from '../../utils/format'
-import '../../styles/ListPage.css'
-import './AiHistoryPage.css'
 
 // AI 추천 기록. 언제, 어떤 조건으로, 무엇을 추천받았는지.
 // 서버가 아니라 이 브라우저(localStorage)에 저장된 기록이다. (utils/aiLog.js)

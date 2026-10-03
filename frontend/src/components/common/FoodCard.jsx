@@ -5,7 +5,6 @@ import FoodThumb from './FoodThumb'
 import { getLikes, toggleLike } from '../../api/likes'
 import { getToken } from '../../utils/token'
 import { formatMinutes, formatPrice } from '../../utils/format'
-import './FoodCard.css'
 
 // AI 가 추천한 음식 카드 한 장. 오른쪽 위 하트로 찜할 수 있다.
 export default function FoodCard({ food }) {

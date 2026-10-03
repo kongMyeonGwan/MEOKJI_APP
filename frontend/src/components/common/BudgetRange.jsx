@@ -1,5 +1,4 @@
 import { formatPrice } from '../../utils/format'
-import './BudgetRange.css'
 
 // 예산 범위 슬라이더 (손잡이 2개).
 // <input type="range"> 두 개를 겹쳐 놓고, 사이 구간만 색을 칠했다.

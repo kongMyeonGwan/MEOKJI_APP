@@ -5,7 +5,6 @@ import { getCatalog } from '../../api/catalog'
 import { getLikes } from '../../api/likes'
 import { getNotifications } from '../../api/users'
 import { formatDate } from '../../utils/format'
-import './TopBar.css'
 
 // 상단 바. 메뉴 버튼 + AI 검색 도우미 + 알림 / 찜 / 프로필.
 //

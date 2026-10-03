@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BudgetRange, { BUDGET_MAX, BUDGET_MIN } from '../../../components/common/BudgetRange'
-import './BudgetPicker.css'
 
 // 첫 화면의 예산 설정 카드. 금액 칩을 누르거나 슬라이더를 끌어서 예산을 정한다.
 //   budgetPresets : [{ key: 'UNDER_10K', label: '1만원 이하', max: 10000 }, ...]

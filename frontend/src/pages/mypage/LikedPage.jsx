@@ -4,8 +4,6 @@ import Icon from '../../components/common/Icon'
 import FoodThumb from '../../components/common/FoodThumb'
 import Loading from '../../components/common/Loading'
 import { getLikes, toggleLike } from '../../api/likes'
-import '../../styles/ListPage.css'
-import '../../components/common/LikedList.css'
 
 // 찜한 레시피 목록. 서버에는 음식 이름만 저장돼 있어서 이름 목록으로 보여준다.
 export default function LikedPage() {

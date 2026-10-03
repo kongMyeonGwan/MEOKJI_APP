@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import './DateRangeFilter.css'
 
 // 기간 고르는 필터. 날짜는 'YYYY-MM-DD' 글자로 주고받는다.
 // 날짜를 바꾸고 '검색' 을 눌러야 부모에게 알려준다.

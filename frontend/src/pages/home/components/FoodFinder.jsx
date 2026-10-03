@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from '../../../components/common/Icon'
-import './FoodFinder.css'
 
 // 첫 화면의 검색 카드. 검색창 + 예시 검색어 칩.
 // 예시는 처음에 5개만 보이고 ⌄ 를 누르면 전부 펼쳐진다.

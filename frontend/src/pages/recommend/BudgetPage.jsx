@@ -7,7 +7,6 @@ import BudgetRange, { BUDGET_MAX, BUDGET_MIN } from '../../components/common/Bud
 import { getRecommendations } from '../../api/recommendations'
 import { addLog, foodNames } from '../../utils/aiLog'
 import { formatPrice } from '../../utils/format'
-import '../../styles/ListPage.css'
 
 // 예산 맞춤 추천 (/budget?min=0&max=10000).
 // 예산을 주소에 두어서 새로고침해도 그대로 남는다.

@@ -10,7 +10,6 @@ import { createHistory } from '../../api/histories'
 import { getLikes, toggleLike } from '../../api/likes'
 import { markPicked } from '../../utils/aiLog'
 import { formatPrice } from '../../utils/format'
-import './RecipePage.css'
 
 // 레시피 상세 (/recipe/김치찌개).
 // AI 가 레시피를 만들고, 재료 가격도 같이 보여준다.
