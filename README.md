@@ -122,7 +122,7 @@ npm run dev
 | 순서 | 파일 | 실행 계정 | 비고 |
 |:--:|---|---|---|
 | 1 | `db/00_drop_all.sql` | meokji_app | 기존 테이블이 있을 때만 |
-| 2 | `db/01_schema.sql` | meokji_app | 10개 테이블 생성 |
+| 2 | `db/01_schema.sql` | meokji_app | 11개 테이블 생성 |
 
 이미 구버전(v1) 테이블이 만들어져 있고 회원 데이터를 살리고 싶다면,
 위 두 개 대신 **`db/02_migrate_v2.sql`을 한 번만** 실행한다.
@@ -131,7 +131,7 @@ npm run dev
 **`db/03_add_review_attachments.sql`을 한 번만** 실행한다. 파일 맨 위의
 확인 쿼리가 `0`을 주면 실행 대상이고, `6`이면 이미 적용된 것이다.
 
-그 뒤에 붙은 것이 셋 더 있다. 이미 돌아가는 DB 라면 **번호 순서대로**
+그 뒤에 붙은 것이 넷 더 있다. 이미 돌아가는 DB 라면 **번호 순서대로**
 한 번씩 실행한다 (새로 만드는 DB 는 `01_schema.sql` 에 다 들어 있으니 불필요).
 
 | 파일 | 하는 일 | 안 돌리면 |
@@ -139,6 +139,7 @@ npm run dev
 | `db/06_add_user_level.sql` | `USERS.USER_LEVEL` 추가 (1=관리자 2=일반) | 로그인·내정보에서 `ORA-00904` |
 | `db/07_drop_notice_category.sql` | 04 가 넣은 `NOTICES.CATEGORY` 제거 | 스키마만 어긋남 (동작은 함) |
 | `db/08_add_recipe_likes.sql` | `RECIPE_LIKES` 표 생성 | 찜하기에서 `ORA-00942` |
+| `db/09_add_free_posts.sql` | `FREE_POSTS` 표 생성 (자유게시판) | 자유게시판에서 `ORA-00942` |
 
 `06` 은 기존 회원을 전부 `user_level=2`(일반)로 만든다. 관리자로 쓸 계정은
 `UPDATE users SET user_level = 1 WHERE email = '...';` 로 따로 올려야 한다.
@@ -148,7 +149,7 @@ npm run dev
 | 순서 | 파일 | 실행 계정 | 비고 |
 |:--:|---|---|---|
 | 1 | `db/00_create_user_local.sql` | **SYS AS SYSDBA** | 파일 안의 비밀번호 자리를 먼저 수정 |
-| 2 | `db/01_schema.sql` | meokji_app | 10개 테이블 생성 |
+| 2 | `db/01_schema.sql` | meokji_app | 11개 테이블 생성 |
 
 그리고 `backend/src/main/resources/application-local.yml` 의 접속 정보를
 로컬에 맞춘다(기본값이 이미 `localhost`라 비밀번호만 채우면 된다).

@@ -34,6 +34,7 @@ BEGIN
                    'REVIEW_LIKES',
                    'RECIPE_REVIEWS',
                    'RECIPE_LIKES',
+                   'FREE_POSTS',
                    'NOTICES',
                    'GAME_HISTORIES',
                    -- v1 (구버전 — 남아 있을 수 있어 함께 정리)
@@ -59,6 +60,7 @@ END;
 SELECT COUNT(*) AS remaining_tables
 FROM   user_tables
 WHERE  table_name IN ('REVIEW_COMMENTS','REVIEW_LIKES','RECIPE_REVIEWS',
+                      'FREE_POSTS',
                       'RECIPE_LIKES','NOTICES','GAME_HISTORIES',
                       'COMMENTS','POST_LIKES','POSTS','MEAL_HISTORIES',
                       'USER_BANS','VERIFICATION_CODES','USERS');

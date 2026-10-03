@@ -12,7 +12,7 @@
 
 - 내 PC에 Oracle DB가 돌아가고
 - `meokji_app` 이라는 DB 계정이 생기고
-- 테이블 10개가 만들어지고
+- 테이블 11개가 만들어지고
 - 백엔드가 그 DB에 붙어서 `{"status":"ok","database":"ok"}` 를 응답합니다
 
 **소요 시간**: Oracle 설치 30분 + 나머지 15분 정도.
@@ -247,15 +247,16 @@ sqlplus meokji_app/meokji1234@localhost:1521/XEPDB1
 @D:\workspace\Python_Camp\projectTest\meokji\db\01_schema.sql
 ```
 
-### 확인 — 테이블 10개
+### 확인 — 테이블 11개
 
 ```sql
 SELECT table_name FROM user_tables ORDER BY table_name;
 ```
 
-이 10개가 나와야 합니다.
+이 11개가 나와야 합니다.
 
 ```
+FREE_POSTS
 GAME_HISTORIES
 MEAL_HISTORIES
 NOTICES
@@ -552,5 +553,5 @@ gradlew seedDemo
 - [README.md](../README.md) — 프로젝트 전체 실행 방법
 - [docs/PROGRESS.md](PROGRESS.md) — 진행 상황과 설계 결정 이유
 - [db/00_create_user_local.sql](../db/00_create_user_local.sql) — 계정 생성 스크립트
-- [db/01_schema.sql](../db/01_schema.sql) — 테이블 10개 DDL
+- [db/01_schema.sql](../db/01_schema.sql) — 테이블 11개 DDL
 - [db/00_drop_all.sql](../db/00_drop_all.sql) — 테이블 전체 삭제
