@@ -1,6 +1,6 @@
 # 진행 상황 및 작업 기록
 
-최종 갱신: 2026-09-29
+최종 갱신: 2026-10-04
 
 ---
 
@@ -52,6 +52,108 @@
 | 43 | 외부 AI 호출 제거 · 설정 오류를 503 으로 | ✅ |
 | 44 | **서버를 스프링부트로 이식** (27개 전부 · 게시판 20개는 담당자 몫) | ✅ |
 | 45 | **파이썬 제거** · 자바를 계층별 폴더로 · post -> review | ✅ |
+| 46 | **자유게시판** (`free_posts`) · 댓글 표를 두 게시판이 같이 쓰게 (`review_comments` -> `post_comments`) | ✅ |
+
+---
+
+## 자유게시판 (2026-10-04)
+
+후기(`recipe_reviews`)는 "직접 만들어 본 요리" 에서만 글을 쓸 수 있다. 그 조건
+없이 아무 이야기나 쓰는 게시판이 하나 더 필요해서 만들었다. **서버까지 끝까지
+만든 첫 게시판이다** — 후기 · 공지는 아직 501 이라, 담당자가 구현할 때 이쪽을
+본보기로 보면 된다.
+
+### 표 변경 — 두 가지
+
+**1) `FREE_POSTS` 추가 (`db/09_add_free_posts.sql`)**
+
+`RECIPE_REVIEWS` 를 본보기로 만들었다. 제목 · 본문 · 첨부 1건 · 조회수 ·
+`USE_YN` · 작성/수정 시각까지 모양이 같다. 다른 점은 하나다 — **부모 표가 없다.**
+
+| | `RECIPE_REVIEWS` | `FREE_POSTS` |
+|---|---|---|
+| 부모 | `MEAL_HISTORIES` (합성 FK `fk_reviews_meal`) | 없음 |
+| 글쓰기 조건 | 내 식사 기록을 하나 골라야 함 | 로그인만 하면 됨 |
+| 중복 방지 | `uq_reviews_meal` (한 기록에 한 글) | 없음. 몇 개를 써도 됨 |
+| 남은 FK | `USERS` · `MEAL_HISTORIES` | `USERS` 하나 |
+
+첨부파일은 후기와 똑같이 `FILE_*` 6칸으로 표 안에 둔다. 글 하나당 한 장이고
+`ck_free_posts_file_set` 이 "`FILE_YN='Y'` 인데 경로가 빈 행" 을 막는다.
+
+표 이름을 `POSTS` 로 하지 않은 이유: v1 에 `POSTS` 가 있었다(지금의
+`RECIPE_REVIEWS`). 아직 그 표가 남아 있는 DB 가 있어서 이름만 보고 구분이 안 된다.
+
+**2) `REVIEW_COMMENTS` → `POST_COMMENTS` (`db/10_post_comments.sql`)**
+
+자유게시판 댓글 표를 따로(`FREE_POST_COMMENTS`) 만들었다가 **한 표로 합쳤다.**
+칸 구성이 똑같아서(글번호 · 쓴사람 · 내용 · `USE_YN` · 시각) 나눌 이유가 없었다.
+나누면 같은 SQL 을 두 벌 들고 다니게 되고, 게시판이 셋째로 늘면 세 벌이 된다.
+
+```
+REVIEW_COMMENTS            POST_COMMENTS
+  REVIEW_ID        ->        POST_ID        (이름 변경, FK 제거)
+  (없음)           ->        BOARD_TYPE     'R'=레시피리뷰 'F'=자유게시판
+```
+
+`RECIPE_REVIEWS` 로 가던 FK 를 뗀 것이 이 변경의 대가다. `POST_ID` 한 칸이 두 표를
+가리키므로 FK 를 걸 수단이 없다. "진짜 있는 글인가" 는 서비스가 본다 — 댓글을
+달기 전에 글을 먼저 찾고 없으면 404 (`FreePostServiceImpl.findAlivePost`).
+`USERS` 로 가는 FK 는 부모가 하나뿐이라 그대로 뒀다.
+
+인덱스는 이름만 바꾸지 않고 다시 만들었다. 선두에 `BOARD_TYPE` 이 와야
+"자유게시판 3번 글의 댓글" 조회가 인덱스를 그대로 탄다.
+
+```
+idx_post_comments_post (board_type, post_id, use_yn, created_at)
+```
+
+**조심할 것** — 댓글 표를 건드리는 SQL 은 전부 `board_type` 을 걸어야 한다.
+빠뜨리면 자유게시판 댓글의 글번호가 우연히 후기 번호와 맞아떨어져 섞여 나온다.
+실제로 두 곳을 같이 고쳤다.
+
+- `UserMapper.findCommentNotifications` → `board_type = 'R'` 추가
+- `FreeCommentMapper` 다섯 문장 · `FreePostMapper` 의 댓글 수 서브쿼리 → `'F'`
+
+표 개수는 그대로 **11개**다 (`FREE_POSTS` 가 늘고 `FREE_POST_COMMENTS` 가 사라졌다).
+
+### 같이 고친 것
+
+회원 탈퇴가 자유게시판 글을 안 껐다(`UserServiceImpl.withdraw`). 탈퇴해도 글이
+목록에 남는 버그라 `free_posts` 를 추가하고, `review_comments` 를
+`post_comments` 로 바꿨다 (한 번만 불러도 두 게시판 댓글이 같이 꺼진다).
+
+### 서버
+
+`com.meokji.api.free` — VO 5 · DAO 2 · Mapper XML 2 · Service+Impl · Controller.
+주소는 `/api/free-posts` 이고 엔드포인트 12개다 (글 6 · 댓글 3 · 사진 4 중 일부 겸용).
+
+사진은 `util/FileStore` 가 디스크에 저장하고 표에는 경로만 적는다
+(`app.upload-dir`, 기본 `data/uploads/free/2026/10/<UUID>.jpg`).
+
+> **`MultipartFile.transferTo` 는 상대 경로를 톰캣 업로드 임시 폴더 기준으로 푼다.**
+> `data/uploads` 처럼 상대 경로를 넘기면 폴더는 만들어지는데 파일만 안 써져서
+> 503 이 난다. MockMvc 테스트는 통과하고 실서버에서만 틀려서 찾기 어려웠다.
+> `FileStore.root()` 에서 절대 경로로 바꿔 해결했다.
+
+### 화면
+
+`pages/community/free/` — 목록 · 상세 · 글쓰기 + 조각 셋. 세 게시판 중 **여기만
+실제 API 를 부른다.** 나머지 둘은 `sampleBoard.js` 가데이터다.
+
+### 확인
+
+- `FreePostTest` 5건 (실제 DB) — 글 한살이 · 댓글 · 권한(403/401) · 사진 · 검색
+- 실서버로 12개 엔드포인트 전부 수동 확인 (사진 업로드 · 교체 · 내려받기 포함)
+- `gradlew seedDemo` 에 자유게시판 단계를 넣었다. 글 4 + 댓글 5 가 채워지고
+  여러 번 돌려도 안 쌓인다(제목으로 거른다)
+
+### 남은 것
+
+- **브라우저로 눌러보기.** API 와 빌드는 확인했지만 화면을 띄워 본 적은 없다.
+- 자유게시판 댓글은 알림(`/api/users/me/notifications`)에 안 뜬다. 알림 응답이
+  `review_id` · `review_title` 모양이라 자유게시판을 넣으려면 응답과 화면을
+  같이 고쳐야 한다. 지금은 `board_type='R'` 만 본다.
+- 좋아요는 없다. `FREE_POST_LIKES` 표를 안 만들었다.
 
 ---
 

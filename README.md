@@ -131,7 +131,7 @@ npm run dev
 **`db/03_add_review_attachments.sql`을 한 번만** 실행한다. 파일 맨 위의
 확인 쿼리가 `0`을 주면 실행 대상이고, `6`이면 이미 적용된 것이다.
 
-그 뒤에 붙은 것이 넷 더 있다. 이미 돌아가는 DB 라면 **번호 순서대로**
+그 뒤에 붙은 것이 다섯 더 있다. 이미 돌아가는 DB 라면 **번호 순서대로**
 한 번씩 실행한다 (새로 만드는 DB 는 `01_schema.sql` 에 다 들어 있으니 불필요).
 
 | 파일 | 하는 일 | 안 돌리면 |
@@ -140,6 +140,7 @@ npm run dev
 | `db/07_drop_notice_category.sql` | 04 가 넣은 `NOTICES.CATEGORY` 제거 | 스키마만 어긋남 (동작은 함) |
 | `db/08_add_recipe_likes.sql` | `RECIPE_LIKES` 표 생성 | 찜하기에서 `ORA-00942` |
 | `db/09_add_free_posts.sql` | `FREE_POSTS` 표 생성 (자유게시판) | 자유게시판에서 `ORA-00942` |
+| `db/10_post_comments.sql` | `REVIEW_COMMENTS` → `POST_COMMENTS` (댓글 표를 두 게시판이 같이 쓴다) | 자유게시판 댓글에서 `ORA-00942` |
 
 `06` 은 기존 회원을 전부 `user_level=2`(일반)로 만든다. 관리자로 쓸 계정은
 `UPDATE users SET user_level = 1 WHERE email = '...';` 로 따로 올려야 한다.
@@ -209,12 +210,14 @@ MEOKJI_APP/
     ├── .env.example
     └── src/
         ├── api/               axios 클라이언트 + API별 함수
-        ├── components/common/ 여러 기능이 같이 쓰는 컴포넌트 (+ 같은 이름의 .css)
+        ├── components/common/ 여러 기능이 같이 쓰는 컴포넌트
         ├── pages/             기능별 폴더. 화면 + 그 기능 전용 components/ 가 함께 있다
         │                      (home · auth · recommend · game · community · mypage)
+        │                      community 는 게시판이 셋이라 한 겹 더 나눠져 있다
+        │                      (community/recipeReview · community/free · community/notice)
         ├── hooks/             useForm (입력칸 여러 개를 한 번에 다루는 훅)
         ├── layouts/           MainLayout + components/ (사이드바 · 상단바 · 하단 탭)
-        ├── styles/            index.css (전체 색 · 공통 클래스) · ListPage.css
+        ├── styles/            index.css — 화면 스타일 전부 (한 파일)
         └── utils/             token(로그인 토큰·사용자) · aiLog(AI 기록) · settings(테마·알림)
                                · format(날짜·금액)
 ```
@@ -228,12 +231,17 @@ MEOKJI_APP/
 
 로그인 칸의 ● 는 로그인 필수, ▲ 는 관리자(`users.user_level = 1`) 전용이다.
 
-**✗ 가 붙은 20개는 아직 서버에 없다(501).** 후기 게시판(`reviews`)과
+**✗ 가 붙은 21개는 아직 서버에 없다(501).** 후기 게시판(`reviews`)과
 공지(`notices`)는 팀원이 직접 구현할 자리라 주소 · VO · 컨트롤러만 만들어 두고
 서비스의 메서드 안을 비워뒀다. 화면은 `frontend/src/data/sampleBoard.js` 의
 가데이터를 그리고 있어서 그대로 볼 수 있다.
 
 어떻게 동작해야 하는지는 [docs/BOARD_SPEC.md](docs/BOARD_SPEC.md) 에 있다.
+
+**자유게시판(`free-posts`)은 끝까지 만들어져 있다.** 글 · 댓글 · 사진이 다
+돌아간다. 같은 모양을 후기 · 공지에 옮기면 되므로, 구현할 때는
+`backend/src/main/java/com/meokji/api/free/` 를 본보기로 보는 것이 빠르다
+(DAO → Mapper XML → Service → Controller 가 한 벌로 다 있다).
 
 | 그룹 | 엔드포인트 | 로그인 | 설명 |
 |---|---|:--:|---|
@@ -267,14 +275,22 @@ MEOKJI_APP/
 | | `GET /api/catalog/regions` | | 시·도 · 시·군·구 (주소 드롭다운) |
 | notices | `GET /api/notices` | | ✗ 공지사항 (고정 먼저 · 최신순, `?page=1&size=20`) |
 | | `POST /api/notices/{id}/view` | | ✗ 조회수 +1 (펼칠 때) |
+| | `GET /api/notices/{id}` | | ✗ 공지 상세 |
 | | `POST·PUT·DELETE /api/notices[/{id}]` | ▲ | ✗ 공지 작성 · 수정 · 삭제 |
+| free-posts | `GET /api/free-posts` | | 자유게시판 목록 · 검색 · 페이징 (`?keyword=&page=1&size=20`) |
+| | `GET /api/free-posts/{id}` | | 상세 + 댓글 (로그인하면 `is_mine` 이 채워진다) |
+| | `POST·PUT·DELETE /api/free-posts[/{id}]` | ● | 글쓰기 · 수정 · 삭제 (내 글만) |
+| | `POST /api/free-posts/{id}/view` | | 조회수 +1 |
+| | `POST·PUT·DELETE /api/free-posts/{id}/comments[/{cid}]` | ● | 댓글 (내 댓글만 수정 · 삭제) |
+| | `POST·DELETE /api/free-posts/{id}/file` | ● | 사진 붙이기 · 교체 · 떼기 (한 장, 5MB) |
+| | `GET /api/free-posts/{id}/file` | | 사진 내려받기 (원본 파일명으로) |
 | games | `POST /api/games/{key}/plays` | ● | 게임 시작 기록 (worldcup·balance·roulette) |
 | likes | `GET /api/likes` | ● | 내 찜 목록 |
 | | `PUT /api/likes` | ● | 찜하기 · 해제 (누를 때마다 뒤집힘) |
 | | `DELETE /api/likes` | ● | 찜 전체 비우기 |
 
-**로그인 없이 되는 것** — 추천 · 레시피 · 가격 · 날씨 · 카탈로그.
-(게시판 · 공지 조회도 로그인 없이 되게 만들어두었으나 아직 서버가 501 이다.)
+**로그인 없이 되는 것** — 추천 · 레시피 · 가격 · 날씨 · 카탈로그 · 자유게시판 조회.
+(후기 · 공지 조회도 로그인 없이 되게 만들어두었으나 아직 서버가 501 이다.)
 로그인하면 못 먹는 재료(Ban)가 추천과 레시피에 자동으로 반영된다.
 
 ---

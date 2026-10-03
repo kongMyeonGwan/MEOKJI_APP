@@ -260,9 +260,9 @@ FREE_POSTS
 GAME_HISTORIES
 MEAL_HISTORIES
 NOTICES
+POST_COMMENTS
 RECIPE_LIKES
 RECIPE_REVIEWS
-REVIEW_COMMENTS
 REVIEW_LIKES
 USERS
 USER_BANS
@@ -296,7 +296,7 @@ VERIFICATION_CODES
 | `user_bans` | 2 | 오이 · 양파 |
 | `meal_histories` | 4 | 김치찌개 · 들깨 수제비 · 닭갈비 · 계란밥 |
 | `recipe_reviews` | 3 | 앞의 3건에서 공유 |
-| `review_comments` | 3 | |
+| `post_comments` | 3 | 레시피리뷰(`board_type='R'`) 몫 |
 | `review_likes` | 2 | |
 
 **계란밥은 일부러 공유하지 않은 채로 둡니다.** `recipe_reviews.meal_history_id` 에
@@ -317,7 +317,7 @@ VERIFICATION_CODES
 SELECT
     (SELECT COUNT(*) FROM meal_histories)  AS histories,
     (SELECT COUNT(*) FROM recipe_reviews)  AS reviews,
-    (SELECT COUNT(*) FROM review_comments) AS comments,
+    (SELECT COUNT(*) FROM post_comments WHERE board_type = 'R') AS comments,
     (SELECT COUNT(*) FROM review_likes)    AS likes
 FROM dual;
 ```

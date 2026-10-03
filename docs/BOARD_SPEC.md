@@ -120,6 +120,9 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
   `meal_histories` 에서 읽는다.** 기록은 확정한 뒤로 수정하지 않으므로 값이 흔들리지 않는다.
 - `liked` · `is_mine` 은 로그인했을 때만 계산한다. 비로그인이면 둘 다 `false`
   (컨트롤러가 `authService.findLoginUser(token)` 으로 받아서 넘긴다 — 없으면 `null`).
+- 댓글 표는 `POST_COMMENTS` 이고 **자유게시판과 같이 쓴다.** 모든 문장에
+  `board_type = 'R'` 을 걸어야 한다 — 빠뜨리면 자유게시판 댓글이 섞여 나온다.
+  (본보기: `resources/mapper/FreeCommentMapper.xml` 이 'F' 로 같은 일을 한다)
 - 댓글은 `created_at, id` **오름차순** (목록과 반대다).
 - 댓글의 `is_mine` 은 "로그인했고 그 댓글을 내가 썼는가".
 
@@ -220,6 +223,7 @@ DB 에 들어갔을 때를 막는 자리다.
 | 작성자 | **요청 본문이 아니라 토큰에서** 나온 사람이다. 본문으로 받으면 남의 이름으로 공지를 쓸 수 있다 |
 | 권한 | 쓰기 · 수정 · 삭제는 `authService.getAdminUser(token)` — 관리자가 아니면 403. 목록과 조회수는 누구나 |
 | 첨부 | **없다.** 표에 파일 컬럼이 없고 붙일 API 도 없다. 첨부는 후기에만 있다 |
+| 상세 | `GET /api/notices/{noticeId}` — 없거나 `use_yn='N'` 이면 404. **조회수는 여기서 올리지 않는다** (화면이 `POST .../view` 를 따로 부른다) |
 
 ---
 
@@ -291,7 +295,7 @@ reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 �
 | **되살리기 본보기** | `resources/mapper/LikeMapper.xml` — 찜하기가 좋아요와 같은 구조다 |
 | 한국 날짜 | `util/Kst` |
 | 오류 내는 법 | `common/ApiException` — `ResponseEntity` 로 직접 만들지 않는다 |
-| 스키마 | `db/01_schema.sql` 의 `recipe_reviews` · `review_comments` · `review_likes` · `notices` |
+| 스키마 | `db/01_schema.sql` 의 `recipe_reviews` · `post_comments` · `review_likes` · `notices` |
 
 **`resources/mapper/LikeMapper.xml` 을 먼저 보는 것을 권한다.** 찜하기(`recipe_likes`)가 게시글
 좋아요(`review_likes`)와 같은 문제를 이미 푼 코드다 — 함수 기반 UNIQUE, 껐던 행
@@ -301,7 +305,7 @@ reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 �
 
 ## 5. 확인
 
-`src/test/java/.../StubFixtureTest.java` 가 **주소 20개가 파이썬과 같은지** 검사한다.
+`src/test/java/.../StubFixtureTest.java` 가 **주소 21개가 파이썬과 같은지** 검사한다.
 구현하면서 주소를 바꿨다면 이 테스트도 같이 고쳐야 한다 — 프론트가 그 주소를 쓴다.
 
 구현이 끝나면 데모 데이터가 저절로 채워진다:
