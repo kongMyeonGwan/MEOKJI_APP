@@ -30,10 +30,12 @@ BEGIN
         FROM   user_tables
         WHERE  table_name IN (
                    -- v2 (현재)
-                   'REVIEW_COMMENTS',
+                   'POST_COMMENTS',
+                   'REVIEW_COMMENTS',   -- 옛 이름 (10_post_comments.sql 전)
                    'REVIEW_LIKES',
                    'RECIPE_REVIEWS',
                    'RECIPE_LIKES',
+                   'FREE_POST_COMMENTS',  -- 잠깐 있었던 표. 지금은 POST_COMMENTS 로 합쳤다
                    'FREE_POSTS',
                    'NOTICES',
                    'GAME_HISTORIES',
@@ -59,8 +61,8 @@ END;
 -- 삭제 결과 확인 (0건이어야 정상)
 SELECT COUNT(*) AS remaining_tables
 FROM   user_tables
-WHERE  table_name IN ('REVIEW_COMMENTS','REVIEW_LIKES','RECIPE_REVIEWS',
-                      'FREE_POSTS',
+WHERE  table_name IN ('POST_COMMENTS','REVIEW_COMMENTS','REVIEW_LIKES','RECIPE_REVIEWS',
+                      'FREE_POST_COMMENTS','FREE_POSTS',
                       'RECIPE_LIKES','NOTICES','GAME_HISTORIES',
                       'COMMENTS','POST_LIKES','POSTS','MEAL_HISTORIES',
                       'USER_BANS','VERIFICATION_CODES','USERS');
