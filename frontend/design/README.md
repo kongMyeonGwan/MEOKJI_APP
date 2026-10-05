@@ -8,6 +8,7 @@
 | `Login-시안.png` | 로그인 화면 시안 (화면을 이 모양으로 맞췄다) |
 | `LoginPage-원본.png` | 로그인 히어로 사진 원본 PNG. 배포용은 `public/images/LoginPage.jpg` |
 | `game-assets-원본.png` | 요리사 · 음식 에셋 시트 한 장. 잘라낸 조각은 `public/images/game/` |
+| `game-cards-원본.png` | 3D 일러스트 4종(배너 · 월드컵 · 밸런스 · 돌림판). 사분면으로 나눠 잘랐다 |
 
 ## 왜 나눠 두나
 

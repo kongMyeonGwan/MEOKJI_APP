@@ -81,9 +81,10 @@ export default function GamePage() {
             <br />
             3가지 게임으로 오늘의 메뉴를 결정해보세요.
           </p>
-        </div>
 
-        <p className="gpage__hand">게임으로 고른 메뉴가 바로 레시피로 이어져요!</p>
+          {/* 오른쪽에 두면 배경 음식 그림과 겹친다. 설명 아래 왼쪽에 둔다 */}
+          <p className="gpage__hand">게임으로 고른 메뉴가 바로 레시피로 이어져요!</p>
+        </div>
       </header>
 
       {/* ----- 게임 카드 셋 ----- */}

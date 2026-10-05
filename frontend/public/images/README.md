@@ -16,20 +16,14 @@ frontend/public/images/LoginPage.jpg   →   <img src="/images/LoginPage.jpg">
 | `game/stew·salad.png` | 취향 밸런스 카드의 VS 사진 |
 | `game/roulette·ramen·burger.png` | 랜덤 돌림판 카드 |
 
-### 아직 안 들어온 그림 (메뉴 게임 화면 `/game`)
-
-없어도 화면은 정상으로 뜬다. 배너는 배경만 보이고, 카드는 그림 대신 이모지가 보인다.
-파일을 넣으면 코드를 안 고쳐도 바로 그려진다.
-
-| 파일 | 자리 |
-|---|---|
-| `game/banner.png` | 배너 오른쪽 음식 그림 |
-| `game/card-worldcup.png` | 음식 월드컵 카드 |
-| `game/card-balance.png` | 취향 밸런스 카드 |
-| `game/card-roulette.png` | 랜덤 돌림판 카드 |
+| `game/banner.png` | 메뉴 게임 배너 오른쪽 음식 그림 |
+| `game/card-worldcup.png` | 음식 월드컵 카드 (트로피) |
+| `game/card-balance.png` | 취향 밸런스 카드 (보라 저울) |
+| `game/card-roulette.png` | 랜덤 돌림판 카드 (노란 돌림판) |
 
 카드 그림은 `card-{게임key}.png` 규칙이다. 서버(`/api/catalog` 의 `games`)가 주는
 `key` 를 그대로 쓰기 때문에, 게임이 하나 늘면 그 key 로 파일을 넣기만 하면 된다.
+파일이 없으면 카드에 이모지가 대신 보인다 - 화면이 깨지지는 않는다.
 
 `LoginPage.jpg` 가 없어도 화면은 정상으로 뜬다 — CSS 가 주황 그라데이션을 깔아두고
 그 위에 사진을 얹는 구조라, 파일이 없으면 그라데이션만 보인다.
