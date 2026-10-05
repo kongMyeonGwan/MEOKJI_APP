@@ -90,13 +90,17 @@ public class RecommendServiceImpl implements RecommendService {
     }
 
     // 어느 위치의 날씨를 볼지 정한다.
-    //   1순위: 브라우저가 보낸 내 위치  2순위: 회원가입 때 고른 주소  3순위: 서울(기본값)
+    //   1순위: 회원이 고른 주소  2순위: 브라우저가 보낸 내 위치  3순위: 서울(기본값)
+    //
+    // 주소를 먼저 보는 이유는, 그게 사용자가 직접 고른 값이기 때문이다. 브라우저 위치는
+    // 지금 PC 가 놓인 자리일 뿐이라 - 제주로 설정해둔 사람이 서울에서 켜면 서울 날씨가
+    // 떴다. 주소를 안 골랐거나 좌표를 못 찾은 주소면(LATITUDE 가 비어 있다) 위치를 쓴다.
     private WeatherVO getWeather(UserVO loginUser, RecommendRequestVO request) {
-        if (request.getLat() != null && request.getLon() != null) {
-            return weatherService.current(request.getLat(), request.getLon());
-        }
         if (loginUser != null && loginUser.getLatitude() != null && loginUser.getLongitude() != null) {
             return weatherService.current(loginUser.getLatitude().doubleValue(), loginUser.getLongitude().doubleValue());
+        }
+        if (request.getLat() != null && request.getLon() != null) {
+            return weatherService.current(request.getLat(), request.getLon());
         }
         return weatherService.current(null, null); // null 이면 기본 위치(서울)
     }
