@@ -7,6 +7,7 @@ import { getRecommendations } from '../../api/recommendations'
 import { getCatalog } from '../../api/catalog'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { addLog, foodNames } from '../../utils/aiLog'
+import { saveResult } from '../../utils/gameResult'
 
 // 취향 밸런스 게임.
 // 둘 중 하나 고르는 질문 5개에 답하면, 고른 답을 문장으로 이어서 AI 에게 추천받는다.
@@ -62,6 +63,12 @@ export default function BalancePage({ user }) {
       })
       setItems(data.items || [])
       addLog('취향 밸런스', makeQuery(allAnswers), foodNames(data.items))
+
+      // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값. 셋 중 첫 번째(가장 잘 맞는 것)를 쓴다
+      if (data.items && data.items.length > 0) {
+        const top = data.items[0].food_name
+        saveResult('balance', '취향 밸런스', top, `/recipe/${top}`)
+      }
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.
       if (err.response) {

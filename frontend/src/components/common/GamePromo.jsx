@@ -16,8 +16,8 @@ import { Link } from 'react-router-dom'
 //   shots : 카드 안에 놓을 그림. 둘이면 가운데에 VS 가 들어간다
 const EXTRAS = {
   worldcup: { tone: 'orange', cta: '월드컵 시작하기', shots: ['chicken', 'pasta'] },
-  balance: { tone: 'green', cta: '밸런스 시작하기', shots: ['stew', 'salad'] },
-  roulette: { tone: 'purple', cta: '돌림판 돌리기', shots: ['ramen', 'roulette', 'burger'] },
+  balance: { tone: 'purple', cta: '밸런스 시작하기', shots: ['stew', 'salad'] },
+  roulette: { tone: 'yellow', cta: '돌림판 돌리기', shots: ['ramen', 'roulette', 'burger'] },
 }
 
 export default function GamePromo({ games, variant = 'compact' }) {

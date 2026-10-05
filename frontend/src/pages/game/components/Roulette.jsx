@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCatalog } from '../../../api/catalog'
+import { saveResult } from '../../../utils/gameResult'
 
 // 음식 추천 룰렛. 돌려서 나온 종류(한식, 중식...)로 추천 화면에 넘어간다.
 //
@@ -71,6 +72,12 @@ export default function Roulette() {
     setTimeout(() => {
       setSpinning(false)
       setResult(slices[picked])
+
+      // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값.
+      // 룰렛은 음식이 아니라 분류(한식 · 중식)를 뽑아서, 레시피가 아니라
+      // 그 분류의 추천 목록으로 보낸다
+      const label = slices[picked].label
+      saveResult('roulette', '랜덤 돌림판', label, `/recommend?category=${encodeURIComponent(label)}`)
     }, SPIN_TIME)
   }
 

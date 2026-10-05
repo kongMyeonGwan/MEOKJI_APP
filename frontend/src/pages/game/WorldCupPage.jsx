@@ -7,6 +7,7 @@ import { getRecommendations } from '../../api/recommendations'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { getLikes, toggleLike } from '../../api/likes'
 import { addLog, foodNames, markPicked } from '../../utils/aiLog'
+import { saveResult } from '../../utils/gameResult'
 import { formatMinutes, formatPrice } from '../../utils/format'
 
 // 음식 월드컵. 후보 8개를 둘씩 붙여서 하나를 고르면 다음 라운드로 올라간다.
@@ -100,7 +101,10 @@ export default function WorldCupPage({ user }) {
 
     // 우승이 정해졌으면
     if (nextWinners.length === 1) {
-      markPicked(nextWinners[0].food_name) // AI 추천 기록에 "이걸로 정함" 표시
+      const champion = nextWinners[0].food_name
+      markPicked(champion) // AI 추천 기록에 "이걸로 정함" 표시
+      // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값 (브라우저에만 저장한다)
+      saveResult('worldcup', '음식 월드컵', champion, `/recipe/${champion}`)
       setLiked(false)
       checkLiked(nextWinners[0].food_name)
     }
