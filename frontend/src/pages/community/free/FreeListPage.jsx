@@ -30,7 +30,7 @@ export default function FreeListPage({ user }) {
       setLoading(true)
       try {
         const data = await getFreePosts(searched, page)
-        setPosts(data.items)
+        setPosts(data.items || [])
         setTotalPages(data.total_pages)
         setTotal(data.total)
         setError('')

@@ -26,7 +26,7 @@ export default function BalancePage({ user }) {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setQuestions(data.balance_questions)
+        setQuestions(data.balance_questions || [])
       } catch (err) {
         setError('질문을 불러오지 못했습니다.')
       }
@@ -60,7 +60,7 @@ export default function BalancePage({ user }) {
         budgetMin: budgetAnswer ? budgetAnswer.minCost : null,
         budgetMax: budgetAnswer ? budgetAnswer.maxCost : null,
       })
-      setItems(data.items)
+      setItems(data.items || [])
       addLog('취향 밸런스', makeQuery(allAnswers), foodNames(data.items))
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.

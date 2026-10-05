@@ -26,7 +26,7 @@ export default function SearchPage() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setSuggestions(data.search_suggestions)
+        setSuggestions(data.search_suggestions || [])
       } catch (err) {
         // 예시가 안 보일 뿐이다
       }
@@ -49,7 +49,7 @@ export default function SearchPage() {
       setError('')
       try {
         const data = await getRecommendations({ source: '레시피 검색', limit: 12, query: query })
-        setItems(data.items)
+        setItems(data.items || [])
         setCondition(data.condition)
         addLog('레시피 검색', data.condition, foodNames(data.items))
       } catch (err) {

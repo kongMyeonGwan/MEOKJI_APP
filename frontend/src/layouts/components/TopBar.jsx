@@ -31,7 +31,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setSearchSuggestions(data.search_suggestions)
+        setSearchSuggestions(data.search_suggestions || [])
       } catch (err) {
         // 못 받아와도 예시만 안 보일 뿐이다
       }

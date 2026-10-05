@@ -28,7 +28,7 @@ export default function Roulette() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setSlices(data.roulette)
+        setSlices(data.roulette || [])
       } catch (err) {
         // 못 받아오면 빈 룰렛
       }

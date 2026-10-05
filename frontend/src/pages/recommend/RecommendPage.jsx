@@ -25,7 +25,7 @@ export default function RecommendPage() {
       setError('')
       try {
         const data = await getRecommendations({ source: '카테고리', limit: 12, category: category })
-        setItems(data.items)
+        setItems(data.items || [])
         setCondition(data.condition)
         addLog('카테고리', data.condition, foodNames(data.items))
       } catch (err) {

@@ -22,7 +22,7 @@ export default function HistoryPage() {
   const loadHistories = async () => {
     try {
       const data = await getHistories({ page: page })
-      setHistories(data.items)
+      setHistories(data.items || [])
       setTotalPages(data.total_pages)
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.

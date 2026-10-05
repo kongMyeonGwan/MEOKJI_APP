@@ -38,7 +38,7 @@ export default function WeatherPick() {
       if (data.items.length > 0) {
         const names = foodNames(data.items)
         setWeather(data.weather)
-        setPicks(data.items)
+        setPicks(data.items || [])
         setShown([...shown, ...names])
         addLog('날씨 추천', data.condition, names)
       }

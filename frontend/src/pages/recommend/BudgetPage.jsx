@@ -47,7 +47,7 @@ export default function BudgetPage() {
           budgetMin: min,
           budgetMax: noLimit ? null : max,
         })
-        setItems(data.items)
+        setItems(data.items || [])
         addLog('예산 추천', data.condition, foodNames(data.items))
       } catch (err) {
         // 서버가 보낸 오류 문장을 그대로 보여준다.

@@ -35,7 +35,7 @@ export default function WorldCupPage({ user }) {
     setError('')
     try {
       const data = await getRecommendations({ source: '메뉴 게임', limit: 8 })
-      setRound(data.items)
+      setRound(data.items || [])
       setIndex(0)
       setWinners([])
       addLog('음식 월드컵', data.condition, foodNames(data.items))

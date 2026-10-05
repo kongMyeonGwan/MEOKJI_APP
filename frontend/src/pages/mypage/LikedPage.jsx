@@ -20,7 +20,7 @@ export default function LikedPage() {
   const loadLikes = async () => {
     try {
       const data = await getLikes()
-      setItems(data.items)
+      setItems(data.items || [])
     } catch (err) {
       alert('찜 목록을 불러오지 못했습니다.')
     } finally {

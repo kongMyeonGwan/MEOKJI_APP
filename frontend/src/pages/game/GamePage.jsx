@@ -10,7 +10,7 @@ export default function GamePage() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setGames(data.games)
+        setGames(data.games || [])
       } catch (err) {
         // 못 받아오면 빈 목록
       }

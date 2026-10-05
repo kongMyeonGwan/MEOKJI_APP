@@ -35,10 +35,10 @@ export default function HomePage() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setCategories(data.categories)
-        setGames(data.games)
-        setSearchSuggestions(data.search_suggestions)
-        setBudgetPresets(data.budget_presets)
+        setCategories(data.categories || [])
+        setGames(data.games || [])
+        setSearchSuggestions(data.search_suggestions || [])
+        setBudgetPresets(data.budget_presets || [])
       } catch (err) {
         // 서버가 꺼져 있어도 화면은 떠야 한다. 빈 목록 그대로 둔다.
       }
@@ -57,7 +57,7 @@ export default function HomePage() {
       setError('')
       try {
         const data = await getRecommendations({ source: '카테고리', limit: 5, category: categoryName })
-        setFoods(data.items)
+        setFoods(data.items || [])
         addLog('카테고리', data.condition, foodNames(data.items))
       } catch (err) {
         // 서버가 보낸 오류 문장을 그대로 보여준다.
