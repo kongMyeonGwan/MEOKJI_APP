@@ -326,8 +326,8 @@ public class FoodScorer {
         return 0;
     }
 
-    /** 카탈로그의 음식 하나를 화면용으로. */
-    static FoodVO toFoodVO(JsonNode food) {
+    /** 카탈로그의 음식 하나를 화면용으로. 찜 목록(LikeServiceImpl)도 이걸 쓴다. */
+    public static FoodVO toFoodVO(JsonNode food) {
         List<String> tags = new ArrayList<>();
         for (JsonNode tag : food.path("tags")) {
             tags.add(tag.asString());
