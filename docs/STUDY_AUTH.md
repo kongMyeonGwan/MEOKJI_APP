@@ -1,349 +1,418 @@
-# 인증(로그인 + JWT) 학습 가이드
+# 인증(회원가입 · 로그인 · 비밀번호 재설정) 학습 가이드
 
-> ⚠️ **이 문서는 옛 구조를 기준으로 쓴 학습 기록이다.** 아래에 나오는
-> `security/JwtProvider` · `@LoginUser` · 인자 리졸버 · `config/AppProperties` ·
-> `config/SecurityConfig` · 프론트의 `contexts/AuthContext.jsx` ·
-> `ProtectedRoute.jsx` 는 **지금 코드에 없다.**
->
-> 지금은 컨트롤러가 `@RequestHeader("Authorization")` 로 토큰을 받아
-> `authService.getLoginUser(token)` / `findLoginUser` / `getAdminUser` 를 부르고,
-> 자바 폴더는 기능별(`auth/controller` · `auth/service` · `auth/dao` · `auth/vo`)로
-> 나뉘어 있다(DTO 는 VO 로 합쳤다). 토큰은 `util/JwtUtil` 이 만들고 읽는다. 흐름을 이해하는 용도로만 읽고, 파일 경로는
-> `backend/README.md` 를 본다.
+이 문서는 **직접 손을 움직여서 익히는** 쪽이다. 깨뜨려보고, 질문에 말로 답해보고,
+마지막에 백지에서 다시 써본다.
 
-이 프로젝트의 인증 코드를 **자기 것으로 만들기 위한** 문서다.
-읽기만 해서는 남지 않는다. 아래 순서대로 직접 해봐야 한다.
+흐름을 순서대로 읽고 싶으면 [STUDY_JWT_FLOW.md](STUDY_JWT_FLOW.md) 를 먼저 보는 것이
+낫다. 거기는 "로그인 버튼부터 토큰 만료까지" 를 코드와 함께 따라가는 문서다.
+
+> 2026-10-06 에 지금 코드 기준으로 전부 다시 썼다. 그 전 버전은
+> `LoginUserArgumentResolver` · `JwtProvider` · `@LoginUser` · `SecurityConfig` 를
+> 설명하고 있었는데 **지금 저장소에 그런 파일이 하나도 없다.** 옛 구조를 설명한
+> 문서라서 통째로 갈아엎었다.
+
+---
+
+## 0. 먼저 — 인증은 어디에 흩어져 있나
+
+### 백엔드
 
 ```
-1단계  흐름을 끝까지 따라가기      (30분)
-2단계  일부러 깨뜨려보기            (1시간)   ← 가장 효과가 크다
-3단계  질문에 말로 답해보기         (30분)
-4단계  백지에서 다시 써보기         (2~3시간) ← 진짜 시험
+auth/
+├── controller/AuthController.java        6개 엔드포인트
+├── service/AuthService.java              인터페이스
+├── service/AuthServiceImpl.java          회원가입 · 로그인 · 토큰 해석  ★ 핵심
+├── service/PasswordResetService(Impl)    비밀번호 재설정 3단계
+├── dao/VerificationCodeDAO.java          인증번호 표
+└── vo/                                   LoginVO · RegisterVO · TokenVO ...
+
+util/
+├── JwtUtil.java                          토큰 만들기 · 읽기            ★ 핵심
+└── Passwords.java                        비밀번호 길이 검사
+
+config/WebConfig.java                     BCryptPasswordEncoder 빈 + CORS
+
+user/
+├── vo/UserVO.java                        isAdmin() · isLockedAccount()
+└── dao/UserDAO.java                      findActiveByEmail · lockAccount ...
 ```
+
+### 프론트엔드
+
+```
+pages/auth/
+├── LoginPage.jsx             로그인 폼 + 소개 + 게임 배너
+├── RegisterPage.jsx          회원가입 폼
+├── PasswordResetPage.jsx     재설정 3단계
+└── components/CodeInput.jsx  인증번호 6칸 입력
+
+api/auth.js                   6개 함수
+utils/token.js                토큰 보관 · 꺼내기 · authHeader()   ★ 핵심
+App.jsx                       user state 를 들고 props 로 내려줌
+```
+
+**`AuthServiceImpl` · `JwtUtil` · `token.js` 셋만 제대로 읽으면 90% 다.**
 
 ---
 
 ## 1단계. 흐름을 끝까지 따라가기
 
-### 로그인 버튼을 누르면 일어나는 일
-
-번호 순서대로 파일을 열어 그 줄을 직접 눈으로 확인한다.
+### 회원가입을 누르면
 
 ```
-[프론트엔드]
-1  pages/auth/LoginPage.jsx        onSubmit -> login(email, password)
-2  contexts/AuthContext.jsx        login() -> loginApi() 호출
-3  api/auth.js                     client.post('/api/auth/login', {...})
-4  api/client.js                   요청 인터셉터 (아직 토큰 없음)
-                                        |
-                                     HTTP POST
-                                        |
-[백엔드 — backend]
-5  controller/AuthController       login()  - HTTP 껍데기
-6  dto/auth/LoginRequest           @Valid 가 요청 본문을 검증
-7  service/AuthService             login() - 이 사람이 맞는가 판정
-8  config/SecurityConfig           PasswordEncoder(bcrypt) 로 대조
-9  security/JwtProvider            createAccessToken() 토큰 생성
-10 dto/auth/TokenResponse          응답 조립 (UserResponse.from)
-                                        |
-                                     200 OK
-                                        |
-[프론트엔드]
-11 contexts/AuthContext.jsx        localStorage 저장 + setAuthToken() + setUser()
-12 api/client.js                   이제부터 모든 요청에 Authorization 헤더가 붙는다
-13 components/common/TopBar.jsx    isAuthenticated 가 true -> 닉네임 표시
+1  RegisterPage.jsx            폼 검사 (빈 칸 · 비밀번호 확인)
+2  api/auth.js register()      POST /api/auth/register
+3  AuthController.register()   @Valid 가 형식을 검사 → 틀리면 422
+4  AuthServiceImpl.register()  ① Passwords.checkBytes  비밀번호 72바이트 넘는지
+                               ② findActiveByEmailOrNickname  중복 확인 → 409
+                               ③ passwordEncoder.encode()  해시로 바꿔 저장
+                               ④ RegionCatalog 로 주소 → 좌표 변환
+5  userDAO.insert()            USERS 에 한 행
+6  LoginPage 로 이동            가입하면 바로 로그인시키지 않는다
 ```
 
-### 보호된 API를 부르면 일어나는 일
+**72바이트 제한이 왜 있나?** BCrypt 는 입력의 앞 72바이트만 본다. 더 길면 조용히
+잘려서, 73자째부터 아무 글자나 넣어도 로그인이 된다. 그래서 미리 막는다.
+한글은 한 글자가 3바이트라 24자쯤에서 걸린다.
+
+### 로그인 버튼을 누르면
 
 ```
-1  api/client.js                     요청 인터셉터가 Authorization: Bearer xxx 를 붙임
-                                          |
-2  security/LoginUserArgumentResolver  헤더에서 "Bearer " 를 떼고 토큰만 뽑음
-3  security/JwtProvider               readUserId() - 서명·만료 검증
-4  mapper/UserMapper                  findById() 로 회원을 읽음
-5  LoginUserArgumentResolver          use_yn · 잠금 · 관리자 여부 확인
-6  controller/...                     @LoginUser User me 로 받아서 처리
+1  LoginPage.jsx               빈 칸 확인
+2  api/auth.js login()         POST /api/auth/login
+3  AuthServiceImpl.login()     ① findActiveByEmail       없으면 401
+                               ② isLockedAccount()       잠겼으면 423
+                               ③ checkPassword()         틀리면 loginFailed()
+                               ④ resetLoginFailCount()   성공하면 0 으로
+4  AuthController.login()      jwtUtil.createToken(user.getId())
+5  TokenVO 로 응답              { access_token, token_type, expires_in, user }
+6  App.jsx handleLogin()       saveToken / saveUser / setUser
+7  navigate('/')               홈으로
 ```
 
-**필터가 아니라 인자 리졸버다.** `SecurityConfig` 에는 주소 목록이 없다.
-"이 엔드포인트에 로그인이 필요한가" 를 컨트롤러 선언부에서 읽을 수 있게 한 것이다.
+**토큰을 만드는 곳이 서비스가 아니라 컨트롤러다.** 서비스는 "이 사람이 맞는가"
+까지만 책임지고, 토큰 발급은 컨트롤러가 한다. `register` 는 토큰을 안 만드는데
+`login` 만 만드는 차이를 거기서 읽을 수 있다.
 
-```java
-@LoginUser User me                      // 없으면 401
-@LoginUser(required = false) User me    // 게스트도 가능. 없으면 null
-@LoginUser(admin = true) User me        // user_level=1 아니면 403
+### 보호된 API를 부르면
+
 ```
+1  utils/token.js authHeader()   Authorization: Bearer xxx  (없으면 빈 객체)
+2  api/*.js                      headers: authHeader() 로 붙여서 보냄
+3  XxxController                 @RequestHeader("Authorization") String token
+4  AuthServiceImpl.getLoginUser  ① "Bearer " 떼기
+                                 ② JwtUtil.getUserId()  서명 · 만료 확인
+                                 ③ userDAO.findById()   탈퇴 확인
+5  XxxService                    UserVO 를 받아서 처리
+```
+
+**필터가 없다.** 스프링 시큐리티를 안 쓰기 때문에, 컨트롤러마다 헤더를 직접 받아
+서비스에 넘긴다. 확인 함수는 셋이다.
+
+| 함수 | 토큰이 없거나 틀리면 | 예 |
+|---|---|---|
+| `getLoginUser(token)` | 401 던짐 | `/api/likes`, `/api/histories` |
+| `findLoginUser(token)` | `null` 돌려줌 | `/api/recommendations` |
+| `getAdminUser(token)` | 관리자 아니면 403 | `POST /api/notices` |
 
 ### 새로고침했는데 로그인이 유지되는 이유
 
 ```
-1  contexts/AuthContext.jsx     useEffect -> localStorage 에서 토큰 꺼냄
-2                               setAuthToken(saved)
-3  api/auth.js                  getMe() 로 서버에 "이 토큰 아직 살아있나?" 확인
-4                               200 이면 user 복원 / 401 이면 토큰 버림
-5                               그동안 restoring = true (아직 모름 상태)
+1  App.jsx                    useState(getSavedUser())  로 시작한다
+2  utils/token.js             localStorage / sessionStorage 에서 꺼냄
+3  App.jsx useEffect          getMe() 로 "이 토큰 아직 살아있나?" 확인
+4                             200 이면 최신 정보로 갱신 / 401 이면 handleLogout()
 ```
 
-**여기서 `restoring` 이 왜 필요한지 반드시 이해하고 넘어갈 것.** 2단계에서 깨뜨려본다.
+**화면이 먼저 뜨고 확인은 나중에 온다.** `getSavedUser()` 가 동기라서 첫 그림부터
+로그인 상태로 보이고, 서버 확인 결과가 돌아오면 그때 바로잡는다. 그래서 토큰이
+만료됐어도 아주 잠깐은 로그인한 것처럼 보인다.
+
+### 비밀번호 재설정 3단계
+
+```
+1  send(email)      인증번호 6자리 생성 → VERIFICATION_CODES 저장 → 메일 발송
+                    ResetCodeMailer. app.mail.provider=mock 이면 콘솔에 찍는다
+2  verify(email, code)   맞는지 확인. 틀리면 시도 횟수 +1 (5회까지)
+3  change(email, code, newPassword)   해시로 바꿔 저장 + 계정 잠금 해제
+```
+
+메일 서버가 없어도 끝까지 테스트할 수 있다. `provider=mock` 이면 인증번호가
+**백엔드 콘솔에 찍힌다.** 그걸 복사해서 화면에 넣으면 된다.
 
 ---
 
 ## 2단계. 일부러 깨뜨려보기 (가장 중요)
 
-각 실험마다 **먼저 결과를 예측해서 적고**, 그다음 실행한다.
-예측이 틀렸다면 그 부분을 모르고 있었던 것이다.
+읽는 것보다 이게 훨씬 오래 남는다. **하나씩 해보고 반드시 되돌릴 것.**
 
-준비:
+### 실험 1 — 토큰 내용을 직접 읽어본다
 
+로그인한 뒤 브라우저 F12 콘솔에서.
+
+```js
+const t = localStorage.getItem('meokji.accessToken')
+JSON.parse(atob(t.split('.')[1]))
+// → { sub: "282", iat: 1761234567, exp: 1761236367 }
 ```
-터미널 1:  cd backend  →  gradlew bootRun          (8090)
-터미널 2:  cd frontend        →  npm run dev              (5173)
+
+- **핵심**: JWT 는 암호화가 아니라 **Base64 인코딩**이다. 누구나 읽을 수 있다
+- 그래서 토큰에 비밀번호나 개인정보를 넣으면 안 된다
+- 이 프로젝트가 회원 번호와 시각만 넣는 이유가 이것이다
+
+### 실험 2 — 토큰을 한 글자 고친다
+
+```js
+const t = localStorage.getItem('meokji.accessToken')
+localStorage.setItem('meokji.accessToken', t.slice(0, -1) + 'X')
+// 새로고침
 ```
 
-> 고친 뒤에는 **서버를 다시 띄워야** 한다. 자바는 파이썬의 `--reload` 같은 게
-> 기본으로 없다. VSCode 에서 F5 로 띄웠다면 재시작 버튼(`Ctrl+Shift+F5`)이 빠르다.
+- 예상: 어떻게 될까? 그냥 통과할까, 401 이 날까?
+- **핵심**: 마지막 토막이 **서명**이다. 한 글자만 달라져도 `JwtUtil.getUserId()` 가
+  예외를 잡아 `null` 을 돌려주고, `getLoginUser` 가 401 을 던진다
+- 내용(`sub`)을 `"1"` 로 바꿔도 마찬가지다. 서명을 다시 만들려면 비밀키가 필요하다
+- 되돌리려면 다시 로그인
 
-### 실험 1 — JWT 비밀키를 바꾼다
+### 실험 3 — JWT 비밀키를 바꾼다
 
-`backend/src/main/resources/application-local.yml` 의
-`app.jwt.secret-key` 뒤에 아무 글자나 붙이고 **서버 재시작**.
+`backend/src/main/resources/application-local.yml` 의 `app.jwt.secret-key` 를 아무
+글자로 바꾸고 서버 재시작.
 
-- 예상: 이미 로그인된 상태에서 새로고침하면 ?
-- 확인할 것: 왜 그렇게 되나? 서버는 토큰을 어디에 저장해두고 비교하는가?
-- **핵심**: JWT는 서버가 저장하지 않는다. **서명을 다시 계산해서 맞는지 볼 뿐이다.**
-
-> 키를 32자보다 짧게 만들면? 옛 구조(`JwtProvider.init()`)는 `@PostConstruct` 에서
-> `WeakKeyException` 을 내서 서버가 아예 뜨지 않았다. 지금의 `JwtUtil` 은 토큰을
-> 만들 때마다 키를 만들기 때문에 **서버는 뜨고, 로그인할 때 500** 이 난다.
-> 어느 쪽이 나은지 생각해 보자.
-
-### 실험 2 — 토큰 내용을 직접 읽어본다
-
-브라우저 F12 → Application → Local Storage → `meokji.accessToken` 값 복사 →
-<https://jwt.io> 에 붙여넣기.
-
-- 예상: 비밀키 없이 내용이 보일까?
-- **핵심**: JWT는 **암호화가 아니라 서명**이다. 누구나 읽을 수 있고, 고칠 수 없을 뿐이다.
-  그래서 `createAccessToken()` 에 비밀번호나 개인정보를 넣으면 안 된다.
-  이 프로젝트가 payload 에 `sub`(id)만 넣은 이유다.
-
-### 실험 3 — 토큰을 한 글자 고친다
-
-Local Storage 값의 **마지막 글자 하나만** 바꾸고 새로고침.
-
-- 예상: 어떤 화면이 보일까? 서버 로그에는 뭐가 찍힐까?
-- 확인: `JwtProvider.readUserId()` 가 무엇을 돌려주고,
-  `LoginUserArgumentResolver.findByToken()` 의 어느 줄에서 401 이 나는가?
+- 예상: 이미 로그인한 사람은 어떻게 될까?
+- **핵심**: **전원이 즉시 로그아웃된다.** 서버가 토큰을 저장하지 않고 서명만 보기
+  때문에, 키가 바뀌면 전에 발급한 토큰이 전부 "위조" 로 판정된다
+- 운영 중에 키를 바꾸면 안 되는 이유다. 거꾸로, 키가 유출됐을 때 쓰는 유일한 수단이기도 하다
+- 32글자보다 짧게 넣으면 **서버가 아예 안 뜬다.** HS256 이 요구하는 길이다
 
 ### 실험 4 — 만료 시간을 1분으로 줄인다
 
-`application-local.yml` 에 `app.jwt.expire-minutes: 1` 을 넣고 재시작 →
-로그인 → 1분 기다림 → `/mypage` 이동.
-
-- 예상: 무슨 일이 벌어지나?
-- 확인: `api/client.js` 의 `onUnauthorized` 가 언제 불리는가? 자동 로그아웃되는가?
-
-### 실험 5 — `restoring` 을 없애본다
-
-`contexts/AuthContext.jsx` 에서 `restoring` 의 초깃값을 `false` 로 바꾼다.
-
-```js
-const [restoring, setRestoring] = useState(false)   // 원래는 true
+```yaml
+app:
+  jwt:
+    expire-minutes: 1
 ```
 
-로그인한 상태로 `/history` 에서 **새로고침**.
+재시작하고 로그인한 뒤 1분을 기다린다.
 
-- 예상: 무엇이 달라지나?
-- **핵심**: "로그인 안 함" 과 "아직 모름" 은 다른 상태다.
-  둘을 구분하지 않으면 로그인했는데도 `/login` 으로 튕긴다.
-- 확인 후 반드시 되돌릴 것.
+- 예상: 화면이 자동으로 로그아웃될까?
+- **핵심**: **안 된다.** 켜둔 화면은 그대로 있고, 다음 API 호출에서 401 이 나며
+  에러 문구만 뜬다. `App.jsx` 의 자동 로그아웃은 **앱이 켜질 때 한 번만** 돈다
+- 실무에서는 axios 인터셉터로 모든 401 을 가로채 로그아웃시킨다. 이 프로젝트는
+  인터셉터를 안 쓴다 — 왜 그렇게 했을지, 붙인다면 어디에 붙일지 생각해볼 것
 
-### 실험 6 — 토큰 주입을 빼먹는다
+### 실험 5 — `authHeader()` 를 빼먹는다
 
-`AuthContext.jsx` 의 `login()` 안에서 `setAuthToken(accessToken)` 줄을 주석 처리.
+`frontend/src/api/likes.js` 의 `getLikes` 에서 `{ headers: authHeader() }` 를 지운다.
 
-- 예상: 로그인은 될까? 그다음 `/mypage` 는?
-- **핵심**: 토큰을 받는 것과 **다음 요청에 실어 보내는 것**은 별개의 일이다.
+```js
+const response = await client.get('/api/likes')   // headers 를 지움
+```
+
+- 예상: 에러가 날까, 빈 목록이 올까?
+- **핵심**: `/api/likes` 는 `getLoginUser` 를 쓰므로 **401** 이 난다. 찜 목록이 통째로
+  안 뜬다. 인터셉터가 없어서 **함수마다 직접 붙여야 하고, 하나라도 빠뜨리면 그
+  요청만 비회원으로 나간다**
+- 새 API 함수를 만들 때 가장 많이 하는 실수다
+
+### 실험 6 — `getLoginUser` 를 `findLoginUser` 로 바꾼다
+
+`LikeController.getList` 에서 `authService.getLoginUser(token)` 을
+`findLoginUser(token)` 으로 바꾸고 재시작. 로그인하지 않은 채로 `/api/likes` 호출.
+
+- 예상: 401 이 날까?
+- **핵심**: **401 이 안 난다.** `loginUser` 가 `null` 로 서비스까지 내려가서
+  `NullPointerException` 이나 엉뚱한 결과가 나온다. 둘의 차이가 "로그인 필수인가
+  아닌가" 를 정하는 유일한 장치다
+- 이게 **스프링 시큐리티를 안 쓸 때의 가장 큰 위험**이다. 새 컨트롤러에서 확인
+  코드를 아예 빼먹으면 그 API 는 **에러도 없이 그냥 뚫린다**
 
 ### 실험 7 — 잠금 검사를 지운다
 
-`security/LoginUserArgumentResolver` 의 `findByToken()` 에서
-`if (user.isLockedAccount())` 블록을 주석 처리.
-계정을 20번 실패로 잠근 뒤, **잠기기 전에 받아둔 토큰**으로 API를 호출.
+`AuthServiceImpl.login()` 에서 `isLockedAccount()` 블록을 주석 처리하고, 일부러
+비밀번호를 20번 틀려서 잠긴 계정으로 로그인해본다.
 
-- 예상: 통과할까?
-- **핵심**: JWT는 발급 후 서버가 취소할 수 없다. 그래서 **요청마다 DB를 확인**한다.
-  이게 JWT의 가장 큰 약점이다. 바로 위의 `use_yn` 검사(탈퇴)도 같은 이유다.
+- **핵심**: 잠겨도 로그인이 된다. 잠금은 DB 의 `IS_LOCKED` 칸일 뿐이고, **그걸 보는
+  코드가 없으면 아무 의미가 없다.** 보안 장치는 "데이터" 가 아니라 "검사" 다
+- 되돌릴 것. 그리고 잠긴 계정은 비밀번호 재설정으로 풀린다
 
-### 실험 8 — 리졸버 등록을 빼본다 (스프링만의 함정)
+### 실험 8 — 에러 문구를 다르게 만든다
 
-`config/WebConfig` 에서 `addArgumentResolvers(...)` 안의 등록 한 줄을 주석 처리하고
-재시작 → 로그인 없이 `GET /api/users/me` 를 불러본다.
+`login()` 에서 "없는 이메일" 과 "틀린 비밀번호" 의 문구를 다르게 바꿔본다.
 
-- 예상: 401 이 날까, 아니면 다른 일이 벌어질까?
-- **핵심**: 등록을 빼면 `@LoginUser User me` 에 스프링이 **조용히 null 을 넣는다.**
-  에러가 안 난다. 로그인 검사가 통째로 사라진 채로 정상 동작하는 것처럼 보인다.
-  `AuthController.me()` 에 `if (me == null)` 검사가 한 번 더 있는 이유가 이것이다.
-- 확인 후 반드시 되돌릴 것.
+- **핵심**: 지금은 둘 다 `LOGIN_FAIL` 로 같다. 다르게 하면 공격자가 **"이 이메일은
+  가입돼 있구나" 를 알아낼 수 있다**(계정 열거 공격). 일부러 같게 둔 것이다
+- 쓰기 편한 UX 와 보안이 부딪히는 대표적인 자리다
 
 ### 실험 9 — 비밀번호 해시를 눈으로 본다
 
-DBeaver 에서:
+DBeaver 나 sqlplus 에서.
 
 ```sql
-SELECT email, password_hash FROM users;
+SELECT email, password_hash FROM users WHERE use_yn = 'Y';
 ```
 
-같은 비밀번호로 계정을 두 개 만들어 해시를 비교해본다.
+```
+$2a$10$N9qo8uLOickgx2ZMRZoMye...
+ │   │  └ 솔트 + 해시
+ │   └ 반복 횟수 (2^10 = 1024번)
+ └ BCrypt 라는 표시
+```
 
-- 예상: 두 해시가 같을까 다를까?
-- **핵심**: bcrypt 는 매번 다른 salt 를 섞는다. 그래서 해시가 달라도 검증은 된다.
-  `PasswordEncoder.matches()` 가 "복호화" 하지 않고 "대조" 하는 이유.
+- **핵심**: 같은 비밀번호로 두 계정을 만들어도 **해시가 다르다.** 솔트가 매번
+  달라서다. 그래서 `=` 로 비교할 수 없고 반드시 `matches()` 를 써야 한다
+- 해시에서 원래 비밀번호를 되돌릴 방법은 없다. 그래서 "비밀번호 찾기" 가 아니라
+  "비밀번호 재설정" 인 것이다
 
-> 해시가 `$2b$...` 로 시작하는 것을 확인해두면 좋다. 파이썬(passlib)이 만든 것과
-> 같은 형식이라, 스프링으로 옮긴 뒤에도 **기존 회원이 그대로 로그인된다.**
+### 실험 10 — 로그인 상태 유지를 꺼본다
+
+체크를 풀고 로그인한 뒤, F12 → Application → Storage 에서 확인한다.
+
+- `sessionStorage` 에 `meokji.accessToken` 이 있고 `localStorage` 에는 없어야 한다
+- 탭을 닫았다 다시 열면 로그아웃돼 있어야 한다
+- **핵심**: `saveToken` 에서 반대쪽을 지우는 줄을 지워보면, "유지 안함" 으로 다시
+  로그인해도 계속 유지된다. `getToken()` 이 `localStorage` 를 먼저 보기 때문이다
 
 ---
 
 ## 3단계. 말로 답해보기
 
-**보지 않고** 답할 수 있어야 한다. 막히면 그 부분을 다시 읽는다.
+막히는 게 있으면 1·2단계로 돌아간다.
 
 ### JWT 자체
 
-1. 세션 방식과 JWT 방식의 가장 큰 차이는?
-2. 서버는 발급한 토큰을 어디에 저장하는가?
-3. 로그아웃을 서버 API 없이 프론트에서만 처리해도 되는 이유는?
-4. 그 방식의 단점은? (힌트: 실험 7)
-5. `sub` / `iat` / `exp` 는 각각 무엇인가?
-6. `sub` 에 id 를 **문자열로** 넣는 이유는? (힌트: RFC 7519)
+1. JWT 세 토막은 각각 무엇인가? 점으로 나뉘는 이유는?
+2. 토큰 내용을 아무나 읽을 수 있는데 왜 안전하다고 하나?
+3. 서명은 무엇으로 만드나? 서명이 막아주는 것과 못 막아주는 것은?
+4. 서버는 발급한 토큰을 어디에 저장하나?
+5. 비밀키가 유출되면 무슨 일이 일어나나?
 
 ### 이 프로젝트의 선택
 
-7. 왜 토큰에 닉네임을 안 넣었나?
-8. 왜 Refresh Token 을 안 쓰나? 대신 무엇으로 위험을 줄였나?
-9. 로그인 실패 시 "없는 이메일" 과 "틀린 비밀번호" 를 왜 구분하지 않나?
-10. 그런데 왜 "남은 시도 N회" 는 알려주기로 했나? 무엇을 포기한 것인가?
-11. `@LoginUser` 와 `@LoginUser(required = false)` 는 언제 각각 쓰나?
-12. 권한 검사를 `SecurityConfig` 에 URL 목록으로 적지 않은 이유는?
-13. 왜 필터가 아니라 `HandlerMethodArgumentResolver` 인가?
+6. 왜 세션이 아니라 JWT 인가? 서버를 여러 대로 늘릴 때 무엇이 달라지나?
+7. 서명이 맞는데도 `userDAO.findById()` 를 또 부르는 이유는?
+8. `getLoginUser` 와 `findLoginUser` 의 차이는? 어느 API 가 어느 쪽을 쓰나?
+9. 로그아웃이 서버에 아무 요청도 안 보내는데, 그래도 되나? 무엇이 문제인가?
+10. 만료를 30분으로 둔 이유는? 1시간이면 무엇이 나빠지나? 5분이면?
 
 ### 스프링
 
-14. `PasswordEncoder` 를 `SecurityConfig` 의 `@Bean` 으로 둔 이유는?
-15. `JwtProvider` 가 생성자가 아니라 `@PostConstruct` 에서 키를 만드는 이유는?
-16. `@Transactional` 을 컨트롤러가 아니라 서비스에 붙이는 이유는?
-17. 오류를 `ResponseEntity` 로 직접 만들지 않고 `ApiException` 으로 던지는 이유는?
+11. 스프링 시큐리티를 안 쓰는데 `spring-security-crypto` 는 왜 들어 있나?
+12. 토큰 발급이 서비스가 아니라 컨트롤러에 있는 이유는?
+13. `AuthService` 를 인터페이스와 `Impl` 로 나눈 이유는?
+14. `@Valid` 가 걸러주는 것과 서비스가 걸러야 하는 것의 경계는?
 
 ### 프론트엔드
 
-18. `setAuthToken()` 이 axios 인스턴스 밖의 모듈 변수인 이유는?
-19. `client.js` 가 `AuthContext` 를 직접 import 하지 않고 콜백을 받는 이유는?
-20. `ProtectedRoute` 는 왜 컴포넌트가 아니라 라우트를 감싸는 형태인가?
-21. localStorage 대신 HttpOnly 쿠키를 쓰면 뭐가 좋아지고 뭐가 번거로워지나?
+15. 토큰을 `localStorage` 와 `sessionStorage` 중 어디에 두는가? 무엇이 정하나?
+16. `authHeader()` 가 빈 객체를 돌려줄 때는 언제이고, 그때 서버는 어떻게 되나?
+17. 새로고침해도 로그인이 유지되는 원리를 두 단계로 설명해보라
+18. `App.jsx` 가 `user` 를 들고 props 로 내려주는데, Context 를 안 쓴 이유는?
 
 ### 비밀번호
 
-22. bcrypt 해시를 "복호화" 할 수 있나?
-23. salt 는 왜 필요한가?
-24. 왜 비밀번호 길이를 문자 수가 아니라 **바이트**로 검사하나? (`util/Passwords`)
-25. 비밀번호 재설정에서 `used_at` 컬럼이 없으면 무슨 문제가 생기나?
+19. 비밀번호를 72바이트로 제한하는 이유는?
+20. 같은 비밀번호인데 해시가 다른 이유는?
+21. "없는 이메일" 과 "틀린 비밀번호" 의 문구를 같게 둔 이유는?
+22. 계정 잠금은 어디에 저장되고, 어떻게 풀리나?
 
 ---
 
 ## 4단계. 백지에서 다시 써보기
 
-진짜 시험이다. **이 프로젝트를 보지 않고** 새 폴더에 최소 로그인을 만든다.
+진짜로 이해했는지는 이걸로 판가름난다.
 
 ### 규칙
 
-- 이 저장소를 열어보지 않는다 (막히면 30분은 스스로 해결해본다)
-- DB 는 H2 로 해도 된다. 목적은 인증 흐름이지 Oracle 이 아니다
-- 화면은 못생겨도 된다
+- 기존 코드를 **보지 않고** 쓴다. 막히면 2분만 고민하고 열어본다
+- 완벽하지 않아도 된다. **흐름이 이어지는지**가 핵심이다
+- 새 폴더(`study/`)에 쓰고, 다 되면 지운다
 
 ### 순서
 
-```
-1  start.spring.io 로 프로젝트 만들기 (Web, Security, MyBatis 또는 JPA)
-2  GET /api/health 띄우기
-3  User 테이블 (email, password_hash) + 회원가입
-4  BCryptPasswordEncoder 로 해싱
-5  POST /api/auth/login  -> 토큰 문자열 반환 (jjwt)
-6  GET /api/auth/me      -> 토큰 검증해서 회원 돌려주기
-7  React: 로그인 폼 -> 토큰 localStorage 저장
-8  axios 인터셉터로 Authorization 자동 첨부
-9  새로고침해도 로그인 유지
-10 ProtectedRoute
-```
+**백엔드**
 
-6번을 **먼저 필터로** 만들어보고, 그다음 인자 리졸버로 바꿔보면 좋다.
-두 방식의 차이가 몸으로 남는다.
+1. `JwtUtil` — `createToken(Long)` 과 `getUserId(String)` 둘만
+2. `UserVO` — 토큰에 필요한 칸만 (`id`, `email`, `passwordHash`, `useYn`)
+3. `AuthServiceImpl.login()` — 회원 찾기 → 비밀번호 비교 → 돌려주기
+4. `AuthServiceImpl.getLoginUser()` — "Bearer " 떼기 → 토큰 풀기 → DB 조회
+5. `AuthController` — `/login` 과 `/me` 둘만
+6. 보호된 API 하나 — 아무거나 하나 골라 `getLoginUser` 를 붙여본다
+
+**프론트엔드**
+
+7. `token.js` — `getToken` · `saveToken` · `removeToken` · `authHeader`
+8. 로그인 폼 — `useState` 두 개와 `handleSubmit` 하나
+9. `App.jsx` — `user` state + `handleLogin` + `handleLogout`
 
 ### 다 만든 뒤
 
-이 프로젝트의 같은 파일을 열어 **내 코드와 비교**한다.
-다른 부분마다 "왜 다르게 했을까" 를 답해본다.
+- 로그인 → 토큰이 저장되나?
+- 새로고침 → 유지되나?
+- 토큰을 고치면 → 401 이 나나?
+- 로그아웃 → 지워지나?
 
-- 내가 놓친 것인가?
-- 내 방식이 더 단순한가?
-- 상황이 달라서인가?
+넷이 다 되면 인증은 이해한 것이다.
 
 ---
 
-## 참고: 각 파일의 역할 한 줄 요약
+## 5단계. 더 해볼 것 (여유가 있으면)
 
-| 파일 | 한 줄 |
+### 쉬움
+
+- `expires_in` 을 화면에서 써보기. "n분 뒤 자동 로그아웃됩니다" 를 띄운다
+- 관리자 계정으로 로그인해서 `user_level` 이 응답에 안 나가는지 확인해보기
+  (`UserVO` 의 `@JsonIgnore` 가 어디에 붙어 있는지 찾아볼 것)
+
+### 보통
+
+- axios 인터셉터를 붙여서 401 이 오면 자동 로그아웃시키기.
+  `api/client.js` 에 `client.interceptors.response.use(...)` 를 추가한다
+- `authHeader()` 를 매번 쓰는 대신 요청 인터셉터로 자동으로 붙이기.
+  **그러면 비회원도 되는 API 에 어떤 영향이 있는지** 같이 생각해볼 것
+
+### 어려움
+
+- refresh token 을 설계해보기. access 는 5분, refresh 는 2주로 두면
+  어디에 저장하고 어떻게 갱신할 것인가?
+- 스프링 시큐리티로 바꿔보기. 별도 브랜치에서.
+  `SecurityFilterChain` + `OncePerRequestFilter` 로 JWT 를 처리하고,
+  **CORS 설정을 `CorsConfigurationSource` 빈으로 옮기는 것**을 잊지 말 것
+  (안 옮기면 프리플라이트가 401 로 막혀 프론트 전체가 죽는다)
+
+---
+
+## 부록. 파일 한 줄 요약
+
+| 파일 | 역할 |
 |---|---|
-| `config/AppProperties` | `application.yml` 의 `app.*` 를 담는 객체. 설정의 단일 진입점 |
-| `config/SecurityConfig` | 세션·폼로그인을 끄고 `PasswordEncoder` 와 CORS 만 둔다 |
-| `config/WebConfig` | 인자 리졸버를 등록한다. **빼먹으면 조용히 열린다** (실험 8) |
-| `security/JwtProvider` | 토큰 발급/해석. **DB도 HTTP도 모른다** |
-| `security/@LoginUser` | "이 인자에 로그인한 회원을 넣어달라" 는 표시 |
-| `security/LoginUserArgumentResolver` | 요청 헤더 -> User 객체. 컨트롤러가 토큰을 직접 다루지 않게 함 |
-| `dto/auth/` | 요청/응답의 모양과 검증 규칙 |
-| `service/AuthService` | "이 사람이 맞는가" 판정 + 실패 횟수·잠금 |
-| `controller/AuthController` | HTTP 껍데기. 서비스 호출 + 응답 변환뿐 |
-| `common/ApiException` | 화면에 그대로 보여줄 오류. `{"detail": ...}` 로 나간다 |
-| `contexts/AuthContext.jsx` | 로그인 상태를 앱 전체에 공유 |
-| `api/client.js` | axios 인스턴스 + 토큰 자동 첨부 + 에러 정규화 |
-| `components/common/ProtectedRoute.jsx` | 로그인 안 했으면 `/login` 으로 |
+| `AuthController` | 회원가입 · 로그인 · 내 정보 · 비밀번호 재설정 3단계 (6개) |
+| `AuthServiceImpl` | 비밀번호 확인 · 계정 잠금 · 토큰 해석 (`getLoginUser` 등 3개) |
+| `PasswordResetServiceImpl` | 인증번호 발송 · 확인 · 비밀번호 변경 |
+| `JwtUtil` | 토큰 만들기 · 읽기. **JWT 라이브러리를 쓰는 유일한 파일** |
+| `Passwords` | 비밀번호 72바이트 검사 |
+| `UserVO` | `isAdmin()` · `isLockedAccount()` 판단 + 응답에서 뺄 칸 표시 |
+| `WebConfig` | `BCryptPasswordEncoder` 빈 + CORS |
+| `token.js` | 토큰 보관 위치 결정 · `authHeader()` |
+| `App.jsx` | `user` state 를 들고 props 로 내려줌 |
+| `LoginPage.jsx` | 로그인 폼 + 로그인 상태 유지 체크 |
 
 ### 계층을 나눈 이유
 
 ```
-controller  →  service  →  mapper  →  DB
-  (HTTP)      (업무 규칙)    (SQL)
+Controller   HTTP 를 아는 유일한 층. 헤더 · 상태코드 · @Valid
+     ↓
+Service      규칙이 사는 곳. "비밀번호가 틀리면 횟수를 올린다" 같은 것
+     ↓
+DAO          SQL 만. 매퍼 XML 과 한 쌍
 ```
 
-`AuthService.login()` 은 **HTTP 를 모른다.** `HttpServletRequest` 도 상태 코드도
-다루지 않는다. 그래서 나중에 다른 입구(배치, 소켓)에서도 그대로 부를 수 있다.
+이렇게 나누면 **테스트가 쉬워진다.** 서비스는 HTTP 를 모르므로 객체만 넣어
+부를 수 있다. `src/test/java/.../AuthFixtureTest.java` 에 로그인 · 내 정보 ·
+잘못된 토큰 · 중복 이메일 테스트가 들어 있으니 같이 읽어볼 것.
 
-컨트롤러는 반대로 **업무 규칙을 모른다.** 무엇이 로그인 실패인지, 몇 번 틀리면
-잠기는지는 서비스가 정한다.
+### 관련 문서
 
-> 이 규칙에 예외를 두지 않았다. 게임 기록처럼 한 줄 넣는 일도 `GameService` 를
-> 거친다 — 어떤 컨트롤러는 거치고 어떤 것은 매퍼를 직접 부르면, 새로 들어온
-> 사람이 규칙을 코드마다 다르게 배운다.
-
----
-
-## 파이썬 시절과 달라진 곳
-
-이 프로젝트는 원래 FastAPI 였고 2026-09 에 스프링부트로 옮겼다. 인증의 **판단은
-그대로**고 그것을 놓는 자리만 바뀌었다.
-
-| 하는 일 | 파이썬 | 스프링 |
-|---|---|---|
-| 설정 읽기 | `core/config.py` | `config/AppProperties` |
-| 비밀번호 해싱 | `passlib` | `BCryptPasswordEncoder` |
-| 토큰 발급·해석 | `core/security.py` | `security/JwtProvider` |
-| 헤더 -> 회원 | `Depends(get_current_user)` | `@LoginUser` + 인자 리졸버 |
-| 게스트 허용 | `Depends(get_optional_user)` | `@LoginUser(required = false)` |
-| 관리자만 | `Depends(get_admin_user)` | `@LoginUser(admin = true)` |
-
-**토큰은 서로 통한다.** 같은 HS256, 같은 비밀키, `sub` 에 id 를 문자열로 담는
-것까지 같게 맞췄다. 비밀번호 해시도 그대로 쓴다.
-
-옮기던 시절의 판단과 걸렸던 것들은 `docs/PROGRESS.md` 의 「서버를 스프링부트로
-옮기는 중」 절에 있다.
+- [STUDY_JWT_FLOW.md](STUDY_JWT_FLOW.md) — 로그인부터 만료까지 순서대로 읽는 문서
+- [STUDY_COLUMN_TYPES.md](STUDY_COLUMN_TYPES.md) — 컬럼 타입을 왜 그렇게 골랐나
+- [BOARD_SPEC.md](BOARD_SPEC.md) — 게시판 · 공지 명세 (담당자용)
