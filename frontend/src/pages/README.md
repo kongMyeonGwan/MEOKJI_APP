@@ -178,8 +178,9 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 > (`useEffect` + `async/await` + `catch` 의 if/else), 오류 문구 꺼내는 법,
 > 사진을 `FormData` 로 보내는 법이 `api/freePosts.js` 와 세 화면에 그대로 있다.
 >
-> `src/data/sampleFree.js` 는 더 이상 쓰지 않는다. 지워도 되는데, 서버 없이
-> 화면만 보고 싶을 때 되돌릴 자리라 남겨 뒀다.
+> 가데이터(`src/data/sampleFree.js`)는 **지웠다.** 서버가 다 붙어서 아무도
+> 쓰지 않는데, 남겨두면 "이 게시판도 아직 퍼블리싱인가" 로 읽힌다. 서버 없이
+> 화면만 보고 싶으면 백엔드를 켜는 쪽이 맞다.
 
 ### `community/notice/` — 공지사항
 
