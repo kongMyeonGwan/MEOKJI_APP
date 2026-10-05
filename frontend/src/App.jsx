@@ -58,10 +58,12 @@ export default function App() {
   // 로그인 정보를 브라우저에 저장하고 지우는 건 전부 여기서 한다.
   // (저장하는 함수들은 utils/token.js 에 있다)
 
-  // 로그인 성공 (LoginPage 가 부른다)
-  const handleLogin = (token, loginUser) => {
-    saveToken(token) // 브라우저에 토큰 저장
-    saveUser(loginUser) // 브라우저에 내 정보 저장
+  // 로그인 성공 (LoginPage 가 부른다).
+  // keep 은 '로그인 상태 유지' 체크 여부다. true 면 브라우저를 껐다 켜도 남고,
+  // false 면 탭을 닫을 때 사라진다 (utils/token.js 참고).
+  const handleLogin = (token, loginUser, keep) => {
+    saveToken(token, keep) // 브라우저에 토큰 저장
+    saveUser(loginUser, keep) // 브라우저에 내 정보 저장
     setUser(loginUser) // 화면에 반영 (상단바에 닉네임이 뜬다)
   }
 

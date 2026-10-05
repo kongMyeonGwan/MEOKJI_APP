@@ -1303,7 +1303,7 @@
   }
 }
 
-/* ----- GamePromo ----- */
+/* ----- GamePromo (첫 화면 · 로그인 화면이 같이 쓴다) ----- */
 /*
  * 메뉴 게임 배너.
  *
@@ -1461,6 +1461,181 @@
   }
 
   .gpromo__game-emoji { font-size: 26px; }
+}
+
+/* ===== full 버전 (로그인 화면) ===== */
+/*
+ * 왼쪽에 소개 + 요리사, 오른쪽에 게임 카드 셋. 카드마다 음식 사진과 색깔 버튼이
+ * 붙는다. compact(첫 화면)와 글자 · 링크는 같고 꾸밈만 다르다.
+ *
+ * 1023px 이하에서는 요리사와 음식 사진을 숨겨 compact 에 가까운 모양으로 돌아간다 -
+ * 좁은 폭에서 사진까지 넣으면 카드 하나가 세로로 너무 길어진다.
+ */
+
+.gpromo--full {
+  grid-template-columns: minmax(0, 330px) minmax(0, 1fr);
+  align-items: stretch;
+  padding: 0;
+  border: 0;
+  background: none;
+  gap: 18px;
+}
+
+/* 왼쪽 소개 패널. compact 에서는 배경이 .gpromo 에 있었는데 여기서는 이 칸이 가진다 */
+.gpromo--full .gpromo__lead {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 26px 0;
+  border-radius: var(--radius);
+  background: linear-gradient(150deg, var(--color-soft) 0%, var(--color-bg) 100%);
+  overflow: hidden;
+}
+
+.gpromo--full .gpromo__title { font-size: 25px; }
+
+.gpromo--full .gpromo__desc { font-size: 13px; }
+
+.gpromo__start {
+  align-self: flex-start;
+  margin-top: 18px;
+}
+
+/* 요리사. 패널 아래쪽에 반쯤 잠기게 둔다 */
+.gpromo__chef {
+  width: 150px;
+  margin: -6px 0 0 auto;
+  /* 아래로 살짝 내려서 패널 바닥에 발이 닿은 것처럼 보이게 한다 */
+  margin-bottom: -10px;
+}
+
+.gpromo--full .gpromo__games { gap: 16px; }
+
+.gpromo--full .gpromo__game {
+  gap: 4px;
+  padding: 20px 16px 18px;
+  border: 0;
+}
+
+/* 카드 세 가지 색. 배경은 아주 연하게, 버튼만 진하게 간다 */
+.gpromo__game--orange { background: #fdf0e8; }
+.gpromo__game--green { background: #ebf7ee; }
+.gpromo__game--purple { background: #efecfb; }
+
+.gpromo--full .gpromo__game-emoji { font-size: 34px; }
+
+.gpromo--full .gpromo__game-title { font-size: 17px; }
+
+.gpromo--full .gpromo__game-desc {
+  /* 카드가 넓어져서 두 줄로 끊을 필요가 없다 */
+  white-space: normal;
+  line-height: 1.45;
+}
+
+/* ===== 카드 안 음식 사진 ===== */
+.gpromo__shots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin: 14px 0 16px;
+}
+
+/* VS 를 사진 사이에 겹쳐 놓기 위한 칸 */
+.gpromo__shot-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.gpromo__shot {
+  width: 100%;
+  max-width: 120px;
+  height: auto;
+}
+
+/* 돌림판 카드는 가운데 그림이 주인공이라 양옆보다 크게 */
+.gpromo__game--purple .gpromo__shot-slot:nth-child(2) .gpromo__shot { max-width: 110px; }
+.gpromo__game--purple .gpromo__shot { max-width: 68px; }
+
+/* VS 동그라미. 그림이 아니라 CSS 로 그린다 - 또렷하고 용량이 0이다 */
+.gpromo__vs {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+
+  font-size: 13px;
+  font-weight: 800;
+  font-style: italic;
+  color: #fff;
+}
+
+.gpromo__game--orange .gpromo__vs { background: var(--color-accent); }
+.gpromo__game--green .gpromo__vs { background: #1f9d4d; }
+
+/* ===== 카드마다 붙는 버튼 ===== */
+.gpromo__go {
+  display: block;
+  width: 100%;
+  margin-top: auto;
+  padding: 12px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  transition: filter var(--dur) var(--ease);
+}
+
+.gpromo__go:hover { filter: brightness(1.07); }
+
+.gpromo__game--orange .gpromo__go { background: var(--color-accent); }
+.gpromo__game--green .gpromo__go { background: #1f9d4d; }
+.gpromo__game--purple .gpromo__go { background: #6b4ddb; }
+
+@media (max-width: 1023px) {
+  /* 소개를 위, 카드를 아래로 쌓고 compact 에 가까운 모양으로 돌린다 */
+  .gpromo--full { grid-template-columns: minmax(0, 1fr); }
+
+  .gpromo--full .gpromo__lead { padding: 22px 20px; }
+
+  .gpromo--full .gpromo__title { font-size: 21px; }
+
+  /* 요리사와 음식 사진은 숨긴다. 좁은 폭에서 카드가 세로로 길어지는 것을 막는다 */
+  .gpromo__chef,
+  .gpromo__shots { display: none; }
+
+  .gpromo__start {
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .gpromo--full .gpromo__game { padding: 18px 14px; }
+
+  .gpromo__go { margin-top: 14px; }
+}
+
+@media (max-width: 560px) {
+  /* 한 줄에 하나씩. 카드를 눕히면 버튼이 갈 곳이 없어서 세로 모양을 유지한다 */
+  .gpromo--full .gpromo__game {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .gpromo--full .gpromo__game-text { margin-top: 8px; }
 }
 
 /* ----- FoodFinder ----- */
@@ -2265,53 +2440,189 @@
    ========================================================== */
 
 /* ----- LoginPage ----- */
+/* [왼쪽 소개][오른쪽 로그인 카드] 2단. 좁아지면 카드만 남기고 소개는 위로 쌓인다 */
+
 .login {
-  max-width: 420px;
-  margin: 0 auto;
+  display: grid;
+  gap: 24px;
+}
+
+/* 위쪽 2단. 아래 게임 배너는 폭을 다 쓰므로 이 틀 바깥에 둔다 */
+.login__top {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* 왼쪽 소개.
+   배경은 두 겹이다 - 위에 가리개(그라데이션), 아래에 사진.
+   사진은 왼쪽이 비어 있고 오른쪽에 음식이 있어서, 가리개를 왼쪽만 덮고
+   오른쪽으로 갈수록 투명해지게 했다. 글자는 읽히고 음식은 보인다.
+   가리개 색을 var(--color-surface) 로 쓰는 이유는 다크 모드 때문이다 -
+   흰색으로 박아두면 어두운 테마에서 흰 글자가 흰 바탕에 묻힌다.
+   사진 파일이 없으면 url 줄만 조용히 무시되고 그라데이션이 그대로 보인다 */
+.login__hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 44px;
+  border-radius: var(--radius);
+  background-image: linear-gradient(100deg, var(--color-surface) 30%, rgba(255, 255, 255, 0) 68%),
+    url('/images/LoginPage.jpg');
+  background-size: cover;
+  background-position: center right;
+  background-color: var(--color-accent-weak);
+}
+
+/* 손글씨처럼 기울인 한 줄 */
+.login__hand {
+  margin: 0 0 10px;
+  font-size: 19px;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.login__headline {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.22;
+}
+
+.login__headline strong { color: var(--color-accent); }
+
+.login__lead {
+  margin: 18px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+.login__points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.login__points li {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  text-align: center;
+}
+
+.login__point-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 7px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 23px;
+  box-shadow: var(--shadow-rest);
+}
+
+.login__point-title { font-size: 15px; }
+
+.login__point-desc { font-size: 13px; }
+
+/* 오른쪽 로그인 카드 */
+.login__card {
+  align-self: center;
+  width: 100%;
+  padding: 32px;
 }
 
 .login__title {
-  margin: 0 0 20px;
-  font-size: 22px;
+  margin: 0;
+  font-size: 24px;
 }
 
-.login__field {
-  display: block;
-  margin-bottom: 16px;
-}
-
-.login__field > span {
-  display: block;
-  margin-bottom: 6px;
+.login__subtitle {
+  margin: 6px 0 22px;
   font-size: 14px;
-  font-weight: 600;
 }
 
-.login__field input {
+/* 입력칸 한 줄. 왼쪽 아이콘을 칸 안에 겹쳐 올린다 */
+.login__field {
+  position: relative;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.login__icon {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  font-size: 15px;
+  line-height: 1;
+  /* 아이콘을 눌러도 입력칸이 눌리게 한다 */
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 비밀번호 칸은 PasswordInput 이 <span> 으로 한 겹 감싸고 있어서 선택자가 두 벌이다 */
+.login__field > input,
+.login__field .pw-input input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 13px 14px 13px 42px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 15px;
   font-family: inherit;
+  color: inherit;
   background: var(--color-bg);
 }
 
-.login__field input:focus {
+.login__field > input:focus,
+.login__field .pw-input input:focus {
   outline: 2px solid var(--color-accent);
   outline-offset: -1px;
 }
 
+/* 로그인 상태 유지 + 비밀번호 찾기를 한 줄에 */
+.login__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 0 18px;
+  font-size: 13px;
+}
+
+.login__keep {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.login__keep input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.login__forgot:hover { color: var(--color-accent); }
+
 .login__submit {
   width: 100%;
-  padding: 12px;
-  margin-top: 8px;
+  padding: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--color-accent);
   color: #fff;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
 }
@@ -2323,13 +2634,31 @@
 
 .login__link {
   color: var(--color-accent);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .login__footer {
-  margin: 20px 0 0;
+  margin: 22px 0 0;
   text-align: center;
   font-size: 14px;
+}
+
+@media (max-width: 1023px) {
+  /* 소개를 위, 카드를 아래로 쌓는다 */
+  .login__top { grid-template-columns: 1fr; }
+
+  .login__hero {
+    padding: 32px 24px;
+    /* 좁은 화면에서는 글자 뒤가 비치면 읽기 나빠서 사진을 걷는다 */
+    background-image: none;
+    background: var(--color-accent-weak);
+  }
+
+  .login__headline { font-size: 32px; }
+
+  .login__points { gap: 20px; }
+
+  .login__card { max-width: 420px; margin: 0 auto; }
 }
 
 /* ==========================================================
