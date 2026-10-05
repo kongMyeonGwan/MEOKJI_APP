@@ -19,7 +19,7 @@ import { SAMPLE_REVIEWS } from '../../../data/sampleBoard'
 //   - 글쓰기 버튼을 로그인했을 때만 보이게 한다
 //     (App.jsx 의 <Route> 에서 user={user} 를 넘겨받아 판단한다)
 //   - 로딩 · 오류 · 빈 목록 상태를 붙인다 (CODE_STYLE 3번)
-export default function CommunityPage() {
+export default function ReviewListPage() {
   const [page, setPage] = useState(1)
 
   const reviews = SAMPLE_REVIEWS

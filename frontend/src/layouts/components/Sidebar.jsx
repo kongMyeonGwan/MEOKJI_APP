@@ -16,8 +16,10 @@ const MAIN_MENU = [
 const SUB_MENU = [
   { to: '/history', label: 'History', icon: 'clock', auth: true },
   { to: '/liked', label: '찜한 레시피', icon: 'heart' },
-  // 게시판 셋(레시피 추천 · 공지사항 · 자유게시판)은 커뮤니티 안의 탭으로 오간다
+  // 게시판 셋(레시피 추천 · 공지사항 · 자유게시판)은 커뮤니티 안의 탭으로 오간다.
+  // 인기 레시피만 그 탭에 없어서 여기에 따로 둔다
   { to: '/community', label: '커뮤니티', icon: 'chat' },
+  { to: '/popular', label: '인기 레시피', icon: 'fire' },
   { to: '/ai-history', label: 'AI 추천 기록', icon: 'robot', auth: true },
   { to: '/settings', label: '설정', icon: 'gear' },
 ]

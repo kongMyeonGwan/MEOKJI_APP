@@ -13,7 +13,7 @@ import { getFreePosts } from '../../../api/freePosts'
 //
 // 레시피 후기(/community)와 다른 점
 //   후기는 내 식사 기록을 하나 골라야 글을 쓸 수 있지만, 여기는 그 조건이 없다.
-export default function FreePage({ user }) {
+export default function FreeListPage({ user }) {
   const [keyword, setKeyword] = useState('') // 입력칸에 치고 있는 글자
   const [searched, setSearched] = useState('') // 실제로 서버에 보낸 검색어
   const [page, setPage] = useState(1)

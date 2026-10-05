@@ -29,12 +29,24 @@ pages/
 
 ```
 community/recipeReview/
-├── CommunityPage.jsx       /community
+├── ReviewListPage.jsx      /community
 ├── ReviewDetailPage.jsx    /community/:reviewId
 ├── ReviewWritePage.jsx     /community/write
 ├── PopularPage.jsx         /popular
 └── components/             ReviewCard · ReviewAttachment · CommentItem
 ```
+
+게시판 화면 이름은 **역할을 뒤에 붙인다.** 셋이 한 벌이라 파일 이름만 보고
+어느 화면인지 알 수 있어야 한다.
+
+| 역할 | 이름 | 예 |
+|---|---|---|
+| 목록 | `XxxListPage` | `FreeListPage` · `NoticeListPage` · `ReviewListPage` |
+| 상세 | `XxxDetailPage` | `FreeDetailPage` · `NoticeDetailPage` · `ReviewDetailPage` |
+| 작성 | `XxxWritePage` | `FreeWritePage` · `NoticeWritePage` · `ReviewWritePage` |
+
+`PopularPage` 는 이 셋에 안 들어간다. 게시판의 목록이 아니라 좋아요 순으로
+따로 뽑아 보여주는 화면이라 그대로 둔다.
 
 주소는 폴더 이름을 따라가지 않는다. 자유게시판은 `community/free/` 에 있지만
 주소는 `/free` 다. 어느 주소에 어느 화면이 붙는지는 `src/App.jsx` 만 정한다.
@@ -105,7 +117,7 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 
 | 파일 | 주소 | 하는 일 |
 |---|---|---|
-| `CommunityPage.jsx` | `/community` | 글 목록 · 검색 (공지 탭은 `/notice` 로 가는 링크) |
+| `ReviewListPage.jsx` | `/community` | 글 목록 · 검색 (공지 탭은 `/notice` 로 가는 링크) |
 | `ReviewDetailPage.jsx` | `/community/:reviewId` | 글 + 댓글 + 좋아요 |
 | `ReviewWritePage.jsx` | `/community/write` | 글쓰기 (로그인 필요) |
 | `PopularPage.jsx` | `/popular` | 인기 레시피 |
@@ -140,7 +152,7 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 
 | 파일 | 주소 | 하는 일 |
 |---|---|---|
-| `FreePage.jsx` | `/free` | 글 목록 · 검색 · 페이징 |
+| `FreeListPage.jsx` | `/free` | 글 목록 · 검색 · 페이징 |
 | `FreeDetailPage.jsx` | `/free/:postId` | 글 + 첨부 사진 + 댓글 (내 글이면 수정 · 삭제) |
 | `FreeWritePage.jsx` | `/free/write` | 글쓰기 (로그인 필요) |
 
@@ -173,7 +185,7 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 
 | 파일 | 주소 | 하는 일 |
 |---|---|---|
-| `NoticePage.jsx` | `/notice` | 공지 목록 (고정 공지가 위) |
+| `NoticeListPage.jsx` | `/notice` | 공지 목록 (고정 공지가 위) |
 | `NoticeDetailPage.jsx` | `/notice/:noticeId` | 공지 본문 + (관리자) 수정 · 삭제 |
 | `NoticeWritePage.jsx` | `/notice/write` | 공지 작성 |
 
@@ -181,7 +193,7 @@ props 로 넘겨준다. 토큰과 사용자 정보를 localStorage 에 저장하
 `NoticeForm`(작성 · 수정 폼). **폼은 작성 화면과 상세 화면이 같이 쓴다.**
 `notice` props 를 넘기면 '공지 수정', 안 넘기면 '새 공지 작성' 모양이 된다.
 
-원래 공지는 `recipeReview/CommunityPage` 의 공지 탭 안에서 제목을 누르면 그 자리에서 펼쳐지는
+원래 공지는 `recipeReview/ReviewListPage` 의 공지 탭 안에서 제목을 누르면 그 자리에서 펼쳐지는
 아코디언이었다. 목록 · 상세 · 작성이 다 있는 게시판으로 바꾸면서 폴더를 따로
 뺐다. 커뮤니티의 공지 탭은 `/notice` 로 보내는 링크로 남아 있다.
 
@@ -236,7 +248,7 @@ import ProfileForm from './components/ProfileForm'     // 이 기능 전용은 �
 // pages/mypage/components/ProfileForm.jsx — 조각 (한 겹 더)
 import { getLikes } from '../../../api/likes'
 
-// pages/community/free/FreePage.jsx  — 게시판은 community 아래라 또 한 겹
+// pages/community/free/FreeListPage.jsx — 게시판은 community 아래라 또 한 겹
 import Pagination from '../../../components/common/Pagination'
 
 // pages/community/free/components/FreePostCard.jsx — 그 조각
@@ -250,7 +262,7 @@ import { formatDate } from '../../../../utils/format'
 
 고칠 곳은 Ctrl+F 로 찾는다. 파일 안이 `/* ----- XxxPage ----- */` 로 나뉘어 있다.
 새 화면을 만들었으면 그 화면 이름으로 구역을 하나 만들어 아래쪽에 붙인다
-(예: `/* ----- FreePage (목록) ----- */`).
+(예: `/* ----- FreeListPage ----- */`).
 
 - 여러 화면이 같이 쓰는 클래스(`.card` · `.btn` · `.muted` · `.tag` · `.empty` ·
   `.divided`)는 파일 맨 아래 **전역** 구역에 있다. **고치면 모든 화면이 같이 바뀐다.**

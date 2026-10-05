@@ -2652,6 +2652,11 @@
 /* 룰렛처럼 내용이 가운데 하나뿐인 화면. 넓으면 원이 허전하게 떠 보인다 */
 .list-page--narrow { max-width: 520px; }
 
+/* 카드 격자 화면(/popular). 폭을 제한하지 않고 본문을 꽉 채운다.
+   .list-page 는 max-width 만 있고 margin: 0 auto 가 없어서, 폭을 묶어두면
+   남는 자리가 전부 오른쪽에 몰린다. 카드가 알아서 줄 수를 늘리므로 풀어둔다 */
+.list-page--wide { max-width: none; }
+
 .list-page__desc {
   margin: -8px 0 0;
   font-size: 14px;
@@ -3832,7 +3837,7 @@ a.price-table__best:hover { text-decoration: underline; }
    게시판 · 후기
    ========================================================== */
 
-/* ----- CommunityPage ----- */
+/* ----- ReviewListPage ----- */
 .community__head {
   display: flex;
   align-items: center;
@@ -3893,6 +3898,236 @@ a.price-table__best:hover { text-decoration: underline; }
   background: rgba(255, 255, 255, 0.25);
 }
 
+/* ----- PopularPage ----- */
+/* /popular — 인기 레시피. 머리말 + 기간 필터 + 카드 격자 */
+
+.popular-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 26px;
+  border-radius: var(--radius);
+  background: linear-gradient(120deg, var(--color-accent-weak), var(--color-surface));
+}
+
+.popular-head__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.popular-head__desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+/* 오른쪽 인사말. 좁아지면 자리를 못 잡아 숨긴다 */
+.popular-head__hello {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-accent);
+}
+
+/* 날짜 두 칸 + 검색이 왼쪽, 기간 칩이 오른쪽 */
+.popular-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+}
+
+/* .range 는 아래에 다른 내용이 오는 화면 기준으로 여백이 붙어 있다. 여기서는 한 줄이라 지운다 */
+.popular-filter .range {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* 이 화면에서 검색은 주 동작이라 주황 버튼으로 둔다 */
+.popular-filter .range__submit {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.popular-filter__chips { flex-shrink: 0; }
+
+.popular-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
+}
+
+/* ----- PopularCard ----- */
+
+.rank-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-rest);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.rank-card:hover {
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-2px);
+}
+
+.rank-card__media {
+  position: relative;
+}
+
+/* 카드 맨 위에 꽉 차게 깔린다. 목록용 기본 모서리/테두리를 지운다 */
+.rank-card__media .thumb--lg {
+  height: 180px;
+  border: 0;
+  border-radius: 0;
+}
+
+/* 순위 동그라미 (왼쪽 위) */
+.rank-card__rank {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-text);
+  box-shadow: var(--shadow-rest);
+}
+
+.rank-card__rank.is-gold { background: #f6b93b; color: #fff; }
+.rank-card__rank.is-silver { background: #c8cdd4; color: #fff; }
+.rank-card__rank.is-bronze { background: #d99058; color: #fff; }
+
+/* 조리 시간 (오른쪽 위). 그림 위에 얹히므로 배경을 반투명 검정으로 둔다 */
+.rank-card__time {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.rank-card__body {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.rank-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rank-card__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rank-card__name a:hover { color: var(--color-accent); }
+
+.rank-card__save {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.rank-card__save:hover,
+.rank-card__save.is-on { color: var(--color-accent); }
+
+.rank-card__summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rank-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.rank-card__writer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-muted);
+}
+
+/* 닉네임 첫 글자를 동그라미에 넣는다 (상단바의 프로필과 같은 방식) */
+.rank-card__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-accent-weak);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.rank-card__counts {
+  display: flex;
+  gap: 10px;
+}
+
+.rank-card__heart { color: var(--color-accent); font-weight: 600; }
+
+.rank-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rank-card__tag {
+  border: 0;
+  background: var(--color-bg);
+  font-size: 11px;
+}
+
+@media (max-width: 1023px) {
+  .popular-head {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px 20px;
+  }
+
+  .popular-head__hello { display: none; }
+
+  /* 날짜 줄과 칩 줄을 위아래로 쌓는다. 한 줄에 다 넣으면 날짜 칸이 뭉개진다 */
+  .popular-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+}
+
 .community__hint {
   font-size: 13px;
   white-space: nowrap;
@@ -3928,7 +4163,7 @@ a.btn {
    공통 컴포넌트
    ========================================================== */
 
-/* ----- LikedList ----- */
+/* ----- 찜한 레시피 목록 (/liked) ----- */
 .liked {
   margin: 0;
   padding: 0;
@@ -3952,8 +4187,7 @@ a.btn {
   padding: 10px 0;
 }
 
-/* 찜한 레시피 목록(/liked)에서만 쓰는 하트. 눌러서 바로 뺀다.
-   인기 레시피 목록에는 이 버튼이 없다 — 남이 누른 좋아요라 뺄 수 없다. */
+/* 내가 찜한 것이라 눌러서 바로 뺄 수 있다 */
 .liked__unlike {
   flex-shrink: 0;
   padding: 8px;
@@ -3987,18 +4221,6 @@ a.btn {
   align-items: center;
   gap: 12px;
   font-size: 13px;
-}
-
-.liked__heart {
-  color: var(--color-heart);
-  font-weight: 600;
-}
-
-.liked__arrow {
-  flex-shrink: 0;
-  font-size: 20px;
-  color: var(--color-muted);
-  line-height: 1;
 }
 
 /* ==========================================================
@@ -4354,7 +4576,7 @@ a.btn {
    둘은 앞으로 다르게 자랄 자리다 — 후기에는 좋아요 · 댓글 · 레시피가 붙고,
    자유게시판에는 안 붙는다. */
 
-/* ----- FreePage (목록) ----- */
+/* ----- FreeListPage ----- */
 .free__head {
   display: flex;
   align-items: center;
@@ -4767,7 +4989,7 @@ a.btn {
    구역에 그대로 있다 — 거기서 옮겨오면 .tag 와의 순서가 바뀌어 고정 배지
    색이 달라지므로 건드리지 않았다. 여기에는 새로 생긴 것만 둔다. */
 
-/* ----- NoticePage (목록) ----- */
+/* ----- NoticeListPage ----- */
 .notice-page__head {
   display: flex;
   align-items: center;
@@ -4876,6 +5098,206 @@ a.btn {
 /* ==========================================================
    마이페이지
    ========================================================== */
+
+/* ----- LikedPage (/liked) ----- */
+/* 머리말 + 검색 + 보기 전환, 그 아래 카드 격자 또는 목록 */
+
+.liked-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.liked-head__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.liked-head__desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+}
+
+.liked-head__tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.liked-head__search {
+  width: 260px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+}
+
+.liked-head__search:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+/* 격자 / 목록 버튼 둘을 한 덩어리로 붙여 둔다 */
+.liked-head__views {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.liked-head__view {
+  display: flex;
+  align-items: center;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.liked-head__view:hover { color: var(--color-accent); }
+
+.liked-head__view.is-on {
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+}
+
+.liked-head__count {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.liked-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
+}
+
+/* ----- LikedCard (격자 보기 카드 한 장) ----- */
+
+.lcard {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-rest);
+  transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.lcard:hover {
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-2px);
+}
+
+.lcard__media { position: relative; }
+
+/* 카드 맨 위에 꽉 차게 깔린다. 목록용 기본 모서리/테두리를 지운다 */
+.lcard__media .thumb--lg {
+  height: 190px;
+  border: 0;
+  border-radius: 0;
+}
+
+/* 그림 위에 얹히는 하트. 누르면 찜이 풀린다 */
+.lcard__unlike {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-heart);
+  cursor: pointer;
+  box-shadow: var(--shadow-rest);
+}
+
+.lcard__unlike:hover { transform: scale(1.08); }
+
+.lcard__body {
+  display: grid;
+  gap: 9px;
+  padding: 16px;
+}
+
+.lcard__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lcard__badge {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-weak);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* 분류 다음에 붙는 태그들. 주황을 하나만 두어야 분류가 눈에 들어온다 */
+.lcard__badge--plain {
+  background: var(--color-bg);
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.lcard__name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.lcard__name a:hover { color: var(--color-accent); }
+
+.lcard__desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.lcard__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.lcard__price { color: var(--color-accent); font-weight: 600; }
+
+.lcard__cta { margin-top: 3px; }
+
+@media (max-width: 1023px) {
+  .liked-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* 검색창이 남는 자리를 다 쓰고, 버튼과 개수는 오른쪽에 붙는다 */
+  .liked-head__search {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+}
 
 /* ----- MyPage ----- */
 .mypage {

@@ -85,7 +85,8 @@ export default function BudgetPage() {
   const rangeText = noLimit ? `${formatPrice(min)} 이상` : `${formatPrice(min)} ~ ${formatPrice(max)}`
 
   return (
-    <div className="list-page">
+    // --wide : 카드 격자라 폭을 묶지 않고 본문을 꽉 채운다
+    <div className="list-page list-page--wide">
       <div className="section-head">
         <h2 className="section-title">예산 맞춤 추천</h2>
       </div>

@@ -119,7 +119,8 @@ export default function BalancePage({ user }) {
   // 질문을 다 풀었으면 결과 화면
   if (answers.length === questions.length) {
     return (
-      <div className="list-page">
+      // --wide : 카드 격자라 폭을 묶지 않고 본문을 꽉 채운다
+      <div className="list-page list-page--wide">
         <div className="section-head">
           <h2 className="section-title">이런 메뉴는 어떠세요?</h2>
           <button type="button" className="section-more wc__restart" onClick={restart}>

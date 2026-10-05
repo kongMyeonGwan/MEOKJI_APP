@@ -17,7 +17,7 @@ import { SAMPLE_NOTICES } from '../../../data/sampleBoard'
 //   - 공지 작성 버튼을 관리자일 때만 보이게 한다 (user.is_admin)
 //     로그인한 사람은 App.jsx 의 <Route> 에서 user={user} 로 받는다
 //   - 로딩 · 오류 · 빈 목록 상태를 붙인다 (CODE_STYLE 3번)
-export default function NoticePage() {
+export default function NoticeListPage() {
   const [page, setPage] = useState(1)
 
   const notices = SAMPLE_NOTICES

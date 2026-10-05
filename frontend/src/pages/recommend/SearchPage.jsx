@@ -83,7 +83,8 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="list-page">
+    // --wide : 카드 격자라 폭을 묶지 않고 본문을 꽉 채운다
+    <div className="list-page list-page--wide">
       <div className="section-head">
         <h2 className="section-title">레시피 검색</h2>
         {query && !loading && <span className="muted section-more">{items.length}건</span>}

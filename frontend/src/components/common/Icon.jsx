@@ -56,6 +56,35 @@ const PATHS = {
     />
   ),
 
+  // 찜 목록의 보기 전환 버튼 (격자 / 목록)
+  grid: (
+    <>
+      <rect x="4" y="4" width="7" height="7" rx="1.5" />
+      <rect x="13" y="4" width="7" height="7" rx="1.5" />
+      <rect x="4" y="13" width="7" height="7" rx="1.5" />
+      <rect x="13" y="13" width="7" height="7" rx="1.5" />
+    </>
+  ),
+
+  list: (
+    <>
+      <path d="M8 6.5h12M8 12h12M8 17.5h12" />
+      <path d="M4 6.5h.01M4 12h.01M4 17.5h.01" />
+    </>
+  ),
+
+  bookmark: <path d="M7 4.5h10a1 1 0 0 1 1 1V20l-6-3.5L6 20V5.5a1 1 0 0 1 1-1z" />,
+
+  // 저장한 상태. heart / heart-fill 과 같은 방식으로, 모양은 그대로 두고 색만 채운다
+  'bookmark-fill': (
+    <path d="M7 4.5h10a1 1 0 0 1 1 1V20l-6-3.5L6 20V5.5a1 1 0 0 1 1-1z" fill="currentColor" />
+  ),
+
+  // 인기 레시피. 찜(heart)과 헷갈리지 않게 불꽃으로 둔다
+  fire: (
+    <path d="M12 3.5c2.8 2.6 4.5 5 4.5 7.6a4.5 4.5 0 0 1-9 0c0-1.3.5-2.5 1.5-3.6.2 1.2.8 2 1.7 2.3-.5-2.2-.2-4.2 1.3-6.3z" />
+  ),
+
   chat: (
     <path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4z" />
   ),
