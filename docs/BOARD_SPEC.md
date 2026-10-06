@@ -240,17 +240,16 @@ DTO 를 없애면서 **`RecipeReviewVO` · `ReviewCommentVO` · `NoticeVO` 가
     "view_count": 99999, "user_id": 1, "file_yn": "Y" }
 ```
 
-지금 세 VO 의 상태가 다르다.
+세 VO 모두 막아뒀다. 화면이 보내도 되는 칸만 열려 있다.
 
-| VO | `@JsonIgnore` | 뜻 |
-|---|:--:|---|
-| `ReviewCommentVO` | 5칸 | `reviewId` · `userId` · `useYn` · 날짜는 **받을 때도 막힌다** |
-| `NoticeVO` | 6칸 | `userId` · `pinnedYn` · `useYn` · 날짜는 막힌다 |
-| **`RecipeReviewVO`** | **0칸** | **15칸이 전부 들어온다** — `userId` · `viewCount` · 첨부 6칸까지 |
+| VO | 열려 있는 칸 |
+|---|---|
+| `RecipeReviewVO` | `mealHistoryId` · `title` · `content` — 나머지는 전부 막혔다 |
+| `ReviewCommentVO` | `content` |
+| `NoticeVO` | `title` · `content` · `pinned` |
 
 `@JsonIgnore` 는 내보낼 때뿐 아니라 **받을 때도 막는다.** 그래서 붙어 있는
-칸은 화면이 아무리 보내도 null 로 남는다. `RecipeReviewVO` 에는 아직 하나도
-없으니, 후기 쪽은 특히 조심해야 한다.
+칸은 화면이 아무리 보내도 null 로 남는다.
 
 **받을 때만 막고 싶은 칸은 `@JsonIgnore` 가 아니다.** 닉네임 · 조회수 ·
 댓글 수처럼 화면이 **봐야 하지만 정할 수는 없는** 칸은 `@JsonIgnore` 를
@@ -266,9 +265,10 @@ private Integer viewCount;        // 받을 때 무시, 보낼 때는 나간다
 | `@JsonIgnore` | 양쪽 다 막는다 — 글쓴이 id, 파일의 서버 경로 · UUID 이름, `useYn` |
 | `READ_ONLY` | 받을 때만 막는다 — 닉네임, 조회수, 댓글 수, 내 글 여부 |
 
-본보기는 `free/vo/FreePostVO.java` 다. 목록 · 상세 응답까지 그 VO 하나로
-겸하고 있어서(앞머리의 "VO 하나가 DB 한 행 · 요청 · 응답을 겸한다"),
-`ReviewListVO` · `ReviewDetailVO` 를 따로 둘지 합칠지 정할 때 같이 보면 된다.
+본보기는 `free/vo/FreePostVO.java` 와 `review/vo/RecipeReviewVO.java` 다.
+둘 다 **목록 · 상세 응답까지 그 VO 하나로 겸한다** — 앞머리의 "VO 하나가
+DB 한 행 · 요청 · 응답을 겸한다" 그대로다. 목록에 안 쓰는 칸(댓글 · 첨부 ·
+레시피)은 목록 SQL 이 안 고르니 null 로 남을 뿐이다.
 
 **`request` 를 통째로 DAO 에 넘기면 안 된다.** 쓸 칸만 골라 새 VO 에 옮겨
 담는다 — `BanServiceImpl.add()` 와 `HistoryServiceImpl.add()` 가 그렇게 한다.
@@ -291,9 +291,9 @@ reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 �
 `attachFile()` 만 그 칸을 건드려야 한다 (1-5 의 「첨부파일 컬럼 여섯 개는
 한 몸이다」 참고).
 
-> `RecipeReviewVO` 에도 `ReviewCommentVO` 처럼 `@JsonIgnore` 를 붙이면
-> 이 실수를 아예 막을 수 있다. 아직 안 붙인 것은 담당자가 어떤 칸을
-> 쓸지 정하지 않아서다. 구현을 시작할 때 정해서 붙이는 것을 권한다.
+> `RecipeReviewVO` 의 주석에 어느 칸이 왜 막혔는지 적어뒀다. 칸을 하나
+> 열어야 할 것 같으면 먼저 "서버가 이 값을 믿고 SQL 에 쓸 것인가" 를
+> 보면 된다. 쓰지 않을 값이면 열 이유가 없다.
 
 ---
 
@@ -303,9 +303,9 @@ reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 �
 |---|---|
 | 만들 메서드 목록 | `review/service/ReviewService.java` · `notice/service/NoticeService.java` 주석 |
 | 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` |
-| 요청/응답 모양 | `review/vo/` 8개 · `notice/vo/` 2개 (다 정의돼 있다) |
-| 글 · 댓글 요청 | `RecipeReviewVO` · `ReviewCommentVO` 가 요청도 겸한다 (검증이 붙어 있다) |
-| 목록 · 상세 응답 | `ReviewListVO` · `ReviewDetailVO` — 표와 칸이 달라 따로 뒀다 |
+| 요청/응답 모양 | `review/vo/` 6개 · `notice/vo/` 2개 (다 정의돼 있다) |
+| 글 · 댓글 · 목록 · 상세 | `RecipeReviewVO` · `ReviewCommentVO` — 표 한 행 · 요청 · 응답을 하나가 겸한다 |
+| 곁다리 응답 | `ReviewFileVO`(첨부) · `LikeStatusVO`(좋아요 결과) · `PopularVO`(인기 목록) |
 | 표 한 행 | `review/vo/RecipeReviewVO.java` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO.java` |
 | 매퍼 본보기 | `user/dao/UserDAO.java` + `resources/mapper/UserMapper.xml` |
 | **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |

@@ -12,9 +12,7 @@ import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.LikeStatusVO;
 import com.meokji.api.review.vo.PopularVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
-import com.meokji.api.review.vo.ReviewDetailVO;
 import com.meokji.api.review.vo.ReviewFileVO;
-import com.meokji.api.review.vo.ReviewListVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -24,7 +22,9 @@ import com.meokji.api.user.vo.UserVO;
  *   1. dao/ReviewDAO.java 에 메서드를 만든다     (예: List<RecipeReviewVO> findPage(...))
  *   2. resources/mapper/ReviewMapper.xml 에 SQL 을 쓴다
  *   3. 여기서 @Autowired private ReviewDAO reviewDAO; 로 받아서 부른다
- *   4. VO → 응답 DTO 로 옮겨 담아 돌려준다
+ *   4. 상세에만 필요한 칸(댓글 · 첨부 · 레시피 · is_mine)을 채워서 그대로 돌려준다
+ *      — 옮겨 담을 응답 VO 는 없다. RecipeReviewVO 하나가 응답까지 겸한다
+ *      (본보기: free/service/FreePostServiceImpl 의 fillDetail)
  * 비슷한 예시: BanServiceImpl (목록 · 추가 · 삭제), HistoryServiceImpl (페이지 목록), LikeServiceImpl (켜기/끄기)
  * 규칙: docs/BOARD_SPEC.md
  */
@@ -36,17 +36,15 @@ public class ReviewServiceImpl implements ReviewService {
     // ===================== 글 =====================
 
     @Override
-    public Page<ReviewListVO> getList(String keyword, int page, int size) {
+    public Page<RecipeReviewVO> getList(String keyword, int page, int size) {
         // 예시) offset 과 total_pages 는 직접 계산하지 않는다. common/Paging.java 가 한다.
+        // 목록은 옮겨 담지 않는다. XML 이 목록에 쓸 칸만 골라 오면 그대로 나간다.
         // Paging paging = new Paging(page, size);
         // paging.setTotal(reviewDAO.count(keyword));
         //
-        // List<ReviewListVO> items = new ArrayList<>();
-        // for (RecipeReviewVO review : reviewDAO.findPage(keyword, paging.getOffset(), paging.getSize())) {
-        //     items.add(...);
-        // }
+        // List<RecipeReviewVO> items = reviewDAO.findPage(keyword, paging.getOffset(), paging.getSize());
         //
-        // Page<ReviewListVO> result = new Page<>();
+        // Page<RecipeReviewVO> result = new Page<>();
         // result.fill(paging, items);
         // return result;
         throw ApiException.notImplemented(TODO);
@@ -58,22 +56,23 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public ReviewDetailVO getDetail(UserVO loginUser, Long reviewId) {
+    public RecipeReviewVO getDetail(UserVO loginUser, Long reviewId) {
         throw ApiException.notImplemented(TODO);
     }
 
     @Override
-    public ReviewDetailVO add(UserVO loginUser, RecipeReviewVO request) {
+    public RecipeReviewVO add(UserVO loginUser, RecipeReviewVO request) {
         // 예시)
         // 1. 내 식사 기록인지 확인 (historyDAO.findById)
         // 2. 이미 이 기록으로 쓴 글이 있는지 확인 → 있으면 409
-        // 3. RecipeReviewVO 를 만들어 reviewDAO.insert(review)
+        // 3. 새 RecipeReviewVO 를 만들어 쓸 칸만 옮겨 담고 reviewDAO.insert(review)
+        //    — request 를 그대로 넘기지 않는다 (docs/BOARD_SPEC.md 3번)
         // 4. getDetail(loginUser, review.getId()) 로 돌려준다
         throw ApiException.notImplemented(TODO);
     }
 
     @Override
-    public ReviewDetailVO update(UserVO loginUser, Long reviewId, RecipeReviewVO request) {
+    public RecipeReviewVO update(UserVO loginUser, Long reviewId, RecipeReviewVO request) {
         throw ApiException.notImplemented(TODO);
     }
 

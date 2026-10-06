@@ -10,9 +10,7 @@ import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.LikeStatusVO;
 import com.meokji.api.review.vo.PopularVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
-import com.meokji.api.review.vo.ReviewDetailVO;
 import com.meokji.api.review.vo.ReviewFileVO;
-import com.meokji.api.review.vo.ReviewListVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -22,16 +20,16 @@ import com.meokji.api.user.vo.UserVO;
 public interface ReviewService {
 
     // ----- 글 -----
-    Page<ReviewListVO> getList(String keyword, int page, int size);
+    Page<RecipeReviewVO> getList(String keyword, int page, int size);
 
     List<PopularVO> getPopular(LocalDate start, LocalDate end, int limit);
 
     // loginUser 는 로그인 안 했으면 null
-    ReviewDetailVO getDetail(UserVO loginUser, Long reviewId);
+    RecipeReviewVO getDetail(UserVO loginUser, Long reviewId);
 
-    ReviewDetailVO add(UserVO loginUser, RecipeReviewVO request);
+    RecipeReviewVO add(UserVO loginUser, RecipeReviewVO request);
 
-    ReviewDetailVO update(UserVO loginUser, Long reviewId, RecipeReviewVO request);
+    RecipeReviewVO update(UserVO loginUser, Long reviewId, RecipeReviewVO request);
 
     void delete(UserVO loginUser, Long reviewId);
 

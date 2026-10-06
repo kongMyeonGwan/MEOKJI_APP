@@ -26,9 +26,7 @@ import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.LikeStatusVO;
 import com.meokji.api.review.vo.PopularVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
-import com.meokji.api.review.vo.ReviewDetailVO;
 import com.meokji.api.review.vo.ReviewFileVO;
-import com.meokji.api.review.vo.ReviewListVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.review.service.ReviewService;
 import com.meokji.api.user.vo.UserVO;
@@ -58,7 +56,7 @@ public class ReviewController {
 
     // 목록  GET /api/reviews?keyword=김치&page=1&size=20
     @GetMapping
-    public Page<ReviewListVO> getList(
+    public Page<RecipeReviewVO> getList(
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size) {
@@ -77,7 +75,7 @@ public class ReviewController {
     // 상세  GET /api/reviews/3
     // 로그인했으면 "내가 좋아요를 눌렀는지", "내 글인지" 도 알려준다
     @GetMapping("/{reviewId}")
-    public ReviewDetailVO getDetail(
+    public RecipeReviewVO getDetail(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId) {
         UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
@@ -87,7 +85,7 @@ public class ReviewController {
     // 글쓰기  POST /api/reviews
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public ReviewDetailVO add(
+    public RecipeReviewVO add(
             @RequestHeader(value = "Authorization", required = false) String token,
             @Valid @RequestBody RecipeReviewVO request) {
         UserVO loginUser = authService.getLoginUser(token);
@@ -96,7 +94,7 @@ public class ReviewController {
 
     // 글 수정  PUT /api/reviews/3
     @PutMapping("/{reviewId}")
-    public ReviewDetailVO update(
+    public RecipeReviewVO update(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId,
             @Valid @RequestBody RecipeReviewVO request) {

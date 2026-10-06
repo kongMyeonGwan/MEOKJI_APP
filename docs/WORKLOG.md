@@ -170,9 +170,9 @@ API 는 전부 확인했으니, 사람이 한 번 훑으면 된다.
    → 마이페이지 닉네임 변경 → 로그아웃
 2. **`develop` 병합** — `feature/kongmg` 가 35개 앞서 있다. 팀원이 `develop` 를
    받으면 기능별 패키지도 VO 통합도 없는 코드를 본다.
-3. (선택) `RecipeReviewVO` 에 `@JsonIgnore` 붙이기 — `ReviewCommentVO` ·
-   `NoticeVO` 와 달리 아직 하나도 없어서 15칸이 전부 요청으로 들어온다.
-   `docs/BOARD_SPEC.md` 3절에 적어뒀다. 담당자가 쓸 칸을 정할 때 같이 하면 된다.
+3. ~~(선택) `RecipeReviewVO` 에 `@JsonIgnore` 붙이기~~ — 끝냈다. VO 통합과
+   같이 했다. `mealHistoryId` · `title` · `content` 만 열려 있고, 화면이 봐야
+   하지만 정할 수는 없는 칸은 `READ_ONLY` 다. `docs/BOARD_SPEC.md` 3절 참고.
 4. (선택) `docs/PROGRESS.md` 의 `@LoginUser` · `AppProperties` 설명 — 지금 코드에
    없는 것이다. 파이썬→자바 대조 학습 기록이라 그대로 둬도 된다.
    (`STUDY_AUTH.md` 에는 머리말에 "옛 구조 기준" 경고를 달아뒀다)
