@@ -1,37 +1,31 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
 import BottomNav from './components/BottomNav'
 
-// 모든 화면이 같이 쓰는 틀.
-//   PC     : [사이드바][상단바 + 본문]
-//   모바일 : [상단바 + 본문] + 하단 탭. 사이드바는 ☰ 를 누르면 서랍처럼 열린다.
-//
-// 화면이 바뀌어도 사이드바 · 상단바 · 하단 탭은 그대로 있고 본문만 갈린다.
-// 그 '본문 자리' 가 아래 <Outlet /> 이다.
-//
-// App.jsx 에서 이 틀을 이렇게 씌운다.
-//
-//   <Route element={<MainLayout ... />}>   {/* path 가 없다 — 감싸는 역할만 */}
-//     <Route index element={<HomePage />} />
-//     <Route path="free" element={<FreeListPage />} />
-//   </Route>
-//
-// 주소가 /free 면 React Router 가 FreeListPage 를 <Outlet /> 자리에 끼워 넣는다.
 export default function MainLayout({ user, onLogout, theme, onThemeChange, notify, onNotifyChange }) {
   const location = useLocation()
 
-  // 사이드바가 열려 있는지. PC(너비 1024px 이상)는 열린 채로 시작한다.
+  // 사이드바 열기 / 닫기. 웹 모드(1024px 이상)는 연 채로 시작한다
   const [navOpen, setNavOpen] = useState(window.innerWidth >= 1024)
 
-  // 화면을 옮기면 스크롤을 맨 위로 올린다
+  // 화면을 옮기면 스크롤을 맨 위로 올린다.
+  // 목록을 한참 내려보다 글을 누르면 상세가 중간부터 보인다.
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [location.pathname])
 
-  // 모바일에서 메뉴를 누르면 서랍을 닫는다 (PC 는 그대로 둔다)
-  const closeDrawer = () => {
+  // 사이드바 열기 / 닫기 버튼
+  const toggleNav = () => {
+    setNavOpen(!navOpen)
+  }
+
+  // 사이드바 닫기.
+  // 앱 모드(1023px 이하)에서만 닫는다 — 웹 모드의 사이드바는 왼쪽에 고정이라
+  // 메뉴를 눌렀다고 사라지면 안 된다.
+  const closeNav = () => {
     if (window.innerWidth < 1024) {
       setNavOpen(false)
     }
@@ -39,27 +33,30 @@ export default function MainLayout({ user, onLogout, theme, onThemeChange, notif
 
   return (
     <div className={navOpen ? 'shell is-nav-open' : 'shell'}>
+      {/* 왼쪽 메뉴 */}
       <Sidebar
-        onNavigate={closeDrawer}
         user={user}
         theme={theme}
-        onThemeChange={onThemeChange}
         notify={notify}
+        onThemeChange={onThemeChange}
         onNotifyChange={onNotifyChange}
+        onNavigate={closeNav}
       />
 
-      {/* 모바일에서 서랍이 열렸을 때 뒤를 어둡게 덮는 판. 누르면 닫힌다 */}
-      {navOpen && <button type="button" className="nav-backdrop" onClick={() => setNavOpen(false)} />}
+      {/* 사이드바가 열렸을 때 배경 */}
+      {navOpen && <button type="button" className="nav-backdrop" onClick={closeNav} />}
 
       <div className="shell__body">
-        <TopBar onToggleNav={() => setNavOpen(!navOpen)} user={user} onLogout={onLogout} notify={notify} />
+        {/* 상단 메뉴 */}
+        <TopBar user={user} notify={notify} onLogout={onLogout} onToggleNav={toggleNav} />
 
-        {/* 주소에 맞는 화면이 여기에 들어온다 */}
+        {/* 페이지가 표시되는 부분 */}
         <main className="shell__main">
           <Outlet />
         </main>
       </div>
 
+      {/* 모바일 하단 메뉴 */}
       <BottomNav user={user} />
     </div>
   )
