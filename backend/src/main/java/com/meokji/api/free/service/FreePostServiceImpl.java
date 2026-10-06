@@ -87,7 +87,7 @@ public class FreePostServiceImpl implements FreePostService {
 
         // 붙어 있던 사진도 같이 지운다. 글이 안 보이는데 파일만 남으면
         // 디스크만 계속 찬다 (주소를 아는 사람에게는 계속 열린다)
-        fileStore.delete(post.getFilePath(), post.getFileName());
+        deleteStoredFile(post);
 
         freePostDAO.deactivate(postId);
     }
@@ -155,18 +155,24 @@ public class FreePostServiceImpl implements FreePostService {
 
         // 바꿔 다는 경우 옛 파일을 지운다. 새 파일이 무사히 저장된 다음에 지워야
         // 저장이 실패했을 때 사진이 통째로 사라지는 일이 없다
-        fileStore.delete(post.getFilePath(), post.getFileName());
+        deleteStoredFile(post);
+
+        FreeFileVO saving = new FreeFileVO();
+        saving.setPath(saved[0]);
+        saving.setSavedName(saved[1]);
+        saving.setName(file.getOriginalFilename());
+        saving.setExt(fileStore.extensionOf(file.getOriginalFilename()));
+        saving.setSize(file.getSize());
 
         FreePostVO target = new FreePostVO();
         target.setId(postId);
-        target.setFilePath(saved[0]);
-        target.setFileName(saved[1]);
-        target.setFileOrgName(file.getOriginalFilename());
-        target.setFileExt(fileStore.extensionOf(file.getOriginalFilename()));
-        target.setFileSize(file.getSize());
+        target.setFile(saving);
         freePostDAO.setFile(target);
 
-        return toFile(freePostDAO.findById(postId));
+        // 다시 읽어 매퍼가 담아준 file 을 쓴다. 크기 표시와 주소만 마저 넣으면 된다
+        FreePostVO attached = freePostDAO.findById(postId);
+        fillFile(attached);
+        return attached.getFile();
     }
 
     @Override
@@ -179,7 +185,7 @@ public class FreePostServiceImpl implements FreePostService {
             throw ApiException.notFound("붙어 있는 사진이 없습니다.");
         }
 
-        fileStore.delete(post.getFilePath(), post.getFileName());
+        deleteStoredFile(post);
         freePostDAO.clearFile(postId);
     }
 
@@ -195,7 +201,7 @@ public class FreePostServiceImpl implements FreePostService {
 
     @Override
     public byte[] readFile(FreePostVO post) {
-        return fileStore.read(post.getFilePath(), post.getFileName());
+        return fileStore.read(post.getFile().getPath(), post.getFile().getSavedName());
     }
 
     // ===================== 안쪽에서만 쓰는 것 =====================
@@ -250,8 +256,8 @@ public class FreePostServiceImpl implements FreePostService {
 
         post.setComments(comments);
         post.setCommentCount(comments.size());
-        post.setFile(toFile(post));
         post.setIsMine(isMine(loginUser, post.getUserId()));
+        fillFile(post);
 
         if (post.getViewCount() == null) {
             post.setViewCount(0);
@@ -259,20 +265,30 @@ public class FreePostServiceImpl implements FreePostService {
         return post;
     }
 
-    /** 표 한 행의 FILE_* 칸 → 화면으로 나갈 첨부 모양. 첨부가 없으면 null */
-    private FreeFileVO toFile(FreePostVO post) {
-        if (!post.getHasFile()) {
-            return null;
+    /**
+     * 첨부의 나머지 두 칸을 채운다. 다섯 칸은 매퍼가 이미 담아 왔다.
+     *
+     * 첨부가 없으면 file 이 null 이라 할 일이 없다.
+     */
+    private void fillFile(FreePostVO post) {
+        FreeFileVO file = post.getFile();
+
+        if (file == null) {
+            return;
         }
 
-        FreeFileVO file = new FreeFileVO();
-        file.setName(post.getFileOrgName());
-        file.setExt(post.getFileExt());
-        file.setSize(post.getFileSize());
-        file.setSizeText(fileStore.sizeText(post.getFileSize()));
+        file.setSizeText(fileStore.sizeText(file.getSize()));
         // 업로드 폴더를 그대로 열지 않는다. 지워진 글의 사진이 주소만 알면 계속 보인다
         file.setUrl("/api/free-posts/" + post.getId() + "/file");
-        return file;
+    }
+
+    /** 디스크에 저장해둔 사진을 지운다. 첨부가 없으면 할 일이 없다 */
+    private void deleteStoredFile(FreePostVO post) {
+        if (post.getFile() == null) {
+            return;
+        }
+
+        fileStore.delete(post.getFile().getPath(), post.getFile().getSavedName());
     }
 
     /** 로그인한 사람이 쓴 것인지. 비로그인이면 false */

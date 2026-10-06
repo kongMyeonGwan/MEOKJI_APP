@@ -267,6 +267,11 @@ class FreePostTest {
         assertThat(body(attached).get("ext").asString()).isEqualTo("png");
         assertThat(body(attached).get("url").asString())
                 .isEqualTo("/api/free-posts/" + postId + "/file");
+        assertThat(body(attached).get("size_text").asString()).isEqualTo("5 B");
+
+        // 서버 사정은 안 나간다. 저장 폴더와 UUID 이름이 보이면 남의 파일 주소를 짐작할 수 있다
+        assertThat(body(attached).has("path")).as("저장 폴더").isFalse();
+        assertThat(body(attached).has("saved_name")).as("UUID 이름").isFalse();
 
         // 2. 목록의 has_file 이 켜진다
         MvcResult list = mvc.perform(get("/api/free-posts?page=1&size=20")).andReturn();

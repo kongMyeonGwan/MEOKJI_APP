@@ -191,12 +191,12 @@ public class FreePostController {
 
         // inline = 브라우저에서 바로 보여준다 (attachment 면 곧장 내려받기 창이 뜬다)
         String disposition = ContentDisposition.inline()
-                .filename(post.getFileOrgName(), StandardCharsets.UTF_8)
+                .filename(post.getFile().getName(), StandardCharsets.UTF_8)
                 .build()
                 .toString();
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(fileStore.contentType(post.getFileExt())))
+                .contentType(MediaType.parseMediaType(fileStore.contentType(post.getFile().getExt())))
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
                 .body(bytes);
     }

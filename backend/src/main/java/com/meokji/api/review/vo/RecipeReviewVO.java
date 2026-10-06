@@ -79,31 +79,18 @@ public class RecipeReviewVO {
     private String content;
 
     // ---------- 첨부파일. 글 하나당 하나다 ----------
-    // 여섯 칸 다 @JsonIgnore 다. 화면에는 아래 file 과 has_file 로만 나간다.
+    //
+    // 표에는 FILE_* 컬럼이 여섯 개지만 여기 남는 것은 file_yn 하나다.
+    // 나머지 다섯은 ReviewFileVO 가 들고 있다 (아래 file 칸). 같은 값을
+    // 두 군데 두지 않으려는 것이다.
+    //
+    // file_yn 만 남긴 이유: 목록은 첨부 정보를 안 읽어온다. 글마다
+    // 500자짜리 경로까지 가져올 일이 없어서 CHAR(1) 하나만 보고
+    // 제목 옆 클립 표시를 붙인다. 그때 file 은 null 이다.
 
     /** 'Y' = 첨부파일이 있다 */
     @JsonIgnore
     private String fileYn;
-
-    /** 디스크에 저장한 이름(UUID). 사용자에게 보여주지 않는다 */
-    @JsonIgnore
-    private String fileName;
-
-    /** 사용자가 올린 원래 이름. 화면과 내려받기에 이 이름을 쓴다 */
-    @JsonIgnore
-    private String fileOrgName;
-
-    /** 저장 폴더('uploads/2026/09'). 월별로 나눠 한 폴더가 커지지 않게 한다 */
-    @JsonIgnore
-    private String filePath;
-
-    /** 점 없이 'jpg' */
-    @JsonIgnore
-    private String fileExt;
-
-    /** 바이트. 크기를 못 구한 파일도 정상이라 null 일 수 있다 */
-    @JsonIgnore
-    private Long fileSize;
 
     // ---------- 나머지 ----------
 
@@ -169,7 +156,13 @@ public class RecipeReviewVO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private JsonNode ingredientsJson;
 
-    /** 첨부 사진. 없거나 목록이면 null (상세에서만 채운다) */
+    /**
+     * 첨부 사진. 없거나 목록이면 null.
+     *
+     * 표의 FILE_* 다섯 칸이 여기 담긴다 — 매퍼의 association 이 채우고,
+     * 크기 표시와 주소는 서비스가 마저 넣는다.
+     * (본보기: resources/mapper/FreePostMapper.xml 의 postWithFile)
+     */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private ReviewFileVO file;
 

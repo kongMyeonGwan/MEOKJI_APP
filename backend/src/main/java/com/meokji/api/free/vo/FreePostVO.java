@@ -60,31 +60,18 @@ public class FreePostVO {
     private String content;
 
     // ---------- 첨부파일. 글 하나당 하나다 ----------
-    // 여섯 칸 다 @JsonIgnore 다. 화면에는 아래 file 과 has_file 로만 나간다.
+    //
+    // 표에는 FILE_* 컬럼이 여섯 개지만 여기 남는 것은 file_yn 하나다.
+    // 나머지 다섯은 FreeFileVO 가 들고 있다 (아래 file 칸). 같은 값을
+    // 두 군데 두지 않으려는 것이다.
+    //
+    // file_yn 만 남긴 이유: 목록은 첨부 정보를 안 읽어온다. 글마다
+    // 500자짜리 경로까지 가져올 일이 없어서 CHAR(1) 하나만 보고
+    // 제목 옆 클립 표시를 붙인다. 그때 file 은 null 이다.
 
     /** 'Y' = 첨부 있음 */
     @JsonIgnore
     private String fileYn;
-
-    /** 서버에 저장한 이름 (UUID). 올린 이름을 그대로 쓰면 서로 덮어쓴다 */
-    @JsonIgnore
-    private String fileName;
-
-    /** 사용자가 올린 원래 이름. 화면 표시 · 내려받기용 */
-    @JsonIgnore
-    private String fileOrgName;
-
-    /** 저장 폴더. 'free/2026/10' 처럼 파일명은 빼고 적는다 */
-    @JsonIgnore
-    private String filePath;
-
-    /** 확장자 (점 없이 'jpg') */
-    @JsonIgnore
-    private String fileExt;
-
-    /** 바이트 */
-    @JsonIgnore
-    private Long fileSize;
 
     // ---------- 나머지 ----------
 
@@ -111,7 +98,12 @@ public class FreePostVO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer commentCount;
 
-    /** 첨부 사진. 없거나 목록이면 null (상세에서만 채운다) */
+    /**
+     * 첨부 사진. 없거나 목록이면 null.
+     *
+     * 표의 FILE_* 다섯 칸이 여기 담긴다 — 매퍼의 postWithFile 이 채우고,
+     * 크기 표시와 주소는 서비스가 마저 넣는다.
+     */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private FreeFileVO file;
 

@@ -71,7 +71,30 @@
          OFFSET #{offset} ROWS FETCH NEXT #{size} ROWS ONLY
     </select>
 
-    <select id="findById" resultType="com.meokji.api.free.vo.FreePostVO">
+    <!--
+      글 한 행 + 첨부. FILE_* 다섯 칸을 글 바로 밑이 아니라 file 안에 담는다.
+
+      autoMapping="true" 라 나머지 칸(title · view_count · nickname ...)은
+      여태처럼 이름만 맞으면 알아서 들어간다. 여기 적는 것은 이름이
+      안 맞는 다섯 칸뿐이다.
+
+      file_yn 은 association 에 넣지 않는다. 그 칸은 NOT NULL 이라 첨부가
+      없어도 'N' 이 들어 있는데, association 에 섞으면 "값이 하나라도 있다"
+      가 되어 빈 file 객체가 만들어진다. 다섯 칸만 두면 첨부가 없을 때
+      전부 NULL 이라 MyBatis 가 file 을 null 로 둔다 — 화면이 기다리는 모양이다.
+    -->
+    <resultMap id="postWithFile" type="com.meokji.api.free.vo.FreePostVO" autoMapping="true">
+        <id property="id" column="id"/>
+        <association property="file" javaType="com.meokji.api.free.vo.FreeFileVO">
+            <result property="savedName" column="file_name"/>
+            <result property="path"      column="file_path"/>
+            <result property="name"      column="file_org_name"/>
+            <result property="ext"       column="file_ext"/>
+            <result property="size"      column="file_size"/>
+        </association>
+    </resultMap>
+
+    <select id="findById" resultMap="postWithFile">
         SELECT p.id, p.user_id, p.title, p.content,
                p.file_yn, p.file_name, p.file_org_name, p.file_path, p.file_ext, p.file_size,
                p.view_count, p.use_yn, p.created_at, p.updated_at,
@@ -126,11 +149,11 @@
     <update id="setFile" parameterType="com.meokji.api.free.vo.FreePostVO">
         UPDATE free_posts
            SET file_yn = 'Y',
-               file_name = #{fileName},
-               file_org_name = #{fileOrgName},
-               file_path = #{filePath},
-               file_ext = #{fileExt},
-               file_size = #{fileSize},
+               file_name = #{file.savedName},
+               file_org_name = #{file.name},
+               file_path = #{file.path},
+               file_ext = #{file.ext},
+               file_size = #{file.size},
                updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
          WHERE id = #{id}
     </update>
