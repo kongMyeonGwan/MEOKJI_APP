@@ -10,7 +10,6 @@ import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
 import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.LikeStatusVO;
-import com.meokji.api.review.vo.PopularVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
 import com.meokji.api.review.vo.ReviewFileVO;
 import com.meokji.api.user.vo.UserVO;
@@ -51,7 +50,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<PopularVO> getPopular(LocalDate start, LocalDate end, int limit) {
+    public List<RecipeReviewVO> getPopular(LocalDate start, LocalDate end, int limit) {
         throw ApiException.notImplemented(TODO);
     }
 

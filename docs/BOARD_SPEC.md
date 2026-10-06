@@ -303,9 +303,9 @@ reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 �
 |---|---|
 | 만들 메서드 목록 | `review/service/ReviewService.java` · `notice/service/NoticeService.java` 주석 |
 | 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` |
-| 요청/응답 모양 | `review/vo/` 6개 · `notice/vo/` 2개 (다 정의돼 있다) |
-| 글 · 댓글 · 목록 · 상세 | `RecipeReviewVO` · `ReviewCommentVO` — 표 한 행 · 요청 · 응답을 하나가 겸한다 |
-| 곁다리 응답 | `ReviewFileVO`(첨부) · `LikeStatusVO`(좋아요 결과) · `PopularVO`(인기 목록) |
+| 요청/응답 모양 | `review/vo/` 5개 · `notice/vo/` 2개 (다 정의돼 있다) |
+| 글 · 댓글 · 목록 · 상세 · 인기 | `RecipeReviewVO` · `ReviewCommentVO` — 표 한 행 · 요청 · 응답을 하나가 겸한다 |
+| 곁다리 응답 | `ReviewFileVO`(첨부 한 건) · `LikeStatusVO`(좋아요를 켜고 끈 결과) |
 | 표 한 행 | `review/vo/RecipeReviewVO.java` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO.java` |
 | 매퍼 본보기 | `user/dao/UserDAO.java` + `resources/mapper/UserMapper.xml` |
 | **페이징 본보기** | `resources/mapper/HistoryMapper.xml` 의 `<sql id="mineWithShared">` |

@@ -24,7 +24,6 @@ import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
 import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.LikeStatusVO;
-import com.meokji.api.review.vo.PopularVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
 import com.meokji.api.review.vo.ReviewFileVO;
 import com.meokji.api.auth.service.AuthService;
@@ -65,7 +64,7 @@ public class ReviewController {
 
     // 인기 레시피  GET /api/reviews/popular?start=2026-09-01&end=2026-09-30&limit=20
     @GetMapping("/popular")
-    public List<PopularVO> getPopular(
+    public List<RecipeReviewVO> getPopular(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {

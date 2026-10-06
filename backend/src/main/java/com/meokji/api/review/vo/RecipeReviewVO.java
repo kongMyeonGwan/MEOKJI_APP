@@ -31,7 +31,8 @@ import tools.jackson.databind.JsonNode;
  *
  *   1. 칸이 있다고 SQL 이 다 쓰는 것이 아니다. 목록 SQL 은 목록에 쓸 칸만
  *      고르고 본문은 거기서 잘라 온다. 안 고른 칸(comments · file ·
- *      recipeJson)은 null 로 남는다.
+ *      recipeJson)은 null 로 남는다. 인기 목록(GET /api/reviews/popular)도
+ *      같은 표를 좋아요순으로 뽑는 것이라 이 VO 를 그대로 쓴다.
  *   2. INSERT · UPDATE 가 컬럼을 하나씩 적는다. 표에 없는 칸이 여기 있어도
  *      SQL 은 모른다.
  *   3. 받을 때와 보낼 때가 다른 칸은 READ_ONLY 로 한쪽만 연다.
@@ -139,9 +140,20 @@ public class RecipeReviewVO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer commentCount;
 
-    /** 무슨 음식인지 (MEAL_HISTORIES 와 JOIN) */
+    // 아래 셋은 글쓴이의 식사 기록(MEAL_HISTORIES)에 남은 그때의 값이다.
+    // 후기 표에는 없으니 JOIN 해서 가져온다.
+
+    /** 무슨 음식인지 */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String foodName;
+
+    /** 레시피 이름. 없으면 화면이 foodName 을 대신 쓴다 */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String recipeName;
+
+    /** 예상 재료비(원). 인기 목록이 쓴다 */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Integer estimatedCost;
 
     /**
      * 레시피 스냅샷. 상세에서만 채운다.

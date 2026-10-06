@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.meokji.api.common.Page;
 import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.LikeStatusVO;
-import com.meokji.api.review.vo.PopularVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
 import com.meokji.api.review.vo.ReviewFileVO;
 import com.meokji.api.user.vo.UserVO;
@@ -22,7 +21,8 @@ public interface ReviewService {
     // ----- 글 -----
     Page<RecipeReviewVO> getList(String keyword, int page, int size);
 
-    List<PopularVO> getPopular(LocalDate start, LocalDate end, int limit);
+    // 인기 목록. 기간 안에 좋아요를 많이 받은 후기 순 — 같은 표라 VO 도 같다
+    List<RecipeReviewVO> getPopular(LocalDate start, LocalDate end, int limit);
 
     // loginUser 는 로그인 안 했으면 null
     RecipeReviewVO getDetail(UserVO loginUser, Long reviewId);
