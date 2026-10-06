@@ -22,7 +22,9 @@
     <sql id="columns">
         id, email, password_hash, nickname, user_level,
         gender, address_sido, address_sigungu, latitude, longitude,
-        login_fail_count, is_locked, locked_at, use_yn, created_at, updated_at
+        login_fail_count, is_locked, locked_at,
+        refresh_token_hash, refresh_expires_at,
+        use_yn, created_at, updated_at
     </sql>
 
     <select id="findById" resultType="com.meokji.api.user.vo.UserVO">
@@ -89,6 +91,46 @@
            SET is_locked = 1,
                locked_at = SYS_EXTRACT_UTC(SYSTIMESTAMP),
                updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+
+    <!--
+      Refresh Token 저장 (로그인 성공 · 토큰 재발급).
+
+      원문이 아니라 SHA-256 해시가 들어온다. DB 가 새더라도 그 값으로는
+      로그인할 수 없게 하려는 것이다 (db/11_add_refresh_token.sql 참고).
+
+      만료 시각만은 자바가 만든 값을 그대로 쓴다. 이 파일의 다른 UPDATE 는
+      SYS_EXTRACT_UTC(SYSTIMESTAMP) 로 DB 에 맡기는데, 여기는 "지금" 이 아니라
+      "지금 + 14일" 이라 DB 함수만으로는 못 만든다. 며칠인지는 application.yml 이
+      정하므로 그 값을 아는 자바 쪽에서 계산해 보낸다 (JwtUtil.getRefreshExpiresAt).
+      보내는 값이 UTC 인 것은 Times.nowUtc() 가 보장한다.
+
+      updated_at 을 건드리지 않는 이유
+        이건 "회원 정보가 바뀐 시각" 이다. 토큰 재발급은 회원이 뭔가 고친 게
+        아니라 서버가 내부적으로 열쇠를 갈아끼운 것뿐이라, 마이페이지에
+        "방금 수정됨" 으로 보이면 오히려 틀린 정보가 된다.
+    -->
+    <update id="updateRefreshToken">
+        UPDATE users
+           SET refresh_token_hash = #{refreshTokenHash},
+               refresh_expires_at = #{refreshExpiresAt}
+         WHERE id = #{id}
+    </update>
+
+
+    <!--
+      Refresh Token 지우기 (로그아웃).
+
+      NULL 로 되돌리면 그 사람의 쿠키에 남아 있는 토큰이 즉시 쓸모없어진다.
+      쿠키를 지우는 것만으로는 부족하다 - 쿠키 값을 미리 복사해둔 사람이 있으면
+      그걸로 계속 재발급을 받을 수 있기 때문이다. 서버 쪽 기록을 지워야 진짜 끝난다.
+    -->
+    <update id="clearRefreshToken">
+        UPDATE users
+           SET refresh_token_hash = NULL,
+               refresh_expires_at = NULL
          WHERE id = #{id}
     </update>
 

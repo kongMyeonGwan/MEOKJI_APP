@@ -67,6 +67,22 @@ public class UserVO {
     @JsonIgnore
     private LocalDateTime lockedAt;
 
+    /**
+     * 지금 쓸 수 있는 Refresh Token 의 SHA-256 해시. NULL 이면 로그아웃 상태다.
+     *
+     * 토큰 원문이 아니다. 원문은 HttpOnly 쿠키로만 오가고 서버 어디에도 남지 않는다.
+     * 검증은 "쿠키로 들어온 토큰을 해시해서 이 값과 같은지" 로 한다.
+     *
+     * 비밀번호 해시와 같은 급의 값이라 @JsonIgnore 를 반드시 붙인다.
+     * 이게 없으면 로그인 응답에 그대로 실려 나간다.
+     */
+    @JsonIgnore
+    private String refreshTokenHash;
+
+    /** Refresh Token 만료 시각 (UTC). 발급 시점 + 14일. */
+    @JsonIgnore
+    private LocalDateTime refreshExpiresAt;
+
     /** 'N' = 탈퇴 회원. 행은 남기고 조회에서만 뺀다. */
     @JsonIgnore
     private String useYn;

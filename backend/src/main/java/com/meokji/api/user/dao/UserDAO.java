@@ -1,5 +1,6 @@
 package com.meokji.api.user.dao;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -58,6 +59,27 @@ public interface UserDAO {
      * 애플리케이션에서 만든 시각을 보내면 JVM 시간대에 따라 어긋날 수 있다.
      */
     void lockAccount(@Param("id") Long id);
+
+    /**
+     * Refresh Token 을 저장한다. 로그인 성공 · 토큰 재발급 때 부른다.
+     *
+     * 토큰 원문이 아니라 SHA-256 해시를 넣는다. DB 가 새더라도 그 값으로는
+     * 로그인할 수 없게 하려는 것이다 (db/11_add_refresh_token.sql 참고).
+     *
+     * 한 사람당 한 개라서 늘 덮어쓴다 - 폰에서 로그인하면 PC 쪽 토큰이 사라진다.
+     */
+    void updateRefreshToken(
+            @Param("id") Long id,
+            @Param("refreshTokenHash") String refreshTokenHash,
+            @Param("refreshExpiresAt") LocalDateTime refreshExpiresAt);
+
+    /**
+     * Refresh Token 을 지운다 (로그아웃).
+     *
+     * 쿠키만 지우면 안 된다. 쿠키 값을 미리 복사해둔 사람은 그걸로 계속 재발급을
+     * 받을 수 있기 때문이다. 서버 쪽 기록을 NULL 로 되돌려야 진짜로 끝난다.
+     */
+    void clearRefreshToken(@Param("id") Long id);
 
     /**
      * 내 정보 수정. null 이 아닌 칸만 고친다.

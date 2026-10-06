@@ -1,6 +1,7 @@
 package com.meokji.api.util;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -30,6 +31,19 @@ public final class Times {
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
     private Times() {
+    }
+
+    /**
+     * 지금 시각 (UTC).
+     *
+     * {@code LocalDateTime.now()} 를 쓰면 안 된다 - 그건 PC 의 시간대를 따라가서
+     * 한국에서는 9시간 앞선 값이 나온다. DB 의 모든 시각 컬럼이 UTC 로 저장돼 있으므로
+     * (DDL 의 SYS_EXTRACT_UTC), 자바에서 만든 값과 비교하거나 저장하려면 여기를 거쳐야 한다.
+     *
+     * Refresh Token 만료 시각을 만들고 비교하는 데 쓴다.
+     */
+    public static LocalDateTime nowUtc() {
+        return LocalDateTime.now(ZoneOffset.UTC);
     }
 
     /** DB 에서 읽은 시각을 응답용 문자열로. 값이 없으면 null 을 그대로 돌려준다. */

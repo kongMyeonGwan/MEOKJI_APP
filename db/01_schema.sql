@@ -94,6 +94,8 @@ CREATE TABLE users (
     login_fail_count  NUMBER(3)           DEFAULT 0 NOT NULL,                       -- 연속 로그인 실패 횟수. 로그인에 성공하면 0 으로 초기화
     is_locked         NUMBER(1)           DEFAULT 0 NOT NULL,                       -- 계정 잠금 여부. 0=정상 1=잠김. 실패 20회 누적 시 1
     locked_at         TIMESTAMP(6),                                                 -- 잠긴 시각. 안내 문구·해제 판단에 쓴다. 정상 계정은 NULL
+    refresh_token_hash VARCHAR2(64 CHAR),                                           -- Refresh Token 의 SHA-256 해시(16진수 64글자). NULL = 로그아웃 상태
+    refresh_expires_at TIMESTAMP(6),                                                -- Refresh Token 만료 시각 (UTC). 발급 시점 + 14일
     use_yn            CHAR(1)             DEFAULT 'Y' NOT NULL,                     -- 'N' = 탈퇴 회원. 행은 남기고 조회에서만 제외한다
     created_at        TIMESTAMP(6) DEFAULT SYS_EXTRACT_UTC(SYSTIMESTAMP) NOT NULL,  -- 가입 시각 (UTC 고정)
     updated_at        TIMESTAMP(6) DEFAULT SYS_EXTRACT_UTC(SYSTIMESTAMP) NOT NULL,  -- 회원정보 마지막 수정 시각 (UTC 고정)
@@ -135,6 +137,20 @@ CREATE INDEX idx_users_nickname ON users (nickname, use_yn);
 --   빠뜨렸을 때 일반 회원이 되는 쪽이 안전하다. DEFAULT 1 이면 컬럼을 모르는
 --   INSERT 하나가 관리자를 만들어낸다. 회원가입 코드는 이 컬럼을 쓰지 않는다.
 COMMENT ON COLUMN users.user_level IS '권한 등급. 1=관리자 2=일반 회원. 화면의 요리 레벨과 무관';
+
+-- REFRESH_TOKEN 은 왜 별도 테이블이 아닌가
+--   Refresh Token 은 "Access Token 을 새로 받아갈 수 있는 긴 수명(14일) 열쇠"다.
+--   한 사람이 PC · 폰에서 동시에 로그인하는 것까지 지원하려면 회원 1 : 토큰 N 이라
+--   별도 표가 맞지만, 이 프로젝트는 "한 사람당 가장 최근 로그인 1개" 로 충분해서
+--   USERS 에 컬럼 두 개를 붙였다. 대신 폰에서 로그인하면 PC 쪽 토큰이 덮어써진다.
+--
+-- 왜 토큰 원문이 아니라 해시인가
+--   원문을 저장하면 DB 가 새는 순간 그 값만 쿠키에 넣어도 남의 계정에 들어간다.
+--   비밀번호를 평문으로 두지 않는 것과 같은 이유다. 해시는 되돌릴 수 없고,
+--   서버는 "들어온 토큰을 해시해서 이 값과 같은지" 만 보면 된다.
+--   비밀번호와 달리 BCrypt 가 아니라 SHA-256 인 이유는 db/11_add_refresh_token.sql 참고.
+COMMENT ON COLUMN users.refresh_token_hash IS 'Refresh Token 의 SHA-256 해시(16진수 64글자). NULL = 로그아웃 상태';
+COMMENT ON COLUMN users.refresh_expires_at IS 'Refresh Token 만료 시각 (UTC). 발급 시점 + 14일';
 
 COMMENT ON TABLE users IS '회원. 로그인 20회 실패 시 is_locked=1, 탈퇴 시 use_yn=N';
 
