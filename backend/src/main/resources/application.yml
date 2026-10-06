@@ -85,7 +85,7 @@ mybatis:
   type-aliases-package: com.meokji.api
 
 server:
-  port: ${PORT:8090}
+  port: 8090
   # 스프링 기본 에러 화면을 끈다. 에러는 ApiExceptionHandler 가 {"detail": ...} 로 보낸다.
   error:
     whitelabel:
@@ -95,7 +95,8 @@ app:
   name: 뭐먹지? API
   version: 0.1.0
   env: ${APP_ENV:local}
-  cors-origins: ${CORS_ORIGINS:http://localhost:5173}
+  # 쉼표로 여러 개. 5173 을 다른 프로젝트가 쓰고 있으면 프론트를 5174 로 띄운다
+  cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:5174}
 
   # 올린 사진을 저장할 폴더. 서버를 켠 자리(backend/) 기준의 상대 경로다.
   # 날마다 늘어나는 파일이라 resources 가 아니라 바깥에 둔다 (data/bargains.json 과 같은 자리).
