@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
 import com.meokji.api.notice.vo.NoticeVO;
-import com.meokji.api.notice.vo.NoticeViewVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.notice.service.NoticeService;
 import com.meokji.api.user.vo.UserVO;
@@ -59,7 +58,7 @@ public class NoticeController {
 
     // 조회수 +1  POST /api/notices/3/view
     @PostMapping("/{noticeId}/view")
-    public NoticeViewVO increaseView(@PathVariable @Min(1) Long noticeId) {
+    public int increaseView(@PathVariable @Min(1) Long noticeId) {
         return noticeService.increaseView(noticeId);
     }
 

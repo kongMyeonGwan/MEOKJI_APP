@@ -41,6 +41,13 @@ public class NoticeVO {
     @NotBlank(message = "내용을 입력해주세요")
     private String content;
 
+    /**
+     * 조회수. 올리는 것은 POST /{id}/view 뿐이다.
+     *
+     * READ_ONLY 라 화면이 보낸 view_count 는 안 들어오고, 응답으로는 나간다.
+     * @JsonIgnore 를 붙이면 목록·상세에서도 사라져서 화면이 조회수를 못 쓴다.
+     */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer viewCount;
 
     /** DB 에 들어가는 값. 'Y' = 상단 고정. 화면과는 pinned 로 주고받는다. */

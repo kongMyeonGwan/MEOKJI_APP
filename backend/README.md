@@ -199,7 +199,7 @@ private int expireMinutes;
 | **채울 곳** | `review/service/ReviewServiceImpl.java` · `notice/service/NoticeServiceImpl.java` (TODO 주석) |
 | DAO · SQL (예시 몇 개 들어 있음) | `review/dao/ReviewDAO.java` + `mapper/ReviewMapper.xml`, `notice/dao/NoticeDAO.java` + `mapper/NoticeMapper.xml` |
 | 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` (완성) |
-| 요청 · 응답 모양 | `review/vo/` 4개 · `notice/vo/` 2개 (완성). `RecipeReviewVO` 하나가 표 한 행 · 요청 · 목록 · 상세 · 인기 목록을 겸한다 |
+| 요청 · 응답 모양 | `review/vo/` 4개 · `notice/vo/` 1개 (완성). `RecipeReviewVO` 하나가 표 한 행 · 요청 · 목록 · 상세 · 인기 목록을 겸한다 |
 | 테이블 한 행 | `review/vo/RecipeReviewVO` · `ReviewCommentVO` · `ReviewLikeVO` · `notice/vo/NoticeVO` |
 | 페이지 목록 본보기 | `HistoryServiceImpl.getList()` + `HistoryMapper.xml` 의 `findPageByUser` |
 | **어떻게 동작해야 하는가** | **`docs/BOARD_SPEC.md`** — 정렬 · 권한 · 첨부파일 규칙 |

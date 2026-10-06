@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
 import com.meokji.api.notice.vo.NoticeVO;
-import com.meokji.api.notice.vo.NoticeViewVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -52,7 +51,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public NoticeViewVO increaseView(Long noticeId) {
+    public int increaseView(Long noticeId) {
         throw ApiException.notImplemented(TODO);
     }
 

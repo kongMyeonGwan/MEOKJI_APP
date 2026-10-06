@@ -130,6 +130,10 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 
 상세와 나눠져 있다. 상세를 열 때마다 올리면 새로고침으로 조회수가 오른다.
 
+**올린 뒤의 숫자를 그대로 돌려준다.** 감싸는 모양 없이 `12` 다 — 공지도
+자유게시판도 같다. 돌려주는 이유는 화면이 1 을 더해 스스로 맞추면 다른
+사람이 같은 시간에 연 것과 어긋나기 때문이다.
+
 ### 좋아요 `PUT/DELETE /api/reviews/{id}/like`
 
 **껐던 행을 되살린다.** 새로 INSERT 하지 않는다.
@@ -224,6 +228,7 @@ DB 에 들어갔을 때를 막는 자리다.
 | 권한 | 쓰기 · 수정 · 삭제는 `authService.getAdminUser(token)` — 관리자가 아니면 403. 목록과 조회수는 누구나 |
 | 첨부 | **없다.** 표에 파일 컬럼이 없고 붙일 API 도 없다. 첨부는 후기에만 있다 |
 | 상세 | `GET /api/notices/{noticeId}` — 없거나 `use_yn='N'` 이면 404. **조회수는 여기서 올리지 않는다** (화면이 `POST .../view` 를 따로 부른다) |
+| 조회수 | `POST /api/notices/{noticeId}/view` — 올린 뒤의 숫자를 그대로 돌려준다 (`12`). 후기 · 자유게시판과 같다 |
 
 ---
 
@@ -246,7 +251,7 @@ DTO 를 없애면서 **`RecipeReviewVO` · `ReviewCommentVO` · `NoticeVO` 가
 |---|---|
 | `RecipeReviewVO` | `mealHistoryId` · `title` · `content` — 나머지는 전부 막혔다 |
 | `ReviewCommentVO` | `content` |
-| `NoticeVO` | `title` · `content` · `pinned` |
+| `NoticeVO` | `title` · `content` · `pinned` — `viewCount` 는 READ_ONLY 다 |
 
 `@JsonIgnore` 는 내보낼 때뿐 아니라 **받을 때도 막는다.** 그래서 붙어 있는
 칸은 화면이 아무리 보내도 null 로 남는다.
@@ -303,7 +308,7 @@ reviewDAO.insert(request);   // 조회수 · 작성자 · 첨부 여부까지 �
 |---|---|
 | 만들 메서드 목록 | `review/service/ReviewService.java` · `notice/service/NoticeService.java` 주석 |
 | 주소 · 로그인 필요 여부 | `review/controller/ReviewController.java` · `notice/controller/NoticeController.java` |
-| 요청/응답 모양 | `review/vo/` 4개 · `notice/vo/` 2개 (다 정의돼 있다) |
+| 요청/응답 모양 | `review/vo/` 4개 · `notice/vo/` 1개 (다 정의돼 있다) |
 | 글 · 댓글 · 목록 · 상세 · 인기 | `RecipeReviewVO` · `ReviewCommentVO` — 표 한 행 · 요청 · 응답을 하나가 겸한다 |
 | 좋아요 | `ReviewLikeVO` — 표 한 행이자 켜고 끈 결과다. `liked` 는 `use_yn` 에서 나온다 |
 | 곁다리 응답 | `ReviewFileVO` — 첨부 한 건. `RecipeReviewVO.file` 안에 들어간다 |
