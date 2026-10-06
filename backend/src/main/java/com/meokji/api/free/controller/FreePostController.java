@@ -1,20 +1,18 @@
 package com.meokji.api.free.controller;
 
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
 import com.meokji.api.free.service.FreePostService;
@@ -37,6 +34,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * 자유게시판.  주소: /api/free-posts
  *
@@ -49,9 +48,6 @@ import jakarta.validation.constraints.Size;
 @RestController
 @RequestMapping("/api/free-posts")
 public class FreePostController {
-
-    @Autowired
-    private AuthService authService;
 
     @Autowired
     private FreePostService freePostService;
@@ -74,9 +70,10 @@ public class FreePostController {
     // 로그인했으면 "내 글인지" 도 알려준다 (수정 · 삭제 버튼을 보일지 판단용)
     @GetMapping("/{postId}")
     public FreePostVO getDetail(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            // 로그인 안 했으면 null 이다. 이 주소는 SecurityConfig 에서 permitAll 이라
+            // 손님도 들어온다 - 로그인했을 때만 얹어주는 정보가 있어서 받아만 둔다.
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId) {
-        UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
         return freePostService.getDetail(loginUser, postId);
     }
 
@@ -84,19 +81,17 @@ public class FreePostController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
     public FreePostVO add(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @Valid @RequestBody FreePostVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return freePostService.add(loginUser, request);
     }
 
     // 글 수정  PUT /api/free-posts/3
     @PutMapping("/{postId}")
     public FreePostVO update(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId,
             @Valid @RequestBody FreePostVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return freePostService.update(loginUser, postId, request);
     }
 
@@ -104,9 +99,8 @@ public class FreePostController {
     @DeleteMapping("/{postId}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204
     public void delete(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId) {
-        UserVO loginUser = authService.getLoginUser(token);
         freePostService.delete(loginUser, postId);
     }
 
@@ -124,21 +118,19 @@ public class FreePostController {
     @PostMapping("/{postId}/comments")
     @ResponseStatus(HttpStatus.CREATED) // 201
     public FreePostCommentVO addComment(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId,
             @Valid @RequestBody FreePostCommentVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return freePostService.addComment(loginUser, postId, request.getContent());
     }
 
     // 댓글 수정  PUT /api/free-posts/3/comments/7
     @PutMapping("/{postId}/comments/{commentId}")
     public FreePostCommentVO updateComment(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId,
             @PathVariable @Min(1) Long commentId,
             @Valid @RequestBody FreePostCommentVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return freePostService.updateComment(loginUser, postId, commentId, request.getContent());
     }
 
@@ -146,10 +138,9 @@ public class FreePostController {
     @DeleteMapping("/{postId}/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204
     public void deleteComment(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId,
             @PathVariable @Min(1) Long commentId) {
-        UserVO loginUser = authService.getLoginUser(token);
         freePostService.deleteComment(loginUser, postId, commentId);
     }
 
@@ -158,10 +149,9 @@ public class FreePostController {
     // 사진 붙이기  POST /api/free-posts/3/file  (form-data 의 file 칸)
     @PostMapping("/{postId}/file")
     public FreeFileVO attachFile(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId,
             @RequestPart("file") MultipartFile file) {
-        UserVO loginUser = authService.getLoginUser(token);
         return freePostService.attachFile(loginUser, postId, file);
     }
 
@@ -169,9 +159,8 @@ public class FreePostController {
     @DeleteMapping("/{postId}/file")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204
     public void detachFile(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long postId) {
-        UserVO loginUser = authService.getLoginUser(token);
         freePostService.detachFile(loginUser, postId);
     }
 

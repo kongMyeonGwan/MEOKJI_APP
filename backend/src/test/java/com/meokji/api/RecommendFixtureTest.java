@@ -2,6 +2,7 @@ package com.meokji.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -55,7 +56,13 @@ class RecommendFixtureTest {
 
     @BeforeEach
     void setUp() {
-        mvc = MockMvcBuilders.webAppContextSetup(context).build();
+        // .apply(springSecurity()) 는 보안 필터를 붙인다. 이 줄이 없으면 MockMvc 가
+        // Controller 를 바로 불러서 JwtAuthenticationFilter 를 건너뛴다. 그러면
+        // @AuthenticationPrincipal 이 늘 null 이고 로그인이 필요한 주소도 통과해서,
+        // 테스트는 통과하는데 실제 서버와는 다른 길을 재는 꼴이 된다.
+        mvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     private JsonNode fixture(String name) throws Exception {

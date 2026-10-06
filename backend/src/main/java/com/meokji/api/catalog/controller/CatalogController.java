@@ -1,8 +1,5 @@
 package com.meokji.api.catalog.controller;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.catalog.service.CatalogService;
 
+import java.util.List;
+import java.util.Map;
 import tools.jackson.databind.JsonNode;
 
 /** 화면이 쓰는 고정 목록. */

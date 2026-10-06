@@ -1,14 +1,13 @@
 package com.meokji.api.recipe.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.recipe.vo.RecipeVO;
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.recipe.service.RecipeService;
 import com.meokji.api.user.vo.UserVO;
 
@@ -23,16 +22,14 @@ import jakarta.validation.constraints.Size;
 public class RecipeController {
 
     @Autowired
-    private AuthService authService;
-
-    @Autowired
     private RecipeService recipeService;
 
     @GetMapping("/recipes/{foodName}")
     public RecipeVO getRecipe(
-            @RequestHeader(value = "Authorization", required = false) String token,
-            @PathVariable @Size(min = 1, max = 150) String foodName) {
-        UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
+            // 로그인 안 했으면 null 이다. 이 주소는 SecurityConfig 에서 permitAll 이라
+            // 손님도 들어온다 - 로그인했을 때만 얹어주는 정보가 있어서 받아만 둔다.
+            @AuthenticationPrincipal UserVO loginUser,
+            @PathVariable @Size(min = 1, max = 150) String foodName) {
         return recipeService.getRecipe(loginUser, foodName);
     }
 }

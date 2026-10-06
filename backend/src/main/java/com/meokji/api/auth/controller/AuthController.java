@@ -2,10 +2,10 @@ package com.meokji.api.auth.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,9 +61,13 @@ public class AuthController {
     }
 
     // 내 정보 (토큰이 아직 쓸 수 있는지 확인할 때도 쓴다)  GET /api/auth/me
+    //
+    // 여기서 하는 일이 없어 보이지만, 토큰을 풀고 DB 에서 회원을 읽고 탈퇴 · 잠김까지
+    // 확인하는 일은 이미 JwtAuthenticationFilter 가 다 했다. @AuthenticationPrincipal
+    // 은 그 결과를 꺼내 쓰는 것뿐이다. 토큰이 없거나 썩었으면 이 메서드에 들어오지도
+    // 못하고 401 이 나간다 (SecurityConfig 의 anyRequest().authenticated()).
     @GetMapping("/me")
-    public UserVO me(@RequestHeader(value = "Authorization", required = false) String token) {
-        UserVO loginUser = authService.getLoginUser(token);
+    public UserVO me(@AuthenticationPrincipal UserVO loginUser) {
         return loginUser;
     }
 

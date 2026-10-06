@@ -13,7 +13,6 @@ import com.meokji.api.common.ApiException;
 import com.meokji.api.user.dao.UserDAO;
 import com.meokji.api.auth.vo.LoginVO;
 import com.meokji.api.auth.vo.RegisterVO;
-import com.meokji.api.util.JwtUtil;
 import com.meokji.api.util.Passwords;
 import com.meokji.api.util.RegionCatalog;
 import com.meokji.api.user.vo.UserVO;
@@ -32,9 +31,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private RegionCatalog regionCatalog;
-
-    @Autowired
-    private JwtUtil jwtUtil;
 
     // 로그인을 이 횟수만큼 틀리면 계정을 잠근다 (application.yml)
     @Value("${app.max-login-fail-count}")
@@ -156,51 +152,4 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    // ===================== 로그인한 사람 찾기 =====================
-
-    @Override
-    public UserVO getLoginUser(String token) {
-        if (token == null || token.isBlank()) {
-            throw ApiException.unauthorized("인증이 필요합니다.");
-        }
-
-        // 1. 토큰에서 회원 번호 꺼내기 ("Bearer " 뒤쪽이 진짜 토큰)
-        Long userId = jwtUtil.getUserId(token.replace("Bearer ", "").trim());
-        if (userId == null) {
-            throw ApiException.unauthorized("토큰이 유효하지 않거나 만료되었습니다.");
-        }
-
-        // 2. 회원 번호로 회원 찾기
-        UserVO user = userDAO.findById(userId);
-        if (user == null || !"Y".equals(user.getUseYn())) {
-            // 토큰을 받은 뒤에 탈퇴한 경우
-            throw ApiException.unauthorized("존재하지 않는 사용자입니다.");
-        }
-        if (user.isLockedAccount()) {
-            throw ApiException.locked("계정이 잠겼습니다.");
-        }
-
-        return user;
-    }
-
-    @Override
-    public UserVO findLoginUser(String token) {
-        if (token == null || token.isBlank()) {
-            return null;
-        }
-        try {
-            return getLoginUser(token);
-        } catch (ApiException e) {
-            return null; // 토큰이 잘못돼도 로그인 안 한 사람으로 본다
-        }
-    }
-
-    @Override
-    public UserVO getAdminUser(String token) {
-        UserVO user = getLoginUser(token);
-        if (!user.isAdmin()) {
-            throw ApiException.forbidden("관리자만 할 수 있는 작업입니다.");
-        }
-        return user;
-    }
 }

@@ -2,12 +2,12 @@ package com.meokji.api.history.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -17,7 +17,6 @@ import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
 import com.meokji.api.history.vo.MealHistoryStatsVO;
 import com.meokji.api.history.vo.MealHistoryVO;
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.history.service.HistoryService;
 import com.meokji.api.user.vo.UserVO;
 
@@ -34,27 +33,22 @@ import jakarta.validation.constraints.Min;
 public class HistoryController {
 
     @Autowired
-    private AuthService authService;
-
-    @Autowired
     private HistoryService historyService;
 
     // 내 기록 한 페이지  GET /api/histories?page=1&size=20&shared=false
     //   shared : true 면 커뮤니티에 공유한 것만, false 면 공유 안 한 것만, 안 보내면 전부
     @GetMapping
     public Page<MealHistoryVO> getList(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size,
-            @RequestParam(required = false) Boolean shared) {
-        UserVO loginUser = authService.getLoginUser(token);
+            @RequestParam(required = false) Boolean shared) {
         return historyService.getList(loginUser, page, size, shared);
     }
 
     // 요약 (총 건수, 누적 재료비, 연속 기록일)  GET /api/histories/stats
     @GetMapping("/stats")
-    public MealHistoryStatsVO getStats(@RequestHeader(value = "Authorization", required = false) String token) {
-        UserVO loginUser = authService.getLoginUser(token);
+    public MealHistoryStatsVO getStats(@AuthenticationPrincipal UserVO loginUser) {
         return historyService.getStats(loginUser);
     }
 
@@ -62,9 +56,8 @@ public class HistoryController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
     public MealHistoryVO add(
-            @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody MealHistoryVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
+            @AuthenticationPrincipal UserVO loginUser,
+            @Valid @RequestBody MealHistoryVO request) {
         return historyService.add(loginUser, request);
     }
 
@@ -72,9 +65,8 @@ public class HistoryController {
     @DeleteMapping("/{historyId}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204
     public void delete(
-            @RequestHeader(value = "Authorization", required = false) String token,
-            @PathVariable @Min(1) Long historyId) {
-        UserVO loginUser = authService.getLoginUser(token);
+            @AuthenticationPrincipal UserVO loginUser,
+            @PathVariable @Min(1) Long historyId) {
         historyService.delete(loginUser, historyId);
     }
 }

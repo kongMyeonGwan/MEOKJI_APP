@@ -2,15 +2,14 @@ package com.meokji.api.game.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.game.vo.GamePlayVO;
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.game.service.GameService;
 import com.meokji.api.user.vo.UserVO;
 
@@ -23,18 +22,14 @@ import com.meokji.api.user.vo.UserVO;
 public class GameController {
 
     @Autowired
-    private AuthService authService;
-
-    @Autowired
     private GameService gameService;
 
     // 게임 시작 기록  POST /api/games/worldcup/plays
     @PostMapping("/{gameKey}/plays")
     @ResponseStatus(HttpStatus.CREATED) // 201
     public GamePlayVO recordPlay(
-            @RequestHeader(value = "Authorization", required = false) String token,
-            @PathVariable String gameKey) {
-        UserVO loginUser = authService.getLoginUser(token);
+            @AuthenticationPrincipal UserVO loginUser,
+            @PathVariable String gameKey) {
         return gameService.recordPlay(loginUser, gameKey);
     }
 }

@@ -1,18 +1,15 @@
 package com.meokji.api.review.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -26,7 +23,6 @@ import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
 import com.meokji.api.review.vo.ReviewFileVO;
 import com.meokji.api.review.vo.ReviewLikeVO;
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.review.service.ReviewService;
 import com.meokji.api.user.vo.UserVO;
 
@@ -34,6 +30,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 커뮤니티 게시판 (레시피 후기).  주소: /api/reviews
@@ -44,9 +43,6 @@ import jakarta.validation.constraints.Size;
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
-
-    @Autowired
-    private AuthService authService;
 
     @Autowired
     private ReviewService reviewService;
@@ -75,9 +71,10 @@ public class ReviewController {
     // 로그인했으면 "내가 좋아요를 눌렀는지", "내 글인지" 도 알려준다
     @GetMapping("/{reviewId}")
     public RecipeReviewVO getDetail(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            // 로그인 안 했으면 null 이다. 이 주소는 SecurityConfig 에서 permitAll 이라
+            // 손님도 들어온다 - 로그인했을 때만 얹어주는 정보가 있어서 받아만 둔다.
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId) {
-        UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
         return reviewService.getDetail(loginUser, reviewId);
     }
 
@@ -85,19 +82,17 @@ public class ReviewController {
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED) // 201
     public RecipeReviewVO add(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @Valid @RequestBody RecipeReviewVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return reviewService.add(loginUser, request);
     }
 
     // 글 수정  PUT /api/reviews/3
     @PutMapping("/{reviewId}")
     public RecipeReviewVO update(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId,
             @Valid @RequestBody RecipeReviewVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return reviewService.update(loginUser, reviewId, request);
     }
 
@@ -105,9 +100,8 @@ public class ReviewController {
     @DeleteMapping("/{reviewId}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204
     public void delete(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId) {
-        UserVO loginUser = authService.getLoginUser(token);
         reviewService.delete(loginUser, reviewId);
     }
 
@@ -122,18 +116,16 @@ public class ReviewController {
     // 좋아요 켜기  PUT /api/reviews/3/like
     @PutMapping("/{reviewId}/like")
     public ReviewLikeVO like(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId) {
-        UserVO loginUser = authService.getLoginUser(token);
         return reviewService.setLike(loginUser, reviewId, true);
     }
 
     // 좋아요 끄기  DELETE /api/reviews/3/like
     @DeleteMapping("/{reviewId}/like")
     public ReviewLikeVO unlike(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId) {
-        UserVO loginUser = authService.getLoginUser(token);
         return reviewService.setLike(loginUser, reviewId, false);
     }
 
@@ -143,21 +135,19 @@ public class ReviewController {
     @PostMapping("/{reviewId}/comments")
     @ResponseStatus(HttpStatus.CREATED) // 201
     public ReviewCommentVO addComment(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId,
             @Valid @RequestBody ReviewCommentVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return reviewService.addComment(loginUser, reviewId, request.getContent());
     }
 
     // 댓글 수정  PUT /api/reviews/3/comments/7
     @PutMapping("/{reviewId}/comments/{commentId}")
     public ReviewCommentVO updateComment(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId,
             @PathVariable @Min(1) Long commentId,
             @Valid @RequestBody ReviewCommentVO request) {
-        UserVO loginUser = authService.getLoginUser(token);
         return reviewService.updateComment(loginUser, reviewId, commentId, request.getContent());
     }
 
@@ -165,10 +155,9 @@ public class ReviewController {
     @DeleteMapping("/{reviewId}/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204
     public void deleteComment(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId,
             @PathVariable @Min(1) Long commentId) {
-        UserVO loginUser = authService.getLoginUser(token);
         reviewService.deleteComment(loginUser, reviewId, commentId);
     }
 
@@ -177,10 +166,9 @@ public class ReviewController {
     // 사진 붙이기  POST /api/reviews/3/file  (form-data 의 file 칸)
     @PostMapping("/{reviewId}/file")
     public ReviewFileVO attachFile(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId,
             @RequestPart("file") MultipartFile file) {
-        UserVO loginUser = authService.getLoginUser(token);
         return reviewService.attachFile(loginUser, reviewId, file);
     }
 
@@ -188,9 +176,8 @@ public class ReviewController {
     @DeleteMapping("/{reviewId}/file")
     @ResponseStatus(HttpStatus.NO_CONTENT) // 204
     public void detachFile(
-            @RequestHeader(value = "Authorization", required = false) String token,
+            @AuthenticationPrincipal UserVO loginUser,
             @PathVariable @Min(1) Long reviewId) {
-        UserVO loginUser = authService.getLoginUser(token);
         reviewService.detachFile(loginUser, reviewId);
     }
 

@@ -1,7 +1,5 @@
 package com.meokji.api.health.controller;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.health.service.HealthService;
+
+import java.util.Map;
 
 /**
  * 서버와 DB 가 살아있는지 확인.  주소: GET /api/health

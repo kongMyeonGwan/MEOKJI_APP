@@ -16,13 +16,10 @@ public interface AuthService {
     // 로그인. 이메일 · 비밀번호가 맞으면 회원 정보를 돌려준다
     UserVO login(LoginVO request);
 
-    // 로그인한 사람 찾기. 토큰이 없거나 잘못됐으면 401 에러
-    //   token : 요청 헤더의 Authorization 값 ("Bearer eyJhbGci...")
-    UserVO getLoginUser(String token);
-
-    // 로그인한 사람 찾기. 로그인 안 했으면 에러 대신 null (로그인 없이도 되는 화면에서 쓴다)
-    UserVO findLoginUser(String token);
-
-    // 관리자 찾기. 관리자가 아니면 403 에러
-    UserVO getAdminUser(String token);
+    // 로그인한 사람을 찾는 일은 여기 없다. Spring Security 의 JwtAuthenticationFilter 가
+    // 요청 하나마다 한 번 하고, Controller 는 @AuthenticationPrincipal UserVO 로 받는다.
+    //
+    // 예전에는 getLoginUser(token) · findLoginUser(token) · getAdminUser(token) 세 개가
+    // 여기 있었고 Controller 48곳이 그걸 직접 불렀다. 한 군데만 빠뜨려도 그 API 가
+    // 인증 없이 열리는 구조라, 길목(필터)에서 한 번만 하도록 옮겼다.
 }
