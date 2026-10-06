@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
-import { getMe } from './api/auth'
-import { getSavedUser, removeToken, removeUser, saveToken, saveUser } from './utils/token'
+import { logout, refresh } from './api/auth'
+import { removeToken, setToken } from './utils/token'
 import { applyTheme, getSavedNotify, getSavedTheme, saveNotify } from './utils/settings'
 
 // 화면들. pages/ 아래 담당자별 폴더로 나눠져 있다 (pages/README.md 참고)
@@ -49,34 +49,45 @@ import SettingsPage from './pages/mypage/SettingsPage'
 //   theme  : 'light' 또는 'dark'
 //   notify : 알림 켜짐(true) / 꺼짐(false)
 export default function App() {
-  // 브라우저에 저장해둔 값으로 시작한다. 그래서 새로고침해도 로그인이 유지된다.
-  const [user, setUser] = useState(getSavedUser())
+  // 로그인 정보는 브라우저에 저장하지 않는다. 그래서 늘 "로그인 안 함" 으로 시작하고,
+  // 아래 useEffect 가 서버에 물어서 되살린다 (utils/token.js 의 설명 참고).
+  const [user, setUser] = useState(null)
+
+  // 되살리는 동안인지. 이게 없으면 로그인한 사람이 F5 를 눌렀을 때
+  // 아주 잠깐 로그인 화면이 번쩍 보였다가 제자리로 돌아온다.
+  const [checking, setChecking] = useState(true)
+
   const [theme, setTheme] = useState(getSavedTheme())
   const [notify, setNotify] = useState(getSavedNotify())
 
   // ----- 로그인 · 로그아웃 -----
-  // 로그인 정보를 브라우저에 저장하고 지우는 건 전부 여기서 한다.
-  // (저장하는 함수들은 utils/token.js 에 있다)
 
   // 로그인 성공 (LoginPage 가 부른다).
-  // keep 은 '로그인 상태 유지' 체크 여부다. true 면 브라우저를 껐다 켜도 남고,
-  // false 면 탭을 닫을 때 사라진다 (utils/token.js 참고).
-  const handleLogin = (token, loginUser, keep) => {
-    saveToken(token, keep) // 브라우저에 토큰 저장
-    saveUser(loginUser, keep) // 브라우저에 내 정보 저장
+  //
+  // Refresh Token 은 여기서 다루지 않는다. 서버가 HttpOnly 쿠키로 심어줬고
+  // 자바스크립트는 그 쿠키를 읽을 수조차 없다. 우리가 챙기는 건 Access Token 뿐이다.
+  const handleLogin = (token, loginUser) => {
+    setToken(token) // 메모리에 토큰 보관 (api/client.js 가 꺼내 쓴다)
     setUser(loginUser) // 화면에 반영 (상단바에 닉네임이 뜬다)
   }
 
   // 로그아웃 (상단바, 설정, 마이페이지가 부른다)
-  const handleLogout = () => {
+  //
+  // 서버에도 알려야 한다. 화면에서 토큰만 버리면 쿠키가 그대로 남아서,
+  // 다음에 앱을 켤 때 아래 useEffect 가 로그인을 되살려버린다.
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (err) {
+      // 서버가 꺼져 있어도 화면에서는 로그아웃시킨다. 여기서 막으면
+      // 서버가 안 뜰 때 로그아웃조차 못 하게 된다.
+    }
     removeToken()
-    removeUser()
     setUser(null)
   }
 
   // 내 정보가 바뀌었을 때 (MyPage 에서 닉네임을 바꾸면 부른다)
   const handleUserChange = (nextUser) => {
-    saveUser(nextUser)
     setUser(nextUser)
   }
 
@@ -100,25 +111,28 @@ export default function App() {
     saveNotify(notify)
   }, [notify])
 
-  // 앱을 처음 켤 때 한 번, 서버에서 내 정보를 다시 받아 최신으로 맞춘다.
+  // 앱을 켤 때 한 번, 로그인 상태를 되살린다.
+  //
+  // Access Token 은 메모리에만 있어서 F5 한 번에 사라진다. 그래도 로그인이
+  // 풀리지 않는 건 Refresh Token 쿠키 덕분이다.
+  //
+  //   앱 시작 → 메모리에 토큰 없음 → /api/auth/refresh (쿠키가 자동으로 실린다)
+  //          → 서버가 쿠키를 검사 → 새 Access Token + 내 정보 → 로그인 복원
+  //
+  // 그래서 PC 를 껐다 켜도, 로그아웃하지 않았고 14일이 지나지 않았다면 그대로 로그인돼 있다.
+  // 실패하면(로그인한 적 없음 · 로그아웃함 · 14일 지남) 그냥 손님으로 시작한다.
   useEffect(() => {
-    if (user === null) {
-      return // 로그인 안 했으면 확인할 게 없다
-    }
-
-    const checkLogin = async () => {
+    const restore = async () => {
       try {
-        const me = await getMe()
-        handleUserChange(me)
+        const result = await refresh()
+        setToken(result.access_token)
+        setUser(result.user)
       } catch (err) {
-        // 401 이면 토큰이 만료된 것이다 (토큰은 30분 뒤 만료된다) → 로그아웃 상태로
-        if (err.response && err.response.status === 401) {
-          handleLogout()
-        }
-        // 서버가 꺼져 있는 경우는 저장해둔 정보를 그대로 쓴다
+        // 여기 오는 건 정상이다. 로그인한 적 없는 사람이 처음 들어온 경우가 대부분이다.
       }
+      setChecking(false)
     }
-    checkLogin()
+    restore()
   }, [])
 
   // 로그인해야 볼 수 있는 화면을 감싼다.
@@ -128,6 +142,15 @@ export default function App() {
       return page
     }
     return <Navigate to="/login" />
+  }
+
+  // 로그인 상태를 되살리는 중에는 아무것도 그리지 않는다.
+  //
+  // 이걸 빼면 로그인한 사람이 /settings 에서 F5 를 눌렀을 때, 아직 user 가 null
+  // 이라 loginOnly 가 로그인 화면으로 보내버린다. 잠시 뒤 복원되지만 화면이
+  // 한 번 튄 뒤라 되돌아오지 않는다.
+  if (checking) {
+    return null
   }
 
   return (

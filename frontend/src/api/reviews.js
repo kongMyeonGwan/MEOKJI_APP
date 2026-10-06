@@ -8,15 +8,13 @@
 //   4. src/data/sampleBoard.js 를 지운다
 
 // import client from './client'
-// import { authHeader } from '../utils/token'
-
+// 
 const NOT_READY = '게시판 기능은 아직 준비 중입니다.'
 
 // 게시글 목록 한 페이지. { items, total, page, size, total_pages } 가 온다.
 //
-// 로그인이 필요한 함수(글쓰기 · 수정 · 삭제 · 좋아요 · 댓글)는
-// { headers: authHeader() } 를 같이 넘겨야 한다. 목록 · 상세 · 조회수는
-// 게스트도 볼 수 있어서 넘기지 않아도 된다.
+// 글쓰기 · 수정 · 삭제 · 좋아요 · 댓글은 로그인해야 하고, 목록 · 상세 · 조회수는
+// 게스트도 볼 수 있다. 토큰은 client.js 의 인터셉터가 알아서 붙인다.
 export const getReviews = async (keyword, page) => {
   // const response = await client.get('/api/reviews', {
   //   params: { keyword: keyword, page: page },

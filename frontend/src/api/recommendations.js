@@ -1,5 +1,4 @@
 import client from './client'
-import { authHeader } from '../utils/token'
 
 // AI 추천 · 레시피 API. 로그인 없이도 부를 수 있다.
 // 로그인했으면 서버가 못 먹는 재료를 빼고 추천한다.
@@ -19,14 +18,12 @@ export const getRecommendations = async (options) => {
     use_bargains: options.useBargains || false,
     lat: options.lat || null,
     lon: options.lon || null,
-  }, { headers: authHeader() })
+  })
   return response.data
 }
 
 // 레시피 + 재료 가격. AI 가 만들어서 몇 초 걸릴 수 있다.
 export const getRecipe = async (foodName) => {
-  const response = await client.get(`/api/recipes/${encodeURIComponent(foodName)}`, {
-    headers: authHeader(),
-  })
+  const response = await client.get(`/api/recipes/${encodeURIComponent(foodName)}`)
   return response.data
 }

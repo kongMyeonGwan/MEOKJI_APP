@@ -1,10 +1,10 @@
 import client from './client'
-import { authHeader } from '../utils/token'
 
 // 자유게시판 API. 주소는 /api/free-posts 다.
 //
 // 보기(목록 · 상세 · 사진)는 로그인 없이도 된다. 쓰기 · 수정 · 삭제 · 댓글은
-// { headers: authHeader() } 를 같이 넘겨야 한다.
+// 로그인해야 한다. 토큰을 여기서 붙이지는 않는다 - client.js 의 인터셉터가
+// 모든 요청에 알아서 붙인다.
 
 // 글 목록 한 페이지. { items, total, page, size, total_pages } 가 온다.
 export const getFreePosts = async (keyword, page) => {
@@ -17,7 +17,7 @@ export const getFreePosts = async (keyword, page) => {
 // 글 하나. 댓글도 같이 온다.
 // 로그인했으면 is_mine 이 채워져서 수정 · 삭제 버튼을 보일지 알 수 있다.
 export const getFreePost = async (postId) => {
-  const response = await client.get(`/api/free-posts/${postId}`, { headers: authHeader() })
+  const response = await client.get(`/api/free-posts/${postId}`)
   return response.data
 }
 
@@ -32,7 +32,6 @@ export const createFreePost = async (form) => {
   const response = await client.post(
     '/api/free-posts',
     { title: form.title, content: form.content },
-    { headers: authHeader() },
   )
   return response.data
 }
@@ -42,14 +41,13 @@ export const updateFreePost = async (postId, form) => {
   const response = await client.put(
     `/api/free-posts/${postId}`,
     { title: form.title, content: form.content },
-    { headers: authHeader() },
   )
   return response.data
 }
 
 // 글 삭제 (내 글만)
 export const removeFreePost = async (postId) => {
-  await client.delete(`/api/free-posts/${postId}`, { headers: authHeader() })
+  await client.delete(`/api/free-posts/${postId}`)
 }
 
 // ----- 댓글 -----
@@ -58,7 +56,6 @@ export const addFreeComment = async (postId, content) => {
   const response = await client.post(
     `/api/free-posts/${postId}/comments`,
     { content: content },
-    { headers: authHeader() },
   )
   return response.data
 }
@@ -67,13 +64,12 @@ export const updateFreeComment = async (postId, commentId, content) => {
   const response = await client.put(
     `/api/free-posts/${postId}/comments/${commentId}`,
     { content: content },
-    { headers: authHeader() },
   )
   return response.data
 }
 
 export const removeFreeComment = async (postId, commentId) => {
-  await client.delete(`/api/free-posts/${postId}/comments/${commentId}`, { headers: authHeader() })
+  await client.delete(`/api/free-posts/${postId}/comments/${commentId}`)
 }
 
 // ----- 사진 -----
@@ -85,15 +81,13 @@ export const uploadFreePostFile = async (postId, file) => {
   const form = new FormData()
   form.append('file', file)
 
-  const response = await client.post(`/api/free-posts/${postId}/file`, form, {
-    headers: authHeader(),
-  })
+  const response = await client.post(`/api/free-posts/${postId}/file`, form)
   return response.data
 }
 
 // 사진 떼기
 export const removeFreePostFile = async (postId) => {
-  await client.delete(`/api/free-posts/${postId}/file`, { headers: authHeader() })
+  await client.delete(`/api/free-posts/${postId}/file`)
 }
 
 // 사진 주소 만들기.

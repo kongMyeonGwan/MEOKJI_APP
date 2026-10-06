@@ -77,10 +77,20 @@ export default function LoginPage({ onLogin }) {
 
     try {
       // 2. 서버에 로그인 요청
-      const result = await login({ email: values.email.trim(), password: values.password })
+      //
+      // keep('로그인 상태 유지')을 같이 보낸다. 전에는 화면이 토큰을 어디에
+      // 저장할지 정하는 데 썼는데, 지금은 서버가 Refresh Token 쿠키를 얼마나
+      // 남길지 정하는 데 쓴다 (체크하면 14일, 아니면 브라우저 닫을 때까지).
+      const result = await login({
+        email: values.email.trim(),
+        password: values.password,
+        keep: keep,
+      })
 
-      // 3. App 에 알려준다 (토큰과 내 정보, 그리고 어디에 저장할지)
-      onLogin(result.access_token, result.user, keep)
+      // 3. App 에 알려준다 (토큰과 내 정보)
+      //    Refresh Token 은 넘기지 않는다 - 응답에 들어 있지도 않고,
+      //    서버가 심은 HttpOnly 쿠키라 자바스크립트가 읽을 수 없다.
+      onLogin(result.access_token, result.user)
 
       // 4. 홈으로 이동
       navigate('/')

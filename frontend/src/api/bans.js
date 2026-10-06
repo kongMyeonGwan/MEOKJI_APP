@@ -1,11 +1,10 @@
 import client from './client'
-import { authHeader } from '../utils/token'
 
 // 못 먹는 재료 API. 로그인이 필요하다.
 
 // 내 못 먹는 재료 목록
 export const getBans = async () => {
-  const response = await client.get('/api/bans', { headers: authHeader() })
+  const response = await client.get('/api/bans')
   return response.data
 }
 
@@ -17,12 +16,11 @@ export const addBan = async (form) => {
       ingredient_name: form.ingredientName,
       ban_type: form.banType,
     },
-    { headers: authHeader() },
   )
   return response.data
 }
 
 // 삭제
 export const removeBan = async (id) => {
-  await client.delete(`/api/bans/${id}`, { headers: authHeader() })
+  await client.delete(`/api/bans/${id}`)
 }
