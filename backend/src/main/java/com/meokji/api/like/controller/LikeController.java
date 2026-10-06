@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.like.vo.LikeListVO;
-import com.meokji.api.like.vo.LikeToggleVO;
 import com.meokji.api.like.vo.RecipeLikeVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.like.service.LikeService;
@@ -41,7 +40,7 @@ public class LikeController {
 
     // 하트 누르기 (찜돼 있으면 풀고, 아니면 찜한다)  PUT /api/likes
     @PutMapping
-    public LikeToggleVO toggle(
+    public RecipeLikeVO toggle(
             @RequestHeader(value = "Authorization", required = false) String token,
             @Valid @RequestBody RecipeLikeVO request) {
         UserVO loginUser = authService.getLoginUser(token);

@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.meokji.api.like.dao.LikeDAO;
 import com.meokji.api.like.vo.LikeListVO;
-import com.meokji.api.like.vo.LikeToggleVO;
 import com.meokji.api.like.vo.RecipeLikeVO;
 import com.meokji.api.recommend.vo.FoodVO;
 import com.meokji.api.user.vo.UserVO;
@@ -58,9 +57,9 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public LikeToggleVO toggle(UserVO user, String foodName) {
+    public RecipeLikeVO toggle(UserVO user, String foodName) {
         RecipeLikeVO found = likeDAO.findByUserAndFood(user.getId(), foodName);
-        boolean liked;
+        String useYn;
 
         if (found == null) {
             // 1. 처음 찜하는 음식 → 새로 넣는다
@@ -74,20 +73,21 @@ public class LikeServiceImpl implements LikeService {
                 RecipeLikeVO existing = likeDAO.findByUserAndFood(user.getId(), foodName);
                 likeDAO.setUseYn(existing.getId(), "Y");
             }
-            liked = true;
-        } else if ("Y".equals(found.getUseYn())) {
+            useYn = "Y";
+        } else if (found.getLiked()) {
             // 2. 찜돼 있으면 → 푼다
             likeDAO.setUseYn(found.getId(), "N");
-            liked = false;
+            useYn = "N";
         } else {
             // 3. 예전에 찜했다가 푼 음식 → 다시 켠다
             likeDAO.setUseYn(found.getId(), "Y");
-            liked = true;
+            useYn = "Y";
         }
 
-        LikeToggleVO response = new LikeToggleVO();
+        // 바꾼 뒤의 상태. liked 는 이 use_yn 에서 나온다
+        RecipeLikeVO response = new RecipeLikeVO();
         response.setFoodName(foodName);
-        response.setLiked(liked);
+        response.setUseYn(useYn);
         response.setCount(likeDAO.countActive(user.getId()));
         return response;
     }
