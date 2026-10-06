@@ -132,55 +132,62 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <MainLayout
-        user={user}
-        onLogout={handleLogout}
-        theme={theme}
-        onThemeChange={handleThemeChange}
-        notify={notify}
-        onNotifyChange={handleNotifyChange}
-      >
-        <Routes>
-          <Route path="/" element={<HomePage />} />
+      <Routes>
+        {/* 공통 틀. path 가 없고 element 만 있다 — 아래 화면들을 감싸는 역할이다.
+            화면은 MainLayout 안의 <Outlet /> 자리에 들어간다 */}
+        <Route
+          element={
+            <MainLayout
+              user={user}
+              onLogout={handleLogout}
+              theme={theme}
+              onThemeChange={handleThemeChange}
+              notify={notify}
+              onNotifyChange={handleNotifyChange}
+            />
+          }
+        >
+          {/* index 는 부모 주소 그대로(/) 일 때 보여줄 화면이다 */}
+          <Route index element={<HomePage />} />
 
           {/* 로그인 · 회원가입 */}
-          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/password-reset" element={<PasswordResetPage />} />
+          <Route path="login" element={<LoginPage onLogin={handleLogin} />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="password-reset" element={<PasswordResetPage />} />
 
           {/* 추천 · 레시피 */}
-          <Route path="/recommend" element={<RecommendPage />} />
-          <Route path="/budget" element={<BudgetPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/recipe/:foodName" element={<RecipePage user={user} />} />
+          <Route path="recommend" element={<RecommendPage />} />
+          <Route path="budget" element={<BudgetPage />} />
+          <Route path="search" element={<SearchPage />} />
+          <Route path="recipe/:foodName" element={<RecipePage user={user} />} />
 
           {/* 메뉴 게임 */}
-          <Route path="/game" element={<GamePage />} />
-          <Route path="/game/worldcup" element={<WorldCupPage user={user} />} />
-          <Route path="/game/balance" element={<BalancePage user={user} />} />
-          <Route path="/roulette" element={<RoulettePage />} />
+          <Route path="game" element={<GamePage />} />
+          <Route path="game/worldcup" element={<WorldCupPage user={user} />} />
+          <Route path="game/balance" element={<BalancePage user={user} />} />
+          <Route path="roulette" element={<RoulettePage />} />
 
           {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
-          <Route path="/popular" element={<PopularPage />} />
+          <Route path="popular" element={<PopularPage />} />
           {/* 레시피리뷰 · 공지는 퍼블리싱만 돼 있다. 로그인한 사람(user)을 아직 쓰지 않아
               props 를 넘기지 않는다 — 기능 담당이 user={user} 를 붙이는 자리다 */}
-          <Route path="/community" element={<ReviewListPage />} />
-          <Route path="/community/:reviewId" element={<ReviewDetailPage />} />
-          <Route path="/community/write" element={loginOnly(<ReviewWritePage />)} />
+          <Route path="community" element={<ReviewListPage />} />
+          <Route path="community/:reviewId" element={<ReviewDetailPage />} />
+          <Route path="community/write" element={loginOnly(<ReviewWritePage />)} />
 
           {/* 공지사항. 보기는 누구나, 작성 · 수정 · 삭제는 관리자만 (지금은 퍼블리싱만) */}
-          <Route path="/notice" element={<NoticeListPage />} />
-          <Route path="/notice/write" element={<NoticeWritePage />} />
-          <Route path="/notice/:noticeId" element={<NoticeDetailPage />} />
+          <Route path="notice" element={<NoticeListPage />} />
+          <Route path="notice/write" element={<NoticeWritePage />} />
+          <Route path="notice/:noticeId" element={<NoticeDetailPage />} />
 
           {/* 자유게시판. 후기와 달리 아무 주제나 쓸 수 있다. 보는 것은 로그인 없이도 된다 */}
-          <Route path="/free" element={<FreeListPage user={user} />} />
-          <Route path="/free/write" element={loginOnly(<FreeWritePage />)} />
-          <Route path="/free/:postId" element={<FreeDetailPage user={user} />} />
+          <Route path="free" element={<FreeListPage user={user} />} />
+          <Route path="free/write" element={loginOnly(<FreeWritePage />)} />
+          <Route path="free/:postId" element={<FreeDetailPage user={user} />} />
 
           {/* 마이페이지 */}
           <Route
-            path="/settings"
+            path="settings"
             element={
               <SettingsPage
                 user={user}
@@ -193,17 +200,17 @@ export default function App() {
             }
           />
           <Route
-            path="/mypage"
+            path="mypage"
             element={loginOnly(<MyPage user={user} onLogout={handleLogout} onUserChange={handleUserChange} />)}
           />
-          <Route path="/history" element={loginOnly(<HistoryPage />)} />
-          <Route path="/ai-history" element={loginOnly(<AiHistoryPage />)} />
-          <Route path="/liked" element={loginOnly(<LikedPage />)} />
+          <Route path="history" element={loginOnly(<HistoryPage />)} />
+          <Route path="ai-history" element={loginOnly(<AiHistoryPage />)} />
+          <Route path="liked" element={loginOnly(<LikedPage />)} />
 
           {/* 위에 없는 주소 */}
           <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </MainLayout>
+        </Route>
+      </Routes>
     </BrowserRouter>
   )
 }
