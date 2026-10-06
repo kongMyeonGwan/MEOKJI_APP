@@ -180,7 +180,7 @@ export default function HistoryPage() {
                         커뮤니티에 공유한 글 보기 →
                       </Link>
                     ) : (
-                      <Link to="/community/write" className="history__link">
+                      <Link to={`/community/write?historyId=${item.id}`} className="history__link">
                         이 기록으로 글 쓰기 →
                       </Link>
                     )}

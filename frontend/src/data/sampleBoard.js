@@ -165,14 +165,6 @@ export const SAMPLE_REVIEW_DETAIL = {
   ],
 }
 
-// ===== 글쓰기 화면의 "공유할 내 기록" 드롭다운 (GET /api/histories?shared=false) =====
-// 후기는 내 식사 기록 하나를 골라서 쓴다. 고를 거리가 있어야 화면이 그려진다.
-export const SAMPLE_WRITE_HISTORIES = [
-  { id: 101, food_name: '김치부침개', recipe_name: '바삭한 묵은지 김치부침개' },
-  { id: 102, food_name: '제육볶음', recipe_name: '자취 3년차 제육볶음' },
-  { id: 103, food_name: '된장찌개', recipe_name: '구수한 애호박 된장찌개' },
-]
-
 // ===== 공지사항 (GET /api/notices) =====
 export const SAMPLE_NOTICES = [
   {

@@ -28,6 +28,10 @@ tasks.withType(JavaCompile).configureEach {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Swagger / OpenAPI
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
+
 	// 비밀번호 암호화(BCrypt)만 쓴다. 로그인 확인은 JWT 로 직접 한다.
 	implementation 'org.springframework.security:spring-security-crypto'
 
