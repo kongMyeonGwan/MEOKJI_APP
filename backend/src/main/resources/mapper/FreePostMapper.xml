@@ -105,29 +105,13 @@
     </select>
 
     <!--
-      useGeneratedKeys 로 방금 넣은 id 를 post.id 에 받아온다.
-      그래야 글을 쓴 뒤 바로 그 글을 다시 읽어 상세로 돌려줄 수 있다.
+      글쓰기 · 글 수정 · 글 삭제 SQL 은 여기 없다. JPA 가 맡는다.
+      (free/entity/FreePostEntity + free/repository/FreePostRepository)
+
+      JPA 쪽도 같은 일을 한다 - id 는 오라클 IDENTITY 가 채우고, 삭제는
+      행을 지우지 않고 use_yn='N' 으로 바꾸며, 시각은 UTC 로 적는다.
+      옛 SQL 은 git 기록에 있다.
     -->
-    <insert id="insert" parameterType="com.meokji.api.free.vo.FreePostVO"
-            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
-        INSERT INTO free_posts (user_id, title, content)
-        VALUES (#{userId}, #{title}, #{content})
-    </insert>
-
-    <update id="update" parameterType="com.meokji.api.free.vo.FreePostVO">
-        UPDATE free_posts
-           SET title = #{title},
-               content = #{content},
-               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
-         WHERE id = #{id}
-    </update>
-
-    <update id="deactivate">
-        UPDATE free_posts
-           SET use_yn = 'N',
-               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
-         WHERE id = #{id}
-    </update>
 
     <update id="increaseView">
         UPDATE free_posts

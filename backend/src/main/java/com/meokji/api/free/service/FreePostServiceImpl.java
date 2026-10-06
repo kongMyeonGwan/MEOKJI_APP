@@ -13,6 +13,8 @@ import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
 import com.meokji.api.free.dao.FreeCommentDAO;
 import com.meokji.api.free.dao.FreePostDAO;
+import com.meokji.api.free.entity.FreePostEntity;
+import com.meokji.api.free.repository.FreePostRepository;
 import com.meokji.api.free.vo.FreeFileVO;
 import com.meokji.api.free.vo.FreePostCommentVO;
 import com.meokji.api.free.vo.FreePostVO;
@@ -22,6 +24,11 @@ import com.meokji.api.util.FileStore;
 @Service
 public class FreePostServiceImpl implements FreePostService {
 
+    // 글쓰기 · 수정 · 삭제는 JPA 가 한다
+    @Autowired
+    private FreePostRepository freePostRepository;
+
+    // 나머지(목록 · 검색 · 페이징 · 조회수 · 첨부)는 MyBatis 가 한다
     @Autowired
     private FreePostDAO freePostDAO;
 
@@ -55,12 +62,16 @@ public class FreePostServiceImpl implements FreePostService {
     @Override
     @Transactional
     public FreePostVO add(UserVO loginUser, FreePostVO request) {
-        FreePostVO post = new FreePostVO();
-        post.setUserId(loginUser.getId()); // 글쓴이는 토큰에서. 본문으로 받으면 남의 이름으로 쓸 수 있다
-        post.setTitle(request.getTitle().trim());
-        post.setContent(request.getContent());
+        // 글쓴이는 토큰에서. 본문으로 받으면 남의 이름으로 쓸 수 있다
+        FreePostEntity post = FreePostEntity.create(
+                loginUser.getId(),
+                request.getTitle().trim(),
+                request.getContent());
 
-        freePostDAO.insert(post);
+        freePostRepository.save(post);
+
+        // 여기서 flush 를 부르지 않는다. id 가 오라클 IDENTITY 라 JPA 가 번호를
+        // 받으려면 INSERT 를 바로 보내야 하고, 그래서 이 줄을 지날 때 이미 DB 에 들어가 있다.
 
         // 방금 넣은 행을 다시 읽는다. 닉네임 · 작성 시각은 DB 와 JOIN 이 채우는 값이다
         return fillDetail(findAlivePost(post.getId()), loginUser);
@@ -69,12 +80,19 @@ public class FreePostServiceImpl implements FreePostService {
     @Override
     @Transactional
     public FreePostVO update(UserVO loginUser, Long postId, FreePostVO request) {
-        FreePostVO post = findAlivePost(postId);
+        FreePostEntity post = findAliveEntity(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
-        post.setTitle(request.getTitle().trim());
-        post.setContent(request.getContent());
-        freePostDAO.update(post);
+        // setter 를 부르는 것만으로 UPDATE 가 나간다 (변경 감지).
+        // save() 를 다시 부르지 않는다
+        post.change(request.getTitle().trim(), request.getContent());
+
+        // 바꾼 값을 DB 로 먼저 내보낸다.
+        //
+        // JPA 는 트랜잭션이 끝날 때 몰아서 보내는데, 바로 아래 findAlivePost 는
+        // MyBatis 라 JPA 가 들고 있는 값을 모른다. 이 줄이 없으면 방금 고친 글을
+        // 읽는데 옛 제목이 나온다.
+        freePostRepository.flush();
 
         return fillDetail(findAlivePost(postId), loginUser);
     }
@@ -82,6 +100,8 @@ public class FreePostServiceImpl implements FreePostService {
     @Override
     @Transactional
     public void delete(UserVO loginUser, Long postId) {
+        // 먼저 MyBatis 로 읽는다. 붙어 있는 사진의 저장 경로가 여기 들어 있고,
+        // 그 칸들은 JPA 쪽(FreePostEntity)에 일부러 안 두었다
         FreePostVO post = findAlivePost(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
@@ -89,7 +109,8 @@ public class FreePostServiceImpl implements FreePostService {
         // 디스크만 계속 찬다 (주소를 아는 사람에게는 계속 열린다)
         deleteStoredFile(post);
 
-        freePostDAO.deactivate(postId);
+        // 행은 지우지 않고 use_yn 만 뒤집는다 (변경 감지로 UPDATE 가 나간다)
+        findAliveEntity(postId).deactivate();
     }
 
     @Override
@@ -205,6 +226,19 @@ public class FreePostServiceImpl implements FreePostService {
     }
 
     // ===================== 안쪽에서만 쓰는 것 =====================
+
+    /**
+     * 살아있는 글 하나를 JPA 로. 없거나 지워졌으면 404.
+     *
+     * 아래 findAlivePost 와 읽는 행은 같지만 쓰임이 다르다. 이쪽은 JPA 가
+     * 들고 있다가 고친 것을 알아채는 대상이고, 저쪽은 화면으로 나갈 모양이다.
+     * 닉네임 · 댓글 수는 이쪽에 없다.
+     */
+    private FreePostEntity findAliveEntity(Long postId) {
+        return freePostRepository
+                .findByIdAndUseYn(postId, "Y")
+                .orElseThrow(() -> ApiException.notFound("글을 찾을 수 없습니다."));
+    }
 
     /** 살아있는 글 하나. 없거나 지워졌으면 404 */
     private FreePostVO findAlivePost(Long postId) {

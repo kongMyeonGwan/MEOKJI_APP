@@ -12,6 +12,14 @@ import com.meokji.api.free.vo.FreePostVO;
  *
  * 메서드를 하나 만들면 XML 에도 id 가 같은 SQL 을 하나 만들어야 한다.
  * 이름이 다르면 서버가 뜰 때가 아니라 그 메서드를 처음 부를 때 터진다.
+ *
+ * 글쓰기 · 글 수정 · 글 삭제는 여기 없다. JPA 가 맡는다
+ * (free/repository/FreePostRepository + free/entity/FreePostEntity).
+ * 한 표에 글을 쓰는 길을 둘로 두면, 어느 쪽으로 들어간 값인지 모르게 된다.
+ *
+ * 여기 남은 것은 JPA 로 옮기지 않기로 한 것들이다 - 목록 · 검색 · 페이징 ·
+ * 조회수 · 첨부. JOIN 과 COUNT 와 DBMS_LOB.SUBSTR 이 섞여 있어서
+ * 메서드 이름만으로 만들 수 있는 모양이 아니다.
  */
 @Mapper
 public interface FreePostDAO {
@@ -35,17 +43,14 @@ public interface FreePostDAO {
             @Param("offset") int offset,
             @Param("size") int size);
 
-    /** 글 한 건 (지운 글도 나온다. use_yn 확인은 부르는 쪽이 한다) */
+    /**
+     * 글 한 건 (지운 글도 나온다. use_yn 확인은 부르는 쪽이 한다).
+     *
+     * JPA 에도 같은 행을 읽는 findByIdAndUseYn 이 있지만 쓰임이 다르다.
+     * 이쪽은 닉네임을 JOIN 해서 화면으로 나갈 모양을 만들고,
+     * 저쪽은 JPA 가 들고 있다가 고친 것을 알아채는 대상이다.
+     */
     FreePostVO findById(@Param("id") Long id);
-
-    /** 글쓰기. id · 날짜는 DB 가 채운다 */
-    void insert(FreePostVO post);
-
-    /** 제목 · 내용 수정. updated_at 도 같이 올린다 */
-    void update(FreePostVO post);
-
-    /** 삭제. 행을 지우지 않고 use_yn='N' */
-    void deactivate(@Param("id") Long id);
 
     /** 조회수 +1 */
     void increaseView(@Param("id") Long id);
