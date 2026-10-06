@@ -23,9 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
 import com.meokji.api.review.vo.ReviewCommentVO;
-import com.meokji.api.review.vo.LikeStatusVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
 import com.meokji.api.review.vo.ReviewFileVO;
+import com.meokji.api.review.vo.ReviewLikeVO;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.review.service.ReviewService;
 import com.meokji.api.user.vo.UserVO;
@@ -121,7 +121,7 @@ public class ReviewController {
 
     // 좋아요 켜기  PUT /api/reviews/3/like
     @PutMapping("/{reviewId}/like")
-    public LikeStatusVO like(
+    public ReviewLikeVO like(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId) {
         UserVO loginUser = authService.getLoginUser(token);
@@ -130,7 +130,7 @@ public class ReviewController {
 
     // 좋아요 끄기  DELETE /api/reviews/3/like
     @DeleteMapping("/{reviewId}/like")
-    public LikeStatusVO unlike(
+    public ReviewLikeVO unlike(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long reviewId) {
         UserVO loginUser = authService.getLoginUser(token);

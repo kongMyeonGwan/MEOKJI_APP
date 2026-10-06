@@ -7,9 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.meokji.api.common.Page;
 import com.meokji.api.review.vo.ReviewCommentVO;
-import com.meokji.api.review.vo.LikeStatusVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
 import com.meokji.api.review.vo.ReviewFileVO;
+import com.meokji.api.review.vo.ReviewLikeVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -36,8 +36,8 @@ public interface ReviewService {
     int increaseView(Long reviewId);
 
     // ----- 좋아요 -----
-    // liked 가 true 면 켜고, false 면 끈다
-    LikeStatusVO setLike(UserVO loginUser, Long reviewId, boolean liked);
+    // liked 가 true 면 켜고, false 면 끈다. 바꾼 뒤의 상태를 돌려준다
+    ReviewLikeVO setLike(UserVO loginUser, Long reviewId, boolean liked);
 
     // ----- 댓글 -----
     ReviewCommentVO addComment(UserVO loginUser, Long reviewId, String content);

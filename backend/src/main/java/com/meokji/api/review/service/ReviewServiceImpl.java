@@ -9,9 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
 import com.meokji.api.review.vo.ReviewCommentVO;
-import com.meokji.api.review.vo.LikeStatusVO;
 import com.meokji.api.review.vo.RecipeReviewVO;
 import com.meokji.api.review.vo.ReviewFileVO;
+import com.meokji.api.review.vo.ReviewLikeVO;
 import com.meokji.api.user.vo.UserVO;
 
 /**
@@ -88,7 +88,7 @@ public class ReviewServiceImpl implements ReviewService {
     // ===================== 좋아요 =====================
 
     @Override
-    public LikeStatusVO setLike(UserVO loginUser, Long reviewId, boolean liked) {
+    public ReviewLikeVO setLike(UserVO loginUser, Long reviewId, boolean liked) {
         throw ApiException.notImplemented(TODO);
     }
 
