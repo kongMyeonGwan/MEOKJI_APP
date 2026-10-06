@@ -1,41 +1,60 @@
 import { NavLink } from 'react-router-dom'
 import Icon from '../../components/common/Icon'
 
-// 모바일에서만 보이는 하단 탭. 로그인 여부에 따라 탭이 달라진다.
-
-const GUEST_TABS = [
-  { to: '/', label: '홈', icon: 'home' },
-  { to: '/recommend', label: '추천', icon: 'sparkles' },
-  { to: '/game', label: '게임', icon: 'gamepad' },
-  { to: '/community', label: '커뮤니티', icon: 'chat' },
-  { to: '/login', label: '로그인', icon: 'user' },
-]
-
-const USER_TABS = [
-  { to: '/', label: '홈', icon: 'home' },
-  { to: '/recommend', label: '추천', icon: 'sparkles' },
-  { to: '/game', label: '게임', icon: 'gamepad' },
-  { to: '/liked', label: '찜', icon: 'heart' },
-  { to: '/mypage', label: 'MY', icon: 'user' },
-]
-
 export default function BottomNav({ user }) {
-  const tabs = user ? USER_TABS : GUEST_TABS
+  // NavLink 는 지금 주소와 같으면 isActive 가 true 다.
+  // 그때 is-active 를 붙여서 지금 보고 있는 탭을 강조한다 (styles/index.css)
+  const tabClass = ({ isActive }) => (isActive ? 'bottom-nav__item is-active' : 'bottom-nav__item')
 
   return (
     <nav className="bottom-nav">
-      {tabs.map((tab) => (
-        <NavLink
-          key={tab.to}
-          to={tab.to}
-          // end 가 없으면 '/' 탭이 모든 화면에서 켜진다
-          end={tab.to === '/'}
-          className={({ isActive }) => (isActive ? 'bottom-nav__item is-active' : 'bottom-nav__item')}
-        >
-          <Icon name={tab.icon} size={22} />
-          <span className="bottom-nav__label">{tab.label}</span>
-        </NavLink>
-      ))}
+      {/* 홈 */}
+      <NavLink to="/" end className={tabClass}>
+        <Icon name="home" size={22} />
+        <span className="bottom-nav__label">홈</span>
+      </NavLink>
+
+      {/* 추천 */}
+      <NavLink to="/recommend" className={tabClass}>
+        <Icon name="sparkles" size={22} />
+        <span className="bottom-nav__label">추천</span>
+      </NavLink>
+
+      {/* 게임 */}
+      <NavLink to="/game" className={tabClass}>
+        <Icon name="gamepad" size={22} />
+        <span className="bottom-nav__label">게임</span>
+      </NavLink>
+
+      {/* 로그인한 경우 */}
+      {user && (
+        <>
+          <NavLink to="/liked" className={tabClass}>
+            <Icon name="heart" size={22} />
+            <span className="bottom-nav__label">찜</span>
+          </NavLink>
+
+          <NavLink to="/mypage" className={tabClass}>
+            <Icon name="user" size={22} />
+            <span className="bottom-nav__label">MY</span>
+          </NavLink>
+        </>
+      )}
+
+      {/* 로그인하지 않은 경우 */}
+      {!user && (
+        <>
+          <NavLink to="/community" className={tabClass}>
+            <Icon name="chat" size={22} />
+            <span className="bottom-nav__label">커뮤니티</span>
+          </NavLink>
+
+          <NavLink to="/login" className={tabClass}>
+            <Icon name="user" size={22} />
+            <span className="bottom-nav__label">로그인</span>
+          </NavLink>
+        </>
+      )}
     </nav>
   )
 }

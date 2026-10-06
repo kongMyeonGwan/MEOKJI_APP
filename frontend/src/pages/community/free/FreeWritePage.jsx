@@ -131,7 +131,9 @@ export default function FreeWritePage() {
             rows={12}
           />
           {/* 거의 다 차면 빨간 글씨로 알려준다 */}
-          <p className={values.content.length > CONTENT_MAX - 100 ? 'free-write__count-warn' : 'muted free-write__help'}>
+          <p
+            className={values.content.length > CONTENT_MAX - 100 ? 'free-write__count-warn' : 'muted free-write__help'}
+          >
             {values.content.length} / {CONTENT_MAX}
           </p>
         </label>
