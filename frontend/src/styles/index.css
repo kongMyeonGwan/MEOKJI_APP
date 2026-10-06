@@ -5164,6 +5164,27 @@ a.btn {
   border-radius: var(--radius-sm);
 }
 
+/* 고른 식사 기록 미리보기 */
+.write__history {
+  margin: -6px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.write__history-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0 0 10px;
+}
+
+.write__history-cost {
+  margin-left: auto;
+  font-size: 14px;
+}
+
 /* ==========================================================
    자유게시판
    ========================================================== */
