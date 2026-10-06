@@ -5,8 +5,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.meokji.api.common.Page;
 import com.meokji.api.free.vo.FreeFileVO;
 import com.meokji.api.free.vo.FreePostCommentVO;
-import com.meokji.api.free.vo.FreePostDetailVO;
-import com.meokji.api.free.vo.FreePostListVO;
 import com.meokji.api.free.vo.FreePostVO;
 import com.meokji.api.user.vo.UserVO;
 
@@ -22,16 +20,16 @@ public interface FreePostService {
     // ---------- 글 ----------
 
     /** 목록 한 페이지. keyword 가 있으면 제목 · 내용에서 찾는다 */
-    Page<FreePostListVO> getList(String keyword, int page, int size);
+    Page<FreePostVO> getList(String keyword, int page, int size);
 
     /** 상세. loginUser 가 null 이면(비로그인) isMine 은 false 다 */
-    FreePostDetailVO getDetail(UserVO loginUser, Long postId);
+    FreePostVO getDetail(UserVO loginUser, Long postId);
 
     /** 글쓰기 */
-    FreePostDetailVO add(UserVO loginUser, FreePostVO request);
+    FreePostVO add(UserVO loginUser, FreePostVO request);
 
     /** 글 수정 (글쓴이만) */
-    FreePostDetailVO update(UserVO loginUser, Long postId, FreePostVO request);
+    FreePostVO update(UserVO loginUser, Long postId, FreePostVO request);
 
     /** 글 삭제 (글쓴이만). use_yn='N' */
     void delete(UserVO loginUser, Long postId);

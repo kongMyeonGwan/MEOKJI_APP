@@ -15,12 +15,9 @@ import com.meokji.api.free.dao.FreeCommentDAO;
 import com.meokji.api.free.dao.FreePostDAO;
 import com.meokji.api.free.vo.FreeFileVO;
 import com.meokji.api.free.vo.FreePostCommentVO;
-import com.meokji.api.free.vo.FreePostDetailVO;
-import com.meokji.api.free.vo.FreePostListVO;
 import com.meokji.api.free.vo.FreePostVO;
 import com.meokji.api.user.vo.UserVO;
 import com.meokji.api.util.FileStore;
-import com.meokji.api.util.Times;
 
 @Service
 public class FreePostServiceImpl implements FreePostService {
@@ -37,27 +34,27 @@ public class FreePostServiceImpl implements FreePostService {
     // ===================== 글 =====================
 
     @Override
-    public Page<FreePostListVO> getList(String keyword, int page, int size) {
+    public Page<FreePostVO> getList(String keyword, int page, int size) {
         // offset 과 total_pages 계산은 Paging 이 한다 (common/Paging.java)
         Paging paging = new Paging(page, size);
         paging.setTotal(freePostDAO.count(keyword));
 
-        List<FreePostListVO> items = freePostDAO.findPage(keyword, paging.getOffset(), paging.getSize());
+        List<FreePostVO> items = freePostDAO.findPage(keyword, paging.getOffset(), paging.getSize());
 
-        Page<FreePostListVO> result = new Page<>();
+        Page<FreePostVO> result = new Page<>();
         result.fill(paging, items);
         return result;
     }
 
     @Override
-    public FreePostDetailVO getDetail(UserVO loginUser, Long postId) {
+    public FreePostVO getDetail(UserVO loginUser, Long postId) {
         FreePostVO post = findAlivePost(postId);
-        return toDetail(post, loginUser);
+        return fillDetail(post, loginUser);
     }
 
     @Override
     @Transactional
-    public FreePostDetailVO add(UserVO loginUser, FreePostVO request) {
+    public FreePostVO add(UserVO loginUser, FreePostVO request) {
         FreePostVO post = new FreePostVO();
         post.setUserId(loginUser.getId()); // 글쓴이는 토큰에서. 본문으로 받으면 남의 이름으로 쓸 수 있다
         post.setTitle(request.getTitle().trim());
@@ -66,12 +63,12 @@ public class FreePostServiceImpl implements FreePostService {
         freePostDAO.insert(post);
 
         // 방금 넣은 행을 다시 읽는다. 닉네임 · 작성 시각은 DB 와 JOIN 이 채우는 값이다
-        return toDetail(findAlivePost(post.getId()), loginUser);
+        return fillDetail(findAlivePost(post.getId()), loginUser);
     }
 
     @Override
     @Transactional
-    public FreePostDetailVO update(UserVO loginUser, Long postId, FreePostVO request) {
+    public FreePostVO update(UserVO loginUser, Long postId, FreePostVO request) {
         FreePostVO post = findAlivePost(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
@@ -79,7 +76,7 @@ public class FreePostServiceImpl implements FreePostService {
         post.setContent(request.getContent());
         freePostDAO.update(post);
 
-        return toDetail(findAlivePost(postId), loginUser);
+        return fillDetail(findAlivePost(postId), loginUser);
     }
 
     @Override
@@ -178,7 +175,7 @@ public class FreePostServiceImpl implements FreePostService {
         FreePostVO post = findAlivePost(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
-        if (!post.hasFile()) {
+        if (!post.getHasFile()) {
             throw ApiException.notFound("붙어 있는 사진이 없습니다.");
         }
 
@@ -190,7 +187,7 @@ public class FreePostServiceImpl implements FreePostService {
     public FreePostVO getFileOwner(Long postId) {
         FreePostVO post = findAlivePost(postId);
 
-        if (!post.hasFile()) {
+        if (!post.getHasFile()) {
             throw ApiException.notFound("붙어 있는 사진이 없습니다.");
         }
         return post;
@@ -232,30 +229,39 @@ public class FreePostServiceImpl implements FreePostService {
         }
     }
 
-    /** 표 한 행 + 댓글 → 화면으로 나갈 상세 모양 */
-    private FreePostDetailVO toDetail(FreePostVO post, UserVO loginUser) {
+    /**
+     * 상세에만 필요한 칸을 글에 채워 넣는다.
+     *
+     * 목록 SQL 은 이 칸들을 안 가져오므로 목록에서는 null 로 남는다 — 댓글 ·
+     * 첨부 · 내 글 여부는 상세를 열 때만 있으면 되는 값이다.
+     *
+     * 새 VO 로 옮겨 담지 않고 받은 글에 그대로 채운다. 칸이 같은 클래스라
+     * 옮겨 담을 이유가 없고, 옮기다 한 칸을 빠뜨리는 실수도 안 난다.
+     */
+    private FreePostVO fillDetail(FreePostVO post, UserVO loginUser) {
         List<FreePostCommentVO> comments = freeCommentDAO.findByPost(post.getId());
+        if (comments == null) {
+            comments = new ArrayList<FreePostCommentVO>();
+        }
+
         for (FreePostCommentVO comment : comments) {
             comment.setIsMine(isMine(loginUser, comment.getUserId()));
         }
 
-        FreePostDetailVO detail = new FreePostDetailVO();
-        detail.setId(post.getId());
-        detail.setTitle(post.getTitle());
-        detail.setContent(post.getContent());
-        detail.setNickname(post.getNickname());
-        detail.setViewCount(post.getViewCount() == null ? 0 : post.getViewCount());
-        detail.setCreatedAt(post.createdAtText());
-        detail.setUpdatedAt(Times.toText(post.getUpdatedAt()));
-        detail.setFile(toFile(post));
-        detail.setIsMine(isMine(loginUser, post.getUserId()));
-        detail.setComments(comments == null ? new ArrayList<FreePostCommentVO>() : comments);
-        return detail;
+        post.setComments(comments);
+        post.setCommentCount(comments.size());
+        post.setFile(toFile(post));
+        post.setIsMine(isMine(loginUser, post.getUserId()));
+
+        if (post.getViewCount() == null) {
+            post.setViewCount(0);
+        }
+        return post;
     }
 
     /** 표 한 행의 FILE_* 칸 → 화면으로 나갈 첨부 모양. 첨부가 없으면 null */
     private FreeFileVO toFile(FreePostVO post) {
-        if (!post.hasFile()) {
+        if (!post.getHasFile()) {
             return null;
         }
 

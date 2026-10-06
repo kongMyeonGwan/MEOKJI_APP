@@ -252,6 +252,24 @@ DTO 를 없애면서 **`RecipeReviewVO` · `ReviewCommentVO` · `NoticeVO` 가
 칸은 화면이 아무리 보내도 null 로 남는다. `RecipeReviewVO` 에는 아직 하나도
 없으니, 후기 쪽은 특히 조심해야 한다.
 
+**받을 때만 막고 싶은 칸은 `@JsonIgnore` 가 아니다.** 닉네임 · 조회수 ·
+댓글 수처럼 화면이 **봐야 하지만 정할 수는 없는** 칸은 `@JsonIgnore` 를
+붙이면 응답에서도 사라진다. 이때는 이렇게 쓴다.
+
+```java
+@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+private Integer viewCount;        // 받을 때 무시, 보낼 때는 나간다
+```
+
+| 쓸 것 | 언제 |
+|---|---|
+| `@JsonIgnore` | 양쪽 다 막는다 — 글쓴이 id, 파일의 서버 경로 · UUID 이름, `useYn` |
+| `READ_ONLY` | 받을 때만 막는다 — 닉네임, 조회수, 댓글 수, 내 글 여부 |
+
+본보기는 `free/vo/FreePostVO.java` 다. 목록 · 상세 응답까지 그 VO 하나로
+겸하고 있어서(앞머리의 "VO 하나가 DB 한 행 · 요청 · 응답을 겸한다"),
+`ReviewListVO` · `ReviewDetailVO` 를 따로 둘지 합칠지 정할 때 같이 보면 된다.
+
 **`request` 를 통째로 DAO 에 넘기면 안 된다.** 쓸 칸만 골라 새 VO 에 옮겨
 담는다 — `BanServiceImpl.add()` 와 `HistoryServiceImpl.add()` 가 그렇게 한다.
 

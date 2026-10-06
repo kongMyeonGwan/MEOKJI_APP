@@ -38,22 +38,32 @@
       보내면 글이 길어질수록 응답이 통째로 무거워지는데, 화면은 두 줄만 쓴다.
       (CLOB 을 그냥 자를 수 없어서 오라클 함수를 쓴다)
 
+      상세와 같은 FreePostVO 에 담지만 고르는 칸이 다르다. 여기서 안 고른
+      칸(comments · file · is_mine)은 null 로 남고 화면도 쓰지 않는다.
+
+      created_at 을 TO_CHAR 로 바꾸지 않는다. VO 의 칸이 LocalDateTime 이라
+      문자열을 담으려 하면 매핑에서 터진다. 응답용 문자열로 바꾸는 일은
+      FreePostVO.getCreatedAtText() 가 한다.
+
+      file_yn 을 그대로 가져온다. 화면이 읽는 has_file 은 그 값을 보고
+      FreePostVO.getHasFile() 이 만든다.
+
       댓글 수는 스칼라 서브쿼리로 센다. 컬럼으로 들고 있으면 댓글을 지웠을 때
       같이 줄이는 것을 잊어 조용히 어긋난다.
     -->
-    <select id="findPage" resultType="com.meokji.api.free.vo.FreePostListVO">
+    <select id="findPage" resultType="com.meokji.api.free.vo.FreePostVO">
         SELECT p.id,
                p.title,
                DBMS_LOB.SUBSTR(p.content, 200, 1) AS content,
                u.nickname,
                p.view_count,
+               p.created_at,
+               p.file_yn,
                (SELECT COUNT(c.id)
                   FROM post_comments c
                  WHERE c.board_type = 'F'
                    AND c.post_id = p.id
-                   AND c.use_yn = 'Y')          AS comment_count,
-               TO_CHAR(p.created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS created_at,
-               CASE WHEN p.file_yn = 'Y' THEN 1 ELSE 0 END         AS has_file
+                   AND c.use_yn = 'Y')          AS comment_count
           FROM free_posts p
           JOIN users u ON u.id = p.user_id
         <include refid="searchWhere"/>

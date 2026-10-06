@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import com.meokji.api.free.vo.FreePostListVO;
 import com.meokji.api.free.vo.FreePostVO;
 
 /**
@@ -25,8 +24,13 @@ public interface FreePostDAO {
      */
     int count(@Param("keyword") String keyword);
 
-    /** 목록 한 페이지. 최신순. 본문은 앞 200자만 잘라서 가져온다 */
-    List<FreePostListVO> findPage(
+    /**
+     * 목록 한 페이지. 최신순. 본문은 앞 200자만 잘라서 가져온다.
+     *
+     * 상세와 같은 FreePostVO 를 쓰되 고르는 칸이 다르다 — 댓글 · 첨부는
+     * 안 담는다. 목록에 없어도 되는 값이라 XML 의 SELECT 에서 뺐다.
+     */
+    List<FreePostVO> findPage(
             @Param("keyword") String keyword,
             @Param("offset") int offset,
             @Param("size") int size);

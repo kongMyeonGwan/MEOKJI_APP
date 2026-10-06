@@ -28,8 +28,6 @@ import com.meokji.api.common.Paging;
 import com.meokji.api.free.service.FreePostService;
 import com.meokji.api.free.vo.FreeFileVO;
 import com.meokji.api.free.vo.FreePostCommentVO;
-import com.meokji.api.free.vo.FreePostDetailVO;
-import com.meokji.api.free.vo.FreePostListVO;
 import com.meokji.api.free.vo.FreePostVO;
 import com.meokji.api.user.vo.UserVO;
 import com.meokji.api.util.FileStore;
@@ -65,7 +63,7 @@ public class FreePostController {
 
     // 목록  GET /api/free-posts?keyword=두부&page=1&size=20
     @GetMapping
-    public Page<FreePostListVO> getList(
+    public Page<FreePostVO> getList(
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size) {
@@ -75,7 +73,7 @@ public class FreePostController {
     // 상세  GET /api/free-posts/3
     // 로그인했으면 "내 글인지" 도 알려준다 (수정 · 삭제 버튼을 보일지 판단용)
     @GetMapping("/{postId}")
-    public FreePostDetailVO getDetail(
+    public FreePostVO getDetail(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId) {
         UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
@@ -85,7 +83,7 @@ public class FreePostController {
     // 글쓰기  POST /api/free-posts
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public FreePostDetailVO add(
+    public FreePostVO add(
             @RequestHeader(value = "Authorization", required = false) String token,
             @Valid @RequestBody FreePostVO request) {
         UserVO loginUser = authService.getLoginUser(token);
@@ -94,7 +92,7 @@ public class FreePostController {
 
     // 글 수정  PUT /api/free-posts/3
     @PutMapping("/{postId}")
-    public FreePostDetailVO update(
+    public FreePostVO update(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
             @Valid @RequestBody FreePostVO request) {
