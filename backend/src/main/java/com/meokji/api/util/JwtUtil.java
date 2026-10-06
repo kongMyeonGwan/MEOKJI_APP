@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -90,9 +91,32 @@ public class JwtUtil {
         return createAccessToken(userId);
     }
 
-    /** Refresh Token 만들기 (14일). Access Token 을 새로 받아올 때만 쓴다. */
+    /**
+     * Refresh Token 만들기 (14일). Access Token 을 새로 받아올 때만 쓴다.
+     *
+     * <h3>일련번호(jti)를 넣는 이유</h3>
+     *
+     * JWT 는 내용이 같으면 글자도 같다. Refresh Token 에 들어가는 건 회원 번호 ·
+     * 종류 · 발급 시각 · 만료 시각뿐인데, 시각이 <b>초 단위</b>라 같은 초에 두 번
+     * 만들면 완전히 똑같은 토큰이 나온다.
+     *
+     * 그러면 재발급 때 토큰을 새로 갈아끼우는 일(회전)이 그 구간에서 아무 일도 안 한
+     * 셈이 된다. 훔친 토큰이 바로 못 쓰게 되는 것이 회전의 전부인데, 새 토큰이 옛
+     * 토큰과 같은 글자면 옛 토큰도 그대로 통과한다.
+     *
+     * 그래서 매번 다른 무작위 값을 하나 넣어 토큰이 반드시 달라지게 한다.
+     * Access Token 에는 넣지 않는다 - 그쪽은 회전시키지 않아서 같을 일이 없다.
+     */
     public String createRefreshToken(Long userId) {
-        return createToken(userId, TYPE_REFRESH, getRefreshExpiresInSeconds());
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim(CLAIM_TYPE, TYPE_REFRESH)
+                .id(UUID.randomUUID().toString()) // 매번 다른 일련번호
+                .issuedAt(new Date())
+                .expiration(new Date(
+                        System.currentTimeMillis() + getRefreshExpiresInSeconds() * 1000))
+                .signWith(getKey())
+                .compact();
     }
 
     // 두 토큰이 똑같이 거치는 부분. 다른 건 type 과 유효 시간뿐이다.
