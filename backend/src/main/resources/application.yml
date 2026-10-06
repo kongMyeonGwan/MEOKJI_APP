@@ -4,7 +4,8 @@
 # application-local.yml.example 을 application-local.yml 로 복사해서 쓴다
 # (그 파일은 .gitignore 에 있어 커밋되지 않는다).
 #
-# ${DB_PASSWORD} 처럼 적힌 곳은 환경변수 값을 쓴다. ${APP_ENV:local} 은 "없으면 local" 이라는 뜻이다.
+# ${DB_PASSWORD} 처럼 적힌 곳은 환경변수 값을 쓴다.
+# ${APP_ENV:local} 은 "없으면 local" 이라는 뜻이다.
 
 spring:
   application:
@@ -16,145 +17,242 @@ spring:
 
   # 메일 서버. app.mail.provider 가 smtp 일 때만 쓰인다.
   #
-  # host 를 비워두면 스프링이 JavaMailSender 빈을 아예 만들지 않는다. 그래도 서버는
-  # 정상으로 뜬다 - ResetCodeMailer 가 "있으면 쓴다" 로 받고 있어서, 설정이 없으면
-  # 콘솔 출력으로 되돌아간다.
+  # host 를 비워두면 스프링이 JavaMailSender 빈을 아예 만들지 않는다.
+  # 그래도 서버는 정상으로 뜬다.
+  # ResetCodeMailer 가 "있으면 쓴다" 로 받고 있어서,
+  # 설정이 없으면 콘솔 출력으로 되돌아간다.
   mail:
     host: ${SMTP_HOST:}
     port: ${SMTP_PORT:587}
     username: ${SMTP_USER:}
     password: ${SMTP_PASSWORD:}
+
     properties:
       mail:
         smtp:
           auth: true
-          # 587 은 평문으로 붙은 뒤 STARTTLS 로 올린다. 465 를 쓸 때는 이 줄 대신
-          # mail.smtp.ssl.enable 을 켠다.
+
+          # 587 은 평문으로 붙은 뒤 STARTTLS 로 올린다.
+          # 465 를 쓸 때는 이 줄 대신 mail.smtp.ssl.enable 을 켠다.
           starttls:
             enable: true
+
           timeout: 10000
           connectiontimeout: 10000
           writetimeout: 10000
 
   datasource:
     driver-class-name: oracle.jdbc.OracleDriver
-    # 서비스 이름 방식이다. SID 방식(@host:port:SID)으로 적으면 ORA-12505 가 난다.
+
+    # 서비스 이름 방식이다.
+    # SID 방식(@host:port:SID)으로 적으면 ORA-12505 가 난다.
     url: jdbc:oracle:thin:@//${DB_HOST:localhost}:${DB_PORT:1521}/${DB_SERVICE:XEPDB1}
+
     username: ${DB_USER:meokji_app}
     password: ${DB_PASSWORD}
+
     hikari:
-      # DB 연결을 최대 5개까지만 만든다 (Oracle XE 는 동시 연결 수에 제한이 있다).
+      # DB 연결을 최대 5개까지만 만든다.
+      # Oracle XE 는 동시 연결 수에 제한이 있다.
       maximum-pool-size: 5
+
       connection-timeout: 10000
-      # DB 에는 UTC 만 저장한다. 커넥션마다 세션 시간대를 UTC 로 못박는다.
+
+      # DB 에는 UTC 만 저장한다.
+      # 커넥션마다 세션 시간대를 UTC 로 못박는다.
       #
-      # 이걸 빼면 오라클 JDBC 가 JVM 기본 시간대(한국)를 세션 시간대로 잡는다.
-      # DDL 의 DEFAULT SYS_EXTRACT_UTC(SYSTIMESTAMP) 는 UTC 를 넣는데 애플리케이션이
-      # 넣는 값은 KST 가 되어, 같은 표 안에서 9시간 어긋난 행이 섞인다.
-      # 에러가 나지 않아서 알아채기 어렵다 (docs/PROGRESS.md 의 오라클 함정 2번).
+      # 이걸 빼면 오라클 JDBC 가 JVM 기본 시간대(한국)를
+      # 세션 시간대로 잡는다.
+      #
+      # DDL 의 DEFAULT SYS_EXTRACT_UTC(SYSTIMESTAMP) 는 UTC 를 넣는데
+      # 애플리케이션이 넣는 값은 KST 가 되어,
+      # 같은 표 안에서 9시간 어긋난 행이 섞일 수 있다.
       connection-init-sql: ALTER SESSION SET TIME_ZONE='+00:00'
+
+
+  # ============================================================
+  # ★ JPA 설정
+  # ============================================================
+  jpa:
+
+    # 기존 Oracle 테이블 구조를 Hibernate가 자동으로 생성/수정하지 않는다.
+    # 현재 프로젝트는 MyBatis로 이미 DB가 만들어져 있으므로 none 권장.
+    hibernate:
+      ddl-auto: none
+
+    # Controller까지 JPA 영속성 컨텍스트를 유지하지 않는다.
+    # Service 계층에서 필요한 Entity 조회/변환을 끝내는 구조로 사용한다.
+    open-in-view: false
+
 
   servlet:
     multipart:
-      # 자유게시판 사진 업로드. 한 장 5MB 가 한도라 요청 전체도 그 언저리면 된다.
+
+      # 자유게시판 사진 업로드.
+      # 한 장 5MB 가 한도라 요청 전체도 그 언저리면 된다.
       # 이 값을 넘기면 스프링이 컨트롤러에 들어가기 전에 끊는다.
       max-file-size: 5MB
       max-request-size: 6MB
 
-  jackson:
-    # 프론트가 food_name · cook_time_minutes · has_file 처럼 snake_case 로 읽는다.
-    # 자바 필드는 카멜(foodName)로 쓰고 나갈 때만 snake 로 바꾼다.
-    #
-    # 이 한 줄을 빼면 화면이 빈 값으로 뜨면서 에러도 안 난다. React 가 없는
-    # 필드를 읽어 undefined 를 받고 그대로 그리기 때문이다.
-    property-naming-strategy: SNAKE_CASE
-    # null 인 필드도 응답에 그대로 넣는다. (예: "gender": null)
-    default-property-inclusion: always
-    # 시각을 숫자가 아니라 2026-09-11T21:29:42.955Z 로 쓰는 설정(WRITE_DATES_AS_TIMESTAMPS)은
-    # 스프링부트가 이미 꺼둔다. Jackson 3 에서는 이름이 DateTimeFeature 로 옮겨가서
-    # spring.jackson.serialization 아래에 적으면 서버가 뜨지 않는다.
 
+  jackson:
+
+    # 프론트가 food_name · cook_time_minutes · has_file
+    # 처럼 snake_case 로 읽는다.
+    #
+    # 자바 필드는 카멜(foodName)로 쓰고
+    # 나갈 때만 snake_case 로 바꾼다.
+    #
+    # 이 한 줄을 빼면 화면이 빈 값으로 뜨면서
+    # 에러도 안 날 수 있다.
+    property-naming-strategy: SNAKE_CASE
+
+    # null 인 필드도 응답에 그대로 넣는다.
+    # 예: "gender": null
+    default-property-inclusion: always
+
+
+# ============================================================
+# MyBatis 설정
+# ============================================================
 mybatis:
-  # DB 는 snake_case(FOOD_NAME), 자바는 카멜(foodName). 이 설정이 그 사이를 잇는다.
+
+  # DB 는 snake_case(FOOD_NAME),
+  # 자바는 카멜(foodName).
+  # 이 설정이 그 사이를 잇는다.
   configuration:
     map-underscore-to-camel-case: true
-    # null 값을 DB 에 넣을 때 쓸 타입. 오라클은 기본값(OTHER)을 받지 않아서 NULL 로 바꾼다.
-    # 따옴표를 꼭 붙인다. YAML 은 따옴표 없는 NULL 을 "값 없음" 으로 읽어서 설정이 무시된다.
+
+    # null 값을 DB 에 넣을 때 쓸 타입.
+    # Oracle 은 기본값(OTHER)을 받지 않아서 NULL 로 바꾼다.
+    #
+    # 따옴표를 꼭 붙인다.
     jdbc-type-for-null: "NULL"
+
   mapper-locations: classpath:mapper/**/*.xml
+
   type-aliases-package: com.meokji.api
 
+
+# ============================================================
+# 서버
+# ============================================================
 server:
   port: 8090
-  # 스프링 기본 에러 화면을 끈다. 에러는 ApiExceptionHandler 가 {"detail": ...} 로 보낸다.
+
+  # 스프링 기본 에러 화면을 끈다.
+  # 에러는 ApiExceptionHandler 가 {"detail": ...} 로 보낸다.
   error:
     whitelabel:
       enabled: false
 
+
+# ============================================================
+# 애플리케이션 자체 설정
+# ============================================================
 app:
   name: 뭐먹지? API
   version: 0.1.0
+
   env: ${APP_ENV:local}
-  # 쉼표로 여러 개. 5173 을 다른 프로젝트가 쓰고 있으면 프론트를 5174 로 띄운다
+
   cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:5174}
 
-  # 올린 사진을 저장할 폴더. 서버를 켠 자리(backend/) 기준의 상대 경로다.
-  # 날마다 늘어나는 파일이라 resources 가 아니라 바깥에 둔다 (data/bargains.json 과 같은 자리).
+
+  # 올린 사진을 저장할 폴더.
+  # 서버를 켠 자리(backend/) 기준의 상대 경로다.
+  #
+  # 날마다 늘어나는 파일이라 resources 가 아니라
+  # 바깥에 둔다.
   upload-dir: ${UPLOAD_DIR:data/uploads}
+
 
   jwt:
     secret-key: ${JWT_SECRET_KEY}
-    # 로그인 토큰 유효 시간(분). 지나면 다시 로그인해야 한다.
+
+    # 로그인 토큰 유효 시간(분).
+    # 지나면 다시 로그인해야 한다.
     expire-minutes: ${JWT_EXPIRE_MINUTES:30}
 
+
   weather:
-    # mock  : 언제 불러도 28도 맑음. 키가 없어도 화면을 볼 수 있다
-    # openweather : 실제 날씨
+
+    # mock
+    #   언제 불러도 28도 맑음.
+    #   키가 없어도 화면을 볼 수 있다.
+    #
+    # openweather
+    #   실제 날씨
     provider: ${WEATHER_PROVIDER:mock}
+
     api-key: ${OPENWEATHER_API_KEY:}
 
-    # 좌표를 안 보냈고 회원 주소도 없을 때 쓸 자리 (서울시청 근처).
+    # 좌표를 안 보냈고 회원 주소도 없을 때 쓸 자리
+    # 서울시청 근처
     default-lat: ${DEFAULT_WEATHER_LAT:37.5711}
     default-lon: ${DEFAULT_WEATHER_LON:126.9885}
 
+
   price:
-    # 지금 쓸 수 있는 값은 kamis 하나뿐이다. 값을 지어내던 mock 은 없앴다 -
-    # 진짜 조사가격과 화면에서 구분되지 않은 채 합계까지 계산됐다.
+
+    # 지금 쓸 수 있는 값은 kamis 하나뿐이다.
+    #
+    # 값을 지어내던 mock 은 없앴다.
+    # 진짜 조사가격과 화면에서 구분되지 않은 채
+    # 합계까지 계산됐기 때문이다.
     providers: ${PRICE_PROVIDERS:kamis}
 
-    # 공공데이터포털 마이페이지 > 일반 인증키의 Decoding 값.
+    # 공공데이터포털 마이페이지 >
+    # 일반 인증키의 Decoding 값.
+    #
     # Encoding 값을 넣으면 인증에 실패한다.
     service-key: ${DATA_GO_KR_SERVICE_KEY:}
 
-    # 서버가 뜰 때 떨이 재료(품목 101개)를 미리 훑어둘지.
+    # 서버가 뜰 때 떨이 재료(품목 101개)를
+    # 미리 훑어둘지 여부.
     #
-    # 기본이 꺼짐인 것은 테스트 때문이다 - 켜두면 gradlew test 를 돌릴 때마다
-    # 바깥 API 를 101번 두드린다(build.gradle 의 test 블록에서 끄고 있다).
-    # bootRun 으로 띄울 때는 켜두는 쪽이 낫다. 첫 화면에서 칩이 바로 보인다.
+    # 테스트에서는 외부 API를 계속 호출하지 않도록
+    # 기본값을 false 로 둔다.
     warm-bargains: ${WARM_BARGAINS:false}
 
-    # 훑은 결과를 남겨둘 파일. 서버를 다시 켤 때마다 101개를 훑지 않기 위함이다.
-    # 날마다 바뀌는 값이라 resources/data 가 아니라 바깥에 둔다.
+    # 훑은 결과를 남겨둘 파일.
+    # 서버를 다시 켤 때마다 101개를 훑지 않기 위함이다.
     bargain-file: ${BARGAIN_FILE:data/bargains.json}
 
-  # 로그인을 이 횟수만큼 틀리면 계정을 잠근다 (STEP 7).
+
+  # 로그인을 이 횟수만큼 틀리면 계정을 잠근다.
   max-login-fail-count: ${MAX_LOGIN_FAIL_COUNT:20}
 
-  # 비밀번호 재설정 인증번호. 유효 시간(분) · 틀릴 수 있는 횟수 · 다시 보내기까지 기다리는 시간(초)
+
+  # 비밀번호 재설정 인증번호
   otp:
     expire-minutes: ${OTP_EXPIRE_MINUTES:5}
     max-attempt: ${OTP_MAX_ATTEMPT:5}
     resend-cooldown-seconds: ${OTP_RESEND_COOLDOWN_SECONDS:60}
 
+
   mail:
-    # mock : 인증번호를 콘솔에 찍는다. 메일 서버 없이 재설정 화면을 끝까지 볼 수 있다
-    # smtp : 진짜로 보낸다. 아래 spring.mail.* 을 채워야 한다
+
+    # mock
+    #   인증번호를 콘솔에 찍는다.
+    #   메일 서버 없이 재설정 화면을 끝까지 볼 수 있다.
+    #
+    # smtp
+    #   진짜로 보낸다.
+    #   spring.mail.* 을 채워야 한다.
     provider: ${EMAIL_PROVIDER:mock}
+
     # 비워두면 spring.mail.username 이 발신자가 된다.
     from: ${SMTP_FROM:}
 
+
+# ============================================================
+# 로그
+# ============================================================
 logging:
   level:
     com.meokji.api: DEBUG
-    # 매퍼가 실제로 날린 SQL 을 보고 싶을 때 TRACE 로 올린다.
+
+    # 매퍼가 실제로 날린 SQL 을 보고 싶을 때
+    # TRACE 로 올린다.
     org.mybatis: INFO

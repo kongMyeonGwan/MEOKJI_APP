@@ -44,6 +44,11 @@ dependencies {
 	// SQL 을 직접 쓰는 쪽이 맞다.
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
 
+	// JPA. 매퍼 XML 을 안 쓰는 쪽을 따로 만들 때 쓴다.
+	// 지금 표는 전부 MyBatis 로 읽고 쓰므로 ddl-auto 는 none 이다
+	// (application.yml 의 spring.jpa).
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
 	// Oracle 21c XE. Thin 드라이버라 Instant Client 를 따로 깔지 않는다.
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc17'
 
