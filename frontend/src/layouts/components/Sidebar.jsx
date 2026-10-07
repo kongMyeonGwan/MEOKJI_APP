@@ -36,16 +36,16 @@ export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify
         </NavLink>
 
         {/* 예산 맞춤 찾기 */}
-        <NavLink to="/budget" className={linkClass} onClick={onNavigate}>
+        {/* <NavLink to="/budget" className={linkClass} onClick={onNavigate}>
           <Icon name="wallet" className="sidebar__icon" />
           <span className="sidebar__label">예산 맞춤 찾기</span>
-        </NavLink>
+        </NavLink> */}
 
         {/* 레시피 검색 */}
-        <NavLink to="/search" className={linkClass} onClick={onNavigate}>
+        {/* <NavLink to="/search" className={linkClass} onClick={onNavigate}>
           <Icon name="search" className="sidebar__icon" />
           <span className="sidebar__label">레시피 검색</span>
-        </NavLink>
+        </NavLink> */}
 
         {/* 로그인했을 때만 보이는 메뉴 */}
         {user && (
@@ -69,6 +69,11 @@ export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify
         <NavLink to="/liked" className={linkClass} onClick={onNavigate}>
           <Icon name="heart" className="sidebar__icon" />
           <span className="sidebar__label">찜한 레시피</span>
+        </NavLink>
+
+        <NavLink to="/reviews" className={linkClass} onClick={onNavigate}>
+          <Icon name="search" className="sidebar__icon" />
+          <span className="sidebar__label">레시피 추천</span>
         </NavLink>
 
         {/* 커뮤니티 */}
