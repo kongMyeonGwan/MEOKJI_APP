@@ -80,7 +80,7 @@ class RecipeFixtureTest {
         assertThat(actual.get("estimated_cost")).isEqualTo(want.get("estimated_cost"));
         assertThat(actual.get("category")).isEqualTo(want.get("category"));
         assertThat(actual.get("art")).isEqualTo(want.get("art"));
-        assertThat(actual.get("image_url").isNull()).isTrue();
+        assertThat(actual.get("image_url")).isEqualTo(want.get("image_url"));
 
         // 조리 정보와 순서
         assertThat(actual.get("recipe_json")).isEqualTo(want.get("recipe_json"));

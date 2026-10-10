@@ -123,6 +123,14 @@ export default function GamePage() {
           {today ? (
             <div className="gpage__result-on">
               <p className="muted gpage__result-from">{today.game_title}에서 고른 메뉴</p>
+
+              {/* 뽑힌 요리 사진. 룰렛은 요리가 아니라 분류(한식)를 뽑아서 사진을 안 그린다 */}
+              {today.game_key !== 'roulette' && (
+                <span className="gpage__result-thumb">
+                  <FoodThumb item={today} size="md" />
+                </span>
+              )}
+
               <strong className="gpage__result-food">{today.food_name}</strong>
               <Link to={today.link} className="btn btn--sm gpage__result-go">
                 레시피 보기 →

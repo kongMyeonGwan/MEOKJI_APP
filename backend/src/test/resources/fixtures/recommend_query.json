@@ -21,7 +21,7 @@
           "한식"
         ],
         "art": "stew",
-        "image_url": null
+        "image_url": "/images/food/순두부찌개.png"
       },
       {
         "food_name": "황태해장국",
@@ -36,7 +36,7 @@
           "국탕"
         ],
         "art": "soup",
-        "image_url": null
+        "image_url": "/images/food/황태해장국.png"
       },
       {
         "food_name": "꽁치김치찌개",
@@ -51,7 +51,7 @@
           "한식"
         ],
         "art": "stew",
-        "image_url": null
+        "image_url": "/images/food/꽁치김치찌개.png"
       },
       {
         "food_name": "명태수육",
@@ -67,7 +67,7 @@
           "한식"
         ],
         "art": "stew",
-        "image_url": null
+        "image_url": "/images/food/명태수육.png"
       },
       {
         "food_name": "오징어국",
@@ -82,7 +82,7 @@
           "국탕"
         ],
         "art": "soup",
-        "image_url": null
+        "image_url": "/images/food/오징어국.png"
       }
     ],
     "weather": null,

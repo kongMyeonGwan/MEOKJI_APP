@@ -21,7 +21,7 @@
           "한식"
         ],
         "art": "pancake",
-        "image_url": null
+        "image_url": "/images/food/감자전.png"
       },
       {
         "food_name": "야채튀김",
@@ -35,7 +35,7 @@
           "분식"
         ],
         "art": "pancake",
-        "image_url": null
+        "image_url": "/images/food/야채튀김.png"
       },
       {
         "food_name": "버섯전",
@@ -50,7 +50,7 @@
           "한식"
         ],
         "art": "pancake",
-        "image_url": null
+        "image_url": "/images/food/버섯전.png"
       },
       {
         "food_name": "부추전",

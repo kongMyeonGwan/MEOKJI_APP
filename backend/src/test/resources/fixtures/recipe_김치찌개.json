@@ -89,7 +89,7 @@
     "estimated_cost": 6900,
     "category": "한식",
     "art": "stew",
-    "image_url": null,
+    "image_url": "/images/food/김치찌개.png",
     "prices": [
       {
         "name": "돼지고기 300g",

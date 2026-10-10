@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * 추천 후보 한 건.
  *
- * 카탈로그의 한 줄을 화면용으로 바꾼 것이다. art 는 썸네일 그림 이름,
- * imageUrl 은 실제 사진 주소인데 지금은 사진이 없어서 늘 null 이다 -
- * 칸을 남겨둔 이유는 사진이 붙어도 화면을 고치지 않게 하려는 것이다.
+ * 카탈로그의 한 줄을 화면용으로 바꾼 것이다. imageUrl 은 요리 사진 주소로
+ * catalog.json 에 적어둔 "/images/food/김치찌개.png" 같은 값이 그대로 올라온다.
+ * art 는 사진이 없는 요리에 대신 그려줄 썸네일 그림 이름이다.
  */
 @Data
 @NoArgsConstructor

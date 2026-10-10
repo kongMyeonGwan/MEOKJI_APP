@@ -94,7 +94,7 @@
     "estimated_cost": 3100,
     "category": "한식",
     "art": "stew",
-    "image_url": null,
+    "image_url": "/images/food/된장찌개.png",
     "prices": [
       {
         "name": "된장 2큰술",

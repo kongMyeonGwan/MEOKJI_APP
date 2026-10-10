@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
+import FoodThumb from '../../components/common/FoodThumb'
 import Icon from '../../components/common/Icon'
 import Loading from '../../components/common/Loading'
 import RecipeView from '../../components/common/RecipeView'
@@ -169,6 +170,11 @@ export default function RecipePage({ user }) {
       </p>
 
       <section className="card">
+        {/* 요리 사진. public/images/food 에 있는 사진을 쓰고, 없으면 그림이 나온다 */}
+        <div className="recipe-page__photo">
+          <FoodThumb item={recipe} size="lg" />
+        </div>
+
         <header className="recipe-page__head">
           <div>
             <h2 className="recipe-page__name">{recipe.food_name}</h2>

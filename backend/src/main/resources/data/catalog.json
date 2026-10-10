@@ -3,7 +3,7 @@
   {
    "food_name": "김치찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/김치찌개.png",
    "category": "한식",
    "reason": "잘 익은 김치와 돼지고기로 깊고 얼큰하게 끓인 찌개",
    "cook_time_minutes": 25,
@@ -24,7 +24,7 @@
   {
    "food_name": "된장찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/된장찌개.png",
    "category": "한식",
    "reason": "구수한 된장에 애호박과 감자를 넣어 끓인 기본 찌개",
    "cook_time_minutes": 25,
@@ -44,7 +44,7 @@
   {
    "food_name": "순두부찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/순두부찌개.png",
    "category": "한식",
    "reason": "보드라운 순두부에 얼큰한 국물이 배어드는 찌개",
    "cook_time_minutes": 20,
@@ -65,7 +65,7 @@
   {
    "food_name": "동태찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/동태찌개.png",
    "category": "한식",
    "reason": "명태와 무를 넣어 시원하고 칼칼하게 끓인 찌개",
    "cook_time_minutes": 35,
@@ -86,7 +86,7 @@
   {
    "food_name": "부대찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/부대찌개.png",
    "category": "한식",
    "reason": "여러 재료를 한 냄비에 넣어 얼큰하게 끓인 찌개",
    "cook_time_minutes": 30,
@@ -107,7 +107,7 @@
   {
    "food_name": "청국장찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/청국장찌개.png",
    "category": "한식",
    "reason": "구수한 청국장에 애호박을 넣어 진하게 끓인 찌개",
    "cook_time_minutes": 30,
@@ -127,7 +127,7 @@
   {
    "food_name": "소고기전골",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/소고기전골.png",
    "category": "한식",
    "reason": "소고기와 버섯을 국물에 자작하게 끓여 먹는 전골",
    "cook_time_minutes": 40,
@@ -147,7 +147,7 @@
   {
    "food_name": "버섯전골",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/버섯전골.png",
    "category": "한식",
    "reason": "여러 버섯을 넣어 향과 국물이 깊은 전골",
    "cook_time_minutes": 30,
@@ -167,7 +167,7 @@
   {
    "food_name": "해물순두부찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/해물순두부찌개.png",
    "category": "한식",
    "reason": "새우와 바지락을 넣어 시원함이 도는 순두부찌개",
    "cook_time_minutes": 25,
@@ -188,7 +188,7 @@
   {
    "food_name": "꽁치김치찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/꽁치김치찌개.png",
    "category": "한식",
    "reason": "꽁치를 넣어 감칠맛이 진해진 김치찌개",
    "cook_time_minutes": 30,
@@ -209,7 +209,7 @@
   {
    "food_name": "고추장찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/고추장찌개.png",
    "category": "한식",
    "reason": "고추장을 풀어 칼칼하게 끓인 돼지고기 찌개",
    "cook_time_minutes": 25,
@@ -230,7 +230,7 @@
   {
    "food_name": "바지락된장찌개",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/바지락된장찌개.png",
    "category": "한식",
    "reason": "바지락으로 국물을 내 시원한 된장찌개",
    "cook_time_minutes": 25,
@@ -250,7 +250,7 @@
   {
    "food_name": "소고기미역국",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/소고기미역국.png",
    "category": "국탕",
    "reason": "참기름에 볶아 끓여 고소함이 도는 미역국",
    "cook_time_minutes": 40,
@@ -270,7 +270,7 @@
   {
    "food_name": "소고기무국",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/소고기무국.png",
    "category": "국탕",
    "reason": "무를 푹 끓여 시원하고 깊은 맛이 나는 맑은 국",
    "cook_time_minutes": 40,
@@ -290,7 +290,7 @@
   {
    "food_name": "북엇국",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/북엇국.png",
    "category": "국탕",
    "reason": "명태를 우려 뽀얗게 끓인 아침 해장국",
    "cook_time_minutes": 30,
@@ -310,7 +310,7 @@
   {
    "food_name": "황태해장국",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/황태해장국.png",
    "category": "국탕",
    "reason": "황태를 우려 시원하고 칼칼하게 끓인 해장국",
    "cook_time_minutes": 40,
@@ -331,7 +331,7 @@
   {
    "food_name": "육개장",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/육개장.png",
    "category": "국탕",
    "reason": "고춧가루를 넉넉히 풀어 얼큰하게 끓인 소고기국",
    "cook_time_minutes": 60,
@@ -352,7 +352,7 @@
   {
    "food_name": "갈비탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/갈비탕.png",
    "category": "국탕",
    "reason": "소갈비를 오래 끓여 진한 국물이 우러난 탕",
    "cook_time_minutes": 90,
@@ -372,7 +372,7 @@
   {
    "food_name": "닭곰탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/닭곰탕.png",
    "category": "국탕",
    "reason": "닭을 푹 고아 국물까지 진하게 우려낸 보양식",
    "cook_time_minutes": 60,
@@ -392,7 +392,7 @@
   {
    "food_name": "삼계탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/삼계탕.png",
    "category": "국탕",
    "reason": "찹쌀을 채워 넣고 푹 고아낸 여름·겨울 보양식",
    "cook_time_minutes": 70,
@@ -412,7 +412,7 @@
   {
    "food_name": "알탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/알탕.png",
    "category": "국탕",
    "reason": "명태와 무를 넣어 얼큰하게 끓인 겨울 탕",
    "cook_time_minutes": 35,
@@ -433,7 +433,7 @@
   {
    "food_name": "꽃게탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/꽃게탕.png",
    "category": "국탕",
    "reason": "꽃게를 통째로 넣어 시원하고 칼칼하게 끓인 탕",
    "cook_time_minutes": 40,
@@ -454,7 +454,7 @@
   {
    "food_name": "오징어국",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/오징어국.png",
    "category": "국탕",
    "reason": "오징어를 넣어 시원하고 칼칼하게 끓인 국",
    "cook_time_minutes": 25,
@@ -475,7 +475,7 @@
   {
    "food_name": "홍합탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/홍합탕.png",
    "category": "국탕",
    "reason": "홍합만으로 국물을 낸 맑고 시원한 탕",
    "cook_time_minutes": 25,
@@ -495,7 +495,7 @@
   {
    "food_name": "바지락국밥",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/바지락국밥.png",
    "category": "국탕",
    "reason": "바지락을 우려 시원하게 끓여낸 국밥",
    "cook_time_minutes": 30,
@@ -515,7 +515,7 @@
   {
    "food_name": "전복죽",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/전복죽.png",
    "category": "국탕",
    "reason": "전복을 넣고 쌀을 오래 끓여 부드럽게 낸 죽",
    "cook_time_minutes": 45,
@@ -535,7 +535,7 @@
   {
    "food_name": "김치찜",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/김치찜.png",
    "category": "한식",
    "reason": "묵은지와 돼지고기를 오래 쪄내 깊은 맛이 나는 찜",
    "cook_time_minutes": 70,
@@ -555,7 +555,7 @@
   {
    "food_name": "닭볶음탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/닭볶음탕.png",
    "category": "한식",
    "reason": "닭과 감자를 넣어 얼큰하게 끓여낸 한 냄비 요리",
    "cook_time_minutes": 45,
@@ -576,7 +576,7 @@
   {
    "food_name": "갈비찜",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/갈비찜.png",
    "category": "한식",
    "reason": "소갈비를 간장 양념에 오래 조려 부드럽게 낸 찜",
    "cook_time_minutes": 90,
@@ -597,7 +597,7 @@
   {
    "food_name": "해물찜",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/해물찜.png",
    "category": "한식",
    "reason": "여러 해물을 매콤한 양념에 쪄낸 한 접시",
    "cook_time_minutes": 40,
@@ -619,7 +619,7 @@
   {
    "food_name": "감자탕",
    "art": "soup",
-   "image_url": null,
+   "image_url": "/images/food/감자탕.png",
    "category": "국탕",
    "reason": "돼지고기와 감자를 푹 끓여 진하게 우려낸 탕",
    "cook_time_minutes": 70,
@@ -640,7 +640,7 @@
   {
    "food_name": "명태수육",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/명태수육.png",
    "category": "한식",
    "reason": "명태를 미나리와 함께 쪄내 매콤하게 즐기는 수육",
    "cook_time_minutes": 35,
@@ -662,7 +662,7 @@
   {
    "food_name": "김치부침개",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/김치부침개.png",
    "category": "한식",
    "reason": "비 오는 날 가장 먼저 떠오르는 바삭한 부침개",
    "cook_time_minutes": 20,
@@ -683,7 +683,7 @@
   {
    "food_name": "해물파전",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/해물파전.png",
    "category": "한식",
    "reason": "쪽파와 해물을 넉넉히 올려 부친 비 오는 날의 정석",
    "cook_time_minutes": 30,
@@ -704,7 +704,7 @@
   {
    "food_name": "감자전",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/감자전.png",
    "category": "한식",
    "reason": "감자만 갈아 부쳐도 쫀득하게 나오는 소박한 전",
    "cook_time_minutes": 25,
@@ -764,7 +764,7 @@
   {
    "food_name": "동태전",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/동태전.png",
    "category": "한식",
    "reason": "명태살에 계란옷을 입혀 부친 명절 밥상의 전",
    "cook_time_minutes": 35,
@@ -784,7 +784,7 @@
   {
    "food_name": "버섯전",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/버섯전.png",
    "category": "한식",
    "reason": "새송이버섯을 도톰하게 썰어 부친 쫄깃한 전",
    "cook_time_minutes": 20,
@@ -804,7 +804,7 @@
   {
    "food_name": "깻잎전",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/깻잎전.png",
    "category": "한식",
    "reason": "깻잎 향이 은은하게 도는 얇은 전",
    "cook_time_minutes": 25,
@@ -824,7 +824,7 @@
   {
    "food_name": "녹두빈대떡",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/녹두빈대떡.png",
    "category": "한식",
    "reason": "녹두를 갈아 도톰하게 부쳐낸 묵직한 전",
    "cook_time_minutes": 40,
@@ -845,7 +845,7 @@
   {
    "food_name": "육전",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/육전.png",
    "category": "한식",
    "reason": "소고기를 얇게 저며 계란옷을 입혀 부친 전",
    "cook_time_minutes": 30,
@@ -865,7 +865,7 @@
   {
    "food_name": "오징어튀김",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/오징어튀김.png",
    "category": "분식",
    "reason": "겉은 바삭 속은 쫄깃한 비 오는 날의 튀김",
    "cook_time_minutes": 30,
@@ -884,7 +884,7 @@
   {
    "food_name": "새우튀김",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/새우튀김.png",
    "category": "일식",
    "reason": "튀김옷을 얇게 입혀 바삭하게 튀긴 새우",
    "cook_time_minutes": 30,
@@ -903,7 +903,7 @@
   {
    "food_name": "야채튀김",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/야채튀김.png",
    "category": "분식",
    "reason": "고구마와 당근을 채썰어 한 번에 튀겨낸 모듬 튀김",
    "cook_time_minutes": 25,
@@ -922,7 +922,7 @@
   {
    "food_name": "고추튀김",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/고추튀김.png",
    "category": "분식",
    "reason": "고추 속을 채워 튀긴 분식집 단골 메뉴",
    "cook_time_minutes": 30,
@@ -941,7 +941,7 @@
   {
    "food_name": "닭강정",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/닭강정.png",
    "category": "분식",
    "reason": "바삭하게 튀긴 닭에 매콤달콤한 양념을 입힌 간식",
    "cook_time_minutes": 40,
@@ -961,7 +961,7 @@
   {
    "food_name": "동그랑땡",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/동그랑땡.png",
    "category": "한식",
    "reason": "다진 고기와 채소를 동글게 빚어 부친 반찬",
    "cook_time_minutes": 35,
@@ -982,7 +982,7 @@
   {
    "food_name": "제육볶음",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/제육볶음.png",
    "category": "한식",
    "reason": "매콤한 양념에 볶아낸 든든한 국민 반찬",
    "cook_time_minutes": 25,
@@ -1003,7 +1003,7 @@
   {
    "food_name": "오징어볶음",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/오징어볶음.png",
    "category": "한식",
    "reason": "센 불에 매콤하게 볶아낸 쫄깃한 오징어",
    "cook_time_minutes": 25,
@@ -1024,7 +1024,7 @@
   {
    "food_name": "돼지고기두루치기",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/돼지고기두루치기.png",
    "category": "한식",
    "reason": "고기와 배추를 함께 볶아 자작하게 낸 한 접시",
    "cook_time_minutes": 30,
@@ -1045,7 +1045,7 @@
   {
    "food_name": "가지볶음",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/가지볶음.png",
    "category": "한식",
    "reason": "가지를 기름에 볶아 부드럽게 낸 반찬",
    "cook_time_minutes": 20,
@@ -1066,7 +1066,7 @@
   {
    "food_name": "야채볶음",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/야채볶음.png",
    "category": "한식",
    "reason": "피망과 당근을 센 불에 빠르게 볶아낸 반찬",
    "cook_time_minutes": 15,
@@ -1087,7 +1087,7 @@
   {
    "food_name": "잡채",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/잡채.png",
    "category": "한식",
    "reason": "당면과 채소를 각각 볶아 무쳐낸 잔칫상 메뉴",
    "cook_time_minutes": 45,
@@ -1108,7 +1108,7 @@
   {
    "food_name": "멸치볶음",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/멸치볶음.png",
    "category": "한식",
    "reason": "멸치와 꽈리고추를 간장에 볶아낸 밑반찬",
    "cook_time_minutes": 15,
@@ -1129,7 +1129,7 @@
   {
    "food_name": "새우볶음밥",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/새우볶음밥.png",
    "category": "중식",
    "reason": "센 불에 빠르게 볶아 고슬고슬하게 낸 볶음밥",
    "cook_time_minutes": 20,
@@ -1150,7 +1150,7 @@
   {
    "food_name": "소불고기",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/소불고기.png",
    "category": "한식",
    "reason": "달콤짭짤한 양념에 재워 구운 소고기 요리",
    "cook_time_minutes": 30,
@@ -1171,7 +1171,7 @@
   {
    "food_name": "삼겹살구이",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/삼겹살구이.png",
    "category": "한식",
    "reason": "두툼하게 썰어 노릇하게 구워 상추에 싸 먹는 한 끼",
    "cook_time_minutes": 25,
@@ -1192,7 +1192,7 @@
   {
    "food_name": "목살구이",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/목살구이.png",
    "category": "한식",
    "reason": "기름이 적어 담백하게 즐기는 돼지고기 구이",
    "cook_time_minutes": 25,
@@ -1213,7 +1213,7 @@
   {
    "food_name": "돼지갈비구이",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/돼지갈비구이.png",
    "category": "한식",
    "reason": "양념에 재워 구워 달콤짭짤한 돼지갈비",
    "cook_time_minutes": 35,
@@ -1234,7 +1234,7 @@
   {
    "food_name": "닭갈비",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/닭갈비.png",
    "category": "한식",
    "reason": "양배추와 함께 볶아 매콤하게 즐기는 한 판",
    "cook_time_minutes": 35,
@@ -1255,7 +1255,7 @@
   {
    "food_name": "고등어구이",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/고등어구이.png",
    "category": "한식",
    "reason": "소금만 뿌려 구워도 기름진 맛이 도는 생선구이",
    "cook_time_minutes": 20,
@@ -1276,7 +1276,7 @@
   {
    "food_name": "갈치구이",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/갈치구이.png",
    "category": "한식",
    "reason": "두툼한 갈치를 소금 간만 해서 구운 생선구이",
    "cook_time_minutes": 20,
@@ -1296,7 +1296,7 @@
   {
    "food_name": "굴비구이",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/굴비구이.png",
    "category": "한식",
    "reason": "꾸덕하게 말린 굴비를 노릇하게 구워낸 한 마리",
    "cook_time_minutes": 20,
@@ -1316,7 +1316,7 @@
   {
    "food_name": "갈치조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/갈치조림.png",
    "category": "한식",
    "reason": "갈치와 무를 매콤한 양념에 자작하게 조린 요리",
    "cook_time_minutes": 40,
@@ -1337,7 +1337,7 @@
   {
    "food_name": "조기조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/조기조림.png",
    "category": "한식",
    "reason": "조기를 무와 함께 칼칼하게 조려낸 생선조림",
    "cook_time_minutes": 35,
@@ -1358,7 +1358,7 @@
   {
    "food_name": "고등어조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/고등어조림.png",
    "category": "한식",
    "reason": "고등어를 무 위에 얹어 매콤하게 조린 요리",
    "cook_time_minutes": 35,
@@ -1379,7 +1379,7 @@
   {
    "food_name": "삼치조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/삼치조림.png",
    "category": "한식",
    "reason": "삼치를 양파와 함께 달콤짭짤하게 조린 요리",
    "cook_time_minutes": 35,
@@ -1400,7 +1400,7 @@
   {
    "food_name": "명태조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/명태조림.png",
    "category": "한식",
    "reason": "명태와 미나리를 넣어 칼칼하게 조린 요리",
    "cook_time_minutes": 35,
@@ -1421,7 +1421,7 @@
   {
    "food_name": "돼지고기장조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/돼지고기장조림.png",
    "category": "한식",
    "reason": "간장에 오래 조려 짭조름하게 낸 밑반찬",
    "cook_time_minutes": 50,
@@ -1442,7 +1442,7 @@
   {
    "food_name": "감자조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/감자조림.png",
    "category": "한식",
    "reason": "간장에 조려 윤기가 도는 밑반찬 겸 한 끼",
    "cook_time_minutes": 25,
@@ -1463,7 +1463,7 @@
   {
    "food_name": "코다리조림",
    "art": "stew",
-   "image_url": null,
+   "image_url": "/images/food/코다리조림.png",
    "category": "한식",
    "reason": "반건조 명태를 양념에 조려 쫄깃하게 낸 요리",
    "cook_time_minutes": 40,
@@ -1484,7 +1484,7 @@
   {
    "food_name": "육회비빔밥",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/육회비빔밥.png",
    "category": "한식",
    "reason": "신선한 소고기 육회를 올려 고소하게 비벼 먹는 밥",
    "cook_time_minutes": 25,
@@ -1505,7 +1505,7 @@
   {
    "food_name": "전주비빔밥",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/전주비빔밥.png",
    "category": "한식",
    "reason": "여러 나물을 색색이 올려 고루 비벼 먹는 한 그릇",
    "cook_time_minutes": 40,
@@ -1526,7 +1526,7 @@
   {
    "food_name": "돌솥비빔밥",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/돌솥비빔밥.png",
    "category": "한식",
    "reason": "뜨거운 돌솥에 담아 누룽지까지 즐기는 비빔밥",
    "cook_time_minutes": 35,
@@ -1547,7 +1547,7 @@
   {
    "food_name": "김치볶음밥",
    "art": "stirfry",
-   "image_url": null,
+   "image_url": "/images/food/김치볶음밥.png",
    "category": "한식",
    "reason": "잘 익은 김치를 볶아 밥과 함께 낸 한 그릇",
    "cook_time_minutes": 20,
@@ -1568,7 +1568,7 @@
   {
    "food_name": "무밥",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/무밥.png",
    "category": "한식",
    "reason": "무를 채썰어 밥과 함께 지어 양념장에 비벼 먹는 밥",
    "cook_time_minutes": 35,
@@ -1589,7 +1589,7 @@
   {
    "food_name": "열무비빔밥",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/열무비빔밥.png",
    "category": "한식",
    "reason": "아삭한 열무김치를 올려 고추장에 비벼 먹는 밥",
    "cook_time_minutes": 20,
@@ -1610,7 +1610,7 @@
   {
    "food_name": "제육덮밥",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/제육덮밥.png",
    "category": "한식",
    "reason": "매콤하게 볶은 제육을 밥 위에 얹은 한 그릇",
    "cook_time_minutes": 25,
@@ -1631,7 +1631,7 @@
   {
    "food_name": "오징어덮밥",
    "art": "donburi",
-   "image_url": null,
+   "image_url": "/images/food/오징어덮밥.png",
    "category": "한식",
    "reason": "매콤하게 볶은 오징어를 밥 위에 얹은 덮밥",
    "cook_time_minutes": 25,
@@ -1652,7 +1652,7 @@
   {
    "food_name": "바지락칼국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/바지락칼국수.png",
    "category": "한식",
    "reason": "바지락을 우려 시원한 국물에 면을 넣은 한 그릇",
    "cook_time_minutes": 35,
@@ -1673,7 +1673,7 @@
   {
    "food_name": "들깨수제비",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/들깨수제비.png",
    "category": "한식",
    "reason": "들깨를 풀어 고소하고 걸쭉하게 끓인 수제비",
    "cook_time_minutes": 35,
@@ -1694,7 +1694,7 @@
   {
    "food_name": "콩국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/콩국수.png",
    "category": "한식",
    "reason": "곱게 간 콩물에 면을 말아 고소하게 먹는 여름 국수",
    "cook_time_minutes": 30,
@@ -1715,7 +1715,7 @@
   {
    "food_name": "물냉면",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/물냉면.png",
    "category": "한식",
    "reason": "살얼음 낀 육수에 면을 말아 시원하게 먹는 냉면",
    "cook_time_minutes": 20,
@@ -1737,7 +1737,7 @@
   {
    "food_name": "밀면",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/밀면.png",
    "category": "한식",
    "reason": "쫄깃한 면에 새콤달콤한 육수를 부어낸 부산식 면",
    "cook_time_minutes": 20,
@@ -1759,7 +1759,7 @@
   {
    "food_name": "회냉면",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/회냉면.png",
    "category": "한식",
    "reason": "매콤한 양념에 회를 올려 비벼 먹는 냉면",
    "cook_time_minutes": 25,
@@ -1781,7 +1781,7 @@
   {
    "food_name": "비빔국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/비빔국수.png",
    "category": "분식",
    "reason": "새콤달콤한 양념에 슥슥 비벼 먹는 여름 국수",
    "cook_time_minutes": 15,
@@ -1803,7 +1803,7 @@
   {
    "food_name": "열무국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/열무국수.png",
    "category": "한식",
    "reason": "열무김치 국물에 면을 말아 시원하게 먹는 국수",
    "cook_time_minutes": 20,
@@ -1824,7 +1824,7 @@
   {
    "food_name": "김치말이국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/김치말이국수.png",
    "category": "한식",
    "reason": "김치 국물에 면을 말아 얼음을 띄운 여름 국수",
    "cook_time_minutes": 15,
@@ -1845,7 +1845,7 @@
   {
    "food_name": "초계국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/초계국수.png",
    "category": "한식",
    "reason": "닭 육수를 차게 식혀 새콤하게 말아낸 국수",
    "cook_time_minutes": 35,
@@ -1867,7 +1867,7 @@
   {
    "food_name": "메밀막국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/메밀막국수.png",
    "category": "한식",
    "reason": "메밀면을 새콤달콤한 양념에 비벼 먹는 국수",
    "cook_time_minutes": 20,
@@ -1889,7 +1889,7 @@
   {
    "food_name": "자루소바",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/자루소바.png",
    "category": "일식",
    "reason": "차가운 메밀면을 장국에 찍어 먹는 일식 면요리",
    "cook_time_minutes": 15,
@@ -1910,7 +1910,7 @@
   {
    "food_name": "냉우동",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/냉우동.png",
    "category": "일식",
    "reason": "굵은 면을 차갑게 헹궈 시원한 장국에 말아낸 우동",
    "cook_time_minutes": 15,
@@ -1931,7 +1931,7 @@
   {
    "food_name": "얼갈이배추국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/얼갈이배추국수.png",
    "category": "한식",
    "reason": "얼갈이김치 국물에 면을 말아 아삭하게 먹는 국수",
    "cook_time_minutes": 20,
@@ -1952,7 +1952,7 @@
   {
    "food_name": "오이냉국",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/오이냉국.png",
    "category": "한식",
    "reason": "새콤한 국물에 오이를 띄운 여름 냉국",
    "cook_time_minutes": 10,
@@ -1973,7 +1973,7 @@
   {
    "food_name": "가지냉국",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/가지냉국.png",
    "category": "한식",
    "reason": "쪄낸 가지를 차가운 국물에 띄운 여름 냉국",
    "cook_time_minutes": 20,
@@ -1995,7 +1995,7 @@
   {
    "food_name": "미역냉국",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/미역냉국.png",
    "category": "한식",
    "reason": "미역을 불려 새콤하게 무쳐낸 시원한 냉국",
    "cook_time_minutes": 15,
@@ -2017,7 +2017,7 @@
   {
    "food_name": "물회",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/물회.png",
    "category": "한식",
    "reason": "해산물과 채소를 차가운 육수에 말아 먹는 회",
    "cook_time_minutes": 25,
@@ -2039,7 +2039,7 @@
   {
    "food_name": "육회",
    "art": "pancake",
-   "image_url": null,
+   "image_url": "/images/food/육회.png",
    "category": "한식",
    "reason": "신선한 소고기를 참기름에 무쳐낸 별미",
    "cook_time_minutes": 20,
@@ -2061,7 +2061,7 @@
   {
    "food_name": "열무비빔국수",
    "art": "noodle",
-   "image_url": null,
+   "image_url": "/images/food/열무비빔국수.png",
    "category": "한식",
    "reason": "열무김치를 넣어 아삭하게 비벼 먹는 국수",
    "cook_time_minutes": 20,

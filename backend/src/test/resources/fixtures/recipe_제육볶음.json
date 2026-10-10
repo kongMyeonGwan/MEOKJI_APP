@@ -108,7 +108,7 @@
     "estimated_cost": 5800,
     "category": "한식",
     "art": "stirfry",
-    "image_url": null,
+    "image_url": "/images/food/제육볶음.png",
     "prices": [
       {
         "name": "돼지고기 400g",

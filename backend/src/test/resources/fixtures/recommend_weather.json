@@ -21,7 +21,7 @@
           "한식"
         ],
         "art": "stirfry",
-        "image_url": null
+        "image_url": "/images/food/멸치볶음.png"
       },
       {
         "food_name": "감자조림",
@@ -36,7 +36,7 @@
           "한식"
         ],
         "art": "stew",
-        "image_url": null
+        "image_url": "/images/food/감자조림.png"
       },
       {
         "food_name": "들깨수제비",
@@ -51,7 +51,7 @@
           "한식"
         ],
         "art": "noodle",
-        "image_url": null
+        "image_url": "/images/food/들깨수제비.png"
       },
       {
         "food_name": "열무비빔밥",
@@ -66,7 +66,7 @@
           "한식"
         ],
         "art": "donburi",
-        "image_url": null
+        "image_url": "/images/food/열무비빔밥.png"
       },
       {
         "food_name": "야채볶음",
@@ -81,7 +81,7 @@
           "한식"
         ],
         "art": "stirfry",
-        "image_url": null
+        "image_url": "/images/food/야채볶음.png"
       }
     ],
     "weather": {

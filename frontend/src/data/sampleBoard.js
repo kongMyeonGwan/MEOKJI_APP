@@ -234,7 +234,7 @@ export const SAMPLE_POPULAR = [
     estimated_cost: 5800,
     liked_at: '2026-09-15T12:05:00Z',
     art: 'stirfry',
-    image_url: null,
+    image_url: '/images/food/제육볶음.png',
   },
   {
     id: 1,
@@ -249,7 +249,7 @@ export const SAMPLE_POPULAR = [
     estimated_cost: 2500,
     liked_at: '2026-09-16T10:20:00Z',
     art: 'pancake',
-    image_url: null,
+    image_url: '/images/food/김치부침개.png',
   },
   {
     id: 3,
@@ -264,7 +264,7 @@ export const SAMPLE_POPULAR = [
     estimated_cost: 3600,
     liked_at: '2026-09-14T08:40:00Z',
     art: 'noodle',
-    image_url: null,
+    image_url: '/images/food/콩국수.png',
   },
   {
     id: 4,
@@ -279,7 +279,7 @@ export const SAMPLE_POPULAR = [
     estimated_cost: 3100,
     liked_at: '2026-09-13T22:10:00Z',
     art: 'stew',
-    image_url: null,
+    image_url: '/images/food/된장찌개.png',
   },
   {
     id: 5,
@@ -294,7 +294,7 @@ export const SAMPLE_POPULAR = [
     estimated_cost: 2400,
     liked_at: '2026-09-12T18:30:00Z',
     art: 'stirfry',
-    image_url: null,
+    image_url: '/images/food/멸치볶음.png',
   },
   {
     id: 6,
@@ -309,6 +309,6 @@ export const SAMPLE_POPULAR = [
     estimated_cost: 5200,
     liked_at: '2026-09-12T09:15:00Z',
     art: 'donburi',
-    image_url: null,
+    image_url: '/images/food/고등어구이.png',
   },
 ]

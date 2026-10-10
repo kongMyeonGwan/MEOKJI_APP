@@ -3341,6 +3341,16 @@ a.price-table__best:hover { text-decoration: underline; }
 
 .recipe-page__back a:hover { color: var(--color-accent); }
 
+/* 레시피 대표 사진. 카드 맨 위에서 가로를 꽉 채운다 */
+.recipe-page__photo {
+  margin-bottom: 16px;
+}
+
+/* thumb--lg 기본 높이(148px)는 카드용이라 상세 화면에서는 너무 낮다 */
+.recipe-page__photo .thumb--lg {
+  height: 280px;
+}
+
 .recipe-page__head {
   display: flex;
   align-items: flex-start;
@@ -3403,6 +3413,11 @@ a.price-table__best:hover { text-decoration: underline; }
 
 @media (max-width: 1023px) {
   .recipe-page { gap: 14px; }
+  .recipe-page__photo { margin-bottom: 12px; }
+
+  /* 앱에서는 사진이 화면을 다 먹지 않게 낮춘다 */
+  .recipe-page__photo .thumb--lg { height: 190px; }
+
   .recipe-page__head { flex-direction: column; gap: 6px; }
   .recipe-page__name { font-size: 20px; }
 
@@ -3711,6 +3726,13 @@ a.price-table__best:hover { text-decoration: underline; }
 .gpage__result-from {
   margin: 0;
   font-size: 13px;
+}
+
+/* 뽑힌 요리 사진. 결과 칸 가운데라 동그랗게 키운다 */
+.gpage__result-thumb .thumb--md {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
 }
 
 .gpage__result-food {

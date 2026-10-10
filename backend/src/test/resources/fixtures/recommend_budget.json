@@ -20,7 +20,7 @@
           "한식"
         ],
         "art": "stew",
-        "image_url": null
+        "image_url": "/images/food/된장찌개.png"
       },
       {
         "food_name": "밀면",
@@ -36,7 +36,7 @@
           "한식"
         ],
         "art": "noodle",
-        "image_url": null
+        "image_url": "/images/food/밀면.png"
       },
       {
         "food_name": "미역냉국",
@@ -52,7 +52,7 @@
           "한식"
         ],
         "art": "pancake",
-        "image_url": null
+        "image_url": "/images/food/미역냉국.png"
       },
       {
         "food_name": "버섯전골",
@@ -66,7 +66,7 @@
           "한식"
         ],
         "art": "stew",
-        "image_url": null
+        "image_url": "/images/food/버섯전골.png"
       },
       {
         "food_name": "비빔국수",
@@ -82,7 +82,7 @@
           "분식"
         ],
         "art": "noodle",
-        "image_url": null
+        "image_url": "/images/food/비빔국수.png"
       }
     ],
     "weather": null,
