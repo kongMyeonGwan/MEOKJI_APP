@@ -9,6 +9,13 @@ import { Link } from 'react-router-dom'
 //
 // 두 모양이 글자와 링크를 똑같이 쓰기 때문에 컴포넌트를 둘로 나누지 않았다.
 // 나누면 게임이 하나 늘 때 두 군데를 고쳐야 한다.
+//
+// 대신 치르는 것 — full 과 compact 를 가리는 if 가 네 군데 생겼다.
+// 모양이 더 갈라지면 나누는 쪽이 나을 수 있는 자리다.
+//
+// games 는 서버에서 받은 것을 그대로 받는다. 게임 목록을 코드에
+// 적어두지 않은 이유 — 제목과 설명을 고칠 때 배포를 다시 해야 한다.
+// 다만 카드 색과 그림은 화면 사정이라 아래 EXTRAS 에 적어두었다.
 
 // full 에서만 쓰는 꾸밈. 서버가 주는 key 로 찾는다.
 //   tone  : 카드 색 (주황 · 초록 · 보라)
@@ -21,9 +28,14 @@ const EXTRAS = {
 }
 
 export default function GamePromo({ games, variant = 'compact' }) {
+  // 아래에서 여러 번 보므로 한 번만 가려 변수로 둔다
   const full = variant === 'full'
 
   // 서버가 모르는 게임을 보내도 화면이 깨지지 않게 기본값을 돌려준다
+  //
+  // EXTRAS[key] 를 바로 쓰면 새 게임이 추가됐을 때 undefined 가 되고,
+  // .tone 을 읽는 순간 터진다. 게임은 서버가 정하고 꾸밈은 여기
+  // 적혀 있으니, 서로 어긋날 수 있는 자리다
   const extraOf = (key) => {
     if (EXTRAS[key]) {
       return EXTRAS[key]
@@ -35,6 +47,8 @@ export default function GamePromo({ games, variant = 'compact' }) {
   const renderShots = (game) => {
     const shots = extraOf(game.key).shots
 
+    // 기본값으로 떨어진 게임은 그림이 없다. null 을 돌려주면
+    // 그 자리를 아예 안 그린다
     if (shots.length === 0) {
       return null
     }
@@ -43,7 +57,9 @@ export default function GamePromo({ games, variant = 'compact' }) {
       <span className="gpromo__shots">
         {shots.map((shot, index) => (
           <span key={shot} className="gpromo__shot-slot">
-            {/* 첫 장 다음에만, 그리고 두 장짜리일 때만 VS 를 넣는다 */}
+            {/* 첫 장 다음에만, 그리고 두 장짜리일 때만 VS 를 넣는다.
+                월드컵 · 밸런스는 두 장이라 VS 가 어울리는데,
+                룰렛은 세 장이라 어디에 넣어도 어색하다 */}
             {index === 1 && shots.length === 2 && <span className="gpromo__vs">VS</span>}
             {/* 장식이라 alt 는 비워둔다. 읽어주면 오히려 방해가 된다 */}
             <img className="gpromo__shot" src={`/images/game/${shot}.png`} alt="" />
@@ -55,9 +71,14 @@ export default function GamePromo({ games, variant = 'compact' }) {
 
   // 게임 한 장. compact 는 카드 전체가 링크, full 은 안에 버튼이 따로 있다
   // (링크 안에 링크를 넣을 수 없어서 바깥을 div 로 둔다)
+  //
+  // 넣으면 브라우저가 알아서 고쳐버려서, 화면에 그려지는 모양이
+  // 코드와 달라진다 - 누르면 어디로 가는지도 예측할 수 없다
   const renderGame = (game) => {
     const extra = extraOf(game.key)
 
+    // 두 모양이 같이 쓰는 안쪽. 변수로 빼두면 아래에서 두 번
+    // 적지 않아도 된다
     const body = (
       <>
         <span className="gpromo__game-emoji">{game.emoji}</span>
@@ -114,6 +135,9 @@ export default function GamePromo({ games, variant = 'compact' }) {
         )}
       </div>
 
+      {/* renderGame 을 그대로 넘긴다. (game) => renderGame(game) 로
+          적어도 같지만, 함수 이름만 넘기는 쪽이 짧다.
+          key 는 renderGame 안에서 <li> 에 붙인다 */}
       <ul className="gpromo__games">{games.map(renderGame)}</ul>
 
       {/* compact 에서는 시작 버튼이 오른쪽 끝에 따로 선다 */}

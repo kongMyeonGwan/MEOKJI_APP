@@ -104,11 +104,9 @@ export default function HomePage() {
               더보기 ›
             </Link>
           </div>
-
           {loading && <Loading message="AI가 메뉴를 고르는 중..." />}
           {error && <ErrorMessage message={error} />}
           {!loading && !error && foods.length === 0 && <p className="empty">이 카테고리에는 아직 추천이 없어요.</p>}
-
           {!loading && !error && foods.length > 0 && (
             <div className="dash__cards">
               {foods.map((food) => (
@@ -126,9 +124,7 @@ export default function HomePage() {
           <span className="dash__tip-icon">💡</span>
           <div>
             <h3 className="dash__tip-title">AI 추천은 참고용이에요</h3>
-            <p className="dash__tip-body">
-              알레르기나 특이 체질이 있으신 경우 반드시 재료를 확인하고 섭취해주세요.
-            </p>
+            <p className="dash__tip-body">알레르기나 특이 체질이 있으신 경우 반드시 재료를 확인하고 섭취해주세요.</p>
           </div>
         </aside>
       </div>

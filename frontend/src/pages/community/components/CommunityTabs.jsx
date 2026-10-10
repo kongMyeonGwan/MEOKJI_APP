@@ -11,7 +11,7 @@ import { SAMPLE_NOTICES } from '../../../data/sampleBoard'
 // TODO(게시판 담당): 공지 개수는 지금 가데이터 길이다. 목록 API 가 붙으면
 //   서버가 주는 전체 개수(total)로 바꾼다.
 const TABS = [
-  { to: '/notice', label: '공지사항', icon: 'bell', count: SAMPLE_NOTICES.length },
+  { to: '/community', label: '공지사항', icon: 'bell', count: SAMPLE_NOTICES.length },
   // { to: '/community', label: '레시피 추천', icon: 'sparkles' },
   { to: '/free', label: '자유게시판', icon: 'chat' },
 ]
