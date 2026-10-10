@@ -30,6 +30,7 @@ public interface FreePostDAO {
      * 목록과 같은 조건을 봐야 한다. 한쪽에만 검색어를 붙이면
      * "3페이지가 있다는데 열면 비어 있는" 일이 생긴다.
      */
+    // keyword 가 null 이면 XML 의 if 가 조건을 빼서 전체를 센다
     int count(@Param("keyword") String keyword);
 
     /**
@@ -52,10 +53,24 @@ public interface FreePostDAO {
      */
     FreePostVO findById(@Param("id") Long id);
 
-    /** 조회수 +1 */
+    /**
+     * 조회수 +1
+     *
+     * SQL 안에서 올린다 (view_count = view_count + 1). 읽어서 +1 해
+     * UPDATE 하면, 두 사람이 동시에 열었을 때 둘 다 같은 값을 읽어
+     * 조회수가 하나만 오른다.
+     */
     void increaseView(@Param("id") Long id);
 
-    /** 조회수 읽기 (올린 뒤 값을 돌려주기 위해) */
+    /**
+     * 조회수 읽기 (올린 뒤 값을 돌려주기 위해)
+     *
+     * increaseView 가 숫자를 돌려주지 않아서 따로 읽는다. UPDATE 는
+     * "몇 행이 바뀌었는지" 만 알려주고 바뀐 값은 알려주지 않는다.
+     *
+     * 글 전체(findById)를 다시 읽지 않는 이유 — 조회수 하나만 필요하다.
+     * 본문 CLOB 과 닉네임 JOIN 까지 끌어올 이유가 없다.
+     */
     int findViewCount(@Param("id") Long id);
 
     /**
@@ -66,6 +81,12 @@ public interface FreePostDAO {
      */
     void setFile(FreePostVO post);
 
-    /** 첨부파일 떼기. file_yn='N' 으로 바꾸고 FILE_* 을 전부 비운다 */
+    /**
+     * 첨부파일 떼기. file_yn='N' 으로 바꾸고 FILE_* 을 전부 비운다
+     *
+     * 디스크의 파일을 지우는 일은 여기서 하지 않는다. 서비스가
+     * FileStore 로 따로 지운다 - DB 와 디스크는 같은 트랜잭션에
+     * 묶이지 않으므로 순서를 서비스가 정해야 한다.
+     */
     void clearFile(@Param("id") Long id);
 }

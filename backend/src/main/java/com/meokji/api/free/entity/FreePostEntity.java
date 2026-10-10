@@ -47,6 +47,14 @@ import lombok.NoArgsConstructor;
  *   그래서 수정 시각을 넣을 때 LocalDateTime.now() 를 쓰면 안 된다 —
  *   그 값은 한국 시간이라 아홉 시간 뒤로 적힌다. now(ZoneOffset.UTC) 다.
  */
+// 롬복 두 줄의 뜻
+//   @Getter      : setter 는 만들지 않는다. 값을 바꾸는 길을 change ·
+//                  deactivate 로만 열어두려는 것이다. setter 가 있으면
+//                  어디서든 한 칸씩 바꿀 수 있어 updated_at 을 빠뜨린다
+//   @NoArgsConstructor(PROTECTED) : JPA 는 빈 생성자가 있어야 객체를
+//                  만들 수 있다. PROTECTED 로 좁혀서 바깥에서는
+//                  new FreePostEntity() 를 못 쓰게 한다 - 만들 때는
+//                  아래 create 를 거쳐야 한다
 @Entity
 @Table(name = "free_posts")
 @Getter
@@ -65,6 +73,7 @@ public class FreePostEntity {
     @Column(name = "user_id", nullable = false, updatable = false)
     private Long userId;
 
+    /** 글 제목. nullable = false 는 DDL 과 맞춰 적은 것이다 */
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
@@ -77,6 +86,7 @@ public class FreePostEntity {
     @Column(name = "view_count", insertable = false, updatable = false)
     private Integer viewCount;
 
+    /** 'N' = 지운 글. 행을 지우지 않으므로 이 칸으로 가린다 */
     @Column(name = "use_yn", nullable = false, length = 1)
     private String useYn;
 
@@ -84,10 +94,23 @@ public class FreePostEntity {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /**
+     * 고친 시각. 이 칸만 JPA 가 직접 넣는다.
+     *
+     * DB 기본값으로 둘 수 없다 - 기본값은 INSERT 때 한 번만 찍힌다.
+     * 고칠 때마다 새로 적어야 하므로 change · deactivate 가 같이 넣는다.
+     */
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    /** 새 글. id · 조회수 · 작성 시각은 DB 가 채운다 */
+    /**
+     * 새 글. id · 조회수 · 작성 시각은 DB 가 채운다
+     *
+     * 생성자 대신 static 메서드로 둔 이유 — 이름이 하는 일을 말해준다.
+     * new FreePostEntity(userId, title, content) 는 "무엇을 하는 것인지" 를
+     * 인자 순서로만 알 수 있다. 또 setter 를 열지 않고도 칸을 채울 수 있다
+     * (같은 클래스 안이라 private 칸에 바로 넣을 수 있다).
+     */
     public static FreePostEntity create(Long userId, String title, String content) {
         FreePostEntity post = new FreePostEntity();
         post.userId = userId;
