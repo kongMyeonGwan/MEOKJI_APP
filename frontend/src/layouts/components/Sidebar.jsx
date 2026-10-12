@@ -1,10 +1,18 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import Icon, { LogoMark } from '../../components/common/Icon'
+
+// 커뮤니티 아래 게시판 주소들. 이 중 하나를 보고 있으면 사이드바 '커뮤니티' 를 켠다
+const COMMUNITY_PATHS = ['/community', '/notice', '/free']
 
 export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify, onNotifyChange }) {
   // NavLink 는 지금 주소와 같으면 isActive 가 true 다.
   // 그때 is-active 를 붙여서 지금 보고 있는 메뉴를 강조한다 (styles/index.css)
   const linkClass = ({ isActive }) => (isActive ? 'sidebar__item is-active' : 'sidebar__item')
+
+  // '커뮤니티' 는 /community 하나가 아니라 공지 · 자유게시판 주소 전체에서 켜져야 한다.
+  // NavLink 의 isActive 는 /community 로 시작할 때만 true 라서 직접 판단한다
+  const { pathname } = useLocation()
+  const isCommunity = COMMUNITY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
   return (
     <aside className="sidebar">
@@ -76,16 +84,16 @@ export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify
           <span className="sidebar__label">레시피 추천</span>
         </NavLink>
 
-        {/* 커뮤니티 */}
-        <NavLink to="/community" className={linkClass} onClick={onNavigate}>
-          <Icon name="chat" className="sidebar__icon" />
-          <span className="sidebar__label">커뮤니티</span>
-        </NavLink>
-
         {/* 인기 레시피 */}
         <NavLink to="/popular" className={linkClass} onClick={onNavigate}>
           <Icon name="fire" className="sidebar__icon" />
           <span className="sidebar__label">인기 레시피</span>
+        </NavLink>
+
+        {/* 커뮤니티 */}
+        <NavLink to="/community" className={() => linkClass({ isActive: isCommunity })} onClick={onNavigate}>
+          <Icon name="chat" className="sidebar__icon" />
+          <span className="sidebar__label">커뮤니티</span>
         </NavLink>
 
         {/* 로그인했을 때만 AI 추천 기록 표시 */}

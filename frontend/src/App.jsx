@@ -168,6 +168,9 @@ export default function App() {
           <Route path="roulette" element={<RoulettePage />} />
 
           {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
+          {/* 사이드바 '커뮤니티' 는 공지사항 목록으로 보낸다 */}
+          <Route path="community" element={<Navigate to="/notice" replace />} />
+
           <Route path="popular" element={<PopularPage />} />
           {/* 레시피리뷰 · 공지는 퍼블리싱만 돼 있다. 로그인한 사람(user)을 아직 쓰지 않아
               props 를 넘기지 않는다 — 기능 담당이 user={user} 를 붙이는 자리다 */}
