@@ -176,11 +176,11 @@ export default function HistoryPage() {
 
                   <p className="muted history__share">
                     {item.recipe_review_id ? (
-                      <Link to={`/community/${item.recipe_review_id}`} className="history__link">
-                        커뮤니티에 공유한 글 보기 →
+                      <Link to={`/reviews/${item.recipe_review_id}`} className="history__link">
+                        레시피 공유한 글 보기 →
                       </Link>
                     ) : (
-                      <Link to={`/community/write?historyId=${item.id}`} className="history__link">
+                      <Link to={`/reviews/write?historyId=${item.id}`} className="history__link">
                         이 기록으로 글 쓰기 →
                       </Link>
                     )}

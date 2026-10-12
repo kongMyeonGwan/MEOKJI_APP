@@ -212,8 +212,8 @@ export default function RecipePage({ user }) {
               <Link to="/history" className="btn">
                 History 보러가기
               </Link>
-              <Link to="/community/write" className="btn btn--ghost">
-                커뮤니티에 공유
+              <Link to="/reviews/write" className="btn btn--ghost">
+                레시피 공유
               </Link>
             </div>
           </>

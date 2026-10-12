@@ -32,7 +32,7 @@ export default function ReviewListPage() {
           커뮤니티
         </h2>
 
-        <Link to="/community/write" className="btn btn--sm">
+        <Link to="/reviews/write" className="btn btn--sm">
           글쓰기
         </Link>
       </div>
