@@ -36,7 +36,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.meokji.api.util.IngredientMatcher;
 import com.meokji.api.util.KamisClient;
-import com.meokji.api.notice.vo.NoticeVO;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -293,8 +292,10 @@ class SeedDemoTest {
      * <p>상태 코드로 판단한다. "기능이 없다" 는 뜻을 가진 코드가 501 이라서,
      * 구현이 끝나면 조건이 저절로 풀린다. 나중에 손으로 지울 일이 없다.
      */
-    private static boolean notReady(MvcResult result) {
-        return result.getResponse().getStatus() == 501;
+    private static boolean notReady(MvcResult result) throws Exception {
+        // 빈 껍데기 컨트롤러는 200 에 빈 본문을 돌려준다. 그때도 아직 없는 것으로 본다
+        return result.getResponse().getStatus() == 501
+                || result.getResponse().getContentAsString().isEmpty();
     }
 
     private static JsonNode body(MvcResult result) {

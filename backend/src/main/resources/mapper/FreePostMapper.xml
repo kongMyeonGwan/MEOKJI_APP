@@ -25,6 +25,7 @@
     </sql>
 
     <select id="count" resultType="int">
+        /* FreePostDAO.count */
         SELECT COUNT(p.id)
           FROM free_posts p
         <include refid="searchWhere"/>
