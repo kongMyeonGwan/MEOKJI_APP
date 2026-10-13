@@ -3,13 +3,7 @@ package com.meokji.api.free.entity;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -58,10 +52,20 @@ public class FreePostEntity {
      * 시퀀스를 직접 만들거나 트리거로 채우지 않는다 — DB 에 물어 확인했다.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "free_seq_generator")
+    @SequenceGenerator(
+            name ="free_seq_generator", // JAVA 안에서 부르는 이름
+            sequenceName = "FREE_SEQ",  // Oracle 시퀀스 이름
+            allocationSize = 1
+    )
+    private Long id;    // 글번호
 
-    /** 글쓴이. 한 번 정해지면 안 바뀐다 */
+    /** 글쓴이. 한 번 정해지면 안 바뀐다 
+      * 작성자(글 여러개: 회원 한명)
+     * @ManyToone: 1:N
+     * @fetch = FetchType.LAZY: 실제 사용할 때 DB에서 가져옴
+     * @JoinColumn: Member table과 조인
+     * */
     @Column(name = "user_id", nullable = false, updatable = false)
     private Long userId;
 

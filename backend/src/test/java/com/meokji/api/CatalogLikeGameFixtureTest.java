@@ -1,10 +1,8 @@
 package com.meokji.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -24,10 +22,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 카탈로그 · 찜 · 미니게임 응답을 정답지(fixtures)와 대조한다.
+ * 카탈로그 · 미니게임 응답을 정답지(fixtures)와 대조한다.
  */
 @SpringBootTest
-@DisplayName("카탈로그 · 찜 · 게임 정답지 대조")
+@DisplayName("카탈로그 · 게임 정답지 대조")
 class CatalogLikeGameFixtureTest {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
@@ -98,79 +96,6 @@ class CatalogLikeGameFixtureTest {
     }
 
     @Test
-    @DisplayName("찜하기 -> 목록 -> 다시 눌러 해제 -> 비우기")
-    void likeToggleRoundTrip() throws Exception {
-        JsonNode wantToggle = fixture("likes_toggle_on").get("body");
-
-        // 1) 켜기
-        MvcResult on = mvc.perform(put("/api/likes")
-                        .header("Authorization", auth)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"food_name\":\"김치찌개\"}"))
-                .andReturn();
-
-        assertThat(on.getResponse().getStatus()).isEqualTo(200);
-
-        JsonNode onBody = body(on);
-        assertThat(onBody.propertyNames())
-                .containsExactlyInAnyOrderElementsOf(wantToggle.propertyNames());
-        assertThat(onBody.get("food_name").asString()).isEqualTo("김치찌개");
-        assertThat(onBody.get("liked").asBoolean()).isTrue();
-        assertThat(onBody.get("count").asInt()).isGreaterThanOrEqualTo(1);
-
-        // 2) 목록에 보인다
-        MvcResult listed = mvc.perform(get("/api/likes").header("Authorization", auth))
-                .andReturn();
-        assertThat(body(listed).get("names").toString()).contains("김치찌개");
-
-        // 3) 같은 이름을 다시 눌러 해제
-        MvcResult off = mvc.perform(put("/api/likes")
-                        .header("Authorization", auth)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"food_name\":\"김치찌개\"}"))
-                .andReturn();
-
-        assertThat(body(off).get("liked").asBoolean())
-                .as("같은 이름을 다시 누르면 뒤집힌다").isFalse();
-
-        // 4) 해제한 것을 또 켤 수 있다. 행을 새로 만들지 않고 되살린다 -
-        //    안 그러면 같은 음식의 행이 쌓인다.
-        MvcResult again = mvc.perform(put("/api/likes")
-                        .header("Authorization", auth)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"food_name\":\"김치찌개\"}"))
-                .andReturn();
-        assertThat(body(again).get("liked").asBoolean()).isTrue();
-
-        // 5) 비우기
-        MvcResult cleared = mvc.perform(delete("/api/likes").header("Authorization", auth))
-                .andReturn();
-
-        assertThat(cleared.getResponse().getStatus()).isEqualTo(200);
-
-        JsonNode clearedBody = body(cleared);
-        assertThat(clearedBody.get("count").asInt()).isZero();
-        assertThat(clearedBody.get("names").isEmpty()).isTrue();
-
-        // 비운 뒤에 목록도 비어 있다
-        MvcResult after = mvc.perform(get("/api/likes").header("Authorization", auth))
-                .andReturn();
-        assertThat(body(after).get("count").asInt()).isZero();
-    }
-
-    @Test
-    @DisplayName("빈 음식 이름으로 찜하면 422 다")
-    void blankFoodNameIsRejected() throws Exception {
-        MvcResult result = mvc.perform(put("/api/likes")
-                        .header("Authorization", auth)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"food_name\":\"  \"}"))
-                .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isEqualTo(422);
-    }
-
-    @Test
     @DisplayName("POST /api/games/{key}/plays - 게임 키가 DB 글자로 바뀐다")
     void gamePlayMatchesFixture() throws Exception {
         JsonNode want = fixture("games_play").get("body");
@@ -220,10 +145,8 @@ class CatalogLikeGameFixtureTest {
     }
 
     @Test
-    @DisplayName("찜 · 게임은 로그인이 필요하다")
+    @DisplayName("게임은 로그인이 필요하다")
     void loginRequired() throws Exception {
-        assertThat(mvc.perform(get("/api/likes")).andReturn().getResponse().getStatus())
-                .isEqualTo(401);
         assertThat(mvc.perform(post("/api/games/worldcup/plays")).andReturn()
                 .getResponse().getStatus()).isEqualTo(401);
     }

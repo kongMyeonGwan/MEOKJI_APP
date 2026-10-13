@@ -22,6 +22,10 @@
 -- ! 표를 새로 만들면 아래 목록에도 이름을 넣어야 합니다. 빠뜨리면 그 표만
 --   남은 채로 01_schema.sql 을 돌리게 되고, CREATE TABLE 이 ORA-00955 로 막힙니다.
 --   목록은 아래 두 군데(PL/SQL 블록 · 확인 쿼리)에 있습니다.
+--
+-- ! 직접 만든 시퀀스(FREE_SEQ)는 표를 지워도 남습니다. IDENTITY 가 속으로 만든
+--   시퀀스(ISEQ$$_...)와 달리 표에 딸려 있지 않아서입니다. 그래서 따로 지웁니다.
+--   안 지우면 01_schema.sql 의 CREATE SEQUENCE 가 ORA-00955 로 막힙니다.
 -- =========================================================
 
 BEGIN
@@ -58,6 +62,19 @@ BEGIN
 END;
 /
 
+-- 직접 만든 시퀀스 삭제 (표를 지워도 남기 때문에 따로 지운다)
+BEGIN
+    FOR s IN (
+        SELECT sequence_name
+        FROM   user_sequences
+        WHERE  sequence_name IN ('FREE_SEQ')
+    ) LOOP
+        EXECUTE IMMEDIATE 'DROP SEQUENCE ' || s.sequence_name;
+        DBMS_OUTPUT.PUT_LINE('dropped sequence: ' || s.sequence_name);
+    END LOOP;
+END;
+/
+
 -- 삭제 결과 확인 (0건이어야 정상)
 SELECT COUNT(*) AS remaining_tables
 FROM   user_tables
@@ -66,3 +83,8 @@ WHERE  table_name IN ('POST_COMMENTS','REVIEW_COMMENTS','REVIEW_LIKES','RECIPE_R
                       'RECIPE_LIKES','NOTICES','GAME_HISTORIES',
                       'COMMENTS','POST_LIKES','POSTS','MEAL_HISTORIES',
                       'USER_BANS','VERIFICATION_CODES','USERS');
+
+-- 시퀀스 삭제 결과 확인 (0건이어야 정상)
+SELECT COUNT(*) AS remaining_sequences
+FROM   user_sequences
+WHERE  sequence_name IN ('FREE_SEQ');
