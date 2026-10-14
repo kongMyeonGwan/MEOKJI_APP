@@ -16,6 +16,14 @@ import { saveResult } from '../../../utils/gameResult'
 
 const SPIN_TIME = 3000 // 도는 시간 (3초)
 
+// 룰렛에 올릴 분류. 서버는 8가지(한식 · 중식 · 일식 ...)를 주지만 요리 100종이
+// 거의 한식 · 국탕이라 나머지를 뽑으면 추천이 텅 비어서 이 둘만 쓴다.
+// 색도 여기서 정한다 - 서버 색은 둘 다 노란색이라 조각 두 개가 한 덩어리로 보인다.
+const SLICE_COLORS = {
+  한식: '#e8481c',
+  국탕: '#f6c445',
+}
+
 export default function Roulette() {
   const [slices, setSlices] = useState([]) // 조각 목록 [{ label: '한식', color: '#f97316' }, ...]
   const [angle, setAngle] = useState(0) // 지금 돌아간 각도
@@ -29,7 +37,10 @@ export default function Roulette() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setSlices(data.roulette || [])
+        const list = (data.roulette || [])
+          .filter((slice) => SLICE_COLORS[slice.label])
+          .map((slice) => ({ ...slice, color: SLICE_COLORS[slice.label] }))
+        setSlices(list)
       } catch (err) {
         // 못 받아오면 빈 룰렛
       }
@@ -77,7 +88,7 @@ export default function Roulette() {
       // 룰렛은 음식이 아니라 분류(한식 · 중식)를 뽑아서, 레시피가 아니라
       // 그 분류의 추천 목록으로 보낸다
       const label = slices[picked].label
-      saveResult('roulette', '랜덤 돌림판', label, `/recommend?category=${encodeURIComponent(label)}`)
+      saveResult('roulette', '음식 룰렛', label, `/recommend?category=${encodeURIComponent(label)}`)
     }, SPIN_TIME)
   }
 
@@ -89,7 +100,7 @@ export default function Roulette() {
   return (
     <section className="card roulette">
       <div className="section-head">
-        <h2 className="section-title">음식 추천 룰렛</h2>
+        <h2 className="section-title">음식 룰렛</h2>
         <button type="button" className="roulette__reset" onClick={reset} disabled={spinning}>
           ↻
         </button>

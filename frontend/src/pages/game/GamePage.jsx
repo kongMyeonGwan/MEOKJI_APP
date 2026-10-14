@@ -23,6 +23,14 @@ const TONES = {
   roulette: 'yellow',
 }
 
+// 게임 이름. 서버(catalog.json)가 주는 title 보다 이 값을 먼저 쓴다.
+// 각 게임 화면의 제목과 맞추려고 둔다. 여기 없는 게임은 서버 이름을 그대로 쓴다.
+const TITLES = {
+  worldcup: '음식 이상형 월드컵',
+  balance: '음식 취향 밸런스 게임',
+  roulette: '음식 룰렛',
+}
+
 export default function GamePage() {
   const [games, setGames] = useState([])
   const [recent, setRecent] = useState([]) // 최근 선택한 메뉴 (식사 기록)
@@ -68,6 +76,14 @@ export default function GamePage() {
     return 'orange'
   }
 
+  // 게임 이름. 예전에 저장된 '오늘의 게임 결과' 도 옛 이름 대신 새 이름으로 보인다
+  const titleOf = (key, fallback) => {
+    if (TITLES[key]) {
+      return TITLES[key]
+    }
+    return fallback
+  }
+
   return (
     <div className="list-page list-page--wide gpage">
       {/* ----- 배너 ----- */}
@@ -95,7 +111,7 @@ export default function GamePage() {
               <div className="gpage__game-head">
                 {/* index 가 0 부터라 번호는 +1 한다 */}
                 <span className="gpage__game-no">{index + 1}</span>
-                <h3 className="gpage__game-title">{game.title}</h3>
+                <h3 className="gpage__game-title">{titleOf(game.key, game.title)}</h3>
               </div>
 
               <p className="gpage__game-desc">{game.desc}</p>
@@ -122,7 +138,7 @@ export default function GamePage() {
 
           {today ? (
             <div className="gpage__result-on">
-              <p className="muted gpage__result-from">{today.game_title}에서 고른 메뉴</p>
+              <p className="muted gpage__result-from">{titleOf(today.game_key, today.game_title)}에서 고른 메뉴</p>
 
               {/* 뽑힌 요리 사진. 룰렛은 요리가 아니라 분류(한식)를 뽑아서 사진을 안 그린다 */}
               {today.game_key !== 'roulette' && (
