@@ -25,10 +25,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
+import com.meokji.api.free.dto.FreeCommentRequest;
+import com.meokji.api.free.dto.FreeCommentResponse;
+import com.meokji.api.free.dto.FreeFileDownload;
+import com.meokji.api.free.dto.FreeFileResponse;
+import com.meokji.api.free.dto.FreePostDetailResponse;
+import com.meokji.api.free.dto.FreePostListResponse;
+import com.meokji.api.free.dto.FreePostRequest;
 import com.meokji.api.free.service.FreePostService;
-import com.meokji.api.free.vo.FreeFileVO;
-import com.meokji.api.free.vo.FreePostCommentVO;
-import com.meokji.api.free.vo.FreePostVO;
 import com.meokji.api.user.vo.UserVO;
 import com.meokji.api.util.FileStore;
 
@@ -41,7 +45,7 @@ import jakarta.validation.constraints.Size;
  * 자유게시판.  주소: /api/free-posts
  *
  * 보기는 누구나, 쓰기 · 수정 · 삭제 · 댓글은 로그인해야 한다.
- * 수정 · 삭제는 글쓴이 본인만 된다 (판단은 FreePostServiceImpl 이 한다).
+ * 수정 · 삭제는 글쓴이 본인만 된다 (판단은 FreePostService 가 한다).
  *
  * 레시피 후기(/api/reviews)와 다른 점은 글을 쓰는 조건이 없다는 것뿐이다.
  * 후기는 내 식사 기록을 하나 골라야 하지만 여기는 로그인만 하면 된다.
@@ -63,7 +67,7 @@ public class FreePostController {
 
     // 목록  GET /api/free-posts?keyword=두부&page=1&size=20
     @GetMapping
-    public Page<FreePostVO> getList(
+    public Page<FreePostListResponse> getList(
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size) {
@@ -73,7 +77,7 @@ public class FreePostController {
     // 상세  GET /api/free-posts/3
     // 로그인했으면 "내 글인지" 도 알려준다 (수정 · 삭제 버튼을 보일지 판단용)
     @GetMapping("/{postId}")
-    public FreePostVO getDetail(
+    public FreePostDetailResponse getDetail(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId) {
         UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
@@ -83,19 +87,19 @@ public class FreePostController {
     // 글쓰기  POST /api/free-posts
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public FreePostVO add(
+    public FreePostDetailResponse add(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody FreePostVO request) {
+            @Valid @RequestBody FreePostRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
         return freePostService.add(loginUser, request);
     }
 
     // 글 수정  PUT /api/free-posts/3
     @PutMapping("/{postId}")
-    public FreePostVO update(
+    public FreePostDetailResponse update(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
-            @Valid @RequestBody FreePostVO request) {
+            @Valid @RequestBody FreePostRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
         return freePostService.update(loginUser, postId, request);
     }
@@ -123,23 +127,23 @@ public class FreePostController {
     // 댓글 쓰기  POST /api/free-posts/3/comments
     @PostMapping("/{postId}/comments")
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public FreePostCommentVO addComment(
+    public FreeCommentResponse addComment(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
-            @Valid @RequestBody FreePostCommentVO request) {
+            @Valid @RequestBody FreeCommentRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
-        return freePostService.addComment(loginUser, postId, request.getContent());
+        return freePostService.addComment(loginUser, postId, request);
     }
 
     // 댓글 수정  PUT /api/free-posts/3/comments/7
     @PutMapping("/{postId}/comments/{commentId}")
-    public FreePostCommentVO updateComment(
+    public FreeCommentResponse updateComment(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
             @PathVariable @Min(1) Long commentId,
-            @Valid @RequestBody FreePostCommentVO request) {
+            @Valid @RequestBody FreeCommentRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
-        return freePostService.updateComment(loginUser, postId, commentId, request.getContent());
+        return freePostService.updateComment(loginUser, postId, commentId, request);
     }
 
     // 댓글 삭제  DELETE /api/free-posts/3/comments/7
@@ -157,7 +161,7 @@ public class FreePostController {
 
     // 사진 붙이기  POST /api/free-posts/3/file  (form-data 의 file 칸)
     @PostMapping("/{postId}/file")
-    public FreeFileVO attachFile(
+    public FreeFileResponse attachFile(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
             @RequestPart("file") MultipartFile file) {
@@ -186,18 +190,17 @@ public class FreePostController {
      */
     @GetMapping("/{postId}/file")
     public ResponseEntity<byte[]> downloadFile(@PathVariable @Min(1) Long postId) {
-        FreePostVO post = freePostService.getFileOwner(postId);
-        byte[] bytes = freePostService.readFile(post);
+        FreeFileDownload file = freePostService.download(postId);
 
         // inline = 브라우저에서 바로 보여준다 (attachment 면 곧장 내려받기 창이 뜬다)
         String disposition = ContentDisposition.inline()
-                .filename(post.getFile().getName(), StandardCharsets.UTF_8)
+                .filename(file.name(), StandardCharsets.UTF_8)
                 .build()
                 .toString();
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(fileStore.contentType(post.getFile().getExt())))
+                .contentType(MediaType.parseMediaType(fileStore.contentType(file.ext())))
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
-                .body(bytes);
+                .body(file.bytes());
     }
 }

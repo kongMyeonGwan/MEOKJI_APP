@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 /**
  * FREE_POSTS 표 한 행 — JPA 가 영속성을 관리하는 대상.
  *
- * FreePostVO 와 역할이 다르다. VO 는 화면과 주고받는 모양이고, 이쪽은
- * 표 한 행 그대로다. VO 에는 표에 없는 칸(닉네임 · 댓글 · is_mine)이
- * 들어 있어서 JPA 가 관리할 수 있는 모양이 아니다.
+ * 화면과 주고받는 모양(free/dto 의 Request · Response)과 역할이 다르다.
+ * 이쪽은 표 한 행 그대로다. 응답에는 표에 없는 칸(닉네임 · 댓글 · is_mine)이
+ * 들어가므로 엔티티를 그대로 내보내지 않는다.
  *
  * 글쓴이는 @ManyToOne 이 아니라 userId 숫자로 둔다
  *
