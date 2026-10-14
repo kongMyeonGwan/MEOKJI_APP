@@ -16,13 +16,9 @@ import { saveResult } from '../../../utils/gameResult'
 
 const SPIN_TIME = 3000 // 도는 시간 (3초)
 
-// 룰렛에 올릴 분류. 서버는 8가지(한식 · 중식 · 일식 ...)를 주지만 요리 100종이
-// 거의 한식 · 국탕이라 나머지를 뽑으면 추천이 텅 비어서 이 둘만 쓴다.
-// 색도 여기서 정한다 - 서버 색은 둘 다 노란색이라 조각 두 개가 한 덩어리로 보인다.
-const SLICE_COLORS = {
-  한식: '#e8481c',
-  국탕: '#f6c445',
-}
+// 당첨될 수 있는 분류. 판에는 서버가 주는 8가지(한식 · 중식 · 일식 ...)가 다 보이지만,
+// 요리 100종이 거의 한식 · 국탕이라 나머지가 걸리면 추천이 텅 빈다. 그래서 바늘은 이 둘에만 멈춘다.
+const WINNABLE = ['한식', '국탕']
 
 export default function Roulette() {
   const [slices, setSlices] = useState([]) // 조각 목록 [{ label: '한식', color: '#f97316' }, ...]
@@ -37,10 +33,7 @@ export default function Roulette() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        const list = (data.roulette || [])
-          .filter((slice) => SLICE_COLORS[slice.label])
-          .map((slice) => ({ ...slice, color: SLICE_COLORS[slice.label] }))
-        setSlices(list)
+        setSlices(data.roulette || [])
       } catch (err) {
         // 못 받아오면 빈 룰렛
       }
@@ -65,8 +58,14 @@ export default function Roulette() {
       return
     }
 
-    // 1. 당첨 조각 번호를 뽑는다 (0 ~ 조각수-1)
-    const picked = Math.floor(Math.random() * slices.length)
+    // 1. 당첨 조각 번호를 뽑는다. WINNABLE 에 든 조각 중에서만 고른다
+    //    (서버가 한식 · 국탕을 안 보내면 판 전체에서 고른다)
+    const indexes = slices.map((slice, i) => i)
+    let candidates = indexes.filter((i) => WINNABLE.includes(slices[i].label))
+    if (candidates.length === 0) {
+      candidates = indexes
+    }
+    const picked = candidates[Math.floor(Math.random() * candidates.length)]
 
     // 2. 당첨 조각의 가운데가 12시(바늘)에 오려면 얼마나 돌려야 하는지
     const pickedCenter = picked * sliceDeg + sliceDeg / 2
