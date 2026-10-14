@@ -8,32 +8,41 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
-import com.meokji.api.free.dao.FreeCommentDAO;
-import com.meokji.api.free.dao.FreePostDAO;
+import com.meokji.api.exception.ForbiddenException;
+import com.meokji.api.exception.NotFoundException;
 import com.meokji.api.free.entity.FreePostEntity;
+import com.meokji.api.free.entity.PostCommentEntity;
+import com.meokji.api.free.repository.FreeCommentView;
+import com.meokji.api.free.repository.FreePostListView;
 import com.meokji.api.free.repository.FreePostRepository;
+import com.meokji.api.free.repository.PostCommentRepository;
 import com.meokji.api.free.vo.FreeFileVO;
 import com.meokji.api.free.vo.FreePostCommentVO;
 import com.meokji.api.free.vo.FreePostVO;
 import com.meokji.api.user.vo.UserVO;
 import com.meokji.api.util.FileStore;
 
+/**
+ * 자유게시판. 글 · 댓글 · 첨부 전부 JPA 로 읽고 쓴다.
+ *
+ * 쓰기는 엔티티(FreePostEntity · PostCommentEntity)의 메서드를 부르는 것으로
+ * 끝난다 — 트랜잭션이 끝날 때 변경 감지로 UPDATE 가 나간다.
+ * 닉네임이 필요한 조회(목록 · 댓글)만 Repository 의 네이티브 쿼리를 쓴다.
+ *
+ * 화면으로 나가는 모양은 예전 그대로 FreePostVO · FreePostCommentVO 다.
+ * 엔티티를 그대로 내보내지 않는다 — 표에 없는 칸(닉네임 · 댓글 · is_mine)을
+ * 담아야 하고, 글쓴이 id 나 파일 저장 경로처럼 화면에 나가면 안 되는 칸이 있다.
+ */
 @Service
 public class FreePostServiceImpl implements FreePostService {
 
-    // 글쓰기 · 수정 · 삭제는 JPA 가 한다
     @Autowired
     private FreePostRepository freePostRepository;
 
-    // 나머지(목록 · 검색 · 페이징 · 조회수 · 첨부)는 MyBatis 가 한다
     @Autowired
-    private FreePostDAO freePostDAO;
-
-    @Autowired
-    private FreeCommentDAO freeCommentDAO;
+    private PostCommentRepository postCommentRepository;
 
     @Autowired
     private FileStore fileStore;
@@ -41,12 +50,19 @@ public class FreePostServiceImpl implements FreePostService {
     // ===================== 글 =====================
 
     @Override
+    @Transactional(readOnly = true)
     public Page<FreePostVO> getList(String keyword, int page, int size) {
+        // 빈 검색어는 "검색 안 함" 이다. SQL 이 null 만 그렇게 본다
+        String safeKeyword = (keyword == null || keyword.isBlank()) ? null : keyword;
+
         // offset 과 total_pages 계산은 Paging 이 한다 (common/Paging.java)
         Paging paging = new Paging(page, size);
-        paging.setTotal(freePostDAO.count(keyword));
+        paging.setTotal(freePostRepository.countAlive(safeKeyword));
 
-        List<FreePostVO> items = freePostDAO.findPage(keyword, paging.getOffset(), paging.getSize());
+        List<FreePostVO> items = new ArrayList<>();
+        for (FreePostListView row : freePostRepository.findPage(safeKeyword, paging.getOffset(), paging.getSize())) {
+            items.add(toListItem(row));
+        }
 
         Page<FreePostVO> result = new Page<>();
         result.fill(paging, items);
@@ -54,9 +70,9 @@ public class FreePostServiceImpl implements FreePostService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public FreePostVO getDetail(UserVO loginUser, Long postId) {
-        FreePostVO post = findAlivePost(postId);
-        return fillDetail(post, loginUser);
+        return toDetail(findAlivePost(postId), loginUser);
     }
 
     @Override
@@ -68,41 +84,29 @@ public class FreePostServiceImpl implements FreePostService {
                 request.getTitle().trim(),
                 request.getContent());
 
-        freePostRepository.save(post);
+        // 바로 INSERT 를 보낸다. 그래야 DB 가 채운 작성 시각 · 조회수를
+        // @Generated 가 다시 읽어 와서 응답에 담을 수 있다
+        freePostRepository.saveAndFlush(post);
 
-        // 여기서 flush 를 부르지 않는다. id 가 오라클 IDENTITY 라 JPA 가 번호를
-        // 받으려면 INSERT 를 바로 보내야 하고, 그래서 이 줄을 지날 때 이미 DB 에 들어가 있다.
-
-        // 방금 넣은 행을 다시 읽는다. 닉네임 · 작성 시각은 DB 와 JOIN 이 채우는 값이다
-        return fillDetail(findAlivePost(post.getId()), loginUser);
+        return toDetail(post, loginUser);
     }
 
     @Override
     @Transactional
     public FreePostVO update(UserVO loginUser, Long postId, FreePostVO request) {
-        FreePostEntity post = findAliveEntity(postId);
+        FreePostEntity post = findAlivePost(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
-        // setter 를 부르는 것만으로 UPDATE 가 나간다 (변경 감지).
-        // save() 를 다시 부르지 않는다
+        // 이 메서드만 부르면 UPDATE 가 나간다 (변경 감지). save() 를 다시 부르지 않는다
         post.change(request.getTitle().trim(), request.getContent());
 
-        // 바꾼 값을 DB 로 먼저 내보낸다.
-        //
-        // JPA 는 트랜잭션이 끝날 때 몰아서 보내는데, 바로 아래 findAlivePost 는
-        // MyBatis 라 JPA 가 들고 있는 값을 모른다. 이 줄이 없으면 방금 고친 글을
-        // 읽는데 옛 제목이 나온다.
-        freePostRepository.flush();
-
-        return fillDetail(findAlivePost(postId), loginUser);
+        return toDetail(post, loginUser);
     }
 
     @Override
     @Transactional
     public void delete(UserVO loginUser, Long postId) {
-        // 먼저 MyBatis 로 읽는다. 붙어 있는 사진의 저장 경로가 여기 들어 있고,
-        // 그 칸들은 JPA 쪽(FreePostEntity)에 일부러 안 두었다
-        FreePostVO post = findAlivePost(postId);
+        FreePostEntity post = findAlivePost(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
         // 붙어 있던 사진도 같이 지운다. 글이 안 보이는데 파일만 남으면
@@ -110,15 +114,17 @@ public class FreePostServiceImpl implements FreePostService {
         deleteStoredFile(post);
 
         // 행은 지우지 않고 use_yn 만 뒤집는다 (변경 감지로 UPDATE 가 나간다)
-        findAliveEntity(postId).deactivate();
+        post.deactivate();
     }
 
     @Override
     @Transactional
     public int increaseView(Long postId) {
-        findAlivePost(postId); // 없는 글이면 404
-        freePostDAO.increaseView(postId);
-        return freePostDAO.findViewCount(postId);
+        // 지운 글이거나 없는 글이면 바뀐 행이 0 이다
+        if (freePostRepository.increaseView(postId) == 0) {
+            throw new NotFoundException("글을 찾을 수 없습니다.");
+        }
+        return freePostRepository.findViewCount(postId);
     }
 
     // ===================== 댓글 =====================
@@ -128,39 +134,31 @@ public class FreePostServiceImpl implements FreePostService {
     public FreePostCommentVO addComment(UserVO loginUser, Long postId, String content) {
         findAlivePost(postId); // 지워진 글에는 댓글을 못 단다
 
-        FreePostCommentVO comment = new FreePostCommentVO();
-        comment.setPostId(postId);
-        comment.setUserId(loginUser.getId());
-        comment.setContent(content.trim());
+        PostCommentEntity comment = PostCommentEntity.create(postId, loginUser.getId(), content.trim());
+        postCommentRepository.save(comment); // id 가 IDENTITY 라 여기서 INSERT 가 나간다
 
-        freeCommentDAO.insert(comment);
-
-        FreePostCommentVO saved = freeCommentDAO.findById(comment.getId());
-        saved.setIsMine(true);
-        return saved;
+        return toComment(postCommentRepository.findView(comment.getId()), loginUser);
     }
 
     @Override
     @Transactional
     public FreePostCommentVO updateComment(UserVO loginUser, Long postId, Long commentId, String content) {
-        FreePostCommentVO comment = findAliveComment(postId, commentId);
+        PostCommentEntity comment = findAliveComment(postId, commentId);
         checkOwner(loginUser, comment.getUserId(), "댓글");
 
-        comment.setContent(content.trim());
-        freeCommentDAO.update(comment);
+        comment.change(content.trim());
 
-        FreePostCommentVO saved = freeCommentDAO.findById(commentId);
-        saved.setIsMine(true);
-        return saved;
+        // 아래는 네이티브 쿼리라 JPA 가 실행 전에 바뀐 내용을 먼저 DB 로 보낸다
+        return toComment(postCommentRepository.findView(commentId), loginUser);
     }
 
     @Override
     @Transactional
     public void deleteComment(UserVO loginUser, Long postId, Long commentId) {
-        FreePostCommentVO comment = findAliveComment(postId, commentId);
+        PostCommentEntity comment = findAliveComment(postId, commentId);
         checkOwner(loginUser, comment.getUserId(), "댓글");
 
-        freeCommentDAO.deactivate(commentId);
+        comment.deactivate();
     }
 
     // ===================== 사진 =====================
@@ -168,7 +166,7 @@ public class FreePostServiceImpl implements FreePostService {
     @Override
     @Transactional
     public FreeFileVO attachFile(UserVO loginUser, Long postId, MultipartFile file) {
-        FreePostVO post = findAlivePost(postId);
+        FreePostEntity post = findAlivePost(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
         // 받을 수 있는 파일인지 검사하고 디스크에 저장한다 (안 되면 여기서 끊긴다)
@@ -178,46 +176,42 @@ public class FreePostServiceImpl implements FreePostService {
         // 저장이 실패했을 때 사진이 통째로 사라지는 일이 없다
         deleteStoredFile(post);
 
-        FreeFileVO saving = new FreeFileVO();
-        saving.setPath(saved[0]);
-        saving.setSavedName(saved[1]);
-        saving.setName(file.getOriginalFilename());
-        saving.setExt(fileStore.extensionOf(file.getOriginalFilename()));
-        saving.setSize(file.getSize());
+        post.attachFile(
+                saved[0],
+                saved[1],
+                file.getOriginalFilename(),
+                fileStore.extensionOf(file.getOriginalFilename()),
+                file.getSize());
 
-        FreePostVO target = new FreePostVO();
-        target.setId(postId);
-        target.setFile(saving);
-        freePostDAO.setFile(target);
-
-        // 다시 읽어 매퍼가 담아준 file 을 쓴다. 크기 표시와 주소만 마저 넣으면 된다
-        FreePostVO attached = freePostDAO.findById(postId);
-        fillFile(attached);
-        return attached.getFile();
+        return toFile(post);
     }
 
     @Override
     @Transactional
     public void detachFile(UserVO loginUser, Long postId) {
-        FreePostVO post = findAlivePost(postId);
+        FreePostEntity post = findAlivePost(postId);
         checkOwner(loginUser, post.getUserId(), "글");
 
-        if (!post.getHasFile()) {
-            throw ApiException.notFound("붙어 있는 사진이 없습니다.");
+        if (!post.hasFile()) {
+            throw new NotFoundException("붙어 있는 사진이 없습니다.");
         }
 
         deleteStoredFile(post);
-        freePostDAO.clearFile(postId);
+        post.detachFile();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public FreePostVO getFileOwner(Long postId) {
-        FreePostVO post = findAlivePost(postId);
+        FreePostEntity post = findAlivePost(postId);
 
-        if (!post.getHasFile()) {
-            throw ApiException.notFound("붙어 있는 사진이 없습니다.");
+        if (!post.hasFile()) {
+            throw new NotFoundException("붙어 있는 사진이 없습니다.");
         }
-        return post;
+
+        FreePostVO result = toBase(post);
+        result.setFile(toFile(post));
+        return result;
     }
 
     @Override
@@ -227,106 +221,119 @@ public class FreePostServiceImpl implements FreePostService {
 
     // ===================== 안쪽에서만 쓰는 것 =====================
 
-    /**
-     * 살아있는 글 하나를 JPA 로. 없거나 지워졌으면 404.
-     *
-     * 아래 findAlivePost 와 읽는 행은 같지만 쓰임이 다르다. 이쪽은 JPA 가
-     * 들고 있다가 고친 것을 알아채는 대상이고, 저쪽은 화면으로 나갈 모양이다.
-     * 닉네임 · 댓글 수는 이쪽에 없다.
-     */
-    private FreePostEntity findAliveEntity(Long postId) {
+    /** 살아있는 글 하나. 없거나 지워졌으면 404 */
+    private FreePostEntity findAlivePost(Long postId) {
         return freePostRepository
                 .findByIdAndUseYn(postId, "Y")
-                .orElseThrow(() -> ApiException.notFound("글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("글을 찾을 수 없습니다."));
     }
 
-    /** 살아있는 글 하나. 없거나 지워졌으면 404 */
-    private FreePostVO findAlivePost(Long postId) {
-        FreePostVO post = freePostDAO.findById(postId);
-
-        if (post == null || !post.alive()) {
-            throw ApiException.notFound("글을 찾을 수 없습니다.");
-        }
-        return post;
-    }
-
-    /** 살아있는 댓글 하나. 주소의 글 번호와 짝이 맞는지도 본다 */
-    private FreePostCommentVO findAliveComment(Long postId, Long commentId) {
-        FreePostCommentVO comment = freeCommentDAO.findById(commentId);
-
-        // postId 를 같이 보는 이유: /free-posts/1/comments/7 처럼 남의 글 주소에
-        // 내 댓글 번호를 끼워 넣는 요청을 막는다
-        if (comment == null || !"Y".equals(comment.getUseYn()) || !comment.getPostId().equals(postId)) {
-            throw ApiException.notFound("댓글을 찾을 수 없습니다.");
-        }
-        return comment;
+    /** 살아있는 댓글 하나. 주소의 글 번호와 짝이 맞아야 한다 */
+    private PostCommentEntity findAliveComment(Long postId, Long commentId) {
+        return postCommentRepository
+                .findByIdAndPostIdAndUseYn(commentId, postId, "Y")
+                .orElseThrow(() -> new NotFoundException("댓글을 찾을 수 없습니다."));
     }
 
     /** 내가 쓴 것이 아니면 403 */
     private void checkOwner(UserVO loginUser, Long ownerId, String what) {
         if (!ownerId.equals(loginUser.getId())) {
-            throw ApiException.forbidden("내가 쓴 " + what + "만 고치거나 지울 수 있습니다.");
+            throw new ForbiddenException("내가 쓴 " + what + "만 고치거나 지울 수 있습니다.");
         }
-    }
-
-    /**
-     * 상세에만 필요한 칸을 글에 채워 넣는다.
-     *
-     * 목록 SQL 은 이 칸들을 안 가져오므로 목록에서는 null 로 남는다 — 댓글 ·
-     * 첨부 · 내 글 여부는 상세를 열 때만 있으면 되는 값이다.
-     *
-     * 새 VO 로 옮겨 담지 않고 받은 글에 그대로 채운다. 칸이 같은 클래스라
-     * 옮겨 담을 이유가 없고, 옮기다 한 칸을 빠뜨리는 실수도 안 난다.
-     */
-    private FreePostVO fillDetail(FreePostVO post, UserVO loginUser) {
-        List<FreePostCommentVO> comments = freeCommentDAO.findByPost(post.getId());
-        if (comments == null) {
-            comments = new ArrayList<FreePostCommentVO>();
-        }
-
-        for (FreePostCommentVO comment : comments) {
-            comment.setIsMine(isMine(loginUser, comment.getUserId()));
-        }
-
-        post.setComments(comments);
-        post.setCommentCount(comments.size());
-        post.setIsMine(isMine(loginUser, post.getUserId()));
-        fillFile(post);
-
-        if (post.getViewCount() == null) {
-            post.setViewCount(0);
-        }
-        return post;
-    }
-
-    /**
-     * 첨부의 나머지 두 칸을 채운다. 다섯 칸은 매퍼가 이미 담아 왔다.
-     *
-     * 첨부가 없으면 file 이 null 이라 할 일이 없다.
-     */
-    private void fillFile(FreePostVO post) {
-        FreeFileVO file = post.getFile();
-
-        if (file == null) {
-            return;
-        }
-
-        file.setSizeText(fileStore.sizeText(file.getSize()));
-        // 업로드 폴더를 그대로 열지 않는다. 지워진 글의 사진이 주소만 알면 계속 보인다
-        file.setUrl("/api/free-posts/" + post.getId() + "/file");
-    }
-
-    /** 디스크에 저장해둔 사진을 지운다. 첨부가 없으면 할 일이 없다 */
-    private void deleteStoredFile(FreePostVO post) {
-        if (post.getFile() == null) {
-            return;
-        }
-
-        fileStore.delete(post.getFile().getPath(), post.getFile().getSavedName());
     }
 
     /** 로그인한 사람이 쓴 것인지. 비로그인이면 false */
     private boolean isMine(UserVO loginUser, Long ownerId) {
         return loginUser != null && ownerId.equals(loginUser.getId());
+    }
+
+    // ---------- 엔티티 · 조회 결과 → 화면 모양 ----------
+
+    /** 목록 한 줄. 댓글 · 첨부 상세 · 내 글 여부는 목록에 없다 (null 로 둔다) */
+    private FreePostVO toListItem(FreePostListView row) {
+        FreePostVO item = new FreePostVO();
+        item.setId(row.getId());
+        item.setTitle(row.getTitle());
+        item.setContent(row.getContent());
+        item.setNickname(row.getNickname());
+        item.setViewCount(row.getViewCount());
+        item.setCreatedAt(row.getCreatedAt());
+        item.setFileYn(row.getFileYn());
+        item.setCommentCount(row.getCommentCount());
+        return item;
+    }
+
+    /** 엔티티의 칸을 그대로 옮긴 것. 닉네임 · 댓글 · 첨부는 아직 없다 */
+    private FreePostVO toBase(FreePostEntity post) {
+        FreePostVO vo = new FreePostVO();
+        vo.setId(post.getId());
+        vo.setUserId(post.getUserId());
+        vo.setTitle(post.getTitle());
+        vo.setContent(post.getContent());
+        vo.setFileYn(post.getFileYn());
+        vo.setViewCount(post.getViewCount() == null ? 0 : post.getViewCount());
+        vo.setUseYn(post.getUseYn());
+        vo.setCreatedAt(post.getCreatedAt());
+        vo.setUpdatedAt(post.getUpdatedAt());
+        return vo;
+    }
+
+    /** 상세. 닉네임 · 댓글 · 첨부 · 내 글 여부까지 채운다 */
+    private FreePostVO toDetail(FreePostEntity post, UserVO loginUser) {
+        FreePostVO vo = toBase(post);
+        vo.setNickname(freePostRepository.findNickname(post.getUserId()));
+        vo.setFile(toFile(post));
+        vo.setIsMine(isMine(loginUser, post.getUserId()));
+
+        List<FreePostCommentVO> comments = new ArrayList<>();
+        for (FreeCommentView row : postCommentRepository.findViewsByPost(post.getId())) {
+            comments.add(toComment(row, loginUser));
+        }
+        vo.setComments(comments);
+        vo.setCommentCount(comments.size());
+        return vo;
+    }
+
+    /**
+     * 첨부 사진. 없으면 null — 화면은 file 이 없으면 사진 자리를 통째로 안 그린다.
+     *
+     * url 은 업로드 폴더 주소가 아니라 GET /api/free-posts/{id}/file 이다.
+     * 폴더를 그대로 열어두면 지워진 글의 사진도 주소만 알면 계속 보인다.
+     */
+    private FreeFileVO toFile(FreePostEntity post) {
+        if (!post.hasFile()) {
+            return null;
+        }
+
+        FreeFileVO file = new FreeFileVO();
+        file.setSavedName(post.getFileName());
+        file.setPath(post.getFilePath());
+        file.setName(post.getFileOrgName());
+        file.setExt(post.getFileExt());
+        file.setSize(post.getFileSize());
+        file.setSizeText(fileStore.sizeText(post.getFileSize()));
+        file.setUrl("/api/free-posts/" + post.getId() + "/file");
+        return file;
+    }
+
+    /** 댓글 한 건 */
+    private FreePostCommentVO toComment(FreeCommentView row, UserVO loginUser) {
+        FreePostCommentVO comment = new FreePostCommentVO();
+        comment.setId(row.getId());
+        comment.setUserId(row.getUserId());
+        comment.setContent(row.getContent());
+        comment.setNickname(row.getNickname());
+        comment.setCreatedAt(row.getCreatedAt());
+        comment.setIsMine(isMine(loginUser, row.getUserId()));
+        return comment;
+    }
+
+    /** 디스크에 저장해둔 사진을 지운다. 첨부가 없으면 할 일이 없다 */
+    private void deleteStoredFile(FreePostEntity post) {
+        if (!post.hasFile()) {
+            return;
+        }
+
+        fileStore.delete(post.getFilePath(), post.getFileName());
     }
 }

@@ -19,11 +19,11 @@ import lombok.Data;
  * 이 게시판 규모에서는 크지 않았고, 서비스에 옮겨 담는 코드만 늘었다.
  * 합칠 수 있었던 이유는 다음 세 가지다.
  *
- *   1. 칸이 있다고 SQL 이 다 쓰는 것이 아니다. 목록은 FreePostMapper 의
+ *   1. 칸이 있다고 다 채우는 것이 아니다. 목록은 FreePostRepository 의
  *      findPage 가 고른 칸만 채우고 content 는 거기서 200자로 자른다.
  *      comments · file 처럼 남는 칸은 그냥 null 로 둔다.
- *   2. INSERT · UPDATE 가 컬럼을 하나씩 적는다. 표에 없는 칸(comments ·
- *      isMine · file)이 여기 있어도 SQL 은 모른다.
+ *   2. 표에 쓰는 것은 FreePostEntity 다. 표에 없는 칸(comments ·
+ *      isMine · file)이 여기 있어도 INSERT · UPDATE 와 상관없다.
  *   3. 받을 때와 보낼 때가 다른 칸은 READ_ONLY 로 한쪽만 연다.
  *      FreePostCommentVO 가 먼저 이렇게 쓰고 있었다.
  *
@@ -101,8 +101,8 @@ public class FreePostVO {
     /**
      * 첨부 사진. 없거나 목록이면 null.
      *
-     * 표의 FILE_* 다섯 칸이 여기 담긴다 — 매퍼의 postWithFile 이 채우고,
-     * 크기 표시와 주소는 서비스가 마저 넣는다.
+     * 표의 FILE_* 다섯 칸과 크기 표시 · 주소를 서비스가
+     * FreePostEntity 에서 옮겨 담는다.
      */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private FreeFileVO file;
@@ -129,11 +129,6 @@ public class FreePostVO {
     @JsonProperty("has_file")
     public boolean getHasFile() {
         return "Y".equals(fileYn);
-    }
-
-    /** 지워지지 않은 글인지. @JsonProperty 가 없으니 응답에는 나가지 않는다 */
-    public boolean alive() {
-        return "Y".equals(useYn);
     }
 
     /** 화면이 읽는 created_at. 예) "2026-10-04T12:30:00Z" */

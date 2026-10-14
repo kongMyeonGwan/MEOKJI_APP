@@ -15,7 +15,7 @@ import lombok.Data;
  * POST_COMMENTS 표 한 행 중 자유게시판 것(BOARD_TYPE='F').
  *
  * 레시피리뷰 댓글과 표를 같이 쓰지만 BOARD_TYPE 은 이 클래스에 두지 않았다.
- * 매퍼 XML 이 모든 문장에 'F' 를 박고 있어서, 여기 담기는 행은 언제나
+ * PostCommentEntity 와 그 Repository 가 모든 조회에 'F' 를 붙여서, 여기 담기는 행은 언제나
  * 자유게시판 댓글이다. 칸을 두면 누가 'R' 을 넣어 보낼 여지만 생긴다.
  *
  * 대댓글은 없다. 한 단계만 두기로 한 결정이고, 필요해지면 parent_id 를

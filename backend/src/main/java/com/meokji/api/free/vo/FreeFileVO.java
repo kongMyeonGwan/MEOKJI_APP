@@ -13,12 +13,11 @@ import lombok.Data;
  * 받아 적었다. 같은 값을 두 군데 두면 한쪽만 고치는 실수가 난다.
  *
  * 채우는 곳이 둘이다
- *   savedName · path · name · ext · size  — DB 에서 온다 (FreePostMapper 의 postWithFile)
+ *   savedName · path · name · ext · size  — FreePostEntity 의 FILE_* 칸에서 옮긴다
  *   sizeText · url                        — 서비스가 계산해 넣는다
  *
- * 첨부가 없는 글이면 이 객체 자체가 null 이다. 다섯 칸이 전부 NULL 이면
- * MyBatis 가 association 을 안 만들기 때문이다. 화면도 file 이 없으면
- * 사진 자리를 통째로 그리지 않는다.
+ * 첨부가 없는 글이면 이 객체 자체가 null 이다 (서비스가 file_yn='N' 이면
+ * 만들지 않는다). 화면도 file 이 없으면 사진 자리를 통째로 그리지 않는다.
  *
  * url 은 업로드 폴더 주소가 아니라 GET /api/free-posts/{id}/file 이다.
  * 폴더를 그대로 열어두면 지워진 글의 사진도 주소만 알면 계속 보인다.
