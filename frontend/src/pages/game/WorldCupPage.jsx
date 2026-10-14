@@ -10,6 +10,7 @@ import { addLog, foodNames, markPicked } from '../../utils/aiLog'
 import { saveResult } from '../../utils/gameResult'
 import { formatMinutes, formatPrice } from '../../utils/format'
 import RoundPicker from './components/RoundPicker'
+import './gameScreens.css'
 
 // 음식 이상형 월드컵. 후보를 둘씩 붙여서 하나를 고르면 다음 라운드로 올라간다.
 // 시작 전에 64강 · 32강 · 16강 중 하나를 고른다.
@@ -250,7 +251,7 @@ export default function WorldCupPage({ user }) {
 
   if (loading) {
     return (
-      <div className="list-page list-page--narrow">
+      <div className="list-page list-page--narrow game-screen">
         <div className="card">
           <Loading message="AI가 후보를 고르는 중..." />
         </div>
@@ -261,7 +262,7 @@ export default function WorldCupPage({ user }) {
   // 후보를 못 받았거나 짝이 안 맞을 때
   if (error || round.length === 0 || (round.length > 1 && !round[index + 1])) {
     return (
-      <div className="list-page list-page--narrow">
+      <div className="list-page list-page--narrow game-screen">
         <div className="card">
           <ErrorMessage message={error || '후보를 받아오지 못했습니다.'} />
           <button type="button" className="btn" onClick={() => startGame(size)}>
@@ -277,7 +278,7 @@ export default function WorldCupPage({ user }) {
     const champion = round[0]
 
     return (
-      <div className="list-page list-page--narrow">
+      <div className="list-page list-page--narrow game-screen">
         <div className="card wc wc--done">
           <p className="wc__crown">🏆</p>
           <p className="wc__round">오늘의 우승 메뉴</p>
@@ -317,7 +318,7 @@ export default function WorldCupPage({ user }) {
   const matchTotal = round.length / 2 // 이번 라운드의 대결 수
 
   return (
-    <div className="list-page">
+    <div className="list-page game-screen game-screen--wide">
       <div className="section-head">
         <h2 className="section-title">음식 이상형 월드컵</h2>
         <button type="button" className="section-more wc__restart" onClick={backToPicker}>

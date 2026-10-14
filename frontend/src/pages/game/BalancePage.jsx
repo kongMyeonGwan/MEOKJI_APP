@@ -9,6 +9,7 @@ import { addLog, foodNames } from '../../utils/aiLog'
 import { saveResult } from '../../utils/gameResult'
 import RoundPicker from './components/RoundPicker'
 import BALANCE_QUESTIONS from './components/balanceQuestions'
+import './gameScreens.css'
 
 // 음식 취향 밸런스 게임.
 // 시작 전에 16강 · 8강 · 4강(질문 16 · 8 · 4개)을 고른다.
@@ -174,7 +175,7 @@ export default function BalancePage({ user }) {
   if (answers.length === questions.length) {
     return (
       // --wide : 카드 격자라 폭을 묶지 않고 본문을 꽉 채운다
-      <div className="list-page list-page--wide">
+      <div className="list-page list-page--wide game-screen">
         <div className="section-head">
           <h2 className="section-title">이런 메뉴는 어떠세요?</h2>
           <button type="button" className="section-more wc__restart" onClick={restart}>
@@ -217,7 +218,7 @@ export default function BalancePage({ user }) {
   const question = questions[step]
 
   return (
-    <div className="list-page list-page--narrow">
+    <div className="list-page list-page--narrow game-screen">
       <div className="section-head">
         <h2 className="section-title">음식 취향 밸런스 게임</h2>
         <span className="muted section-more">

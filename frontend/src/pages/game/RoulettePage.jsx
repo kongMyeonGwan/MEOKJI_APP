@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import Roulette from './components/Roulette'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { getToken } from '../../utils/token'
+import './gameScreens.css'
 
 // 음식 추천 룰렛 화면
 export default function RoulettePage() {
@@ -13,7 +14,7 @@ export default function RoulettePage() {
   }, [])
 
   return (
-    <div className="list-page list-page--narrow">
+    <div className="list-page list-page--narrow game-screen">
       <Roulette />
     </div>
   )
