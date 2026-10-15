@@ -76,7 +76,7 @@ public class FreePostService {
         }
 
         Page<FreePostListResponse> result = new Page<>();
-        result.fill(paging, items);
+        result.Page(paging, items);
         return result;
     }
 
