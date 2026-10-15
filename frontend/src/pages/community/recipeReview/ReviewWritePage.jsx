@@ -22,6 +22,9 @@ import { SAMPLE_PHOTO } from '../../../data/sampleBoard'
 //   - 고른 사진을 미리보기로 바꿔 보여준다 (5MB 이하 이미지만)
 //   - 등록하면 createReview → uploadReviewFile 순서로 보내고 쓴 글로 이동한다
 //     서버는 snake_case 로 받는다 → { meal_history_id: selected.id, title, content }
+
+const CONTENT_MAX = 2000 // 본문 최대 글자 수
+
 export default function ReviewWritePage() {
   // 주소의 ?historyId=5 (없으면 빈 문자열)
   const [searchParams] = useSearchParams()
