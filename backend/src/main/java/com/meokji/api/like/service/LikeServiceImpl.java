@@ -1,23 +1,8 @@
 package com.meokji.api.like.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.meokji.api.like.dao.LikeDAO;
-import com.meokji.api.like.vo.LikeListVO;
-import com.meokji.api.like.vo.RecipeLikeVO;
-import com.meokji.api.recommend.vo.FoodVO;
-import com.meokji.api.user.vo.UserVO;
-import com.meokji.api.util.FoodCatalog;
-import com.meokji.api.util.FoodScorer;
-
-import tools.jackson.databind.JsonNode;
-
+<<<<<<< HEAD
 /**
  * 찜 목록 · 하트 누르기 · 전부 비우기.
  *
@@ -164,4 +149,9 @@ public class LikeServiceImpl implements LikeService {
         // 카드를 그릴 일이 없고, 화면도 count 가 0 이면 빈 상태를 띄운다
         return response;
     }
+=======
+/** 찜한 레시피. */
+@Service
+public class LikeServiceImpl implements LikeService {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

@@ -98,7 +98,10 @@ class AuthFixtureTest {
 
         // 회원 정보는 글자까지 같아야 한다. bcrypt 해시가 그대로 통한다는 확인도 된다 -
         // 이 계정의 비밀번호 해시는 다른 bcrypt 구현($2b$)이 만든 것이다.
-        assertThat(actual.get("user")).isEqualTo(want.get("user"));
+        // 단 DB 가 정하는 id · created_at 은 모양만 본다 (MemberDbValues 참고).
+        MemberDbValues.assertShape(actual.get("user"));
+        assertThat(MemberDbValues.without(actual.get("user")))
+                .isEqualTo(MemberDbValues.without(want.get("user")));
     }
 
     @Test
@@ -111,7 +114,10 @@ class AuthFixtureTest {
                 .andReturn();
 
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
-        assertThat(body(result)).isEqualTo(want);
+
+        // DB 가 정하는 id · created_at 은 모양만 보고, 나머지는 글자까지 같아야 한다
+        MemberDbValues.assertShape(body(result));
+        assertThat(MemberDbValues.without(body(result))).isEqualTo(MemberDbValues.without(want));
     }
 
     @Test

@@ -1,12 +1,8 @@
 package com.meokji.api.like.dao;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
-import com.meokji.api.like.vo.RecipeLikeVO;
-
+<<<<<<< HEAD
 /**
  * RECIPE_LIKES 표에 보내는 SQL. 찜한 레시피 (STEP 36).
  *
@@ -67,4 +63,9 @@ public interface LikeDAO {
     // 한 SQL 로 여러 행을 바꾼다. 목록을 읽어 setUseYn 을 하나씩 부르면
     // 찜이 30개면 UPDATE 를 30번 보낸다
     void deactivateAll(@Param("userId") Long userId);
+=======
+/** RECIPE_LIKES 테이블 (찜한 레시피). */
+@Mapper
+public interface LikeDAO {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

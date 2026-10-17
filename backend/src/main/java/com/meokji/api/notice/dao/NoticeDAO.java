@@ -1,12 +1,8 @@
 package com.meokji.api.notice.dao;
 
-import java.util.List;
-
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
-import com.meokji.api.notice.vo.NoticeVO;
-
+<<<<<<< HEAD
 /**
  * NOTICES 테이블 (공지사항). SQL 은 resources/mapper/NoticeMapper.xml 에 있다.
  *
@@ -44,4 +40,9 @@ public interface NoticeDAO {
     // SQL 에 use_yn 조건을 넣지 않는다. "없는 번호" 와 "지운 공지" 를
     // 구별할 수 있게 두고, 판단은 서비스가 한다 (BanDAO.findById 주석과 같은 이유)
     NoticeVO findById(@Param("id") Long id);
+=======
+/** NOTICES 테이블 (공지사항). */
+@Mapper
+public interface NoticeDAO {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

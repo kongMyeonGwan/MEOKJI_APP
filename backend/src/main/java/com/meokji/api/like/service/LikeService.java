@@ -1,11 +1,8 @@
 package com.meokji.api.like.service;
 
-import com.meokji.api.like.vo.LikeListVO;
-import com.meokji.api.like.vo.RecipeLikeVO;
-import com.meokji.api.user.vo.UserVO;
-
 /** 찜한 레시피. 실제 코드는 LikeServiceImpl 에 있다. */
 public interface LikeService {
+<<<<<<< HEAD
 
     /**
      * 내 찜 목록 (음식 이름들)
@@ -32,4 +29,6 @@ public interface LikeService {
      * @return 비운 뒤의 상태(빈 목록 · count 0). items 는 null 이다
      */
     LikeListVO clear(UserVO user);
+=======
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

@@ -1,19 +1,8 @@
 package com.meokji.api.review.service;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.meokji.api.common.ApiException;
-import com.meokji.api.common.Page;
-import com.meokji.api.review.vo.ReviewCommentVO;
-import com.meokji.api.review.vo.RecipeReviewVO;
-import com.meokji.api.review.vo.ReviewFileVO;
-import com.meokji.api.review.vo.ReviewLikeVO;
-import com.meokji.api.user.vo.UserVO;
-
+<<<<<<< HEAD
 /**
  * 커뮤니티 게시판.
  *
@@ -216,4 +205,9 @@ public class ReviewServiceImpl implements ReviewService {
         // 생각해볼 자리다 (ReviewService.downloadFile 주석 참고)
         throw ApiException.notImplemented(TODO);
     }
+=======
+/** 커뮤니티 게시판 (레시피 후기). */
+@Service
+public class ReviewServiceImpl implements ReviewService {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

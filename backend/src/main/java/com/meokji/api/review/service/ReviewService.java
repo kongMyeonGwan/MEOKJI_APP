@@ -1,5 +1,6 @@
 package com.meokji.api.review.service;
 
+<<<<<<< HEAD
 import java.time.LocalDate;
 import java.util.List;
 
@@ -117,4 +118,8 @@ public interface ReviewService {
      * 자유게시판처럼 나눠야 할 수 있다
      */
     byte[] downloadFile(Long reviewId);
+=======
+/** 커뮤니티 게시판 (레시피 후기). 실제 코드는 ReviewServiceImpl 에 있다. */
+public interface ReviewService {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

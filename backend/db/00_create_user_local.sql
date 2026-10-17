@@ -181,7 +181,8 @@ CREATE USER meokji_app
 -- ---------------------------------------------------------
 -- 5. 권한 부여 — 애플리케이션에 필요한 최소한만
 --    DBA / SYSDBA 는 부여하지 않습니다.
---    CREATE SEQUENCE 는 Identity 컬럼이 내부 시퀀스를 만들기 때문에 필요합니다.
+--    CREATE SEQUENCE 는 Identity 컬럼이 내부 시퀀스를 만들고,
+--    FREE_POSTS 의 PK 시퀀스(FREE_SEQ)도 직접 만들기 때문에 필요합니다.
 -- ---------------------------------------------------------
 GRANT CREATE SESSION  TO meokji_app;
 GRANT CREATE TABLE    TO meokji_app;

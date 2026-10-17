@@ -2,6 +2,7 @@ package com.meokji.api.notice.service;
 
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import com.meokji.api.common.ApiException;
 import com.meokji.api.common.Page;
 import com.meokji.api.notice.vo.NoticeVO;
@@ -100,4 +101,9 @@ public class NoticeServiceImpl implements NoticeService {
         // 채울 때 — DELETE 가 아니라 use_yn='N' 으로 바꾼다 (다른 기능과 같은 방식)
         throw ApiException.notImplemented(TODO);
     }
+=======
+/** 공지사항. */
+@Service
+public class NoticeServiceImpl implements NoticeService {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

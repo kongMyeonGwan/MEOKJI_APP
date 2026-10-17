@@ -1,40 +1,13 @@
 package com.meokji.api.review.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.meokji.api.common.Page;
-import com.meokji.api.common.Paging;
-import com.meokji.api.review.vo.ReviewCommentVO;
-import com.meokji.api.review.vo.RecipeReviewVO;
-import com.meokji.api.review.vo.ReviewFileVO;
-import com.meokji.api.review.vo.ReviewLikeVO;
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.review.service.ReviewService;
-import com.meokji.api.user.vo.UserVO;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
-
+<<<<<<< HEAD
 /**
  * 커뮤니티 게시판 (레시피 후기).  주소: /api/reviews
  *
@@ -62,16 +35,17 @@ import jakarta.validation.constraints.Size;
  *   /api/reviews/{id}/comments/{cid}   댓글 수정 · 삭제
  *   /api/reviews/{id}/file             사진 붙이기 · 떼기 · 받기
  */
+=======
+/** 커뮤니티 게시판 (레시피 후기).  주소: /api/reviews */
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
 
     @Autowired
-    private AuthService authService;
-
-    @Autowired
     private ReviewService reviewService;
 
+<<<<<<< HEAD
     // ===================== 글 =====================
 
     // 목록  GET /api/reviews?keyword=김치&page=1&size=20
@@ -303,5 +277,10 @@ public class ReviewController {
     @GetMapping("/{reviewId}/file")
     public byte[] downloadFile(@PathVariable @Min(1) Long reviewId) {
         return reviewService.downloadFile(reviewId);
+=======
+    // 목록  GET /api/reviews
+    @GetMapping
+    public void getList() {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
     }
 }

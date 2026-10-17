@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import com.meokji.api.ban.vo.UserBanVO;
 import com.meokji.api.history.vo.MealHistoryVO;
-import com.meokji.api.notice.vo.NoticeVO;
-import com.meokji.api.review.vo.ReviewCommentVO;
 import com.meokji.api.user.vo.UserVO;
 
 import tools.jackson.databind.JsonNode;
@@ -126,60 +124,5 @@ class ResponseShapeTest {
         assertThat(json.get("ingredients_json").isArray()).isTrue();
         assertThat(json.get("selected_at").asString()).isEqualTo("2026-09-11T21:29:42Z");
         assertThat(json.get("art").asString()).isEqualTo("stew");
-    }
-
-    @Test
-    @DisplayName("NoticeVO 의 pinned 는 DB 의 'Y' 를 true 로 바꿔서 내보낸다")
-    void noticeVoPinned() {
-        NoticeVO notice = new NoticeVO();
-        notice.setId(1L);
-        notice.setUserId(9L);
-        notice.setTitle("점검 안내");
-        notice.setContent("내용");
-        notice.setViewCount(5);
-        notice.setPinnedYn("Y");
-        notice.setUseYn("Y");
-        notice.setCreatedAt(LocalDateTime.of(2026, 9, 11, 21, 29, 42));
-
-        JsonNode json = toJson(notice);
-
-        assertThat(json.has("pinned_yn")).as("DB 값 그대로는 안 나간다").isFalse();
-        assertThat(json.has("user_id")).isFalse();
-        assertThat(json.get("pinned").asBoolean()).isTrue();
-        assertThat(json.get("view_count").asInt()).isEqualTo(5);
-        assertThat(json.get("created_at").asString()).isEqualTo("2026-09-11T21:29:42Z");
-    }
-
-    @Test
-    @DisplayName("화면이 보낸 pinned 는 DB 값이 없을 때 그대로 돌아온다")
-    void noticeVoPinnedFromRequest() {
-        NoticeVO request = new NoticeVO();
-        request.setTitle("점검 안내");
-        request.setContent("내용");
-        request.setPinned(true);
-
-        assertThat(request.getPinned()).isTrue();
-        assertThat(toJson(request).get("pinned").asBoolean()).isTrue();
-    }
-
-    @Test
-    @DisplayName("ReviewCommentVO 는 post_id 와 user_id 를 감춘다")
-    void commentVoShape() {
-        ReviewCommentVO comment = new ReviewCommentVO();
-        comment.setId(4L);
-        comment.setPostId(12L);
-        comment.setUserId(7L);
-        comment.setContent("맛있어 보여요");
-        comment.setNickname("민지");
-        comment.setIsMine(true);
-        comment.setCreatedAt(LocalDateTime.of(2026, 9, 11, 21, 29, 42));
-
-        JsonNode json = toJson(comment);
-
-        assertThat(json.has("post_id")).isFalse();
-        assertThat(json.has("user_id")).isFalse();
-        assertThat(json.get("nickname").asString()).isEqualTo("민지");
-        assertThat(json.get("is_mine").asBoolean()).isTrue();
-        assertThat(json.get("created_at").asString()).isEqualTo("2026-09-11T21:29:42Z");
     }
 }

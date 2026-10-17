@@ -25,10 +25,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.common.Page;
 import com.meokji.api.common.Paging;
+import com.meokji.api.free.dto.FreeCommentRequest;
+import com.meokji.api.free.dto.FreeCommentResponse;
+import com.meokji.api.free.dto.FreeFileDownload;
+import com.meokji.api.free.dto.FreeFileResponse;
+import com.meokji.api.free.dto.FreePostDetailResponse;
+import com.meokji.api.free.dto.FreePostListResponse;
+import com.meokji.api.free.dto.FreePostRequest;
 import com.meokji.api.free.service.FreePostService;
-import com.meokji.api.free.vo.FreeFileVO;
-import com.meokji.api.free.vo.FreePostCommentVO;
-import com.meokji.api.free.vo.FreePostVO;
 import com.meokji.api.user.vo.UserVO;
 import com.meokji.api.util.FileStore;
 
@@ -41,7 +45,7 @@ import jakarta.validation.constraints.Size;
  * 자유게시판.  주소: /api/free-posts
  *
  * 보기는 누구나, 쓰기 · 수정 · 삭제 · 댓글은 로그인해야 한다.
- * 수정 · 삭제는 글쓴이 본인만 된다 (판단은 FreePostServiceImpl 이 한다).
+ * 수정 · 삭제는 글쓴이 본인만 된다 (판단은 FreePostService 가 한다).
  *
  * 레시피 후기(/api/reviews)와 다른 점은 글을 쓰는 조건이 없다는 것뿐이다.
  * 후기는 내 식사 기록을 하나 골라야 하지만 여기는 로그인만 하면 된다.
@@ -92,7 +96,7 @@ public class FreePostController {
     // 들어간다. 길이를 막지 않으면 아주 긴 글자로 검색을 걸어 DB 를
     // 무겁게 만들 수 있다
     @GetMapping
-    public Page<FreePostVO> getList(
+    public Page<FreePostListResponse> getList(
             @RequestParam(required = false) @Size(max = 100) String keyword,
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(Paging.MAX_SIZE) int size) {
@@ -108,7 +112,7 @@ public class FreePostController {
     // 화면이 글쓴이 번호를 받아 스스로 비교하지 않는 이유 — 그러려면
     // 응답에 user_id 를 실어 보내야 하고, 그건 화면에 쓸 일이 없는 값이다
     @GetMapping("/{postId}")
-    public FreePostVO getDetail(
+    public FreePostDetailResponse getDetail(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId) {
         UserVO loginUser = authService.findLoginUser(token); // 로그인 안 했으면 null
@@ -121,9 +125,9 @@ public class FreePostController {
     // 첨부가 글에 딸린 것이라 글 번호가 있어야 저장할 수 있다
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public FreePostVO add(
+    public FreePostDetailResponse add(
             @RequestHeader(value = "Authorization", required = false) String token,
-            @Valid @RequestBody FreePostVO request) {
+            @Valid @RequestBody FreePostRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
         return freePostService.add(loginUser, request);
     }
@@ -133,10 +137,10 @@ public class FreePostController {
     // loginUser 를 서비스에 넘기는 이유 — 글쓴이 본인인지 확인해야 한다.
     // 컨트롤러에서 확인하지 않는 것은, 글을 읽어봐야 알 수 있는 판단이라서다
     @PutMapping("/{postId}")
-    public FreePostVO update(
+    public FreePostDetailResponse update(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
-            @Valid @RequestBody FreePostVO request) {
+            @Valid @RequestBody FreePostRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
         return freePostService.update(loginUser, postId, request);
     }
@@ -173,12 +177,12 @@ public class FreePostController {
     // content 하나뿐이다. VO 통째로 넘기면 서비스가 다시 골라내야 한다
     @PostMapping("/{postId}/comments")
     @ResponseStatus(HttpStatus.CREATED) // 201
-    public FreePostCommentVO addComment(
+    public FreeCommentResponse addComment(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
-            @Valid @RequestBody FreePostCommentVO request) {
+            @Valid @RequestBody FreeCommentRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
-        return freePostService.addComment(loginUser, postId, request.getContent());
+        return freePostService.addComment(loginUser, postId, request);
     }
 
     // 댓글 수정  PUT /api/free-posts/3/comments/7
@@ -186,13 +190,13 @@ public class FreePostController {
     // postId 와 commentId 를 둘 다 받는다. 서비스가 "그 댓글이 정말 그 글의
     // 댓글인지" 를 확인한다 - 주소와 실제가 다르면 404 다
     @PutMapping("/{postId}/comments/{commentId}")
-    public FreePostCommentVO updateComment(
+    public FreeCommentResponse updateComment(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
             @PathVariable @Min(1) Long commentId,
-            @Valid @RequestBody FreePostCommentVO request) {
+            @Valid @RequestBody FreeCommentRequest request) {
         UserVO loginUser = authService.getLoginUser(token);
-        return freePostService.updateComment(loginUser, postId, commentId, request.getContent());
+        return freePostService.updateComment(loginUser, postId, commentId, request);
     }
 
     // 댓글 삭제  DELETE /api/free-posts/3/comments/7
@@ -219,7 +223,7 @@ public class FreePostController {
     // 201 이 아니라 200 인 이유 — 새 자원을 만드는 것이 아니라 이미 있는
     // 글에 사진을 붙이는 것이다. 주소도 안 바뀐다
     @PostMapping("/{postId}/file")
-    public FreeFileVO attachFile(
+    public FreeFileResponse attachFile(
             @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable @Min(1) Long postId,
             @RequestPart("file") MultipartFile file) {
@@ -255,24 +259,32 @@ public class FreePostController {
      */
     @GetMapping("/{postId}/file")
     public ResponseEntity<byte[]> downloadFile(@PathVariable @Min(1) Long postId) {
+<<<<<<< HEAD
         // 글이 살아있고 사진이 붙어 있는지 확인한 뒤 그 글을 돌려준다.
         // 둘 중 하나라도 아니면 여기서 404 가 던져진다
         FreePostVO post = freePostService.getFileOwner(postId);
         byte[] bytes = freePostService.readFile(post);
+=======
+        FreeFileDownload file = freePostService.download(postId);
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 
         // inline = 브라우저에서 바로 보여준다 (attachment 면 곧장 내려받기 창이 뜬다)
         //
         // StandardCharsets.UTF_8 을 넘기면 filename*=UTF-8''... 모양으로 적힌다.
         // 그냥 filename= 으로 적으면 한글 이름이 깨져서 "???.jpg" 로 저장된다
         String disposition = ContentDisposition.inline()
-                .filename(post.getFile().getName(), StandardCharsets.UTF_8)
+                .filename(file.name(), StandardCharsets.UTF_8)
                 .build()
                 .toString();
 
         return ResponseEntity.ok()
+<<<<<<< HEAD
                 // 확장자로 종류를 정한다. 안 주면 브라우저가 내려받기로 처리한다
                 .contentType(MediaType.parseMediaType(fileStore.contentType(post.getFile().getExt())))
+=======
+                .contentType(MediaType.parseMediaType(fileStore.contentType(file.ext())))
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
-                .body(bytes);
+                .body(file.bytes());
     }
 }

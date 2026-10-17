@@ -1,5 +1,6 @@
 package com.meokji.api.notice.service;
 
+<<<<<<< HEAD
 import com.meokji.api.common.Page;
 import com.meokji.api.notice.vo.NoticeVO;
 import com.meokji.api.user.vo.UserVO;
@@ -52,4 +53,8 @@ public interface NoticeService {
     // 다른 기능과 삭제 방식을 맞춰 두면 "어디는 지우고 어디는 끄는지" 를
     // 기억하지 않아도 된다
     void delete(Long noticeId);
+=======
+/** 공지사항. 실제 코드는 NoticeServiceImpl 에 있다. */
+public interface NoticeService {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

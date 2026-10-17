@@ -1,26 +1,13 @@
 package com.meokji.api.notice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.meokji.api.common.Page;
-import com.meokji.api.common.Paging;
-import com.meokji.api.notice.vo.NoticeVO;
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.notice.service.NoticeService;
-import com.meokji.api.user.vo.UserVO;
 
+<<<<<<< HEAD
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -41,16 +28,17 @@ import jakarta.validation.constraints.Min;
  * 공지는 모두가 봐야 하는 글이라 로그인 전에도 보여야 하고, 쓰는 것은
  * 운영자뿐이다.
  */
+=======
+/** 공지사항.  주소: /api/notices */
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 @RestController
 @RequestMapping("/api/notices")
 public class NoticeController {
 
     @Autowired
-    private AuthService authService;
-
-    @Autowired
     private NoticeService noticeService;
 
+<<<<<<< HEAD
     // 목록  GET /api/notices?page=1&size=20
     //
     // token 을 받지 않는다. 누구나 볼 수 있어서 토큰을 볼 이유가 없다
@@ -124,5 +112,10 @@ public class NoticeController {
             @PathVariable @Min(1) Long noticeId) {
         authService.getAdminUser(token);
         noticeService.delete(noticeId);
+=======
+    // 목록  GET /api/notices
+    @GetMapping
+    public void getList() {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
     }
 }

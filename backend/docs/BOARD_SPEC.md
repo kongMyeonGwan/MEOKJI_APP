@@ -270,10 +270,15 @@ private Integer viewCount;        // 받을 때 무시, 보낼 때는 나간다
 | `@JsonIgnore` | 양쪽 다 막는다 — 글쓴이 id, 파일의 서버 경로 · UUID 이름, `useYn` |
 | `READ_ONLY` | 받을 때만 막는다 — 닉네임, 조회수, 댓글 수, 내 글 여부 |
 
-본보기는 `free/vo/FreePostVO.java` 와 `review/vo/RecipeReviewVO.java` 다.
-둘 다 **목록 · 상세 응답까지 그 VO 하나로 겸한다** — 앞머리의 "VO 하나가
+본보기는 `review/vo/RecipeReviewVO.java` 다. **목록 · 상세 응답까지 그 VO
+하나로 겸한다** — 앞머리의 "VO 하나가
 DB 한 행 · 요청 · 응답을 겸한다" 그대로다. 목록에 안 쓰는 칸(댓글 · 첨부 ·
 레시피)은 목록 SQL 이 안 고르니 null 로 남을 뿐이다.
+
+자유게시판(`free/`)은 이 방식이 아니다. JPA 로 옮기면서 요청과 응답을 DTO 로
+나눴다 — `free/dto` 의 `FreePostRequest` · `FreePostListResponse` ·
+`FreePostDetailResponse` 등. 받을 칸만 Request 에, 내보낼 칸만 Response 에
+두므로 `@JsonIgnore` · `READ_ONLY` 로 막을 일이 없다.
 
 **`request` 를 통째로 DAO 에 넘기면 안 된다.** 쓸 칸만 골라 새 VO 에 옮겨
 담는다 — `BanServiceImpl.add()` 와 `HistoryServiceImpl.add()` 가 그렇게 한다.

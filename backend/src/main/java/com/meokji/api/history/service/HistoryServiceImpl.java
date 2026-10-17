@@ -75,9 +75,13 @@ public class HistoryServiceImpl implements HistoryService {
         }
 
         Page<MealHistoryVO> result = new Page<>();
+<<<<<<< HEAD
         // total · page · size · total_pages · items 를 한 번에 채운다.
         // setter 다섯 개를 늘어놓으면 한 칸을 빠뜨려도 컴파일이 된다
         result.fill(paging, items);
+=======
+        result.Page(paging, items);
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
         return result;
     }
 

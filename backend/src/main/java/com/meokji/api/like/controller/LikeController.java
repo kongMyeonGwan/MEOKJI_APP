@@ -1,20 +1,13 @@
 package com.meokji.api.like.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.meokji.api.like.vo.LikeListVO;
-import com.meokji.api.like.vo.RecipeLikeVO;
-import com.meokji.api.auth.service.AuthService;
 import com.meokji.api.like.service.LikeService;
-import com.meokji.api.user.vo.UserVO;
 
+<<<<<<< HEAD
 import jakarta.validation.Valid;
 
 /**
@@ -34,12 +27,12 @@ import jakarta.validation.Valid;
  * <p>개별 삭제가 없다. 하트를 다시 누르면 풀리므로 PUT 하나로 끝난다.
  * DELETE 는 설정 화면의 "찜 비우기" 전용이다.
  */
+=======
+/** 찜한 레시피.  주소: /api/likes */
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 @RestController
 @RequestMapping("/api/likes")
 public class LikeController {
-
-    @Autowired
-    private AuthService authService;
 
     @Autowired
     private LikeService likeService;
@@ -49,6 +42,7 @@ public class LikeController {
     // 페이징이 없다. 찜은 많아도 수십 개라 한 번에 다 보낸다.
     // 응답에 이름 목록과 음식 정보가 같이 들어간다 - LikeListVO 주석 참고
     @GetMapping
+<<<<<<< HEAD
     public LikeListVO getList(@RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
         return likeService.getList(loginUser);
@@ -80,5 +74,8 @@ public class LikeController {
     public LikeListVO clear(@RequestHeader(value = "Authorization", required = false) String token) {
         UserVO loginUser = authService.getLoginUser(token);
         return likeService.clear(loginUser);
+=======
+    public void getList() {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
     }
 }

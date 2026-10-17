@@ -1,8 +1,8 @@
 package com.meokji.api.review.dao;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
+<<<<<<< HEAD
 import com.meokji.api.review.vo.RecipeReviewVO;
 
 /**
@@ -32,4 +32,9 @@ public interface ReviewDAO {
     // "지운 글" 이 똑같이 null 로 돌아와서 구별할 수 없다
     // (BanDAO.findById 주석과 같은 이유)
     RecipeReviewVO findById(@Param("id") Long id);
+=======
+/** RECIPE_REVIEWS 테이블 (레시피 후기). */
+@Mapper
+public interface ReviewDAO {
+>>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }
