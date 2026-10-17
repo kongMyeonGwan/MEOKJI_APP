@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+  VERIFICATION_CODES 표 SQL (이메일 OTP).
+
+  지켜야 할 것 두 가지
+  ====================
+  1) "지금" 은 SQL 이 만든다. SYS_EXTRACT_UTC(SYSTIMESTAMP) 하나만 쓴다.
+     자바 시계와 DB 시계를 섞으면 재발송 제한과 만료가 조용히 어긋난다.
+
+  2) 이 표는 소프트 삭제(use_yn)를 쓰지 않는다. 다 쓴 코드는 진짜로 지운다.
+     남겨두면 used_at 이 찍힌 코드로 비밀번호를 몇 번이고 바꿀 수 있다.
+-->
+<mapper namespace="com.meokji.api.auth.dao.VerificationCodeDAO">
+
+    <sql id="columns">
+        id, user_id, code_hash, purpose,
+        expires_at, attempt_count, used_at, created_at
+    </sql>
+
+    <!--
+      아직 안 지났으면 양수, 지났으면 0 이하가 나온다.
+
+      (DATE - DATE) 는 오라클에서 "며칠" 이라는 수라서 86400 을 곱해 초로 바꾼다.
+      TIMESTAMP 끼리 빼면 INTERVAL 이 나오는데, 그걸 초로 펴려면 EXTRACT 를 네 번
+      해야 해서 읽기 어려워진다. CAST 로 소수점 이하 초는 버려지지만, 60초를 재는
+      일이라 상관없다.
+    -->
+    <select id="findResendWaitSeconds" resultType="java.lang.Integer">
+        SELECT CEIL(#{cooldownSeconds}
+                    - (CAST(SYS_EXTRACT_UTC(SYSTIMESTAMP) AS DATE)
+                       - CAST(created_at AS DATE)) * 86400)
+          FROM (
+                SELECT created_at
+                  FROM verification_codes
+                 WHERE user_id = #{userId}
+                   AND purpose = #{purpose}
+                 ORDER BY created_at DESC, id DESC
+               )
+         WHERE ROWNUM = 1
+    </select>
+
+    <!--
+      ORDER BY 를 안쪽에 두고 감싼다. ROWNUM 은 정렬 전에 매겨져서, 바깥에 두면
+      "아무 행이나 하나" 를 가져온다 (docs/PROGRESS.md 의 오라클 함정).
+    -->
+    <select id="findUsable" resultType="com.meokji.api.auth.vo.VerificationCodeVO">
+        SELECT <include refid="columns"/>
+          FROM (
+                SELECT <include refid="columns"/>
+                  FROM verification_codes
+                 WHERE user_id = #{userId}
+                   AND purpose = #{purpose}
+                   AND used_at IS NULL
+                   AND expires_at > SYS_EXTRACT_UTC(SYSTIMESTAMP)
+                 ORDER BY created_at DESC, id DESC
+               )
+         WHERE ROWNUM = 1
+    </select>
+
+    <!--
+      확인을 건너뛰고 바로 교체를 부른 경우를 걸러내려고 used_at IS NOT NULL 을 본다.
+      만료는 확인 뒤에도 계속 적용된다 - 아니면 인증만 해두고 몇 시간 뒤에
+      비밀번호를 바꿀 수 있게 된다.
+    -->
+    <select id="findVerified" resultType="com.meokji.api.auth.vo.VerificationCodeVO">
+        SELECT <include refid="columns"/>
+          FROM (
+                SELECT <include refid="columns"/>
+                  FROM verification_codes
+                 WHERE user_id = #{userId}
+                   AND purpose = #{purpose}
+                   AND used_at IS NOT NULL
+                   AND expires_at > SYS_EXTRACT_UTC(SYSTIMESTAMP)
+                 ORDER BY created_at DESC, id DESC
+               )
+         WHERE ROWNUM = 1
+    </select>
+
+    <delete id="deleteByUserAndPurpose">
+        DELETE FROM verification_codes
+         WHERE user_id = #{userId}
+           AND purpose = #{purpose}
+    </delete>
+
+    <!--
+      expires_at 을 자바에서 만들어 보내지 않는다. created_at 은 DDL 의 DEFAULT 가
+      DB 시계로 찍는데 expires_at 만 자바 시계로 넣으면 같은 행 안에서 두 시계가
+      섞인다. NUMTODSINTERVAL 로 여기서 같이 계산한다.
+    -->
+    <insert id="insert">
+        INSERT INTO verification_codes (user_id, code_hash, purpose, expires_at)
+        VALUES (
+            #{code.userId},
+            #{code.codeHash},
+            #{code.purpose},
+            SYS_EXTRACT_UTC(SYSTIMESTAMP) + NUMTODSINTERVAL(#{expireMinutes}, 'MINUTE')
+        )
+    </insert>
+
+    <update id="increaseAttempt">
+        UPDATE verification_codes
+           SET attempt_count = attempt_count + 1
+         WHERE id = #{id}
+    </update>
+
+    <update id="markUsed">
+        UPDATE verification_codes
+           SET used_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM verification_codes
+         WHERE id = #{id}
+    </delete>
+
+</mapper>

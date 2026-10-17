@@ -1,0 +1,11 @@
+{
+  "note": "비밀번호 틀림",
+  "request": {
+    "method": "POST",
+    "path": "/api/auth/login"
+  },
+  "status": 401,
+  "body": {
+    "detail": "이메일 또는 비밀번호가 올바르지 않습니다. (남은 시도 19회)"
+  }
+}

@@ -24,23 +24,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BargainVO {
 
-    /** 재료 이름. 예) "대파" */
     private String name;
 
-    /**
-     * 일주일 전보다 얼마나 변했는지(%). 내린 것만 담으므로 음수다.
-     *
-     * double 인 이유 — 12.5% 처럼 소수점이 나온다. 정수로 반올림하면
-     * 5% 기준선 근처에서 "5% 내렸다는데 목록에 없는" 일이 생긴다
-     */
     private double percent;
 
-    /** 지금 가격(원). 아래 unit 당 가격이다 */
     private int price;
 
-    /** 가격의 기준 단위. 예) "1kg", "10개" */
     private String unit;
 
-    /** 조사일자(YYYYMMDD). 주말 · 공휴일은 조사가 없어 며칠 전 값일 수 있다 */
     private String surveyedAt;
 }

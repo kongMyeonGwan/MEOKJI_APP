@@ -1,0 +1,64 @@
+{
+  "note": "2페이지 - 빈 페이지 모양",
+  "request": {
+    "method": "GET",
+    "path": "/api/histories?page=2&size=2"
+  },
+  "status": 200,
+  "body": {
+    "total": 3,
+    "page": 2,
+    "size": 2,
+    "total_pages": 2,
+    "items": [
+      {
+        "id": 106,
+        "food_name": "김치찌개",
+        "recipe_name": "돼지고기 김치찌개",
+        "recipe_json": {
+          "cook_time_minutes": 25,
+          "servings": 2,
+          "difficulty": "쉬움",
+          "steps": [
+            "재료를 먹기 좋은 크기로 썬다.",
+            "냄비에 물 400ml 를 붓고 센 불로 끓인다.",
+            "돼지고기를 먼저 넣고 8분간 끓인다.",
+            "나머지 재료를 넣고 6분 더 끓인다.",
+            "간을 보고 소금으로 맞춘 뒤 불을 끈다."
+          ]
+        },
+        "ingredients_json": [
+          {
+            "name": "돼지고기",
+            "quantity": 240,
+            "unit": "g",
+            "grams": 240
+          },
+          {
+            "name": "신김치",
+            "quantity": 280,
+            "unit": "g",
+            "grams": 280
+          },
+          {
+            "name": "두부",
+            "quantity": 1,
+            "unit": "모",
+            "grams": 300
+          },
+          {
+            "name": "대파",
+            "quantity": 2,
+            "unit": "대",
+            "grams": 200
+          }
+        ],
+        "substitutes_json": [],
+        "estimated_cost": 7800,
+        "selected_at": "2026-09-11T21:30:22.352000Z",
+        "recipe_review_id": null,
+        "art": "stew"
+      }
+    ]
+  }
+}

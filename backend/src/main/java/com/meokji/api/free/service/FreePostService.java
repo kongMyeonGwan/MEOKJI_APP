@@ -35,21 +35,6 @@ import com.meokji.api.util.FileStore;
  * 수정 · 삭제는 글쓴이 본인만 된다 — 그 판단을 전부 여기서 한다.
  * 화면이 버튼을 숨기는 것은 눈에 안 보이게 하는 것일 뿐이다.
  *
-<<<<<<< HEAD
- * <p>메서드가 열두 개다. 글 · 댓글 · 사진이 한 기능에 들어 있어서
- * 주석으로 세 묶음으로 나눠 두었다.
- *
- * <p>UserVO 를 받는 메서드와 안 받는 메서드가 나뉜다
- *   안 받는 것 : getList · increaseView · getFileOwner · readFile
- *                누구나 할 수 있는 일이라 누구인지가 판단에 안 들어간다
- *   null 을 받는 것 : getDetail — 로그인 없이도 보이지만, 로그인했으면
- *                "내 글인지" 를 같이 알려줘야 한다
- *   꼭 받는 것 : 나머지. 쓰거나 고치거나 지우는 일이다
- *
- * <p>JPA 와 MyBatis 를 같이 쓰는 유일한 기능이다. 글쓰기 · 수정 · 삭제는
- * JPA, 나머지는 MyBatis 다. 이 인터페이스에서는 그 차이가 드러나지 않는다 -
- * 부르는 쪽(컨트롤러)이 알 필요가 없는 사정이다.
-=======
  * 트랜잭션은 클래스에 readOnly 로 걸어 두고, 쓰는 메서드에만 @Transactional 을
  * 다시 붙인다. 조회 메서드는 따로 적지 않아도 읽기 전용으로 돈다.
  *
@@ -60,7 +45,6 @@ import com.meokji.api.util.FileStore;
  * 받는 모양은 Request, 내보내는 모양은 Response DTO 다 (free/dto).
  * 엔티티를 그대로 내보내지 않는다 — 표에 없는 칸(닉네임 · 댓글 · is_mine)을
  * 담아야 하고, 글쓴이 id 나 파일 저장 경로처럼 화면에 나가면 안 되는 칸이 있다.
->>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
  */
 @Service
 @Transactional(readOnly = true) // 기본은 조회. 쓰는 메서드만 아래에서 다시 건다
@@ -226,26 +210,6 @@ public class FreePostService {
         post.detachFile();
     }
 
-<<<<<<< HEAD
-    /**
-     * 사진 내려받기. 글을 볼 수 있으면 누구나
-     *
-     * 사진을 주는 게 아니라 "그 사진이 붙은 글" 을 돌려준다. 글이
-     * 살아있는지 · 사진이 붙어 있는지 확인하고, 아니면 404 를 던진다.
-     *
-     * 아래 readFile 과 둘로 나눈 이유 — 컨트롤러가 응답 헤더를 만들 때
-     * 원래 파일명과 확장자가 필요하다. 바이트만 받으면 그 정보가 없다.
-     */
-    FreePostVO getFileOwner(Long postId);
-
-    /**
-     * 저장해둔 사진의 바이트
-     *
-     * 글 번호가 아니라 위 getFileOwner 가 준 글을 받는다. 번호로 받으면
-     * 글을 또 읽어야 하고, 확인도 두 번 하게 된다.
-     */
-    byte[] readFile(FreePostVO post);
-=======
     /** 사진 내려받기. 글을 볼 수 있으면 누구나 */
     public FreeFileDownload download(Long postId) {
         FreePostEntity post = findAlivePost(postId);
@@ -322,5 +286,4 @@ public class FreePostService {
 
         fileStore.delete(post.getFilePath(), post.getFileName());
     }
->>>>>>> 137ab2e5d83abad60912fb1f0b6b8a1315e728eb
 }

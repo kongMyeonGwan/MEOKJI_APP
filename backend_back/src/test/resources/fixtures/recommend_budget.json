@@ -1,0 +1,91 @@
+{
+  "note": "예산 3000~8000",
+  "request": {
+    "method": "POST",
+    "path": "/api/recommendations"
+  },
+  "status": 200,
+  "body": {
+    "condition": "3,000원 ~ 8,000원",
+    "items": [
+      {
+        "food_name": "된장찌개",
+        "category": "한식",
+        "reason": "구수한 된장에 애호박과 감자를 넣어 끓인 기본 찌개",
+        "cook_time_minutes": 25,
+        "difficulty": "쉬움",
+        "estimated_cost": 3100,
+        "tags": [
+          "국물",
+          "한식"
+        ],
+        "art": "stew",
+        "image_url": "/images/food/된장찌개.png"
+      },
+      {
+        "food_name": "밀면",
+        "category": "한식",
+        "reason": "쫄깃한 면에 새콤달콤한 육수를 부어낸 부산식 면",
+        "cook_time_minutes": 20,
+        "difficulty": "쉬움",
+        "estimated_cost": 3200,
+        "tags": [
+          "면",
+          "시원한음식",
+          "여름메뉴",
+          "한식"
+        ],
+        "art": "noodle",
+        "image_url": "/images/food/밀면.png"
+      },
+      {
+        "food_name": "미역냉국",
+        "category": "한식",
+        "reason": "미역을 불려 새콤하게 무쳐낸 시원한 냉국",
+        "cook_time_minutes": 15,
+        "difficulty": "쉬움",
+        "estimated_cost": 3300,
+        "tags": [
+          "무침",
+          "시원한음식",
+          "여름메뉴",
+          "한식"
+        ],
+        "art": "pancake",
+        "image_url": "/images/food/미역냉국.png"
+      },
+      {
+        "food_name": "버섯전골",
+        "category": "한식",
+        "reason": "여러 버섯을 넣어 향과 국물이 깊은 전골",
+        "cook_time_minutes": 30,
+        "difficulty": "쉬움",
+        "estimated_cost": 3400,
+        "tags": [
+          "국물",
+          "한식"
+        ],
+        "art": "stew",
+        "image_url": "/images/food/버섯전골.png"
+      },
+      {
+        "food_name": "비빔국수",
+        "category": "분식",
+        "reason": "새콤달콤한 양념에 슥슥 비벼 먹는 여름 국수",
+        "cook_time_minutes": 15,
+        "difficulty": "쉬움",
+        "estimated_cost": 3400,
+        "tags": [
+          "면",
+          "시원한음식",
+          "여름메뉴",
+          "분식"
+        ],
+        "art": "noodle",
+        "image_url": "/images/food/비빔국수.png"
+      }
+    ],
+    "weather": null,
+    "bargains": []
+  }
+}

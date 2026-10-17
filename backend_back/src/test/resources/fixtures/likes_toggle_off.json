@@ -1,0 +1,13 @@
+{
+  "note": "같은 것을 다시 눌러 해제",
+  "request": {
+    "method": "PUT",
+    "path": "/api/likes"
+  },
+  "status": 200,
+  "body": {
+    "food_name": "김치찌개",
+    "liked": false,
+    "count": 0
+  }
+}
