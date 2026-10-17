@@ -11,7 +11,10 @@ import lombok.Getter;
  * { "id", "title", "content", "nickname", "view_count", "comment_count",
  *   "has_file", "created_at" }
  *
- * 상세에만 있는 칸(댓글 · 첨부 · 내 글 여부)은 없다. 목록 화면이 쓰지 않는다.
+ * 상세에만 있는 칸(댓글 · 첨부 · is_mine)은 없다. 목록 화면이 쓰지 않는다 —
+ * 목록에는 수정 · 삭제 버튼이 없어서 내 글인지 알 필요가 없다. 고치고 지우는
+ * 것은 글을 열고 나서 한다. 한 페이지 스무 줄마다 로그인한 사람과 견주는
+ * 일을 아끼는 셈이기도 하다.
  * content 는 본문 앞 200자다 (FreePostRepository.findPage 가 잘라서 가져온다).
  *
  * 칸 이름은 자바에서 카멜(viewCount)이고, 응답으로 나갈 때 application.yml 의
