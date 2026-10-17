@@ -11,25 +11,7 @@
 //   사용자(user): 닉네임, 이메일 같은 내 정보. 화면에 보여주려고 저장한다.
 //
 // 개발자도구(F12) → Application → Local Storage 에서 직접 볼 수 있다.
-//
-// 왜 useState 가 아닌가
-//
-// useState 는 새로고침하면 사라진다. 로그인 상태가 그렇게 풀리면
-// 화면을 넘길 때마다 다시 로그인해야 한다.
-//
-// 왜 토큰과 사용자 정보를 둘 다 저장하나
-//
-// 토큰만 저장하면 새로고침할 때마다 /api/auth/me 를 불러 닉네임을
-// 받아와야 하고, 그 사이에 화면 위쪽이 비어 보인다. 사용자 정보를
-// 같이 두면 바로 그릴 수 있다.
-//
-// 다만 그 정보는 옛 값일 수 있다. 토큰이 진짜인지는 서버가 보고,
-// 이 정보는 화면에 띄우는 용도일 뿐이다 - 권한을 가리는 데 쓰면 안 된다
-// (개발자도구에서 손으로 고칠 수 있다).
 
-// 앞에 'meokji.' 를 붙이는 이유 — localStorage 는 그 주소(도메인)에서
-// 돌아가는 모든 코드가 같이 쓴다. 'token' 처럼 흔한 이름으로 두면
-// 다른 라이브러리가 덮어쓸 수 있다
 const TOKEN_KEY = 'meokji.accessToken' // 토큰을 저장할 이름
 const USER_KEY = 'meokji.user' // 사용자 정보를 저장할 이름
 
@@ -92,8 +74,6 @@ export const authHeader = () => {
 
 // 저장된 사용자 정보 꺼내기. 없으면 null
 export const getSavedUser = () => {
-  // const 가 아니라 let 이다. 아래에서 다시 넣기 때문이다 -
-  // 토큰과 달리 두 번에 나눠 찾는 모양이라 값을 바꿔야 한다
   let saved = localStorage.getItem(USER_KEY)
 
   if (saved === null) {
@@ -101,16 +81,10 @@ export const getSavedUser = () => {
   }
 
   // 토큰이 없으면 사용자 정보가 있어도 로그인 안 한 것으로 본다
-  //
-  // 왜 이 확인이 필요한가 — 토큰만 만료되어 지워지고 사용자 정보는
-  // 남는 경우가 있다. 그때 닉네임이 보이면 로그인된 것처럼 보이는데,
-  // API 를 부르면 전부 401 이 온다
   if (saved === null || getToken() === null) {
     return null
   }
 
-  // 글자를 다시 객체로 바꾼다. 저장된 값이 깨져 있으면 여기서
-  // 터지는데, 우리가 넣은 값만 들어 있으니 그럴 일이 없다
   return JSON.parse(saved)
 }
 
@@ -122,13 +96,6 @@ export const saveUser = (user, keep) => {
   const text = JSON.stringify(user)
 
   // keep 을 안 넘겼으면 토큰이 있는 쪽을 따라간다
-  //
-  // 따라가지 않으면 토큰과 사용자 정보가 다른 곳에 들어간다.
-  // 그러면 탭을 닫았을 때 토큰만 사라지고 정보는 남아, 위
-  // getSavedUser 의 확인에 걸려 로그인이 조용히 풀린 것처럼 보인다
-  //
-  // keep === undefined 로 가리는 이유 — false 와 구별해야 한다.
-  // if (!keep) 으로 적으면 "유지 안 함" 을 "안 넘김" 으로 읽는다
   let toLocal = keep
   if (keep === undefined) {
     toLocal = localStorage.getItem(TOKEN_KEY) !== null

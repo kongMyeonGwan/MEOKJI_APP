@@ -1,9 +1,0 @@
-{
-  "note": "내 글의 댓글 · 좋아요",
-  "request": {
-    "method": "GET",
-    "path": "/api/users/me/notifications"
-  },
-  "status": 200,
-  "body": []
-}

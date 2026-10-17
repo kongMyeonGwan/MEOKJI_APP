@@ -1,23 +1,6 @@
 // 아이콘 모음 (SVG).
 // 쓰는 법: <Icon name="heart" size={20} />
 // 글자 색(color)을 바꾸면 아이콘 색도 같이 바뀐다.
-//
-// 왜 아이콘 라이브러리를 안 쓰나
-//
-// 쓰는 아이콘이 열 몇 개뿐이다. 라이브러리를 넣으면 수천 개가 같이
-// 들어오고(쓰지 않는 것까지), 모양도 우리 화면에 맞춰 고칠 수 없다.
-//
-// 왜 이미지(png)가 아니라 SVG 인가
-//
-// 아래 stroke="currentColor" 때문이다. 글자 색을 따라가므로
-// 다크 모드에서 알아서 바뀌고, 눌린 메뉴의 강조색도 CSS 만으로 된다.
-// png 면 테마마다 두 벌을 두고 골라 써야 한다.
-//
-// 모양은 전부 24x24 칸 안에 그려져 있다(viewBox). 그래서 size 만
-// 바꿔도 비율이 유지된다.
-//
-// 아이콘을 더할 때 — 아래 PATHS 에 이름과 <path> 를 적으면 끝이다.
-// 다른 파일은 안 고친다.
 
 const PATHS = {
   home: <path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z" />,
@@ -185,27 +168,10 @@ const PATHS = {
 
 export default function Icon({ name, size = 20, className }) {
   const path = PATHS[name]
-  // 없는 이름이면 아무것도 안 그린다. 이름에 오타가 나면 그 자리만
-  // 비는데, 에러가 안 나서 알아채기 어렵다 - 대신 화면이 깨지지는 않는다
   if (!path) {
     return null
   }
 
-  // viewBox 는 "그림이 그려진 칸의 크기" 다. 아래 width · height 와
-  // 달라도 되고, 다르면 늘려서 맞춘다 - 그래서 size 만 바꾸면
-  // 비율이 유지된다.
-  //
-  // fill="none" + stroke : 속을 채우지 않고 선만 그린다.
-  // 선 아이콘이라 글자와 같이 놓았을 때 무게가 비슷하다.
-  //
-  // currentColor 는 "지금 글자 색" 이다. 이것 덕분에 CSS 로
-  // color 만 바꾸면 아이콘 색도 따라온다.
-  //
-  // strokeLinecap · strokeLinejoin 을 round 로 두면 선 끝과
-  // 꺾이는 자리가 둥글어진다. 안 주면 뾰족해서 작은 크기에서 거칠다.
-  //
-  // aria-hidden 은 "읽어주지 말라" 는 표시다. 아이콘 옆에 글자가
-  // 같이 있으므로, 읽으면 같은 말이 두 번 들린다
   return (
     <svg
       className={className}
@@ -225,16 +191,6 @@ export default function Icon({ name, size = 20, className }) {
 }
 
 // 로고. 주황 네모 위에 요리사 모자
-//
-// 위 Icon 과 달리 export default 가 아니다. 한 파일에서 둘을
-// 내보내는 모양이고, 쓰는 쪽은 이렇게 가져온다
-//   import Icon, { LogoMark } from './Icon'
-//
-// 같은 파일에 둔 이유 — 둘 다 SVG 그림이고, 로고는 한 군데(상단바 ·
-// 사이드바)에서만 쓴다. 파일을 따로 만들 만큼 크지 않다.
-//
-// Icon 과 달리 fill 로 속을 채운다. 로고는 선 그림이 아니라
-// 색이 찬 모양이어야 눈에 띈다
 export function LogoMark({ size = 26 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
