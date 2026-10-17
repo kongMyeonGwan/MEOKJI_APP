@@ -22,7 +22,11 @@ public class FreeCommentResponse {
     private final String createdAt;
 
     /**
-     * 로그인한 사람이 쓴 댓글인지. 비로그인이면 false.
+     * 이 댓글을 로그인한 사람이 썼는지. 비로그인이면 false.
+     *
+     * 글의 is_mine(FreePostDetailResponse)과 다른 값이다. 이쪽은 이 댓글을
+     * 쓴 사람 기준이라, 남의 글에 달린 내 댓글은 글 쪽이 false 여도 여기는
+     * true 다. 화면은 이 칸만 보고 그 댓글의 수정 · 삭제 버튼을 정한다.
      *
      * boolean 이 아니라 Boolean 인 이유: boolean isMine 이면 롬복이 isMine() 을
      * 만들고, Jackson 이 그 is 를 접두어로 보고 떼어내 "mine" 으로 내보낸다.
