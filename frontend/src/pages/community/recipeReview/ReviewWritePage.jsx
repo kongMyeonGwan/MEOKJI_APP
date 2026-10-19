@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../../../components/common/ErrorMessage'
 import Loading from '../../../components/common/Loading'
 import RecipeView from '../../../components/common/RecipeView'
 import { getHistories } from '../../../api/histories'
 import { formatDate, formatPrice } from '../../../utils/format'
 import { SAMPLE_PHOTO } from '../../../data/sampleBoard'
+import useForm from '../../../hooks/useForm'
 
 // 글쓰기 화면 (/community/write).
 // 글은 내 식사 기록(History) 하나를 골라서 쓴다. 사진은 선택.
@@ -66,6 +67,66 @@ export default function ReviewWritePage() {
 
   // 고른 기록 한 건. 목록에 없는 id 면 (이미 공유했거나 남의 기록) undefined
   const selected = histories.find((history) => String(history.id) === historyId)
+
+  const { values, handleChange } = useForm({ title: '', content: '' })
+  const [file, setFile] = useState(null) // 고른 사진 파일
+  const [photoUrl, setPhotoUrl] = useState('') // 고른 사진 미리보기 주소
+  const [saving, setSaving] = useState(false)
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    return () => {
+      if (photoUrl) {
+        URL.revokeObjectURL(photoUrl)
+      }
+    }
+  }, [photoUrl])
+
+  const handleFileChange = (e) => {
+    const picked = e.target.files[0]
+
+    if (picked && picked.size > 5 * 1024 * 1024) {
+      alert('5MB 이하 사진만 올릴 수 있어요')
+      e.target.value = ''
+      setFile(null)
+      setPhotoUrl('')
+      return
+    }
+
+    setFile(picked || null)
+    setPhotoUrl(picked ? URL.createObjectURL(picked) : '')
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!values.title.trim()) {
+      setError('제목을 입력해 주세요')
+      return
+    }
+    if (!values.content.trim()) {
+      setError('내용을 입력해 주세요')
+      return
+    }
+
+    setError('')
+    setSaving(true)
+    try {
+      const created = await createReviewPost({
+        title: values.title.trim(),
+        content: values.content,
+      })
+      if (file) {
+        await uploadReviewPost(created.id, file)
+      }
+
+      navigate(`/reci`)
+    }
+  }
+
+
+
 
   return (
     <div className="card write">
