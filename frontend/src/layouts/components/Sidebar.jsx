@@ -63,7 +63,6 @@ export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify
           </NavLink>
         )}
 
-
         <hr className="sidebar__divider" />
 
         {/* 로그인했을 때만 History 표시 */}
