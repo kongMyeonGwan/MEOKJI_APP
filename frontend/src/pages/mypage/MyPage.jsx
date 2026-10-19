@@ -90,9 +90,9 @@ export default function MyPage({ user, onLogout, onUserChange }) {
   }, [])
 
   // 정보 수정 폼에서 저장했을 때. 바뀐 닉네임을 상단바에도 반영한다.
-  const handleProfileSaved = (nickname) => {
+  const handleProfileSaved = (updatedProfile) => {
     loadProfile()
-    onUserChange({ ...user, nickname: nickname })
+    onUserChange({ ...user, nickname: updatedProfile.nickname, gender: updatedProfile.gender })
   }
 
   // 재료 추가

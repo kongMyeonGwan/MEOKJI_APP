@@ -16,7 +16,8 @@ public class ProfileUpdateVO {
     @Size(min = 1, max = 50, message = "닉네임은 50자 이하여야 합니다")
     private String nickname;
 
-    @Pattern(regexp = "MALE|FEMALE|OTHER", message = "성별 값이 올바르지 않습니다")
+//    @Pattern(regexp = "MALE|FEMALE|OTHER", message = "성별 값이 올바르지 않습니다")
+    @Pattern(regexp = "(MALE|FEMALE|OTHER)?", message = "성별 값이 올바르지 않습니다")
     private String gender;
 
     @Size(max = 30)

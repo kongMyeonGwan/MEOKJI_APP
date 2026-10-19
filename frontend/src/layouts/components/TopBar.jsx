@@ -41,10 +41,10 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
   // 성별 선택
   const profileImage =
     user?.gender === 'MALE'
-      ? '/public/images/myface/avatar_male.png'
+      ? '/images/myface/avatar_male.png'
       : user?.gender === 'FEMALE'
-        ? '/public/images/myface/avatar_female.png'
-        : '/public/images/myface/avatar_default.png'
+        ? '/images/myface/avatar_female.png'
+        : '/images/myface/avatar_default.png'
 
   const navigate = useNavigate()
   const location = useLocation()
