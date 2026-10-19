@@ -23,6 +23,24 @@ const COMMENT_MAX = 1000 // 댓글 최대 글자 수
 // 자유게시판 글 상세 (/free/1).
 // 보는 건 로그인 없이 되고, 수정 · 삭제는 내 글만 된다. 댓글은 로그인해야 쓴다.
 // 좋아요는 없다 — 표를 만들지 않았다 (db/09_add_free_posts.sql 참고).
+//
+// "내 것인지" 는 화면이 판단하지 않는다. 서버가 토큰을 보고 이미 정해서
+// is_mine 으로 보내준다. 그래서 여기에는 회원 번호를 견주는 코드가 없다.
+//
+// is_mine 은 두 종류이고 값이 다를 수 있다
+//   post.is_mine        이 글을 내가 썼는지      → 글 수정 · 삭제 · 사진 버튼
+//   comment.is_mine     그 댓글을 내가 썼는지    → 그 댓글의 수정 · 삭제 버튼
+//
+// 남의 글에도 내가 댓글을 달 수 있으니 둘은 서로 상관이 없다.
+// 글은 false 인데 그 안의 내 댓글만 true 인 경우가 가장 흔하다. 그래서 글의
+// is_mine 하나로 댓글 버튼까지 정하면 안 된다 — 그렇게 하면 남의 글에 쓴 내
+// 댓글은 고칠 수 없고, 내 글에 달린 남의 댓글에 삭제 버튼이 생긴다.
+//
+// 그리고 이건 버튼을 보일지 정하는 것일 뿐이다. 진짜로 막는 쪽은 서버다.
+// 버튼이 안 보여도 요청을 직접 보내면 서버가 403 을 돌려준다.
+//
+// user 는 App 이 내려주는 로그인한 사람이다. 댓글 입력칸을 보일지 정하는
+// 데에만 쓴다 — 버튼 판단은 전부 위의 is_mine 이 한다.
 export default function FreeDetailPage({ user }) {
   const { postId } = useParams() // 주소의 :postId 부분
 
@@ -33,6 +51,7 @@ export default function FreeDetailPage({ user }) {
 
   // 글 수정. 입력칸이 둘뿐이고 값을 서버에서 받아온 뒤에 채워야 해서
   // useForm 대신 useState 를 쓴다 (useForm 은 처음 값을 한 번만 받는다)
+  // editing 이 true 면 본문 자리에 수정 폼이 대신 그려진다
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
@@ -137,7 +156,10 @@ export default function FreeDetailPage({ user }) {
     }
   }
 
-  // 댓글 등록
+  // 댓글 등록.
+  // 서버가 돌려준 댓글에는 is_mine 이 true 로 들어 있다. 그래서 목록 끝에
+  // 붙이기만 하면 방금 쓴 댓글에 수정 · 삭제 버튼이 바로 보인다.
+  // 글 전체를 다시 받아오지 않는 이유는 화면이 한 번 깜빡이고 요청만 늘기 때문이다.
   const handleCommentSubmit = async (e) => {
     e.preventDefault()
 
@@ -155,7 +177,8 @@ export default function FreeDetailPage({ user }) {
     }
   }
 
-  // 댓글 수정
+  // 댓글 수정. 저장 버튼은 FreeCommentItem 안에 있고, 서버로 보내는 일은
+  // 여기서 한다 — 댓글 목록(post.comments)을 들고 있는 쪽이 여기라서다
   const handleCommentEdit = async (comment, content) => {
     setActionError('')
     try {
@@ -168,11 +191,13 @@ export default function FreeDetailPage({ user }) {
     }
   }
 
-  // 댓글 삭제
+  // 댓글 삭제. 서버는 use_yn='N' 으로 바꿀 뿐이지만, 화면에서는 그 댓글만
+  // 빼서 다시 그린다 (글을 다시 받아오지 않는다)
   const handleCommentDelete = async (comment) => {
     setActionError('')
     try {
       await removeFreeComment(postId, comment.id)
+      // 지운 댓글만 빼고 나머지로 새 배열을 만든다
       setPost({ ...post, comments: post.comments.filter((item) => item.id !== comment.id) })
     } catch (err) {
       setActionError(messageOf(err))
@@ -287,6 +312,8 @@ export default function FreeDetailPage({ user }) {
 
             <div className="free-detail__content">{post.content}</div>
 
+            {/* 사진은 글에 붙는 것이라 글의 is_mine 을 넘긴다.
+                댓글의 is_mine 과는 아무 상관이 없다 */}
             <FreeAttachment
               file={post.file}
               isMine={post.is_mine}
@@ -305,7 +332,9 @@ export default function FreeDetailPage({ user }) {
             목록
           </Link>
 
-          {/* 내 글이면 수정 · 삭제 버튼 */}
+          {/* 내가 쓴 글일 때만 수정 · 삭제. 여기는 글의 is_mine 이다 —
+              이 글에 달린 댓글들의 is_mine 과는 따로 논다.
+              수정 중(editing)에는 폼 안에 저장 · 취소가 따로 있으니 숨긴다 */}
           {post.is_mine && !editing && (
             <span className="free-detail__owner-actions">
               <button type="button" className="btn btn--ghost btn--sm" onClick={handleEditOpen}>
@@ -328,6 +357,10 @@ export default function FreeDetailPage({ user }) {
 
         {post.comments.length === 0 && <p className="empty">첫 댓글을 남겨보세요.</p>}
 
+        {/* 댓글마다 자기 is_mine 을 달고 온다. 그래서 로그인한 사람을 따로
+            넘기지 않아도 FreeCommentItem 이 그 댓글의 버튼을 정할 수 있다.
+            key 는 화면을 다시 그릴 때 리액트가 어느 줄이 그대로인지 알아보는
+            표식이다 — 댓글 하나를 지웠을 때 엉뚱한 줄이 지워지지 않게 한다 */}
         {post.comments.length > 0 && (
           <ul className="free-detail__comments divided">
             {post.comments.map((comment) => (
@@ -341,6 +374,8 @@ export default function FreeDetailPage({ user }) {
           </ul>
         )}
 
+        {/* 댓글 입력칸은 로그인한 사람에게만. 여기는 is_mine 이 아니라 user 를
+            본다 — 댓글은 남의 글에도 달 수 있어서 "내 글인지" 와 무관하다 */}
         {user ? (
           <form className="free-detail__form" onSubmit={handleCommentSubmit}>
             <textarea

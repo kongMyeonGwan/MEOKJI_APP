@@ -45,6 +45,24 @@ import com.meokji.api.util.FileStore;
  * 받는 모양은 Request, 내보내는 모양은 Response DTO 다 (free/dto).
  * 엔티티를 그대로 내보내지 않는다 — 표에 없는 칸(닉네임 · 댓글 · is_mine)을
  * 담아야 하고, 글쓴이 id 나 파일 저장 경로처럼 화면에 나가면 안 되는 칸이 있다.
+ *
+ * is_mine 은 글 것과 댓글 것이 따로다
+ *
+ *   상세 화면 하나에 주인이 둘 있다. 글의 주인(글쓴이)과 댓글 하나하나의
+ *   주인(그 댓글을 쓴 사람)이다. 남의 글에도 내가 댓글을 달 수 있으니 둘은
+ *   서로 상관이 없다 — 글은 is_mine=false 인데 그 안의 내 댓글만 true 인
+ *   경우가 가장 흔하다. 그래서 글의 is_mine 하나로 댓글 버튼까지 정할 수
+ *   없고, toDetail 은 글쓴이를, toComment 는 댓글마다 그 댓글 쓴 사람을
+ *   따로 견준다.
+ *
+ *   회원 번호를 화면에 내려주고 거기서 비교하게 하지 않는다. 그러면 남의
+ *   회원 번호가 응답에 다 실리고, 화면마다 같은 비교를 다시 짜야 한다.
+ *   서버가 한 번 견줘서 true · false 로만 보낸다.
+ *
+ *   isMine 과 checkOwner 는 쓰임이 다르다. isMine 은 버튼을 보일지 정하는
+ *   표시용이라 비로그인이면 그냥 false 다. checkOwner 는 실제로 고치거나
+ *   지울 때 막는 것이라 아니면 403 을 던진다. 화면이 버튼을 숨기는 것은
+ *   눈에 안 보이게 하는 것뿐이고, 진짜로 막는 쪽은 checkOwner 다.
  */
 @Service
 @Transactional(readOnly = true) // 기본은 조회. 쓰는 메서드만 아래에서 다시 건다
@@ -80,7 +98,12 @@ public class FreePostService {
         return result;
     }
 
-    /** 상세. loginUser 가 null 이면(비로그인) is_mine 은 false 다 */
+    /**
+     * 상세. loginUser 가 null 이면(비로그인) 글 · 댓글의 is_mine 이 전부 false 다.
+     *
+     * 컨트롤러가 토큰을 required = false 로 받아서, 로그인 안 한 사람도
+     * 글을 볼 수 있다. 그때는 버튼이 하나도 안 보이면 되므로 false 로 충분하다.
+     */
     public FreePostDetailResponse getDetail(UserVO loginUser, Long postId) {
         return toDetail(findAlivePost(postId), loginUser);
     }
@@ -238,20 +261,45 @@ public class FreePostService {
                 .orElseThrow(() -> new NotFoundException("댓글을 찾을 수 없습니다."));
     }
 
-    /** 내가 쓴 것이 아니면 403 */
+    /**
+     * 내가 쓴 것이 아니면 403. 고치거나 지우기 전에 부른다.
+     *
+     * 아래 isMine 과 달리 loginUser 가 null 일 수 없다 — 이 메서드를 부르는
+     * 것은 전부 쓰기 작업이고, 컨트롤러가 getLoginUser 로 토큰을 먼저
+     * 확인해서(없으면 401) 들어온다.
+     *
+     * what 은 "글" 또는 "댓글" 이다. 어느 쪽이 막혔는지 메시지에 넣는다.
+     */
     private void checkOwner(UserVO loginUser, Long ownerId, String what) {
         if (!ownerId.equals(loginUser.getId())) {
             throw new ForbiddenException("내가 쓴 " + what + "만 고치거나 지울 수 있습니다.");
         }
     }
 
-    /** 로그인한 사람이 쓴 것인지. 비로그인이면 false */
+    /**
+     * ownerId 가 로그인한 사람인지. 비로그인이면 false.
+     *
+     * ownerId 에 글쓴이를 넣으면 "내 글인지", 댓글 쓴 사람을 넣으면
+     * "내 댓글인지" 가 된다. 식이 같아서 메서드는 하나만 두고, 무엇을
+     * 넣는지로 글 것과 댓글 것을 가른다 (toDetail · toComment 참고).
+     *
+     * loginUser 가 null 일 수 있다 — 상세 보기는 로그인 없이도 되기 때문이다.
+     * null 검사를 먼저 하지 않으면 비로그인으로 글을 열 때 터진다.
+     */
     private boolean isMine(UserVO loginUser, Long ownerId) {
         return loginUser != null && ownerId.equals(loginUser.getId());
     }
 
-    /** 상세 응답. 닉네임 · 댓글 · 첨부 · 내 글 여부까지 채운다 */
+    /**
+     * 상세 응답. 표에 없는 칸(닉네임 · 댓글 · 첨부 · is_mine)을 여기서 채운다.
+     *
+     * is_mine 을 두 번 계산한다. 아래 isMine 은 글쓴이 기준이고, 댓글은
+     * toComment 가 댓글마다 그 댓글 쓴 사람 기준으로 다시 계산한다.
+     * 글 것을 댓글에 돌려쓰면 남의 글에 달린 내 댓글에 수정 버튼이 안 나오고,
+     * 내 글에 달린 남의 댓글에 수정 버튼이 나온다.
+     */
     private FreePostDetailResponse toDetail(FreePostEntity post, UserVO loginUser) {
+        // 댓글마다 그 댓글의 is_mine 을 따로 채운다 (toComment 가 한다)
         List<FreeCommentResponse> comments = new ArrayList<>();
         for (FreeCommentView row : postCommentRepository.findViewsByPost(post.getId())) {
             comments.add(toComment(row, loginUser));
@@ -262,7 +310,7 @@ public class FreePostService {
                 freePostRepository.findNickname(post.getUserId()),
                 toFile(post),
                 comments,
-                isMine(loginUser, post.getUserId()));
+                isMine(loginUser, post.getUserId())); // 이쪽은 글쓴이 기준
     }
 
     /** 첨부 사진 응답. 없으면 null — 화면은 file 이 없으면 사진 자리를 통째로 안 그린다 */
@@ -273,7 +321,13 @@ public class FreePostService {
         return new FreeFileResponse(post, fileStore.sizeText(post.getFileSize()));
     }
 
-    /** 댓글 응답 */
+    /**
+     * 댓글 응답.
+     *
+     * 견주는 상대가 row.getUserId() — 이 댓글을 쓴 사람이다. 글쓴이가 아니다.
+     * 그래서 남의 글(글 is_mine=false)에 달린 내 댓글은 is_mine=true 로 나가고,
+     * 화면이 그 댓글에만 수정 · 삭제 버튼을 보인다.
+     */
     private FreeCommentResponse toComment(FreeCommentView row, UserVO loginUser) {
         return new FreeCommentResponse(row, isMine(loginUser, row.getUserId()));
     }

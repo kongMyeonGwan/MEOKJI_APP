@@ -11,9 +11,17 @@ import { getFreePosts } from '../../../api/freePosts'
 // 자유게시판 목록 (/free).
 // 보는 것은 로그인 없이 되고, 글쓰기는 로그인해야 된다.
 //
+// user 는 App 이 내려주는 로그인한 사람이다. 비로그인이면 null 이고,
+// 글쓰기 버튼 대신 로그인 안내를 보여주는 데에만 쓴다.
+// 목록에는 수정 · 삭제가 없으므로 "내 글인지" 는 여기서 따지지 않는다
+// (서버 응답에 is_mine 칸 자체가 없다 — 그건 상세에만 온다).
+//
 // 레시피 후기(/community)와 다른 점
 //   후기는 내 식사 기록을 하나 골라야 글을 쓸 수 있지만, 여기는 그 조건이 없다.
 export default function FreeListPage({ user }) {
+  // 입력칸 글자와 "실제로 검색한 말" 을 따로 둔다. 하나로 쓰면 한 글자 칠
+  // 때마다 useEffect 가 돌아 서버를 계속 부른다. Enter 를 누를 때만 searched 에
+  // 옮겨 담아서 그때 한 번만 받아오게 한다
   const [keyword, setKeyword] = useState('') // 입력칸에 치고 있는 글자
   const [searched, setSearched] = useState('') // 실제로 서버에 보낸 검색어
   const [page, setPage] = useState(1)
@@ -109,6 +117,8 @@ export default function FreeListPage({ user }) {
       {loading && <Loading message="글을 불러오는 중..." />}
       <ErrorMessage message={error} />
 
+      {/* 셋을 따로 그린다. 불러오는 중에 "글이 없습니다" 가 잠깐 보이거나,
+          오류가 났는데 빈 목록 안내까지 같이 나오는 것을 막는다 */}
       {!loading && !error && posts.length === 0 && (
         <p className="empty">
           {searched ? `'${searched}' 검색 결과가 없습니다.` : '아직 글이 없습니다. 첫 글을 남겨보세요.'}
