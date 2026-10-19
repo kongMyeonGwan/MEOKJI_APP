@@ -18,6 +18,8 @@ import BudgetPage from './pages/recommend/BudgetPage'
 import SearchPage from './pages/recommend/SearchPage'
 import RecipePage from './pages/recommend/RecipePage'
 
+import BansPage from './pages/bans/BansPage'
+
 import GamePage from './pages/game/GamePage'
 import WorldCupPage from './pages/game/WorldCupPage'
 import BalancePage from './pages/game/BalancePage'
@@ -160,6 +162,9 @@ export default function App() {
           <Route path="budget" element={<BudgetPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="recipe/:foodName" element={<RecipePage user={user} />} />
+
+          {/* 못 먹는 재료 */}
+          <Route path="BansPage" element={loginOnly(<BansPage />)} />
 
           {/* 메뉴 게임 */}
           <Route path="game" element={<GamePage />} />

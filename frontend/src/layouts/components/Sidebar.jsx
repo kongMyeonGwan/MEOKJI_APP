@@ -55,15 +55,15 @@ export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify
           <span className="sidebar__label">레시피 검색</span>
         </NavLink> */}
 
-        {/* 로그인했을 때만 보이는 메뉴 */}
+        <hr className="sidebar__divider" />
+
+        {/* 로그인했을 때만 보이는 재료 */}
         {user && (
-          <NavLink to="/mypage" className={linkClass} onClick={onNavigate}>
+          <NavLink to="/BansPage" className={linkClass} onClick={onNavigate}>
             <Icon name="ban" className="sidebar__icon" />
             <span className="sidebar__label">못 먹는 재료</span>
           </NavLink>
         )}
-
-        <hr className="sidebar__divider" />
 
         {/* 로그인했을 때만 History 표시 */}
         {user && (
