@@ -70,10 +70,20 @@
 
 .game-screen .balance__option {
   gap: 18px;
-  padding: clamp(48px, 9vh, 88px) 24px;
+  padding: clamp(20px, 4vh, 32px) 20px;
 }
 
 .game-screen .balance__emoji { font-size: 72px; }
+
+/* 보기 사진. 받은 사진마다 가로세로 비율이 달라서, 같은 틀 안에 자르지 않고
+   통째로 넣는다. 남는 자리는 틀 배경색이 채운다 */
+.game-screen .balance__img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  background: var(--thumb-bg);
+  border-radius: var(--radius-sm);
+}
 
 .game-screen .balance__label { font-size: 21px; }
 
@@ -120,6 +130,7 @@
   .game-screen .balance__question { font-size: 23px; }
   .game-screen .balance__option { padding: 22px; }
   .game-screen .balance__emoji { font-size: 44px; }
+  .game-screen .balance__img { width: 96px; flex-shrink: 0; aspect-ratio: 1; }
   .game-screen .balance__label { font-size: 17px; }
   .game-screen .roulette { padding: 20px; }
   .game-screen .roulette__label { font-size: 16px; }

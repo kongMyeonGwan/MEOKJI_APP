@@ -11,6 +11,10 @@
 //             16개 답을 label 그대로 이으면 넘친다. 음식의 이름 · 태그 · 재료와
 //             겹치는 낱말을 골라야 추천 점수에 반영된다.
 //   minCost / maxCost : 예산 조건 (있으면 금액 조건으로도 보낸다)
+//   emoji   : 사진이 없을 때 대신 보이는 그림
+//
+// 보기 사진은 public/images/game/balance/q{id}-{key}.jpg 에 둔다 (예: q1-A.jpg).
+// 질문 id 를 바꾸면 사진 파일 이름도 같이 바꿔야 한다.
 
 const BALANCE_QUESTIONS = [
   {
@@ -66,7 +70,7 @@ const BALANCE_QUESTIONS = [
     question: '냄비 속은?',
     options: [
       { key: 'A', emoji: '🥘', label: '보글보글 찌개', keyword: '찌개' },
-      { key: 'B', emoji: '🍵', label: '맑고 깊은 국탕', keyword: '국탕' },
+      { key: 'B', emoji: '🍵', label: '맑고 깊은 곰탕', keyword: '곰탕' },
     ],
   },
   {
@@ -113,7 +117,7 @@ const BALANCE_QUESTIONS = [
     id: 13,
     question: '바다 vs 산',
     options: [
-      { key: 'A', emoji: '🦐', label: '오징어 · 새우 해물', keyword: '오징어 새우' },
+      { key: 'A', emoji: '🦐', label: '신선한 해물', keyword: '해물' },
       { key: 'B', emoji: '🍄', label: '향긋한 버섯', keyword: '버섯' },
     ],
   },
@@ -137,8 +141,8 @@ const BALANCE_QUESTIONS = [
     id: 16,
     question: '양념은 어느 쪽?',
     options: [
-      { key: 'A', emoji: '🧄', label: '마늘 듬뿍', keyword: '마늘' },
-      { key: 'B', emoji: '🌰', label: '참깨로 고소하게', keyword: '참깨' },
+      { key: 'A', emoji: '🧄', label: '매콤소스', keyword: '매콤' },
+      { key: 'B', emoji: '🌰', label: '간장소스', keyword: '간장' },
     ],
   },
 ]

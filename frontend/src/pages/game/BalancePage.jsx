@@ -36,6 +36,25 @@ const countSteps = (value) => {
   return [`질문 ${value}개`, '취향 분석', '추천 메뉴 3개']
 }
 
+// 보기 사진. public/images/game/balance/q{질문id}-{A|B}.jpg 규칙이다.
+// 파일이 없거나 못 읽으면 이모지를 대신 보여준다
+function OptionPicture({ questionId, option }) {
+  const [failed, setFailed] = useState(false)
+
+  if (failed) {
+    return <span className="balance__emoji">{option.emoji}</span>
+  }
+
+  return (
+    <img
+      className="balance__img"
+      src={`/images/game/balance/q${questionId}-${option.key}.jpg`}
+      alt={option.label}
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 // 서버가 검색어를 150자까지만 받는다
 const MAX_QUERY = 150
 
@@ -236,7 +255,7 @@ export default function BalancePage({ user }) {
       <div className="balance__options">
         {question.options.map((option) => (
           <button key={option.key} type="button" className="card balance__option" onClick={() => chooseAnswer(option)}>
-            <span className="balance__emoji">{option.emoji}</span>
+            <OptionPicture key={`${question.id}-${option.key}`} questionId={question.id} option={option} />
             <strong className="balance__label">{option.label}</strong>
           </button>
         ))}
