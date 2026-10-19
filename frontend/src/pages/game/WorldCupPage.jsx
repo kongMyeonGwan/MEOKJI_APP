@@ -5,7 +5,7 @@ import FoodThumb from '../../components/common/FoodThumb'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
-import { getLikes, toggleLike } from '../../api/likes'
+import { getFavorites, toggleFavorite } from '../../api/favorites'
 import { addLog, foodNames, markPicked } from '../../utils/aiLog'
 import { saveResult } from '../../utils/gameResult'
 import { formatMinutes, formatPrice } from '../../utils/format'
@@ -76,7 +76,7 @@ export default function WorldCupPage({ user }) {
       return
     }
     try {
-      const data = await getLikes()
+      const data = await getFavorites()
       setLiked(data.names.includes(foodName))
     } catch (err) {
       // 몰라도 괜찮다
@@ -116,8 +116,8 @@ export default function WorldCupPage({ user }) {
       return
     }
     try {
-      const result = await toggleLike(foodName)
-      setLiked(result.liked)
+      const result = await toggleFavorite(foodName)
+      setLiked(result.favorited)
     } catch (err) {
       alert('찜하지 못했습니다.')
     }

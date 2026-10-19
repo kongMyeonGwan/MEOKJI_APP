@@ -2,7 +2,7 @@
   "note": "내 찜 목록",
   "request": {
     "method": "GET",
-    "path": "/api/likes"
+    "path": "/api/favorites"
   },
   "status": 200,
   "body": {

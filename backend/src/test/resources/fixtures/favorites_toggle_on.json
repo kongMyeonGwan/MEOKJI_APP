@@ -2,12 +2,12 @@
   "note": "찜 켜기 - 누를 때마다 뒤집힌다",
   "request": {
     "method": "PUT",
-    "path": "/api/likes"
+    "path": "/api/favorites"
   },
   "status": 200,
   "body": {
     "food_name": "김치찌개",
-    "liked": true,
+    "favorited": true,
     "count": 1
   }
 }
