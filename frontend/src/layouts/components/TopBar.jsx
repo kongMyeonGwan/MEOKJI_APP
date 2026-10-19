@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Icon, { LogoMark } from '../../components/common/Icon'
 
 import { getCatalog } from '../../api/catalog'
-import { getLikes } from '../../api/likes'
+import { getFavorites } from '../../api/favorites'
 import { getNotifications } from '../../api/users'
 
 import { formatDate } from '../../utils/format'
@@ -86,7 +86,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
     const loadUserData = async () => {
       try {
         // 찜 목록
-        const likes = await getLikes()
+        const likes = await getFavorites()
 
         setLikeCount(likes.count)
 

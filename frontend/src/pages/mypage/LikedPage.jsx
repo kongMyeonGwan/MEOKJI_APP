@@ -4,7 +4,7 @@ import Icon from '../../components/common/Icon'
 import FoodThumb from '../../components/common/FoodThumb'
 import Loading from '../../components/common/Loading'
 import LikedCard from './components/LikedCard'
-import { getLikes, toggleLike } from '../../api/likes'
+import { getFavorites, toggleFavorite } from '../../api/favorites'
 
 // 찜한 레시피 목록.
 //
@@ -19,7 +19,7 @@ export default function LikedPage() {
   // 찜 목록을 서버에서 받아온다
   const loadLikes = async () => {
     try {
-      const data = await getLikes()
+      const data = await getFavorites()
       setItems(data.items || [])
     } catch (err) {
       alert('찜 목록을 불러오지 못했습니다.')
@@ -35,7 +35,7 @@ export default function LikedPage() {
   // 하트를 누르면 찜을 풀고 목록을 다시 받아온다
   const handleUnlike = async (name) => {
     try {
-      await toggleLike(name)
+      await toggleFavorite(name)
       loadLikes()
     } catch (err) {
       alert('찜을 풀지 못했습니다.')

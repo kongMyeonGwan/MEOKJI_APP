@@ -5,7 +5,7 @@ import { formatMinutes, formatPrice } from '../../../utils/format'
 
 // 찜한 레시피 카드 한 장 (격자 보기).
 //
-// item 은 서버가 /api/likes 의 items 로 주는 음식 정보다. 카탈로그에 없는 이름이면
+// item 은 서버가 /api/favorites 의 items 로 주는 음식 정보다. 카탈로그에 없는 이름이면
 // food_name 만 채워져서 오기 때문에, 나머지 칸은 있을 때만 그린다.
 export default function LikedCard({ item, onUnlike }) {
   // 분류(한식)를 앞에 두고 태그를 뒤에 붙인다. 태그에 분류와 같은 말이 또 들어

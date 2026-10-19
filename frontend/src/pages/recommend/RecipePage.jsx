@@ -8,7 +8,7 @@ import RecipeView from '../../components/common/RecipeView'
 import PriceTable, { getPriceSummary } from './components/PriceTable'
 import { getRecipe } from '../../api/recommendations'
 import { createHistory } from '../../api/histories'
-import { getLikes, toggleLike } from '../../api/likes'
+import { getFavorites, toggleFavorite } from '../../api/favorites'
 import { markPicked } from '../../utils/aiLog'
 import { formatPrice } from '../../utils/format'
 
@@ -67,7 +67,7 @@ export default function RecipePage({ user }) {
       // 로그인했으면 찜해둔 음식인지 확인한다
       if (user) {
         try {
-          const likes = await getLikes()
+          const likes = await getFavorites()
           setLiked(likes.names.includes(foodName))
         } catch (err) {
           // 몰라도 하트가 빈 채로 보일 뿐이다
@@ -84,8 +84,8 @@ export default function RecipePage({ user }) {
       return
     }
     try {
-      const result = await toggleLike(foodName)
-      setLiked(result.liked)
+      const result = await toggleFavorite(foodName)
+      setLiked(result.favorited)
     } catch (err) {
       alert('찜하지 못했습니다.')
     }
