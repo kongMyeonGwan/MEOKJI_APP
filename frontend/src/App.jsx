@@ -80,6 +80,10 @@ export default function App() {
     setUser(nextUser)
   }
 
+
+
+
+
   // 테마 · 알림은 state 만 바꾼다. 화면에 적용하고 저장하는 건 아래 useEffect 가 한다.
   const handleThemeChange = (nextTheme) => {
     setTheme(nextTheme)
