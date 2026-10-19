@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ErrorMessage from '../../../components/common/ErrorMessage'
+import FoodCard from '../../../components/common/FoodCard'
+import Loading from '../../../components/common/Loading'
 import { getCatalog } from '../../../api/catalog'
+import { getRecommendations } from '../../../api/recommendations'
+import { addLog, foodNames } from '../../../utils/aiLog'
 import { saveResult } from '../../../utils/gameResult'
 
 // 음식 추천 룰렛. 돌려서 나온 종류(한식, 중식...)로 추천 화면에 넘어간다.
@@ -20,11 +25,29 @@ const SPIN_TIME = 3000 // 도는 시간 (3초)
 // 요리 100종이 거의 한식 · 국탕이라 나머지가 걸리면 추천이 텅 빈다. 그래서 바늘은 이 둘에만 멈춘다.
 const WINNABLE = ['한식', '국탕']
 
+// 조각 이름 위에 붙는 그림. 서버가 모르는 분류를 보내면 그림 없이 이름만 나온다
+const EMOJI = {
+  한식: '🍚',
+  중식: '🥟',
+  일식: '🍣',
+  양식: '🍝',
+  분식: '🍢',
+  아시안: '🍜',
+  샐러드: '🥗',
+  국탕: '🍲',
+}
+
+// 판 테두리에 두르는 전구 개수
+const BULBS = 16
+
 export default function Roulette() {
   const [slices, setSlices] = useState([]) // 조각 목록 [{ label: '한식', color: '#f97316' }, ...]
   const [angle, setAngle] = useState(0) // 지금 돌아간 각도
   const [spinning, setSpinning] = useState(false) // 도는 중인지
   const [result, setResult] = useState(null) // 당첨된 조각
+  const [foods, setFoods] = useState([]) // 당첨된 분류의 추천 음식 3개
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const navigate = useNavigate()
 
@@ -77,6 +100,8 @@ export default function Roulette() {
 
     setSpinning(true)
     setResult(null)
+    setFoods([])
+    setError('')
 
     // 4. 다 돈 다음(3초 뒤)에 결과를 보여준다
     setTimeout(() => {
@@ -88,11 +113,29 @@ export default function Roulette() {
       // 그 분류의 추천 목록으로 보낸다
       const label = slices[picked].label
       saveResult('roulette', '음식 룰렛', label, `/recommend?category=${encodeURIComponent(label)}`)
+
+      loadFoods(label)
     }, SPIN_TIME)
+  }
+
+  // 당첨된 분류에서 음식 3개를 추천받아 판 아래에 보여준다
+  const loadFoods = async (label) => {
+    setLoading(true)
+    try {
+      const data = await getRecommendations({ source: '메뉴 게임', limit: 3, category: label })
+      setFoods(data.items || [])
+      addLog('음식 룰렛', label, foodNames(data.items))
+    } catch (err) {
+      setError('추천 음식을 불러오지 못했습니다. 추천 보기를 눌러 주세요.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const reset = () => {
     setResult(null)
+    setFoods([])
+    setError('')
     setAngle(0)
   }
 
@@ -107,7 +150,12 @@ export default function Roulette() {
 
       <p className="muted roulette__desc">뭘 먹을지 고민될 땐 룰렛을 돌려보세요.</p>
 
-      <div className="roulette__stage">
+      <div className={`roulette__stage${spinning ? ' roulette__stage--spinning' : ''}`}>
+        {/* 테두리 전구. 판과 같이 돌지 않게 판 바깥에 둔다. 도는 동안 깜빡인다 */}
+        {Array.from({ length: BULBS }, (_, i) => (
+          <span key={i} className="roulette__bulb" style={{ transform: `rotate(${(360 / BULBS) * i}deg)` }} />
+        ))}
+
         {/* 12시 방향 바늘 */}
         <span className="roulette__needle" />
 
@@ -128,6 +176,7 @@ export default function Roulette() {
               className="roulette__label"
               style={{ transform: `translateX(-50%) rotate(${i * sliceDeg + sliceDeg / 2}deg)` }}
             >
+              {EMOJI[slice.label] && <span className="roulette__label-emoji">{EMOJI[slice.label]}</span>}
               {slice.label}
             </span>
           ))}
@@ -144,6 +193,17 @@ export default function Roulette() {
           <button type="button" className="btn btn--sm" onClick={() => navigate(`/recommend?category=${result.label}`)}>
             추천 보기
           </button>
+        </div>
+      )}
+
+      {loading && <Loading message={`${result ? result.label : ''} 메뉴 고르는 중...`} />}
+      <ErrorMessage message={error} />
+
+      {foods.length > 0 && (
+        <div className="list-page__cards roulette__foods">
+          {foods.map((food) => (
+            <FoodCard key={food.food_name} food={food} />
+          ))}
         </div>
       )}
     </section>
