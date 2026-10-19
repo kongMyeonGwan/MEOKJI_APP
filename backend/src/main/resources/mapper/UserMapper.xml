@@ -20,7 +20,7 @@
       드러나고, password_hash 가 실수로 응답까지 흘러가는 길도 줄어든다.
     -->
     <sql id="columns">
-        id, email, password_hash, nickname, user_level,
+        id, email, password_hash, nickname, user_level, gender,
         gender, address_sido, address_sigungu, latitude, longitude,
         login_fail_count, is_locked, locked_at, use_yn, created_at, updated_at
     </sql>
