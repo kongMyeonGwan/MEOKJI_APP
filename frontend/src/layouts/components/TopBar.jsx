@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Icon, { LogoMark } from '../../components/common/Icon'
 
 import { getCatalog } from '../../api/catalog'
-import { getLikes } from '../../api/likes'
+import { getFavorites } from '../../api/favorites'
 import { getNotifications } from '../../api/users'
 
 import { formatDate } from '../../utils/format'
@@ -37,6 +37,14 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
 
   // 알림 창을 마지막으로 연 시각
   const [readAt, setReadAt] = useState(localStorage.getItem(READ_AT_KEY) || '')
+
+  // 성별 선택
+  const profileImage =
+    user?.gender === 'MALE'
+      ? '/images/myface/avatar_male.png'
+      : user?.gender === 'FEMALE'
+        ? '/images/myface/avatar_female.png'
+        : '/images/myface/avatar_default.png'
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -78,7 +86,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
     const loadUserData = async () => {
       try {
         // 찜 목록
-        const likes = await getLikes()
+        const likes = await getFavorites()
 
         setLikeCount(likes.count)
 
@@ -293,13 +301,15 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
         {user && (
           <div className="topbar__profile">
             <button type="button" className="topbar__profile-btn" onClick={() => togglePanel('profile')}>
-              <span className="topbar__avatar">{user.nickname.slice(0, 1)}</span>
-
+              {/* 개인 이미지 파일 들어가는 곳  */}
+              <span className="topbar__avatar">
+                <img src={profileImage} />
+              </span>
+              {/* <span className="topbar__avatar">{user.nickname.slice(0, 1)}</span> */}
               {/* 앱 모드에서는 이 줄을 통째로 숨긴다 (styles/index.css 의 topbar__who) */}
               <span className="topbar__who">
                 <span className="topbar__name">안녕하세요, {user.nickname}님!</span>
               </span>
-
               <span className="topbar__caret">⌄</span>
             </button>
 
