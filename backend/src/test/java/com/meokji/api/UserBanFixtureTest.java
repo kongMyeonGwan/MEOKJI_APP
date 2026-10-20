@@ -89,10 +89,10 @@ class UserBanFixtureTest {
         assertThat(actual.get("latitude")).isEqualTo(want.get("latitude"));
         assertThat(actual.get("longitude")).isEqualTo(want.get("longitude"));
 
-        assertThat(actual.get("id")).isEqualTo(want.get("id"));
+        // id · created_at 은 DB 가 정하는 값이라 모양만 본다 (MemberDbValues 참고)
+        MemberDbValues.assertShape(actual);
         assertThat(actual.get("email")).isEqualTo(want.get("email"));
         assertThat(actual.get("nickname")).isEqualTo(want.get("nickname"));
-        assertThat(actual.get("created_at")).isEqualTo(want.get("created_at"));
         assertThat(actual.get("gender")).isEqualTo(want.get("gender"));
         assertThat(actual.get("address_sido")).isEqualTo(want.get("address_sido"));
         assertThat(actual.get("address_sigungu")).isEqualTo(want.get("address_sigungu"));

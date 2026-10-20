@@ -44,7 +44,7 @@ public class HistoryServiceImpl implements HistoryService {
         }
 
         Page<MealHistoryVO> result = new Page<>();
-        result.fill(paging, items);
+        result.Page(paging, items);
         return result;
     }
 

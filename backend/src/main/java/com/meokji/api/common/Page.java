@@ -36,7 +36,7 @@ public class Page<T> {
      * return result;
      * </pre>
      */
-    public void fill(Paging paging, List<T> items) {
+    public void Page(Paging paging, List<T> items) {
         this.total = paging.getTotal();
         this.page = paging.getPage();
         this.size = paging.getSize();

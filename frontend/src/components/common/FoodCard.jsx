@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Icon from './Icon'
 import FoodThumb from './FoodThumb'
-import { getLikes, toggleLike } from '../../api/likes'
+import { getFavorites, toggleFavorite } from '../../api/favorites'
 import { getToken } from '../../utils/token'
 import { formatMinutes, formatPrice } from '../../utils/format'
 
@@ -19,7 +19,7 @@ export default function FoodCard({ food }) {
 
     const load = async () => {
       try {
-        const data = await getLikes()
+        const data = await getFavorites()
         setLiked(data.names.includes(food.food_name))
       } catch (err) {
         // 몰라도 하트가 빈 채로 보일 뿐이다
@@ -36,8 +36,8 @@ export default function FoodCard({ food }) {
     }
 
     try {
-      const result = await toggleLike(food.food_name)
-      setLiked(result.liked)
+      const result = await toggleFavorite(food.food_name)
+      setLiked(result.favorited)
     } catch (err) {
       alert('찜하지 못했습니다.')
     }

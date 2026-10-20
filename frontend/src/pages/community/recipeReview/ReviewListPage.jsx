@@ -29,7 +29,7 @@ export default function ReviewListPage() {
     <div className="card">
       <div className="community__head">
         <h2 className="section-title" style={{ margin: 0 }}>
-          커뮤니티
+          레시피 추천
         </h2>
 
         <Link to="/reviews/write" className="btn btn--sm">
@@ -39,7 +39,7 @@ export default function ReviewListPage() {
 
       <p className="muted community__desc">요리와 레시피에 대한 정보를 나누고 소통하는 공간입니다.</p>
 
-      <CommunityTabs />
+      {/* <CommunityTabs /> */}
 
       <input type="search" className="community__search" placeholder="제목이나 내용으로 검색" />
 

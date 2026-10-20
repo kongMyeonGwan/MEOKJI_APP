@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Icon from '../../components/common/Icon'
-import { clearLikes, getLikes } from '../../api/likes'
+import { clearFavorites, getFavorites } from '../../api/favorites'
 import { clearLogs, getLogs } from '../../utils/aiLog'
 
 // 설정 화면. 로그인 없이도 열린다 (테마, 알림은 브라우저에 저장되는 값이라).
@@ -20,7 +20,7 @@ export default function SettingsPage({ user, onLogout, theme, onThemeChange, not
 
     const load = async () => {
       try {
-        const data = await getLikes()
+        const data = await getFavorites()
         setLikeCount(data.count)
       } catch (err) {
         // 개수가 0 으로 보일 뿐이다
@@ -40,7 +40,7 @@ export default function SettingsPage({ user, onLogout, theme, onThemeChange, not
       return
     }
     try {
-      await clearLikes()
+      await clearFavorites()
       setLikeCount(0)
     } catch (err) {
       alert('지우지 못했습니다.')

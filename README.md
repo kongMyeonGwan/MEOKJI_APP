@@ -285,9 +285,9 @@ MEOKJI_APP/
 | | `POST·DELETE /api/free-posts/{id}/file` | ● | 사진 붙이기 · 교체 · 떼기 (한 장, 5MB) |
 | | `GET /api/free-posts/{id}/file` | | 사진 내려받기 (원본 파일명으로) |
 | games | `POST /api/games/{key}/plays` | ● | 게임 시작 기록 (worldcup·balance·roulette) |
-| likes | `GET /api/likes` | ● | 내 찜 목록 |
-| | `PUT /api/likes` | ● | 찜하기 · 해제 (누를 때마다 뒤집힘) |
-| | `DELETE /api/likes` | ● | 찜 전체 비우기 |
+| favorites | `GET /api/favorites` | ● | 내 찜 목록 |
+| | `PUT /api/favorites` | ● | 찜하기 · 해제 (누를 때마다 뒤집힘) |
+| | `DELETE /api/favorites` | ● | 찜 전체 비우기 |
 
 **로그인 없이 되는 것** — 추천 · 레시피 · 가격 · 날씨 · 카탈로그 · 자유게시판 조회.
 (후기 · 공지 조회도 로그인 없이 되게 만들어두었으나 아직 서버가 501 이다.)

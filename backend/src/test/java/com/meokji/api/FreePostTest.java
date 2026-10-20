@@ -100,6 +100,10 @@ class FreePostTest {
                 .andReturn();
 
         assertThat(result.getResponse().getStatus()).as("글쓰기").isEqualTo(201);
+        // DB 가 채우는 값(작성 시각 · 조회수)과 JOIN 으로 오는 닉네임이 쓰자마자 응답에 있어야 한다
+        assertThat(body(result).get("created_at").isNull()).as("작성 시각이 같이 온다").isFalse();
+        assertThat(body(result).get("view_count").asInt()).isEqualTo(0);
+        assertThat(body(result).get("nickname").isNull()).as("닉네임이 같이 온다").isFalse();
 
         long postId = body(result).get("id").asLong();
         made.add(postId); // tearDown 이 치운다

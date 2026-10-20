@@ -97,7 +97,7 @@ REVIEW_COMMENTS            POST_COMMENTS
 
 `RECIPE_REVIEWS` 로 가던 FK 를 뗀 것이 이 변경의 대가다. `POST_ID` 한 칸이 두 표를
 가리키므로 FK 를 걸 수단이 없다. "진짜 있는 글인가" 는 서비스가 본다 — 댓글을
-달기 전에 글을 먼저 찾고 없으면 404 (`FreePostServiceImpl.findAlivePost`).
+달기 전에 글을 먼저 찾고 없으면 404 (`FreePostService.findAlivePost`).
 `USERS` 로 가는 FK 는 부모가 하나뿐이라 그대로 뒀다.
 
 인덱스는 이름만 바꾸지 않고 다시 만들었다. 선두에 `BOARD_TYPE` 이 와야
