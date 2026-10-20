@@ -3826,17 +3826,6 @@ a.price-table__best:hover { text-decoration: underline; }
   text-align: center;
 }
 
-.wc__restart {
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: 13px;
-  color: var(--color-muted);
-  cursor: pointer;
-}
-
-.wc__restart:hover { color: var(--color-accent); }
-
 .wc__match {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3997,8 +3986,6 @@ a.price-table__best:hover { text-decoration: underline; }
   font-weight: 700;
   text-align: center;
 }
-
-.balance__back { justify-self: center; }
 
 .balance__foot { font-size: 13px; text-align: center; }
 
@@ -6912,4 +6899,648 @@ a.btn { display: inline-block; text-align: center; }
   .btn { padding: 12px 18px; }
 
   .table thead th, .table td { padding: 10px 12px; }
+}
+
+
+/* ==========================================================
+   메뉴 게임
+   ========================================================== */
+
+/* ----- RoundPicker (게임 라운드 고르기) ----- */
+/* 색은 index.css 의 변수(--color-*)를 그대로 써서 라이트 · 다크 테마를 따라간다.
+   카드 하나를 위(제목) · 가운데(고르기) · 아래(버튼) 세 칸으로 나눈다.
+   칸마다 안쪽 여백을 따로 주려고 카드 자체의 padding 은 없앤다. */
+
+/* 본문 가운데에 카드 하나 */
+.round-pick-page {
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+/* .card 가 index.css 에서 padding 24px 를 주는데, 그 파일이 이 파일보다 나중에
+   붙을 수 있어서 .card.round-pick 으로 힘(명시도)을 올려 확실히 덮는다 */
+.card.round-pick {
+  width: 100%;
+  max-width: 720px;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ----- 위 ----- */
+.round-pick__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 40px 30px;
+  text-align: center;
+}
+
+.round-pick__icon {
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  background: var(--color-accent-weak);
+  font-size: 58px;
+  line-height: 1;
+}
+
+.round-pick__title {
+  margin: 8px 0 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.35;
+}
+
+.round-pick__tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.round-pick__tags li {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+/* ----- 가운데 ----- */
+.round-pick__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 28px 40px;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.round-pick__label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.round-pick__select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.round-pick__select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-weak);
+}
+
+.round-pick__desc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+/* 진행 순서: 64강 › 32강 › ... › 결승 */
+.round-pick__steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.round-pick__step {
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+/* 칸 사이의 › 표시 */
+.round-pick__step + .round-pick__step::before {
+  content: '›';
+  margin: 0 8px 0 -2px;
+  color: var(--color-subtle);
+  font-weight: 400;
+}
+
+.round-pick__step--last {
+  border-color: var(--color-accent);
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+}
+
+/* ----- 아래 ----- */
+.round-pick__foot {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  padding: 24px 40px 32px;
+}
+
+.round-pick__start,
+.round-pick__back {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+}
+
+@media (max-width: 560px) {
+  .round-pick-page { padding-top: 8px; }
+  .round-pick__head { padding: 28px 20px 20px; }
+  .round-pick__title { font-size: 20px; }
+  .round-pick__body,
+  .round-pick__foot { padding-left: 20px; padding-right: 20px; }
+  .round-pick__foot { grid-template-columns: 1fr; }
+}
+
+/* ----- 메뉴 게임 화면 크게 보기 ----- */
+/* 월드컵 · 밸런스 · 룰렛 · 라운드 고르기 화면을 본문 폭에 맞춰 크게 채운다.
+ *
+ * 기본 모양은 위쪽 '음식 월드컵 · 취향 밸런스 · Roulette' 구역에 있고, 여기서 덮어쓴다.
+ * 게임 화면의 바깥 div 에 .game-screen 을 붙였을 때만 적용되므로 다른 화면에는
+ * 영향이 없다.
+ *
+ * 모든 규칙을 .game-screen 으로 시작하게 해서 힘(명시도)을 기본 모양보다 높인다.
+ */
+
+/* ===== 공통: 폭 ===== */
+/* .list-page--narrow(520px)를 풀고 가운데에 놓는다 */
+.list-page.game-screen {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  gap: 20px;
+}
+
+/* 월드컵 대결 화면은 두 카드를 나란히 놓아서 조금 더 넓게 */
+.list-page.game-screen--wide { max-width: 1120px; }
+
+.game-screen .section-title { font-size: 24px; }
+
+/* ===== 음식 이상형 월드컵 ===== */
+.game-screen .wc__round { font-size: 17px; }
+
+.game-screen .wc__match { gap: 28px; }
+
+.game-screen .wc__pick {
+  padding: 18px 20px 20px;
+}
+
+/* 음식 사진을 크게. 원래 148px. 카드 아래까지 한 화면에 들어오게 화면 높이에 맞춘다 */
+.game-screen .wc__pick .thumb--lg { height: clamp(200px, 30vh, 320px); }
+
+.game-screen .wc__pick-name { margin-top: 14px; font-size: 24px; }
+
+.game-screen .wc__pick-reason { font-size: 15px; min-height: 42px; }
+
+.game-screen .wc__pick-meta { font-size: 15px; }
+
+.game-screen .wc__vs {
+  width: 60px;
+  height: 60px;
+  right: -14px;
+  font-size: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+/* 우승 화면 */
+.game-screen .wc--done { padding: 40px 32px; }
+.game-screen .wc__crown { font-size: 64px; }
+.game-screen .wc__champion { font-size: 38px; }
+.game-screen .wc__champion-thumb { max-width: 520px; }
+.game-screen .wc__champion-thumb .thumb--lg { height: clamp(220px, 32vh, 340px); }
+.game-screen .wc__champion-reason { font-size: 15px; }
+.game-screen .wc__champion-meta { font-size: 15px; }
+
+/* ===== 음식 취향 밸런스 게임 ===== */
+.game-screen .balance__progress { height: 10px; }
+
+.game-screen .balance__question {
+  margin: 4px 0;
+  font-size: 28px;
+}
+
+.game-screen .balance__options { gap: 24px; }
+
+.game-screen .balance__option {
+  gap: 12px;
+  padding: clamp(14px, 2.5vh, 24px) 20px;
+}
+
+.game-screen .balance__emoji { font-size: 72px; }
+
+/* 보기 사진. 받은 사진마다 가로세로 비율이 달라서, 같은 틀 안에 자르지 않고
+   통째로 넣는다. 남는 자리는 틀 배경색이 채운다 */
+.game-screen .balance__img {
+  width: 100%;
+  /* 높이를 화면 높이에 맞춘다. 폭에 맞춰 4:3 으로 두면 사진이 너무 커서
+     이전 질문 버튼이 화면 밖으로 밀려난다 */
+  height: clamp(140px, 30vh, 280px);
+  object-fit: contain;
+  background: var(--thumb-bg);
+  border-radius: var(--radius-sm);
+}
+
+.game-screen .balance__label { font-size: 21px; }
+
+/* 월드컵 대결 화면도 위아래 간격을 조금 좁힌다 */
+.list-page.game-screen--wide { gap: 16px; }
+
+/* 질문 화면은 위아래 간격을 좁혀 한 화면에 다 들어오게 한다 */
+.list-page.balance-screen { gap: 14px; }
+.balance-screen .section-head { margin-bottom: 0; }
+.balance-screen .game-bottom { margin-top: 4px; }
+
+/* ===== 음식 룰렛 ===== */
+.game-screen .roulette { padding: 24px 28px; }
+
+.game-screen .roulette__desc { font-size: 15px; margin-bottom: 4px; }
+
+/* 판 크기. 원래 240px. 화면 높이에 맞춰 커지되 480px 를 넘지 않는다.
+   제목 · 설명 · 판까지 한 화면에 들어오게 화면 높이의 56% 로 묶는다 */
+.game-screen .roulette__stage { max-width: min(480px, 56vh); margin: 22px auto; }
+
+.game-screen .roulette__wheel {
+  box-shadow: 0 0 0 4px #fff, 0 0 0 16px #f2a93b, 0 0 0 18px #d9862a, 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* 테두리 전구. 판과 같은 크기의 틀을 각도만큼 돌리고, 그 틀의 12시 자리에 점을 찍는다.
+   점은 판 바깥 금색 테두리(4px ~ 16px) 가운데에 온다 */
+.game-screen .roulette__bulb {
+  position: absolute;
+  inset: 0;
+  z-index: 1; /* 판의 테두리 그림자보다 위에 그린다 */
+  pointer-events: none;
+}
+
+.game-screen .roulette__bulb::after {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  border-radius: 50%;
+  background: #fff6d6;
+  box-shadow: 0 0 6px 1px #ffe08a;
+}
+
+/* 도는 동안 홀수 · 짝수 전구가 번갈아 깜빡인다 */
+.game-screen .roulette__stage--spinning .roulette__bulb::after {
+  animation: roulette-blink 0.4s steps(1) infinite;
+}
+
+.game-screen .roulette__stage--spinning .roulette__bulb:nth-child(even)::after {
+  animation-delay: 0.2s;
+}
+
+@keyframes roulette-blink {
+  50% { background: #b9772a; box-shadow: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-screen .roulette__stage--spinning .roulette__bulb::after { animation: none; }
+}
+
+/* 조각 이름 위 그림 */
+.game-screen .roulette__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.game-screen .roulette__label-emoji {
+  font-size: 1.3em;
+  line-height: 1;
+  text-shadow: none;
+}
+
+/* 다시하기 버튼. 위에 RESET 버튼 그림, 아래에 '다시하기' 글자 */
+.game-screen .roulette .section-head { align-items: center; }
+
+.game-screen .roulette__reset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.game-screen .roulette__reset img {
+  width: 48px;
+  height: auto;
+  transition: transform var(--dur) var(--ease);
+}
+
+.game-screen .roulette__reset-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+}
+
+.game-screen .roulette__reset:hover:not(:disabled) { background: var(--color-accent-weak); }
+.game-screen .roulette__reset:hover:not(:disabled) img { transform: scale(1.06); }
+.game-screen .roulette__reset:hover:not(:disabled) .roulette__reset-label { color: var(--color-accent); }
+.game-screen .roulette__reset:active:not(:disabled) img { transform: scale(0.95); }
+
+/* 결과 줄의 '결과 다시 보기'. 결과 줄 배경(연한 주황) 위에서 투명한 버튼이
+   묻히지 않게 흰 바탕 + 주황 테두리로 띄운다 */
+.roulette__result .btn--ghost {
+  background: var(--color-surface);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.roulette__result .btn--ghost:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+/* ----- 룰렛 당첨 창 ('오늘의 한 끼!') ----- */
+/* 화면 전체를 어둡게 덮고 가운데에 카드를 띄운다 */
+.roulette-win {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+  animation: roulette-win-fade 0.2s ease-out;
+}
+
+.roulette-win__box {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 400px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 26px 24px 22px;
+  text-align: center;
+  /* 툭 튀어나오듯 커지며 나타난다 */
+  animation: roulette-win-pop 0.38s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.roulette-win__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.roulette-win__close:hover { background: var(--color-bg); color: var(--color-text); }
+
+.roulette-win__kicker {
+  margin: 0;
+  padding: 3px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-weak);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.roulette-win__title {
+  margin: 4px 0 6px;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.roulette-win__thumb { width: 100%; }
+
+.roulette-win__thumb .thumb--lg {
+  height: clamp(140px, 26vh, 210px);
+  border-radius: var(--radius-sm);
+}
+
+.roulette-win__food {
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.roulette-win__meta { margin: 0; font-size: 14px; }
+
+.roulette-win__empty { margin: 8px 0; font-size: 14px; line-height: 1.6; }
+
+.roulette-win__empty a { color: var(--color-accent); font-weight: 700; }
+
+.roulette-win__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* 나머지 추천 둘 */
+.roulette-win__more {
+  width: 100%;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.roulette-win__more-title { margin: 0 0 8px; font-size: 12px; }
+
+.roulette-win__more-list {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roulette-win__more-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.roulette-win__more-list a:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+.roulette-win__more-list .thumb--sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+@keyframes roulette-win-fade {
+  from { opacity: 0; }
+}
+
+@keyframes roulette-win-pop {
+  from { opacity: 0; transform: scale(0.7); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roulette-win,
+  .roulette-win__box { animation: none; }
+}
+
+/* 폭죽 캔버스. 당첨 창보다 위에 그리되 클릭은 막지 않는다 */
+.confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.game-screen .roulette__label { font-size: 21px; padding-top: 10%; }
+
+.game-screen .roulette__needle {
+  top: -14px;
+  border-left-width: 15px;
+  border-right-width: 15px;
+  border-top-width: 26px;
+}
+
+.game-screen .roulette__spin {
+  width: 104px;
+  height: 104px;
+  border-width: 6px;
+  font-size: 19px;
+}
+
+.game-screen .roulette__result {
+  margin-top: 28px;
+  padding: 16px;
+  font-size: 18px;
+}
+
+/* ===== 좁은 화면 ===== */
+@media (max-width: 560px) {
+  .game-screen .section-title { font-size: 20px; }
+  .game-screen .wc__pick .thumb--lg { height: 170px; }
+  .game-screen .wc__pick-name { font-size: 21px; }
+  .game-screen .wc__champion { font-size: 30px; }
+  .game-screen .balance__question { font-size: 23px; }
+  .game-screen .balance__option { padding: 22px; }
+  .game-screen .balance__emoji { font-size: 44px; }
+  .game-screen .balance__img { width: 96px; height: 96px; flex-shrink: 0; }
+  .game-screen .balance__label { font-size: 17px; }
+  .game-screen .roulette { padding: 20px; }
+  .game-screen .roulette__label { font-size: 13px; }
+  .game-screen .roulette__wheel {
+    box-shadow: 0 0 0 3px #fff, 0 0 0 12px #f2a93b, 0 0 0 14px #d9862a, 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  .game-screen .roulette__bulb::after { top: -11px; width: 6px; height: 6px; margin-left: -3px; }
+  .game-screen .roulette__spin { width: 80px; height: 80px; font-size: 16px; }
+}
+
+/* ----- 게임 버튼 (다시하기 · 이전 질문) ----- */
+/* 글자 옆 아이콘. 그림(public/images/game/icon-*.png)을 마스크로 써서
+   색은 글자색(currentColor)을 따라간다 - 다크 테마 · 마우스를 올렸을 때도 같이 바뀐다 */
+.game-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1.15em;
+  height: 1.15em;
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+.game-icon--restart { --icon: url('/images/game/icon-restart.png'); }
+.game-icon--back { --icon: url('/images/game/icon-back.png'); }
+
+/* 잘 보이는 테두리 버튼 */
+.game-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.game-btn:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+}
+
+/* 이미 .btn 인 버튼에 아이콘만 붙일 때 */
+.game-btn--plain {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 화면 아래 가운데 */
+.game-bottom {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+/* 밸런스 질문 화면 제목 줄 오른쪽 [1 / 8][처음부터 다시하기] */
+.balance__head-side {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+@media (max-width: 560px) {
+  .game-btn { padding: 9px 16px; font-size: 14px; }
+  /* 좁으면 제목 줄의 버튼이 제목 아래로 내려간다 */
+  .game-screen .section-head { flex-wrap: wrap; }
 }

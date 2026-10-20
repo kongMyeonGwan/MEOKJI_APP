@@ -140,8 +140,8 @@ export default function GamePage() {
             <div className="gpage__result-on">
               <p className="muted gpage__result-from">{titleOf(today.game_key, today.game_title)}에서 고른 메뉴</p>
 
-              {/* 뽑힌 요리 사진. 룰렛은 요리가 아니라 분류(한식)를 뽑아서 사진을 안 그린다 */}
-              {today.game_key !== 'roulette' && (
+              {/* 뽑힌 요리 사진. 룰렛이 메뉴를 못 고르고 분류(한식)만 남겼으면 사진을 안 그린다 */}
+              {today.link.startsWith('/recipe/') && (
                 <span className="gpage__result-thumb">
                   <FoodThumb item={today} size="md" />
                 </span>

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import './RoundPicker.css'
 
 // 게임 시작 전에 크기(라운드)를 고르는 화면. 월드컵(64 · 32 · 16강)과 밸런스(16 · 8 · 4강)가 같이 쓴다.
 //
@@ -19,7 +18,7 @@ import './RoundPicker.css'
 //   steps        : (value) => 진행 순서 ['32강', '16강', ..., '결승']
 //   onStart      : 시작하기를 누르면 고른 value 를 넘겨 부른다
 //
-// 스타일은 옆의 RoundPicker.css 에 있다. (styles/index.css 는 다른 화면과 같이 쓰는 파일이라 건드리지 않는다)
+// 스타일은 styles/index.css 의 '메뉴 게임' 구역(RoundPicker)에 있다.
 export default function RoundPicker({ icon, title, tags, label, choices, defaultValue, describe, steps, onStart }) {
   const [value, setValue] = useState(defaultValue)
 

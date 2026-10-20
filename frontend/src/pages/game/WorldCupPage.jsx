@@ -10,7 +10,7 @@ import { addLog, foodNames, markPicked } from '../../utils/aiLog'
 import { saveResult } from '../../utils/gameResult'
 import { formatMinutes, formatPrice } from '../../utils/format'
 import RoundPicker from './components/RoundPicker'
-import './gameScreens.css'
+import Confetti from './components/Confetti'
 
 // 음식 이상형 월드컵. 후보를 둘씩 붙여서 하나를 고르면 다음 라운드로 올라간다.
 // 시작 전에 64강 · 32강 · 16강 중 하나를 고른다.
@@ -301,11 +301,15 @@ export default function WorldCupPage({ user }) {
             <button type="button" className="btn btn--ghost" onClick={() => handleLike(champion.food_name)}>
               {liked ? '♥ 찜 해제' : '♡ 찜하기'}
             </button>
-            <button type="button" className="btn btn--ghost" onClick={backToPicker}>
+            <button type="button" className="btn btn--ghost game-btn--plain" onClick={backToPicker}>
+              <span className="game-icon game-icon--restart" aria-hidden="true" />
               다시 하기
             </button>
           </div>
         </div>
+
+        {/* 우승 화면이 뜰 때 한 번 폭죽을 터뜨린다. 다시 해서 또 우승하면 화면이 새로 떠서 또 터진다 */}
+        <Confetti fire={1} />
       </div>
     )
   }
@@ -321,8 +325,10 @@ export default function WorldCupPage({ user }) {
     <div className="list-page game-screen game-screen--wide">
       <div className="section-head">
         <h2 className="section-title">음식 이상형 월드컵</h2>
-        <button type="button" className="section-more wc__restart" onClick={backToPicker}>
-          처음부터 ↻
+        {/* 라운드 고르는 화면으로 돌아간다 */}
+        <button type="button" className="game-btn" onClick={backToPicker}>
+          <span className="game-icon game-icon--restart" aria-hidden="true" />
+          처음부터 다시하기
         </button>
       </div>
 

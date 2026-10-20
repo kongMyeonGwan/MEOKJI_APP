@@ -9,7 +9,6 @@ import { addLog, foodNames } from '../../utils/aiLog'
 import { saveResult } from '../../utils/gameResult'
 import RoundPicker from './components/RoundPicker'
 import BALANCE_QUESTIONS from './components/balanceQuestions'
-import './gameScreens.css'
 
 // 음식 취향 밸런스 게임.
 // 시작 전에 16강 · 8강 · 4강(질문 16 · 8 · 4개)을 고른다.
@@ -197,8 +196,9 @@ export default function BalancePage({ user }) {
       <div className="list-page list-page--wide game-screen">
         <div className="section-head">
           <h2 className="section-title">이런 메뉴는 어떠세요?</h2>
-          <button type="button" className="section-more wc__restart" onClick={restart}>
-            다시 하기 ↻
+          <button type="button" className="game-btn" onClick={restart}>
+            <span className="game-icon game-icon--restart" aria-hidden="true" />
+            다시 하기
           </button>
         </div>
 
@@ -237,12 +237,19 @@ export default function BalancePage({ user }) {
   const question = questions[step]
 
   return (
-    <div className="list-page list-page--narrow game-screen">
+    // balance-screen : 질문 · 보기 · 이전 질문이 한 화면에 다 들어오게 간격과 사진 높이를 줄인다
+    <div className="list-page list-page--narrow game-screen balance-screen">
       <div className="section-head">
         <h2 className="section-title">음식 취향 밸런스 게임</h2>
-        <span className="muted section-more">
-          {step + 1} / {questions.length}
-        </span>
+        <div className="balance__head-side">
+          <span className="muted section-more">
+            {step + 1} / {questions.length}
+          </span>
+          <button type="button" className="game-btn" onClick={restart}>
+            <span className="game-icon game-icon--restart" aria-hidden="true" />
+            처음부터 다시하기
+          </button>
+        </div>
       </div>
 
       {/* 진행 막대 */}
@@ -262,9 +269,12 @@ export default function BalancePage({ user }) {
       </div>
 
       {step > 0 && (
-        <button type="button" className="btn btn--ghost btn--sm balance__back" onClick={goBack}>
-          ← 이전 질문
-        </button>
+        <div className="game-bottom">
+          <button type="button" className="game-btn" onClick={goBack}>
+            <span className="game-icon game-icon--back" aria-hidden="true" />
+            이전 질문
+          </button>
+        </div>
       )}
     </div>
   )
