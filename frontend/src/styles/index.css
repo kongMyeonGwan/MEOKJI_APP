@@ -90,7 +90,9 @@
   white-space: nowrap;
 }
 
-.sidebar__item:hover { background: var(--color-bg); }
+.sidebar__item:hover {
+  background: var(--color-bg);
+}
 
 /* 활성 메뉴는 주황색으로 꽉 채운다 */
 .sidebar__item.is-active {
@@ -98,7 +100,9 @@
   color: #fff;
 }
 
-.sidebar__item.is-active:hover { background: var(--color-accent); }
+.sidebar__item.is-active:hover {
+  background: var(--color-accent);
+}
 
 /* 아이콘이 currentColor를 쓰므로 활성/비활성 색이 글자와 자동으로 맞는다 */
 .sidebar__icon {
@@ -106,7 +110,9 @@
   color: var(--color-muted);
 }
 
-.sidebar__item.is-active .sidebar__icon { color: inherit; }
+.sidebar__item.is-active .sidebar__icon {
+  color: inherit;
+}
 
 /* NEW 배지. 활성 상태(주황 배경)에서는 반대로 흰 배지가 된다 */
 .sidebar__badge {
@@ -211,7 +217,9 @@
 }
 
 @media (min-width: 1024px) {
-  .nav-backdrop { display: none; }
+  .nav-backdrop {
+    display: none;
+  }
 }
 
 /* ----- TopBar ----- */
@@ -249,11 +257,17 @@
 }
 
 /* 사이드바에 로고가 있으므로 웹 모드에서는 숨긴다 */
-.topbar__logo { display: none; }
+.topbar__logo {
+  display: none;
+}
 
 /* ===== AI 검색 도우미 ===== */
 /* 검색창이 있던 자리라, margin-left:auto 로 오른쪽 묶음을 만든다 */
-.topbar__ai { position: relative; flex-shrink: 0; margin-left: auto; }
+.topbar__ai {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: auto;
+}
 
 .topbar__ai-btn {
   display: flex;
@@ -311,10 +325,14 @@
   height: 19px;
 }
 
-.topbar__bell-wrap { position: relative; }
+.topbar__bell-wrap {
+  position: relative;
+}
 
 /* ===== 프로필 ===== */
-.topbar__profile { position: relative; }
+.topbar__profile {
+  position: relative;
+}
 
 .topbar__profile-btn {
   display: flex;
@@ -329,7 +347,9 @@
   cursor: pointer;
 }
 
-.topbar__profile-btn:hover { background: var(--color-surface); }
+.topbar__profile-btn:hover {
+  background: var(--color-surface);
+}
 
 .topbar__avatar {
   display: flex;
@@ -391,9 +411,14 @@
 
 /* AI 도우미는 왼쪽에서, 알림·프로필은 오른쪽에서 펼친다.
    각 버튼이 붙어 있는 쪽으로 열려야 화면 밖으로 나가지 않는다 */
-.topbar__panel--ai { left: 0; }
+.topbar__panel--ai {
+  left: 0;
+}
+
 .topbar__panel--bell,
-.topbar__menu { right: 0; }
+.topbar__menu {
+  right: 0;
+}
 
 .topbar__panel-title {
   margin: 0 0 10px;
@@ -457,12 +482,19 @@
   border-radius: 8px;
 }
 
-.topbar__notis li + li { border-top: 1px solid var(--color-border); }
+.topbar__notis li+li {
+  border-top: 1px solid var(--color-border);
+}
 
 /* 안 읽은 알림만 살짝 칠한다 */
-.topbar__notis li.is-unread { background: var(--color-accent-weak); }
+.topbar__notis li.is-unread {
+  background: var(--color-accent-weak);
+}
 
-.topbar__noti-icon { font-size: 16px; line-height: 1.4; }
+.topbar__noti-icon {
+  font-size: 16px;
+  line-height: 1.4;
+}
 
 /* 알림 한 줄 전체가 그 글로 가는 링크다.
    flex: 1 을 줘야 아이콘 옆의 남은 폭을 다 차지해서, 글자가 아닌 빈 곳을
@@ -479,9 +511,13 @@
   text-decoration: none;
 }
 
-.topbar__noti-body strong { font-size: 13px; }
+.topbar__noti-body strong {
+  font-size: 13px;
+}
 
-.topbar__noti-date { font-size: 11px; }
+.topbar__noti-date {
+  font-size: 11px;
+}
 
 /* 프로필 메뉴 */
 .topbar__menu {
@@ -506,7 +542,9 @@
 }
 
 .topbar__menu a:hover,
-.topbar__menu button:hover { background: var(--color-bg); }
+.topbar__menu button:hover {
+  background: var(--color-bg);
+}
 
 /* ===== 앱 모드 ===== */
 @media (max-width: 1023px) {
@@ -528,31 +566,54 @@
     font-weight: 800;
   }
 
-  .topbar__logo svg { color: var(--color-accent); }
+  .topbar__logo svg {
+    color: var(--color-accent);
+  }
 
   /* 좁은 화면에서는 라벨을 접고 ✨만 남긴다 */
-  .topbar__ai-label { display: none; }
-  .topbar__ai-btn { padding: 10px 12px; }
+  .topbar__ai-label {
+    display: none;
+  }
 
-  .topbar__count { border-color: var(--color-surface); }
+  .topbar__ai-btn {
+    padding: 10px 12px;
+  }
 
-  .topbar__actions { gap: 4px; }
-  .topbar__who { display: none; }
-  .topbar__caret { display: none; }
+  .topbar__count {
+    border-color: var(--color-surface);
+  }
+
+  .topbar__actions {
+    gap: 4px;
+  }
+
+  .topbar__who {
+    display: none;
+  }
+
+  .topbar__caret {
+    display: none;
+  }
 }
 
 /* 좁아지면 로고 글자를 접는다 */
 @media (max-width: 720px) {
-  .topbar__logo-text { display: none; }
+  .topbar__logo-text {
+    display: none;
+  }
 }
 
 @media (max-width: 520px) {
-  .topbar__logo { display: none; }
+  .topbar__logo {
+    display: none;
+  }
 }
 
 /* ----- BottomNav ----- */
 /* 기본은 숨김. 앱 모드에서만 나타난다 */
-.bottom-nav { display: none; }
+.bottom-nav {
+  display: none;
+}
 
 @media (max-width: 1023px) {
   .bottom-nav {
@@ -589,7 +650,9 @@
     transition: transform 0.1s ease;
   }
 
-  .bottom-nav__item:active { transform: scale(0.94); }
+  .bottom-nav__item:active {
+    transform: scale(0.94);
+  }
 
   .bottom-nav__item.is-active {
     color: var(--color-accent);
@@ -616,7 +679,8 @@
 
 .shell__body {
   flex: 1;
-  min-width: 0;   /* 자식의 표/긴 글자가 넘쳐도 레이아웃이 밀리지 않게 */
+  min-width: 0;
+  /* 자식의 표/긴 글자가 넘쳐도 레이아웃이 밀리지 않게 */
   display: flex;
   flex-direction: column;
 }
@@ -701,8 +765,14 @@
 }
 
 @media (max-width: 1023px) {
-  .thumb--lg { height: 132px; }
-  .thumb--md { width: 50px; height: 50px; }
+  .thumb--lg {
+    height: 132px;
+  }
+
+  .thumb--md {
+    width: 50px;
+    height: 50px;
+  }
 }
 
 /* ==========================================================
@@ -774,10 +844,21 @@
   color: var(--color-accent);
 }
 
-.wpick--clear  { background: linear-gradient(104deg, var(--tint-clear) 0%, var(--color-soft) 36%, var(--color-surface) 64%); }
-.wpick--clouds { background: linear-gradient(104deg, var(--tint-clouds) 0%, var(--color-surface) 58%); }
-.wpick--rain   { background: linear-gradient(104deg, var(--tint-rain) 0%, var(--color-surface) 58%); }
-.wpick--snow   { background: linear-gradient(104deg, var(--tint-snow) 0%, var(--color-surface) 58%); }
+.wpick--clear {
+  background: linear-gradient(104deg, var(--tint-clear) 0%, var(--color-soft) 36%, var(--color-surface) 64%);
+}
+
+.wpick--clouds {
+  background: linear-gradient(104deg, var(--tint-clouds) 0%, var(--color-surface) 58%);
+}
+
+.wpick--rain {
+  background: linear-gradient(104deg, var(--tint-rain) 0%, var(--color-surface) 58%);
+}
+
+.wpick--snow {
+  background: linear-gradient(104deg, var(--tint-snow) 0%, var(--color-surface) 58%);
+}
 
 /* ===== 왼쪽 : 근거 ===== */
 .wpick__temp-row {
@@ -787,7 +868,10 @@
   margin: 0;
 }
 
-.wpick__emoji { font-size: 36px; line-height: 1; }
+.wpick__emoji {
+  font-size: 36px;
+  line-height: 1;
+}
 
 /* 온도는 이 칸의 주인공이라 숫자만 크게 키운다 */
 .wpick__temp {
@@ -878,7 +962,8 @@
   /* 카드 사이 간격. gap 이 아니라 margin 으로 주는 이유는 바로 아래 참고 */
   --wpick-gap: 20px;
 
-  --wpick-speed: 48s;  /* 한 바퀴 도는 데 걸리는 시간. 클수록 느리다 */
+  --wpick-speed: 48s;
+  /* 한 바퀴 도는 데 걸리는 시간. 클수록 느리다 */
 
   overflow: hidden;
 }
@@ -897,11 +982,16 @@
 
 /* 마우스를 올리거나 카드 안에 포커스가 가면 멈춘다.
    흐르는 것을 누르려다 놓치면 화가 난다 */
-.wpick__viewport.is-paused .wpick__track { animation-play-state: paused; }
+.wpick__viewport.is-paused .wpick__track {
+  animation-play-state: paused;
+}
 
 @keyframes wpick-flow {
+
   /* 절반만 옮긴다. 한 벌이 정확히 절반이라 그 지점이 시작과 같은 그림이다 */
-  to { transform: translateX(-50%); }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .wpick__pick {
@@ -1000,7 +1090,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-.wpick__meta-icon { color: var(--color-muted); }
+.wpick__meta-icon {
+  color: var(--color-muted);
+}
 
 .wpick__dot {
   width: 3px;
@@ -1019,6 +1111,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2;
 }
 
 .wpick__actions {
@@ -1060,8 +1153,13 @@
    대신 가로로 밀어 볼 수 있게 스크롤을 열어준다 — 멈추기만 하면
    둘째 장부터는 영영 못 본다 */
 @media (prefers-reduced-motion: reduce) {
-  .wpick__viewport { overflow-x: auto; }
-  .wpick__track { animation: none; }
+  .wpick__viewport {
+    overflow-x: auto;
+  }
+
+  .wpick__track {
+    animation: none;
+  }
 }
 
 /* ===== 좁아질 때 ===== */
@@ -1075,10 +1173,21 @@
     background: linear-gradient(180deg, var(--color-peach) 0%, var(--color-soft) 26%, var(--color-surface) 52%);
   }
 
-  .wpick--clear  { background: linear-gradient(180deg, var(--tint-clear) 0%, var(--color-soft) 28%, var(--color-surface) 54%); }
-  .wpick--clouds { background: linear-gradient(180deg, var(--tint-clouds) 0%, var(--color-surface) 46%); }
-  .wpick--rain   { background: linear-gradient(180deg, var(--tint-rain) 0%, var(--color-surface) 46%); }
-  .wpick--snow   { background: linear-gradient(180deg, var(--tint-snow) 0%, var(--color-surface) 46%); }
+  .wpick--clear {
+    background: linear-gradient(180deg, var(--tint-clear) 0%, var(--color-soft) 28%, var(--color-surface) 54%);
+  }
+
+  .wpick--clouds {
+    background: linear-gradient(180deg, var(--tint-clouds) 0%, var(--color-surface) 46%);
+  }
+
+  .wpick--rain {
+    background: linear-gradient(180deg, var(--tint-rain) 0%, var(--color-surface) 46%);
+  }
+
+  .wpick--snow {
+    background: linear-gradient(180deg, var(--tint-snow) 0%, var(--color-surface) 46%);
+  }
 
   .wpick__pick {
     padding-top: 18px;
@@ -1087,7 +1196,9 @@
 }
 
 @media (max-width: 640px) {
-  .wpick { padding: 18px 16px 12px; }
+  .wpick {
+    padding: 18px 16px 12px;
+  }
 
   /* 온도 줄과 나란히 놓이는 자리라 글자까지 있으면 "맑음"을 밀어낸다 */
   .wpick__refresh {
@@ -1096,10 +1207,17 @@
     padding: 8px;
   }
 
-  .wpick__refresh-label { display: none; }
+  .wpick__refresh-label {
+    display: none;
+  }
 
-  .wpick__temp { font-size: 40px; }
-  .wpick__emoji { font-size: 30px; }
+  .wpick__temp {
+    font-size: 40px;
+  }
+
+  .wpick__emoji {
+    font-size: 30px;
+  }
 
   /* 그림과 글이 나란히 있으면 둘 다 좁아진다. 그림을 위로 올린다 */
   .wpick__pick {
@@ -1116,10 +1234,23 @@
     --wpick-gap: 14px;
   }
 
-  .wpick__thumb { width: 100%; }
-  .wpick__thumb .thumb--lg { height: 190px; }
-  .wpick__name { font-size: 30px; letter-spacing: -1px; }
-  .wpick__actions .btn { flex: 1; justify-content: center; }
+  .wpick__thumb {
+    width: 100%;
+  }
+
+  .wpick__thumb .thumb--lg {
+    height: 190px;
+  }
+
+  .wpick__name {
+    font-size: 30px;
+    letter-spacing: -1px;
+  }
+
+  .wpick__actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
 }
 
 /* ==========================================================
@@ -1272,7 +1403,8 @@
 
 .bargain__food-body {
   display: flex;
-  min-width: 0; /* 없으면 긴 이유 문구가 칸을 밀어낸다 */
+  min-width: 0;
+  /* 없으면 긴 이유 문구가 칸을 밀어낸다 */
   flex-direction: column;
   gap: 0.15rem;
 }
@@ -1289,6 +1421,7 @@
   -webkit-line-clamp: 2;
   font-size: 0.78rem;
   line-height: 1.35;
+  line-clamp: 2;
 }
 
 .bargain__note {
@@ -1325,7 +1458,9 @@
   background: linear-gradient(120deg, var(--color-soft) 0%, var(--color-bg) 100%);
 }
 
-.gpromo__icon { font-size: 22px; }
+.gpromo__icon {
+  font-size: 22px;
+}
 
 .gpromo__question {
   margin: 6px 0 0;
@@ -1379,9 +1514,14 @@
   box-shadow: var(--shadow-lift);
 }
 
-.gpromo__game:active { transform: translateY(-1px); }
+.gpromo__game:active {
+  transform: translateY(-1px);
+}
 
-.gpromo__game-emoji { font-size: 38px; line-height: 1.2; }
+.gpromo__game-emoji {
+  font-size: 38px;
+  line-height: 1.2;
+}
 
 .gpromo__game-text {
   display: flex;
@@ -1417,7 +1557,9 @@
   gap: 6px;
 }
 
-.gpromo__robot { font-size: 30px; }
+.gpromo__robot {
+  font-size: 30px;
+}
 
 /* ===== 좁아질 때 ===== */
 /*
@@ -1436,14 +1578,21 @@
     justify-content: center;
   }
 
-  .gpromo__cta .btn { flex: 1; max-width: 320px; }
+  .gpromo__cta .btn {
+    flex: 1;
+    max-width: 320px;
+  }
 }
 
 @media (max-width: 560px) {
-  .gpromo { padding: 18px 16px; }
+  .gpromo {
+    padding: 18px 16px;
+  }
 
   /* 가로 3열로는 글자가 두 자씩 잘린다. 한 줄에 하나씩 눕힌다 */
-  .gpromo__games { grid-template-columns: 1fr; }
+  .gpromo__games {
+    grid-template-columns: 1fr;
+  }
 
   .gpromo__game {
     flex-direction: row;
@@ -1452,7 +1601,9 @@
     text-align: left;
   }
 
-  .gpromo__game-text { margin-top: 0; }
+  .gpromo__game-text {
+    margin-top: 0;
+  }
 
   .gpromo__game-desc {
     /* 눕히면 폭이 넉넉해서 굳이 두 줄로 끊을 필요가 없다 */
@@ -1460,7 +1611,9 @@
     margin-top: 2px;
   }
 
-  .gpromo__game-emoji { font-size: 26px; }
+  .gpromo__game-emoji {
+    font-size: 26px;
+  }
 }
 
 /* ===== full 버전 (로그인 화면) ===== */
@@ -1492,9 +1645,13 @@
   overflow: hidden;
 }
 
-.gpromo--full .gpromo__title { font-size: 25px; }
+.gpromo--full .gpromo__title {
+  font-size: 25px;
+}
 
-.gpromo--full .gpromo__desc { font-size: 13px; }
+.gpromo--full .gpromo__desc {
+  font-size: 13px;
+}
 
 .gpromo__start {
   align-self: flex-start;
@@ -1509,7 +1666,9 @@
   margin-bottom: -10px;
 }
 
-.gpromo--full .gpromo__games { gap: 16px; }
+.gpromo--full .gpromo__games {
+  gap: 16px;
+}
 
 .gpromo--full .gpromo__game {
   gap: 4px;
@@ -1520,13 +1679,25 @@
 /* 카드 세 가지 색. 배경은 아주 연하게, 버튼만 진하게 간다.
    게임마다 색을 고정한다 - 메뉴 게임 화면(GamePage)과 같은 색을 써야
    같은 게임이 화면마다 다른 색으로 보이지 않는다 */
-.gpromo__game--orange { background: #fdf0e8; }
-.gpromo__game--purple { background: #efecfb; }
-.gpromo__game--yellow { background: #fdf6e3; }
+.gpromo__game--orange {
+  background: #fdf0e8;
+}
 
-.gpromo--full .gpromo__game-emoji { font-size: 34px; }
+.gpromo__game--purple {
+  background: #efecfb;
+}
 
-.gpromo--full .gpromo__game-title { font-size: 17px; }
+.gpromo__game--yellow {
+  background: #fdf6e3;
+}
+
+.gpromo--full .gpromo__game-emoji {
+  font-size: 34px;
+}
+
+.gpromo--full .gpromo__game-title {
+  font-size: 17px;
+}
 
 .gpromo--full .gpromo__game-desc {
   /* 카드가 넓어져서 두 줄로 끊을 필요가 없다 */
@@ -1560,8 +1731,13 @@
 }
 
 /* 돌림판 카드는 가운데 그림이 주인공이라 양옆보다 크게 */
-.gpromo__game--yellow .gpromo__shot-slot:nth-child(2) .gpromo__shot { max-width: 110px; }
-.gpromo__game--yellow .gpromo__shot { max-width: 68px; }
+.gpromo__game--yellow .gpromo__shot-slot:nth-child(2) .gpromo__shot {
+  max-width: 110px;
+}
+
+.gpromo__game--yellow .gpromo__shot {
+  max-width: 68px;
+}
 
 /* VS 동그라미. 그림이 아니라 CSS 로 그린다 - 또렷하고 용량이 0이다 */
 .gpromo__vs {
@@ -1585,8 +1761,13 @@
   color: #fff;
 }
 
-.gpromo__game--orange .gpromo__vs { background: var(--color-accent); }
-.gpromo__game--purple .gpromo__vs { background: #6b4ddb; }
+.gpromo__game--orange .gpromo__vs {
+  background: var(--color-accent);
+}
+
+.gpromo__game--purple .gpromo__vs {
+  background: #6b4ddb;
+}
 
 /* ===== 카드마다 붙는 버튼 ===== */
 .gpromo__go {
@@ -1602,46 +1783,74 @@
   transition: filter var(--dur) var(--ease);
 }
 
-.gpromo__go:hover { filter: brightness(1.07); }
+.gpromo__go:hover {
+  filter: brightness(1.07);
+}
 
-.gpromo__game--orange .gpromo__go { background: var(--color-accent); }
-.gpromo__game--purple .gpromo__go { background: #6b4ddb; }
-.gpromo__game--yellow .gpromo__go { background: #e8a800; }
+.gpromo__game--orange .gpromo__go {
+  background: var(--color-accent);
+}
+
+.gpromo__game--purple .gpromo__go {
+  background: #6b4ddb;
+}
+
+.gpromo__game--yellow .gpromo__go {
+  background: #e8a800;
+}
 
 @media (max-width: 1023px) {
+
   /* 소개를 위, 카드를 아래로 쌓고 compact 에 가까운 모양으로 돌린다 */
-  .gpromo--full { grid-template-columns: minmax(0, 1fr); }
+  .gpromo--full {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-  .gpromo--full .gpromo__lead { padding: 22px 20px; }
+  .gpromo--full .gpromo__lead {
+    padding: 22px 20px;
+  }
 
-  .gpromo--full .gpromo__title { font-size: 21px; }
+  .gpromo--full .gpromo__title {
+    font-size: 21px;
+  }
 
   /* 요리사와 음식 사진은 숨긴다. 좁은 폭에서 카드가 세로로 길어지는 것을 막는다 */
   .gpromo__chef,
-  .gpromo__shots { display: none; }
+  .gpromo__shots {
+    display: none;
+  }
 
   .gpromo__start {
     align-self: stretch;
     text-align: center;
   }
 
-  .gpromo--full .gpromo__game { padding: 18px 14px; }
+  .gpromo--full .gpromo__game {
+    padding: 18px 14px;
+  }
 
-  .gpromo__go { margin-top: 14px; }
+  .gpromo__go {
+    margin-top: 14px;
+  }
 }
 
 @media (max-width: 560px) {
+
   /* 한 줄에 하나씩. 카드를 눕히면 버튼이 갈 곳이 없어서 세로 모양을 유지한다 */
   .gpromo--full .gpromo__game {
     flex-direction: column;
     text-align: center;
   }
 
-  .gpromo--full .gpromo__game-text { margin-top: 8px; }
+  .gpromo--full .gpromo__game-text {
+    margin-top: 8px;
+  }
 }
 
 /* ----- FoodFinder ----- */
-.finder { padding: 22px 24px; }
+.finder {
+  padding: 22px 24px;
+}
 
 .finder__search {
   display: flex;
@@ -1664,7 +1873,9 @@
     box-shadow var(--dur) var(--ease);
 }
 
-.finder__search input::placeholder { color: var(--color-subtle); }
+.finder__search input::placeholder {
+  color: var(--color-subtle);
+}
 
 .finder__search input:focus {
   outline: none;
@@ -1673,7 +1884,9 @@
   box-shadow: 0 0 0 3px var(--color-accent-weak);
 }
 
-.finder__search input::-webkit-search-cancel-button { display: none; }
+.finder__search input::-webkit-search-cancel-button {
+  display: none;
+}
 
 /* 검색은 이 카드의 CTA다. 입력칸과 같은 높이로 세워 한 덩어리로 읽히게 한다 */
 .finder__submit {
@@ -1732,9 +1945,15 @@
 }
 
 @media (max-width: 520px) {
+
   /* 버튼에 글자까지 넣으면 입력칸이 두 단어 폭만 남는다 */
-  .finder__submit-label { display: none; }
-  .finder__submit { padding: 12px 14px; }
+  .finder__submit-label {
+    display: none;
+  }
+
+  .finder__submit {
+    padding: 12px 14px;
+  }
 }
 
 /* ==========================================================
@@ -1742,7 +1961,9 @@
    ========================================================== */
 
 /* ----- BudgetRange ----- */
-.budget { margin-top: 18px; }
+.budget {
+  margin-top: 18px;
+}
 
 .budget__head {
   display: flex;
@@ -1805,7 +2026,9 @@
   pointer-events: none;
 }
 
-.budget__slider input:focus { outline: none; }
+.budget__slider input:focus {
+  outline: none;
+}
 
 .budget__slider input::-webkit-slider-thumb {
   appearance: none;
@@ -1854,7 +2077,9 @@
 /* ===== inline 변형 (대시보드 예산 카드) ===== */
 /* 카드 제목이 이미 "예산 설정"이라 슬라이더가 제목을 또 달 필요가 없다.
    대신 고른 구간을 아래 가운데에 크게 둬서 값이 바로 눈에 들어오게 한다 */
-.budget--inline { margin-top: 0; }
+.budget--inline {
+  margin-top: 0;
+}
 
 .budget--inline .budget__ends {
   margin: 0 0 4px;
@@ -1886,7 +2111,9 @@
    ========================================================== */
 
 /* ----- BudgetPicker ----- */
-.bpick { padding: 22px 24px; }
+.bpick {
+  padding: 22px 24px;
+}
 
 /*
  * [칩][슬라이더][버튼] 한 줄.
@@ -1900,28 +2127,40 @@
   margin-top: 12px;
 }
 
-.bpick__presets { flex-wrap: nowrap; }
+.bpick__presets {
+  flex-wrap: nowrap;
+}
 
 /* 슬라이더가 칩·버튼과 세로 중앙에서 만나도록.
    양끝 금액과 선택 구간이 위아래로 붙어 있어 그냥 두면 아래로 처진다 */
-.bpick__slider { padding-top: 2px; }
+.bpick__slider {
+  padding-top: 2px;
+}
 
-.bpick__submit { flex-shrink: 0; }
+.bpick__submit {
+  flex-shrink: 0;
+}
 
 /* ===== 좁아질 때 ===== */
 @media (max-width: 1279px) {
+
   /* 한 줄에 셋을 유지하면 슬라이더가 손가락 두 마디 폭이 된다 */
   .bpick__row {
     grid-template-columns: 1fr;
     gap: 14px;
   }
 
-  .bpick__presets { flex-wrap: wrap; }
+  .bpick__presets {
+    flex-wrap: wrap;
+  }
 
-  .bpick__submit { width: 100%; }
+  .bpick__submit {
+    width: 100%;
+  }
 }
 
 @media (max-width: 560px) {
+
   /* 칩 네 개가 두 줄로 접히면 카드가 높아진다.
      가로로 넘기게 두고 줄바꿈은 하지 않는다 */
   .bpick__presets {
@@ -1932,7 +2171,9 @@
     scrollbar-width: none;
   }
 
-  .bpick__presets::-webkit-scrollbar { display: none; }
+  .bpick__presets::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ==========================================================
@@ -1951,7 +2192,9 @@
 
 /* 하트를 얹기 위한 기준. 그림 자체는 링크라 하트를 그 안에 두면
    찜하려다 레시피가 열린다 */
-.food-card__media { position: relative; }
+.food-card__media {
+  position: relative;
+}
 
 .food-card__like {
   position: absolute;
@@ -1973,9 +2216,13 @@
   cursor: pointer;
 }
 
-.food-card__like:hover { color: var(--color-heart); }
+.food-card__like:hover {
+  color: var(--color-heart);
+}
 
-.food-card__like.is-on { color: var(--color-heart); }
+.food-card__like.is-on {
+  color: var(--color-heart);
+}
 
 .food-card__body {
   display: flex;
@@ -2009,6 +2256,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 40px;
+  line-clamp: 2;
 }
 
 .food-card__meta {
@@ -2020,10 +2268,14 @@
   font-size: 12px;
 }
 
-.food-card__hash { color: var(--color-accent); }
+.food-card__hash {
+  color: var(--color-accent);
+}
 
 /* 버튼을 카드 맨 아래에 붙여 카드들의 버튼 높이를 맞춘다 */
-.food-card__cta { margin-top: auto; }
+.food-card__cta {
+  margin-top: auto;
+}
 
 /* ----- DateRangeFilter ----- */
 .range {
@@ -2055,14 +2307,23 @@
   font-size: 13px;
 }
 
-.range__submit { flex-shrink: 0; }
+.range__submit {
+  flex-shrink: 0;
+}
 
 @media (max-width: 1023px) {
-  .range { flex-wrap: wrap; }
+  .range {
+    flex-wrap: wrap;
+  }
 
   /* 좁으면 날짜 두 칸이 윗줄, 검색 버튼이 아랫줄 전체를 쓴다 */
-  .range__input { flex: 1 1 40%; }
-  .range__submit { flex-basis: 100%; }
+  .range__input {
+    flex: 1 1 40%;
+  }
+
+  .range__submit {
+    flex-basis: 100%;
+  }
 }
 
 /* ==========================================================
@@ -2070,7 +2331,9 @@
    ========================================================== */
 
 /* ----- PopularRecipes ----- */
-.popular { padding: 18px; }
+.popular {
+  padding: 18px;
+}
 
 /* 제목이 길어 기간까지 굵게 두면 "인기 레시피"가 안 읽힌다 */
 .popular__range {
@@ -2091,7 +2354,9 @@
 }
 
 /* '기간 선택'만 글자가 길어 같은 비율로 나누면 두 줄이 된다 */
-.popular__tabs .chip:last-child { flex: 1.5; }
+.popular__tabs .chip:last-child {
+  flex: 1.5;
+}
 
 /*
  * 기간 입력.
@@ -2099,7 +2364,9 @@
  * 브라우저가 그리는 날짜 입력칸은 폭을 줄여도 'YYYY-MM-DD'와 달력 아이콘만큼은
  * 차지해서, 억지로 넣으면 연도가 잘린다. 버튼을 아랫줄로 내린다.
  */
-.popular .range { flex-wrap: wrap; }
+.popular .range {
+  flex-wrap: wrap;
+}
 
 .popular .range__input {
   flex: 1 1 40%;
@@ -2107,7 +2374,9 @@
   font-size: 12.5px;
 }
 
-.popular .range__submit { flex-basis: 100%; }
+.popular .range__submit {
+  flex-basis: 100%;
+}
 
 .popular__note {
   margin: 10px 0 6px;
@@ -2131,7 +2400,9 @@
   border-radius: var(--radius-sm);
 }
 
-.popular__row:hover { background: var(--color-bg); }
+.popular__row:hover {
+  background: var(--color-bg);
+}
 
 /* 순위 숫자. 폭을 고정해야 두 자리(10위)가 되어도 목록이 밀리지 않는다 */
 .popular__rank {
@@ -2165,7 +2436,9 @@
   color: var(--color-heart);
 }
 
-.popular__all { margin-top: 14px; }
+.popular__all {
+  margin-top: 14px;
+}
 
 /* ----- CategoryBar ----- */
 .cats {
@@ -2190,9 +2463,13 @@
   scrollbar-width: none;
 }
 
-.cats__list::-webkit-scrollbar { display: none; }
+.cats__list::-webkit-scrollbar {
+  display: none;
+}
 
-.cats__list > li { scroll-snap-align: start; }
+.cats__list>li {
+  scroll-snap-align: start;
+}
 
 .cats__chip {
   display: flex;
@@ -2209,7 +2486,9 @@
   cursor: pointer;
 }
 
-.cats__chip:hover .cats__thumb { border-color: var(--color-accent); }
+.cats__chip:hover .cats__thumb {
+  border-color: var(--color-accent);
+}
 
 .cats__chip.is-active {
   border-color: var(--color-accent);
@@ -2304,13 +2583,15 @@
  * 컨테이너에만 min-width: 0 을 주면 자식이 그대로 넘쳐서 페이지 전체에
  * 가로 스크롤이 생긴다. 자식에도 걸어줘야 한다.
  */
-.dash > *,
-.dash__left > *,
-.dash__right > * {
+.dash>*,
+.dash__left>*,
+.dash__right>* {
   min-width: 0;
 }
 
-.dash__cats-title { margin-bottom: 10px; }
+.dash__cats-title {
+  margin-bottom: 10px;
+}
 
 /*
  * 추천 카드는 넓은 화면에서도 가로로 넘겨 본다.
@@ -2332,8 +2613,13 @@
   scrollbar-width: none;
 }
 
-.dash__cards::-webkit-scrollbar { display: none; }
-.dash__cards > * { scroll-snap-align: start; }
+.dash__cards::-webkit-scrollbar {
+  display: none;
+}
+
+.dash__cards>* {
+  scroll-snap-align: start;
+}
 
 /* 안내 카드 */
 .dash__tip {
@@ -2344,7 +2630,10 @@
   background: var(--color-soft);
 }
 
-.dash__tip-icon { font-size: 20px; line-height: 1.3; }
+.dash__tip-icon {
+  font-size: 20px;
+  line-height: 1.3;
+}
 
 .dash__tip-title {
   margin: 0 0 4px;
@@ -2370,8 +2659,11 @@
 
 /* ===== 앱 모드 ===== */
 @media (max-width: 1023px) {
+
   .dash__left,
-  .dash__right { gap: 20px; }
+  .dash__right {
+    gap: 20px;
+  }
 
   .dash__cards {
     grid-auto-columns: 78%;
@@ -2383,7 +2675,9 @@
 }
 
 @media (max-width: 560px) {
-  .dash__cards { grid-auto-columns: 86%; }
+  .dash__cards {
+    grid-auto-columns: 86%;
+  }
 }
 
 /* ==========================================================
@@ -2493,7 +2787,9 @@
   line-height: 1.22;
 }
 
-.login__headline strong { color: var(--color-accent); }
+.login__headline strong {
+  color: var(--color-accent);
+}
 
 .login__lead {
   margin: 18px 0 0;
@@ -2531,9 +2827,13 @@
   box-shadow: var(--shadow-rest);
 }
 
-.login__point-title { font-size: 15px; }
+.login__point-title {
+  font-size: 15px;
+}
 
-.login__point-desc { font-size: 13px; }
+.login__point-desc {
+  font-size: 13px;
+}
 
 /* 오른쪽 로그인 카드 */
 .login__card {
@@ -2572,7 +2872,7 @@
 }
 
 /* 비밀번호 칸은 PasswordInput 이 <span> 으로 한 겹 감싸고 있어서 선택자가 두 벌이다 */
-.login__field > input,
+.login__field>input,
 .login__field .pw-input input {
   width: 100%;
   padding: 13px 14px 13px 42px;
@@ -2584,7 +2884,7 @@
   background: var(--color-bg);
 }
 
-.login__field > input:focus,
+.login__field>input:focus,
 .login__field .pw-input input:focus {
   outline: 2px solid var(--color-accent);
   outline-offset: -1px;
@@ -2614,7 +2914,9 @@
   cursor: pointer;
 }
 
-.login__forgot:hover { color: var(--color-accent); }
+.login__forgot:hover {
+  color: var(--color-accent);
+}
 
 .login__submit {
   width: 100%;
@@ -2646,8 +2948,11 @@
 }
 
 @media (max-width: 1023px) {
+
   /* 소개를 위, 카드를 아래로 쌓는다 */
-  .login__top { grid-template-columns: 1fr; }
+  .login__top {
+    grid-template-columns: 1fr;
+  }
 
   .login__hero {
     padding: 32px 24px;
@@ -2656,11 +2961,18 @@
     background: var(--color-accent-weak);
   }
 
-  .login__headline { font-size: 32px; }
+  .login__headline {
+    font-size: 32px;
+  }
 
-  .login__points { gap: 20px; }
+  .login__points {
+    gap: 20px;
+  }
 
-  .login__card { max-width: 420px; margin: 0 auto; }
+  .login__card {
+    max-width: 420px;
+    margin: 0 auto;
+  }
 }
 
 /* ==========================================================
@@ -2709,7 +3021,7 @@
   margin-bottom: 16px;
 }
 
-.register__field > span {
+.register__field>span {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
@@ -2781,7 +3093,7 @@
   margin-top: 8px;
 }
 
-.register__strength > span {
+.register__strength>span {
   flex: 1;
   height: 4px;
   border-radius: 2px;
@@ -2795,10 +3107,21 @@
   white-space: nowrap;
 }
 
-.register__strength.is-level-1 > span.is-on { background: var(--color-error); }
-.register__strength.is-level-2 > span.is-on { background: var(--color-warn); }
-.register__strength.is-level-3 > span.is-on { background: var(--color-accent-soft); }
-.register__strength.is-level-4 > span.is-on { background: var(--color-ok); }
+.register__strength.is-level-1>span.is-on {
+  background: var(--color-error);
+}
+
+.register__strength.is-level-2>span.is-on {
+  background: var(--color-warn);
+}
+
+.register__strength.is-level-3>span.is-on {
+  background: var(--color-accent-soft);
+}
+
+.register__strength.is-level-4>span.is-on {
+  background: var(--color-ok);
+}
 
 /* 선택 항목 안내. 필수 칸들과 시각적으로 끊어주려고 위에 선을 긋는다. */
 .register__optional {
@@ -2896,7 +3219,7 @@
   margin-bottom: 16px;
 }
 
-.reset__field > span {
+.reset__field>span {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
@@ -2981,12 +3304,16 @@
 }
 
 /* 룰렛처럼 내용이 가운데 하나뿐인 화면. 넓으면 원이 허전하게 떠 보인다 */
-.list-page--narrow { max-width: 520px; }
+.list-page--narrow {
+  max-width: 520px;
+}
 
 /* 카드 격자 화면(/popular). 폭을 제한하지 않고 본문을 꽉 채운다.
    .list-page 는 max-width 만 있고 margin: 0 auto 가 없어서, 폭을 묶어두면
    남는 자리가 전부 오른쪽에 몰린다. 카드가 알아서 줄 수를 늘리므로 풀어둔다 */
-.list-page--wide { max-width: none; }
+.list-page--wide {
+  max-width: none;
+}
 
 .list-page__desc {
   margin: -8px 0 0;
@@ -2999,7 +3326,9 @@
   gap: 14px;
 }
 
-.list-page__filter { padding: 18px; }
+.list-page__filter {
+  padding: 18px;
+}
 
 /* 활성 카테고리 표시 (/recommend?category=) */
 .list-page__filter-bar {
@@ -3039,12 +3368,16 @@
   cursor: pointer;
 }
 
-.list-page__chip-clear:hover { background: rgba(232, 72, 28, 0.16); }
+.list-page__chip-clear:hover {
+  background: rgba(232, 72, 28, 0.16);
+}
 
 /* 예산 범위 슬라이더.
    히어로에서는 검색폼 아래에 붙어서 margin-top이 필요하지만,
    여기서는 카드의 첫 요소라 위쪽 여백을 지운다 */
-.list-page__filter .budget { margin-top: 0; }
+.list-page__filter .budget {
+  margin-top: 0;
+}
 
 .budget-form__presets {
   display: flex;
@@ -3077,7 +3410,9 @@
 }
 
 @media (max-width: 1023px) {
-  .list-page__cards { grid-template-columns: 1fr; }
+  .list-page__cards {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ==========================================================
@@ -3110,7 +3445,9 @@
   border-color: var(--color-accent);
 }
 
-.search-form input::-webkit-search-cancel-button { display: none; }
+.search-form input::-webkit-search-cancel-button {
+  display: none;
+}
 
 .search-form__submit {
   display: inline-flex;
@@ -3126,10 +3463,14 @@
   font-size: 13px;
 }
 
-.search-page__read strong { color: var(--color-accent); }
+.search-page__read strong {
+  color: var(--color-accent);
+}
 
 /* 검색 전 안내 */
-.search-page__hints { padding: 20px; }
+.search-page__hints {
+  padding: 20px;
+}
 
 .search-page__hints-title {
   margin: 0 0 12px;
@@ -3185,7 +3526,9 @@
   line-height: 1.7;
 }
 
-.recipe__steps li { margin-bottom: 6px; }
+.recipe__steps li {
+  margin-bottom: 6px;
+}
 
 .recipe__substitutes {
   margin: 0;
@@ -3252,7 +3595,9 @@
   color: var(--color-accent);
 }
 
-a.price-table__best:hover { text-decoration: underline; }
+a.price-table__best:hover {
+  text-decoration: underline;
+}
 
 .price-table__worst {
   display: block;
@@ -3339,7 +3684,9 @@ a.price-table__best:hover { text-decoration: underline; }
   font-size: 14px;
 }
 
-.recipe-page__back a:hover { color: var(--color-accent); }
+.recipe-page__back a:hover {
+  color: var(--color-accent);
+}
 
 /* 레시피 대표 사진. 카드 맨 위에서 가로를 꽉 채운다 */
 .recipe-page__photo {
@@ -3384,7 +3731,9 @@ a.price-table__best:hover { text-decoration: underline; }
   color: var(--color-muted);
 }
 
-.recipe-page__confirm { text-align: center; }
+.recipe-page__confirm {
+  text-align: center;
+}
 
 .recipe-page__done {
   margin: 0 0 14px;
@@ -3412,18 +3761,36 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 @media (max-width: 1023px) {
-  .recipe-page { gap: 14px; }
-  .recipe-page__photo { margin-bottom: 12px; }
+  .recipe-page {
+    gap: 14px;
+  }
+
+  .recipe-page__photo {
+    margin-bottom: 12px;
+  }
 
   /* 앱에서는 사진이 화면을 다 먹지 않게 낮춘다 */
-  .recipe-page__photo .thumb--lg { height: 190px; }
+  .recipe-page__photo .thumb--lg {
+    height: 190px;
+  }
 
-  .recipe-page__head { flex-direction: column; gap: 6px; }
-  .recipe-page__name { font-size: 20px; }
+  .recipe-page__head {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .recipe-page__name {
+    font-size: 20px;
+  }
 
   /* 확정 버튼은 앱에서 누르기 쉽도록 폭을 꽉 채운다 */
-  .recipe-page__confirm .btn { width: 100%; }
-  .recipe-page__actions { flex-direction: column; }
+  .recipe-page__confirm .btn {
+    width: 100%;
+  }
+
+  .recipe-page__actions {
+    flex-direction: column;
+  }
 }
 
 /* 재료비 옆의 "재료 8개 중 4개 기준". KAMIS 에 없는 가공식품 때문에
@@ -3450,12 +3817,10 @@ a.price-table__best:hover { text-decoration: underline; }
   height: 0.85rem;
   margin-bottom: 0.6rem;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    var(--color-border) 0%,
-    var(--color-soft) 50%,
-    var(--color-border) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--color-border) 0%,
+      var(--color-soft) 50%,
+      var(--color-border) 100%);
   background-size: 200% 100%;
   animation: skeleton-sweep 1.4s ease-in-out infinite;
 }
@@ -3477,6 +3842,7 @@ a.price-table__best:hover { text-decoration: underline; }
   from {
     background-position: 200% 0;
   }
+
   to {
     background-position: -200% 0;
   }
@@ -3499,7 +3865,9 @@ a.price-table__best:hover { text-decoration: underline; }
 
 /* ===== 메뉴 게임 목록 (/game) ===== */
 
-.gpage { gap: 18px; }
+.gpage {
+  gap: 18px;
+}
 
 /* --- 위쪽 배너 --- */
 /* 오른쪽 그림(public/images/game/banner.png)이 없어도 배경만으로 그려진다 */
@@ -3522,7 +3890,9 @@ a.price-table__best:hover { text-decoration: underline; }
 /* 글자가 그림 자리로 넘어가지 않게 폭을 묶는다.
    위의 그라데이션이 불투명한 구간(50%)보다 조금 넓게 잡아, 글자 끝이 비치는 자리에서
    끊기지 않도록 한다 */
-.gpage__hero-text { max-width: 54%; }
+.gpage__hero-text {
+  max-width: 54%;
+}
 
 .gpage__kicker {
   margin: 0;
@@ -3580,9 +3950,17 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 /* 게임마다 고정 색. GamePromo 의 카드와 같은 값이다 */
-.gpage__game--orange { background: #fdf0e8; }
-.gpage__game--purple { background: #efecfb; }
-.gpage__game--yellow { background: #fdf6e3; }
+.gpage__game--orange {
+  background: #fdf0e8;
+}
+
+.gpage__game--purple {
+  background: #efecfb;
+}
+
+.gpage__game--yellow {
+  background: #fdf6e3;
+}
 
 .gpage__game-head {
   display: flex;
@@ -3604,9 +3982,17 @@ a.price-table__best:hover { text-decoration: underline; }
   color: #fff;
 }
 
-.gpage__game--orange .gpage__game-no { background: var(--color-accent); }
-.gpage__game--purple .gpage__game-no { background: #6b4ddb; }
-.gpage__game--yellow .gpage__game-no { background: #e8a800; }
+.gpage__game--orange .gpage__game-no {
+  background: var(--color-accent);
+}
+
+.gpage__game--purple .gpage__game-no {
+  background: #6b4ddb;
+}
+
+.gpage__game--yellow .gpage__game-no {
+  background: #e8a800;
+}
 
 .gpage__game-title {
   margin: 0;
@@ -3669,11 +4055,21 @@ a.price-table__best:hover { text-decoration: underline; }
   transition: filter var(--dur) var(--ease);
 }
 
-.gpage__game-go:hover { filter: brightness(1.07); }
+.gpage__game-go:hover {
+  filter: brightness(1.07);
+}
 
-.gpage__game--orange .gpage__game-go { background: var(--color-accent); }
-.gpage__game--purple .gpage__game-go { background: #6b4ddb; }
-.gpage__game--yellow .gpage__game-go { background: #e8a800; }
+.gpage__game--orange .gpage__game-go {
+  background: var(--color-accent);
+}
+
+.gpage__game--purple .gpage__game-go {
+  background: #6b4ddb;
+}
+
+.gpage__game--yellow .gpage__game-go {
+  background: #e8a800;
+}
 
 /* --- 아래 두 칸 --- */
 .gpage__bottom {
@@ -3741,7 +4137,9 @@ a.price-table__best:hover { text-decoration: underline; }
   color: var(--color-accent);
 }
 
-.gpage__result-go { margin-top: 8px; }
+.gpage__result-go {
+  margin-top: 8px;
+}
 
 /* 최근 선택한 메뉴 */
 .gpage__recent-list {
@@ -3753,7 +4151,9 @@ a.price-table__best:hover { text-decoration: underline; }
   list-style: none;
 }
 
-.gpage__recent-list .thumb--lg { height: 84px; }
+.gpage__recent-list .thumb--lg {
+  height: 84px;
+}
 
 .gpage__recent-name {
   display: block;
@@ -3765,7 +4165,9 @@ a.price-table__best:hover { text-decoration: underline; }
   white-space: nowrap;
 }
 
-.gpage__recent-list a:hover .gpage__recent-name { color: var(--color-accent); }
+.gpage__recent-list a:hover .gpage__recent-name {
+  color: var(--color-accent);
+}
 
 .gpage__recent-date {
   display: block;
@@ -3785,12 +4187,17 @@ a.price-table__best:hover { text-decoration: underline; }
     background-size: auto 82%;
   }
 
-  .gpage__hero-text { max-width: 58%; }
+  .gpage__hero-text {
+    max-width: 58%;
+  }
 
-  .gpage__title { font-size: 29px; }
+  .gpage__title {
+    font-size: 29px;
+  }
 }
 
 @media (max-width: 1023px) {
+
   /* 앱 모드. 그림을 걷고 글자가 폭을 다 쓰게 한다 -
      이 폭에서는 그림을 아무리 줄여도 글자와 부딪힌다 */
   .gpage__hero {
@@ -3800,21 +4207,33 @@ a.price-table__best:hover { text-decoration: underline; }
     background: var(--color-soft);
   }
 
-  .gpage__hero-text { max-width: 100%; }
+  .gpage__hero-text {
+    max-width: 100%;
+  }
 
-  .gpage__title { font-size: 26px; }
+  .gpage__title {
+    font-size: 26px;
+  }
 
   /* 카드 셋과 아래 두 칸을 모두 1단으로 */
   .gpage__games,
-  .gpage__bottom { grid-template-columns: minmax(0, 1fr); }
+  .gpage__bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 560px) {
-  .gpage__game-art { min-height: 150px; }
+  .gpage__game-art {
+    min-height: 150px;
+  }
 
-  .gpage__game-art img { max-height: 150px; }
+  .gpage__game-art img {
+    max-height: 150px;
+  }
 
-  .gpage__game-emoji { font-size: 48px; }
+  .gpage__game-emoji {
+    font-size: 48px;
+  }
 }
 
 /* ===== 음식 월드컵 ===== */
@@ -3835,7 +4254,9 @@ a.price-table__best:hover { text-decoration: underline; }
   cursor: pointer;
 }
 
-.wc__restart:hover { color: var(--color-accent); }
+.wc__restart:hover {
+  color: var(--color-accent);
+}
 
 .wc__match {
   display: grid;
@@ -3878,6 +4299,7 @@ a.price-table__best:hover { text-decoration: underline; }
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 40px;
+  line-clamp: 2;
 }
 
 .wc__pick-meta {
@@ -3908,7 +4330,9 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 /* ===== 우승 화면 ===== */
-.wc--done { text-align: center; }
+.wc--done {
+  text-align: center;
+}
 
 .wc__crown {
   margin: 0;
@@ -3923,7 +4347,10 @@ a.price-table__best:hover { text-decoration: underline; }
   letter-spacing: -0.6px;
 }
 
-.wc__champion-thumb { margin: 0 auto; max-width: 320px; }
+.wc__champion-thumb {
+  margin: 0 auto;
+  max-width: 320px;
+}
 
 .wc__champion-reason {
   margin: 14px 0 0;
@@ -3990,7 +4417,10 @@ a.price-table__best:hover { text-decoration: underline; }
   background: var(--color-accent-weak);
 }
 
-.balance__emoji { font-size: 40px; line-height: 1; }
+.balance__emoji {
+  font-size: 40px;
+  line-height: 1;
+}
 
 .balance__label {
   font-size: 16px;
@@ -3998,9 +4428,14 @@ a.price-table__best:hover { text-decoration: underline; }
   text-align: center;
 }
 
-.balance__back { justify-self: center; }
+.balance__back {
+  justify-self: center;
+}
 
-.balance__foot { font-size: 13px; text-align: center; }
+.balance__foot {
+  font-size: 13px;
+  text-align: center;
+}
 
 .balance__foot a {
   color: var(--color-accent);
@@ -4008,9 +4443,12 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 @media (max-width: 560px) {
+
   /* 좁은 화면에서 두 칸을 유지하면 카드 하나가 손가락 폭이 된다.
      월드컵은 위아래 비교로 바꾸고, VS는 그 사이에 그대로 걸린다 */
-  .wc__match { grid-template-columns: 1fr; }
+  .wc__match {
+    grid-template-columns: 1fr;
+  }
 
   .wc__vs {
     top: auto;
@@ -4019,8 +4457,14 @@ a.price-table__best:hover { text-decoration: underline; }
     transform: translate(50%, 50%);
   }
 
-  .balance__options { grid-template-columns: 1fr; }
-  .balance__option { flex-direction: row; padding: 20px; }
+  .balance__options {
+    grid-template-columns: 1fr;
+  }
+
+  .balance__option {
+    flex-direction: row;
+    padding: 20px;
+  }
 }
 
 /* ----- Roulette ----- */
@@ -4126,9 +4570,13 @@ a.price-table__best:hover { text-decoration: underline; }
   cursor: pointer;
 }
 
-.roulette__spin:hover:not(:disabled) { background: var(--color-accent-weak); }
+.roulette__spin:hover:not(:disabled) {
+  background: var(--color-accent-weak);
+}
 
-.roulette__spin:disabled { cursor: not-allowed; }
+.roulette__spin:disabled {
+  cursor: not-allowed;
+}
 
 .roulette__result {
   display: flex;
@@ -4143,12 +4591,16 @@ a.price-table__best:hover { text-decoration: underline; }
   font-size: 14px;
 }
 
-.roulette__result strong { color: var(--color-accent); }
+.roulette__result strong {
+  color: var(--color-accent);
+}
 
 /* 회전 애니메이션을 끄고 싶다는 설정을 존중한다.
    빙글빙글 도는 화면은 어지럼증을 유발할 수 있다 */
 @media (prefers-reduced-motion: reduce) {
-  .roulette__wheel { transition: none !important; }
+  .roulette__wheel {
+    transition: none !important;
+  }
 }
 
 /* ==========================================================
@@ -4156,14 +4608,18 @@ a.price-table__best:hover { text-decoration: underline; }
    ========================================================== */
 
 /* ----- ReviewCard ----- */
-.review-card { padding: 4px 0; }
+.review-card {
+  padding: 4px 0;
+}
 
 .review-card__title {
   margin: 0 0 6px;
   font-size: 16px;
 }
 
-.review-card__link:hover .review-card__title { color: var(--color-accent); }
+.review-card__link:hover .review-card__title {
+  color: var(--color-accent);
+}
 
 /* 제목 옆 클립. 제목을 밀어내지 않게 작게 둔다 */
 .review-card__clip {
@@ -4181,6 +4637,7 @@ a.price-table__best:hover { text-decoration: underline; }
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2;
 }
 
 .review-card__meta {
@@ -4191,10 +4648,15 @@ a.price-table__best:hover { text-decoration: underline; }
   font-size: 13px;
 }
 
-.review-card__counts { margin-left: auto; }
+.review-card__counts {
+  margin-left: auto;
+}
 
 @media (max-width: 520px) {
-  .review-card__counts { margin-left: 0; flex-basis: 100%; }
+  .review-card__counts {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
 }
 
 /* ----- NoticeList ----- */
@@ -4210,7 +4672,9 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 /* 고정 공지는 배경을 아주 옅게 깔아 일반 공지와 구분한다 */
-.notice--pinned { background: var(--color-accent-weak); }
+.notice--pinned {
+  background: var(--color-accent-weak);
+}
 
 .notice__head {
   display: flex;
@@ -4226,7 +4690,9 @@ a.price-table__best:hover { text-decoration: underline; }
   cursor: pointer;
 }
 
-.notice__head:hover .notice__title { color: var(--color-accent); }
+.notice__head:hover .notice__title {
+  color: var(--color-accent);
+}
 
 .notice__badges {
   display: flex;
@@ -4264,7 +4730,9 @@ a.price-table__best:hover { text-decoration: underline; }
   transition: transform 0.15s ease;
 }
 
-.notice__caret.is-open { transform: rotate(180deg); }
+.notice__caret.is-open {
+  transform: rotate(180deg);
+}
 
 .notice__body {
   padding: 0 4px 16px 4px;
@@ -4334,7 +4802,7 @@ a.price-table__best:hover { text-decoration: underline; }
   margin-bottom: 16px;
 }
 
-.notice-form__field > span {
+.notice-form__field>span {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
@@ -4357,9 +4825,13 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 /* 드롭다운은 오른쪽에 화살표가 앉으므로 그만큼 비워 둔다 (위 padding 을 덮는다) */
-.notice-form__field select { padding-right: 34px; }
+.notice-form__field select {
+  padding-right: 34px;
+}
 
-.notice-form__field textarea { resize: vertical; }
+.notice-form__field textarea {
+  resize: vertical;
+}
 
 .notice-form__field input:focus,
 .notice-form__field select:focus,
@@ -4396,7 +4868,9 @@ a.price-table__best:hover { text-decoration: underline; }
 /* 좁은 화면에서는 분류와 고정을 위아래로 쌓는다.
    한 줄에 두면 select 가 글자 몇 개만 보일 만큼 좁아진다 */
 @media (max-width: 640px) {
-  .notice-form__check { margin: 0 0 16px; }
+  .notice-form__check {
+    margin: 0 0 16px;
+  }
 }
 
 /* ==========================================================
@@ -4570,7 +5044,9 @@ a.price-table__best:hover { text-decoration: underline; }
   color: #fff;
 }
 
-.popular-filter__chips { flex-shrink: 0; }
+.popular-filter__chips {
+  flex-shrink: 0;
+}
 
 .popular-grid {
   display: grid;
@@ -4625,9 +5101,20 @@ a.price-table__best:hover { text-decoration: underline; }
   box-shadow: var(--shadow-rest);
 }
 
-.rank-card__rank.is-gold { background: #f6b93b; color: #fff; }
-.rank-card__rank.is-silver { background: #c8cdd4; color: #fff; }
-.rank-card__rank.is-bronze { background: #d99058; color: #fff; }
+.rank-card__rank.is-gold {
+  background: #f6b93b;
+  color: #fff;
+}
+
+.rank-card__rank.is-silver {
+  background: #c8cdd4;
+  color: #fff;
+}
+
+.rank-card__rank.is-bronze {
+  background: #d99058;
+  color: #fff;
+}
 
 /* 조리 시간 (오른쪽 위). 그림 위에 얹히므로 배경을 반투명 검정으로 둔다 */
 .rank-card__time {
@@ -4661,7 +5148,9 @@ a.price-table__best:hover { text-decoration: underline; }
   font-weight: 700;
 }
 
-.rank-card__name a:hover { color: var(--color-accent); }
+.rank-card__name a:hover {
+  color: var(--color-accent);
+}
 
 .rank-card__save {
   flex-shrink: 0;
@@ -4673,7 +5162,9 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 .rank-card__save:hover,
-.rank-card__save.is-on { color: var(--color-accent); }
+.rank-card__save.is-on {
+  color: var(--color-accent);
+}
 
 .rank-card__summary {
   margin: 0;
@@ -4716,7 +5207,10 @@ a.price-table__best:hover { text-decoration: underline; }
   gap: 10px;
 }
 
-.rank-card__heart { color: var(--color-accent); font-weight: 600; }
+.rank-card__heart {
+  color: var(--color-accent);
+  font-weight: 600;
+}
 
 .rank-card__tags {
   display: flex;
@@ -4737,7 +5231,9 @@ a.price-table__best:hover { text-decoration: underline; }
     padding: 18px 20px;
   }
 
-  .popular-head__hello { display: none; }
+  .popular-head__hello {
+    display: none;
+  }
 
   /* 날짜 줄과 칩 줄을 위아래로 쌓는다. 한 줄에 다 넣으면 날짜 칸이 뭉개진다 */
   .popular-filter {
@@ -4752,7 +5248,9 @@ a.price-table__best:hover { text-decoration: underline; }
   white-space: nowrap;
 }
 
-.community__hint:hover { color: var(--color-accent); }
+.community__hint:hover {
+  color: var(--color-accent);
+}
 
 .community__search {
   width: 100%;
@@ -4770,7 +5268,9 @@ a.price-table__best:hover { text-decoration: underline; }
   outline-offset: -1px;
 }
 
-.community__list { margin-top: 16px; }
+.community__list {
+  margin-top: 16px;
+}
 
 /* 링크로 만든 버튼도 button과 같은 높이로 보이게 한다 */
 a.btn {
@@ -4795,7 +5295,9 @@ a.btn {
   border-bottom: 1px solid var(--color-border);
 }
 
-.liked li:last-child { border-bottom: none; }
+.liked li:last-child {
+  border-bottom: none;
+}
 
 .liked__row {
   flex: 1;
@@ -4817,7 +5319,9 @@ a.btn {
   line-height: 0;
 }
 
-.liked__row:hover .liked__name { color: var(--color-accent); }
+.liked__row:hover .liked__name {
+  color: var(--color-accent);
+}
 
 .liked__body {
   flex: 1;
@@ -4924,8 +5428,14 @@ a.btn {
   gap: 20px;
 }
 
-.review__back { margin: 0; font-size: 14px; }
-.review__back a:hover { color: var(--color-accent); }
+.review__back {
+  margin: 0;
+  font-size: 14px;
+}
+
+.review__back a:hover {
+  color: var(--color-accent);
+}
 
 .review__title {
   margin: 0 0 10px;
@@ -4971,7 +5481,9 @@ a.btn {
   cursor: pointer;
 }
 
-.review__like:disabled { cursor: not-allowed; }
+.review__like:disabled {
+  cursor: not-allowed;
+}
 
 .review__like.is-on {
   border-color: var(--color-accent);
@@ -4980,7 +5492,9 @@ a.btn {
   font-weight: 600;
 }
 
-.review__hint { font-size: 13px; }
+.review__hint {
+  font-size: 13px;
+}
 
 .review__link {
   color: var(--color-accent);
@@ -5000,7 +5514,9 @@ a.btn {
   font-size: 14px;
 }
 
-.review__comment-head span { font-size: 12px; }
+.review__comment-head span {
+  font-size: 12px;
+}
 
 .review__comment-body {
   margin: 4px 0 0;
@@ -5056,13 +5572,27 @@ a.btn {
 }
 
 @media (max-width: 1023px) {
-  .review { gap: 14px; }
-  .review__title { font-size: 19px; }
-  .review__content { padding: 16px 0; font-size: 15px; }
+  .review {
+    gap: 14px;
+  }
+
+  .review__title {
+    font-size: 19px;
+  }
+
+  .review__content {
+    padding: 16px 0;
+    font-size: 15px;
+  }
 
   /* 좋아요는 엄지로 누르는 버튼이라 충분히 크게 */
-  .review__like { padding: 10px 22px; }
-  .review__actions { flex-wrap: wrap; }
+  .review__like {
+    padding: 10px 22px;
+  }
+
+  .review__actions {
+    flex-wrap: wrap;
+  }
 }
 
 /* ===== 내 글 · 내 댓글에만 나오는 수정/삭제 =====
@@ -5089,11 +5619,18 @@ a.btn {
   cursor: pointer;
 }
 
-.review__comment-actions button:hover { color: var(--color-accent); }
+.review__comment-actions button:hover {
+  color: var(--color-accent);
+}
 
 /* 되돌릴 수 없는 동작만 색을 달리한다 */
-.review__danger { color: var(--color-error); }
-.review__comment-actions .review__danger:hover { color: var(--color-error); }
+.review__danger {
+  color: var(--color-error);
+}
+
+.review__comment-actions .review__danger:hover {
+  color: var(--color-error);
+}
 
 /* ===== 글 수정 폼 ===== */
 .review__edit {
@@ -5107,7 +5644,7 @@ a.btn {
   gap: 6px;
 }
 
-.review__edit-field > span {
+.review__edit-field>span {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-subtle);
@@ -5127,15 +5664,20 @@ a.btn {
   margin-bottom: 18px;
 }
 
-.write__cancel { font-size: 14px; }
-.write__cancel:hover { color: var(--color-accent); }
+.write__cancel {
+  font-size: 14px;
+}
+
+.write__cancel:hover {
+  color: var(--color-accent);
+}
 
 .write__field {
   display: block;
   margin-bottom: 18px;
 }
 
-.write__field > span {
+.write__field>span {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
@@ -5157,9 +5699,13 @@ a.btn {
 }
 
 /* 드롭다운은 오른쪽에 화살표가 앉으므로 그만큼 비워 둔다 */
-.write__field select { padding-right: 34px; }
+.write__field select {
+  padding-right: 34px;
+}
 
-.write__field textarea { resize: vertical; }
+.write__field textarea {
+  resize: vertical;
+}
 
 .write__field input:focus,
 .write__field select:focus,
@@ -5233,8 +5779,13 @@ a.btn {
   font-size: 14px;
 }
 
-.free__hint { font-size: 14px; }
-.free__hint:hover { color: var(--color-accent); }
+.free__hint {
+  font-size: 14px;
+}
+
+.free__hint:hover {
+  color: var(--color-accent);
+}
 
 .free__search {
   width: 100%;
@@ -5251,17 +5802,23 @@ a.btn {
   outline-offset: -1px;
 }
 
-.free__list { margin-top: 16px; }
+.free__list {
+  margin-top: 16px;
+}
 
 /* ----- FreePostCard (목록 한 줄) ----- */
-.free-card { padding: 4px 0; }
+.free-card {
+  padding: 4px 0;
+}
 
 .free-card__title {
   margin: 0 0 6px;
   font-size: 16px;
 }
 
-.free-card__link:hover .free-card__title { color: var(--color-accent); }
+.free-card__link:hover .free-card__title {
+  color: var(--color-accent);
+}
 
 /* 제목 옆 클립. 제목을 밀어내지 않게 작게 둔다 */
 .free-card__clip {
@@ -5279,6 +5836,7 @@ a.btn {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2;
 }
 
 .free-card__meta {
@@ -5289,10 +5847,15 @@ a.btn {
   font-size: 13px;
 }
 
-.free-card__counts { margin-left: auto; }
+.free-card__counts {
+  margin-left: auto;
+}
 
 @media (max-width: 520px) {
-  .free-card__counts { margin-left: 0; flex-basis: 100%; }
+  .free-card__counts {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
 }
 
 /* ----- FreeAttachment (첨부 사진 한 장) ----- */
@@ -5344,10 +5907,14 @@ a.btn {
   margin-top: 0.6rem;
 }
 
-.free-attach__actions label { cursor: pointer; }
+.free-attach__actions label {
+  cursor: pointer;
+}
 
 /* 되돌릴 수 없는 동작만 색을 달리한다 */
-.free-attach__danger { color: var(--color-error); }
+.free-attach__danger {
+  color: var(--color-error);
+}
 
 /* ----- FreeDetailPage (상세) ----- */
 .free-detail {
@@ -5355,8 +5922,14 @@ a.btn {
   gap: 20px;
 }
 
-.free-detail__back { margin: 0; font-size: 14px; }
-.free-detail__back a:hover { color: var(--color-accent); }
+.free-detail__back {
+  margin: 0;
+  font-size: 14px;
+}
+
+.free-detail__back a:hover {
+  color: var(--color-accent);
+}
 
 .free-detail__title {
   margin: 0 0 10px;
@@ -5399,7 +5972,9 @@ a.btn {
   gap: 6px;
 }
 
-.free-detail__danger { color: var(--color-error); }
+.free-detail__danger {
+  color: var(--color-error);
+}
 
 /* ----- 자유게시판 댓글 ----- */
 /* 글 상세 아래에 붙는 댓글 목록과 입력칸. 레시피 후기의 .review__comment* 와
@@ -5419,7 +5994,9 @@ a.btn {
   margin-bottom: 4px;
 }
 
-.free-detail__comment-head span { font-size: 12px; }
+.free-detail__comment-head span {
+  font-size: 12px;
+}
 
 /* 쓴 사람이 넣은 줄바꿈을 그대로 보여준다 */
 .free-detail__comment-body {
@@ -5446,8 +6023,13 @@ a.btn {
   cursor: pointer;
 }
 
-.free-detail__comment-actions button:hover { color: var(--color-accent); }
-.free-detail__comment-actions .free-detail__danger:hover { color: var(--color-error); }
+.free-detail__comment-actions button:hover {
+  color: var(--color-accent);
+}
+
+.free-detail__comment-actions .free-detail__danger:hover {
+  color: var(--color-error);
+}
 
 /* ----- 댓글 입력칸 ----- */
 .free-detail__form textarea {
@@ -5518,7 +6100,7 @@ a.btn {
   gap: 6px;
 }
 
-.free-detail__edit-field > span {
+.free-detail__edit-field>span {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-subtle);
@@ -5536,7 +6118,9 @@ a.btn {
   line-height: 1.6;
 }
 
-.free-detail__edit-field textarea { resize: vertical; }
+.free-detail__edit-field textarea {
+  resize: vertical;
+}
 
 .free-detail__edit-field input:focus,
 .free-detail__edit-field textarea:focus {
@@ -5558,15 +6142,20 @@ a.btn {
   margin-bottom: 18px;
 }
 
-.free-write__cancel { font-size: 14px; }
-.free-write__cancel:hover { color: var(--color-accent); }
+.free-write__cancel {
+  font-size: 14px;
+}
+
+.free-write__cancel:hover {
+  color: var(--color-accent);
+}
 
 .free-write__field {
   display: block;
   margin-bottom: 18px;
 }
 
-.free-write__field > span {
+.free-write__field>span {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
@@ -5585,7 +6174,9 @@ a.btn {
   line-height: 1.6;
 }
 
-.free-write__field textarea { resize: vertical; }
+.free-write__field textarea {
+  resize: vertical;
+}
 
 .free-write__field input:focus,
 .free-write__field textarea:focus {
@@ -5649,8 +6240,14 @@ a.btn {
   gap: 20px;
 }
 
-.notice-detail__back { margin: 0; font-size: 14px; }
-.notice-detail__back a:hover { color: var(--color-accent); }
+.notice-detail__back {
+  margin: 0;
+  font-size: 14px;
+}
+
+.notice-detail__back a:hover {
+  color: var(--color-accent);
+}
 
 /* 고정 배지가 제목 앞에 붙는다. 제목이 길어 줄이 넘어가도 배지만 따로 떨어지지 않게
    baseline 이 아니라 가운데로 맞춘다 */
@@ -5699,7 +6296,9 @@ a.btn {
 }
 
 /* 되돌릴 수 없는 동작만 색을 달리한다 */
-.notice-detail__danger { color: var(--color-error); }
+.notice-detail__danger {
+  color: var(--color-error);
+}
 
 /* ==========================================================
    공통 컴포넌트
@@ -5804,7 +6403,9 @@ a.btn {
   cursor: pointer;
 }
 
-.liked-head__view:hover { color: var(--color-accent); }
+.liked-head__view:hover {
+  color: var(--color-accent);
+}
 
 .liked-head__view.is-on {
   background: var(--color-accent-weak);
@@ -5840,7 +6441,9 @@ a.btn {
   transform: translateY(-2px);
 }
 
-.lcard__media { position: relative; }
+.lcard__media {
+  position: relative;
+}
 
 /* 카드 맨 위에 꽉 차게 깔린다. 목록용 기본 모서리/테두리를 지운다 */
 .lcard__media .thumb--lg {
@@ -5868,7 +6471,9 @@ a.btn {
   box-shadow: var(--shadow-rest);
 }
 
-.lcard__unlike:hover { transform: scale(1.08); }
+.lcard__unlike:hover {
+  transform: scale(1.08);
+}
 
 .lcard__body {
   display: grid;
@@ -5904,7 +6509,9 @@ a.btn {
   font-weight: 700;
 }
 
-.lcard__name a:hover { color: var(--color-accent); }
+.lcard__name a:hover {
+  color: var(--color-accent);
+}
 
 .lcard__desc {
   margin: 0;
@@ -5921,9 +6528,14 @@ a.btn {
   color: var(--color-muted);
 }
 
-.lcard__price { color: var(--color-accent); font-weight: 600; }
+.lcard__price {
+  color: var(--color-accent);
+  font-weight: 600;
+}
 
-.lcard__cta { margin-top: 3px; }
+.lcard__cta {
+  margin-top: 3px;
+}
 
 @media (max-width: 1023px) {
   .liked-head {
@@ -5959,7 +6571,9 @@ a.btn {
   color: var(--color-muted);
 }
 
-.mypage__info dd { margin: 0; }
+.mypage__info dd {
+  margin: 0;
+}
 
 .mypage__desc {
   margin: -6px 0 16px;
@@ -5990,7 +6604,9 @@ a.btn {
 }
 
 /* 드롭다운은 오른쪽에 화살표가 앉으므로 그만큼 비워 둔다 */
-.mypage__form select { padding-right: 34px; }
+.mypage__form select {
+  padding-right: 34px;
+}
 
 .mypage__form input:focus,
 .mypage__form select:focus {
@@ -6017,7 +6633,9 @@ a.btn {
   background: var(--color-surface);
 }
 
-.mypage__ban-name { font-size: 14px; }
+.mypage__ban-name {
+  font-size: 14px;
+}
 
 .mypage__remove {
   width: 20px;
@@ -6046,10 +6664,22 @@ a.btn {
 }
 
 @media (max-width: 520px) {
-  .mypage__form { flex-wrap: wrap; }
-  .mypage__form input { flex-basis: 100%; }
-  .mypage__info { grid-template-columns: 1fr; gap: 2px; }
-  .mypage__info dd { margin-bottom: 10px; }
+  .mypage__form {
+    flex-wrap: wrap;
+  }
+
+  .mypage__form input {
+    flex-basis: 100%;
+  }
+
+  .mypage__info {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .mypage__info dd {
+    margin-bottom: 10px;
+  }
 }
 
 /* ===== 정보 수정 · 계정 관리 폼 =====
@@ -6067,14 +6697,14 @@ a.btn {
   gap: 6px;
 }
 
-.mypage__field > span {
+.mypage__field>span {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-subtle);
 }
 
 /* 닉네임 입력칸. 옆의 드롭다운(전역 select 규칙)과 같은 모양으로 맞춘다 */
-.mypage__field > input {
+.mypage__field>input {
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -6086,17 +6716,17 @@ a.btn {
   transition: border-color var(--dur) var(--ease);
 }
 
-.mypage__field > input:hover {
+.mypage__field>input:hover {
   border-color: var(--color-subtle);
 }
 
-.mypage__field > input:focus {
+.mypage__field>input:focus {
   outline: 2px solid var(--color-accent);
   outline-offset: -1px;
 }
 
 /* 비밀번호 칸(PasswordInput)도 다른 칸처럼 가로를 꽉 채운다. 보기 버튼은 칸 오른쪽 안에 붙는다 */
-.mypage__field > .pw-input input {
+.mypage__field>.pw-input input {
   width: 100%;
 }
 
@@ -6114,7 +6744,9 @@ a.btn {
 }
 
 /* 되돌릴 수 없는 동작(탈퇴)만 색을 달리한다 */
-.mypage__danger { color: var(--color-error); }
+.mypage__danger {
+  color: var(--color-error);
+}
 
 /* ----- HistoryPage ----- */
 .history__head {
@@ -6136,8 +6768,13 @@ a.btn {
   list-style: none;
 }
 
-.history__item { border-bottom: 1px solid var(--color-border); }
-.history__item:last-child { border-bottom: none; }
+.history__item {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.history__item:last-child {
+  border-bottom: none;
+}
 
 /* 행 전체를 버튼으로 만들어 어디를 눌러도 펼쳐지게 한다 */
 .history__row {
@@ -6154,7 +6791,9 @@ a.btn {
   cursor: pointer;
 }
 
-.history__row:hover .history__names strong { color: var(--color-accent); }
+.history__row:hover .history__names strong {
+  color: var(--color-accent);
+}
 
 .history__date {
   flex-shrink: 0;
@@ -6194,9 +6833,20 @@ a.btn {
 }
 
 @media (max-width: 560px) {
-  .history__row { flex-wrap: wrap; gap: 4px 10px; }
-  .history__date { width: auto; }
-  .history__names { flex-basis: 100%; order: 3; white-space: normal; }
+  .history__row {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+
+  .history__date {
+    width: auto;
+  }
+
+  .history__names {
+    flex-basis: 100%;
+    order: 3;
+    white-space: normal;
+  }
 }
 
 /* 펼친 기록 아래의 버튼 줄. 다시 보기 / 삭제.
@@ -6223,7 +6873,9 @@ a.btn {
   list-style: none;
 }
 
-.ailog__item { padding: 16px 18px; }
+.ailog__item {
+  padding: 16px 18px;
+}
 
 .ailog__head {
   display: flex;
@@ -6239,7 +6891,9 @@ a.btn {
   font-weight: 700;
 }
 
-.ailog__date { font-size: 12px; }
+.ailog__date {
+  font-size: 12px;
+}
 
 .ailog__condition {
   margin: 10px 0 0;
@@ -6265,7 +6919,9 @@ a.btn {
   font-size: 13px;
 }
 
-.ailog__food:hover { border-color: var(--color-accent); }
+.ailog__food:hover {
+  border-color: var(--color-accent);
+}
 
 /* 그날 고른 메뉴 */
 .ailog__food.is-picked {
@@ -6283,7 +6939,9 @@ a.btn {
 /* ----- SettingsPage ----- */
 /* /settings */
 
-.settings { padding: 18px; }
+.settings {
+  padding: 18px;
+}
 
 .settings__title {
   margin: 0 0 4px;
@@ -6300,7 +6958,7 @@ a.btn {
   padding: 14px 0 0;
 }
 
-.settings__row + .settings__row {
+.settings__row+.settings__row {
   margin-top: 14px;
   border-top: 1px solid var(--color-border);
 }
@@ -6330,9 +6988,13 @@ a.btn {
   gap: 5px;
 }
 
-.settings__danger { color: var(--color-error); }
+.settings__danger {
+  color: var(--color-error);
+}
 
-.settings__danger:disabled { color: var(--color-muted); }
+.settings__danger:disabled {
+  color: var(--color-muted);
+}
 
 .settings__version {
   margin: 4px 0 0;
@@ -6381,11 +7043,15 @@ a.btn {
   transition: transform 0.15s;
 }
 
-.switch input:checked + .switch__track { background: var(--color-accent); }
+.switch input:checked+.switch__track {
+  background: var(--color-accent);
+}
 
-.switch input:checked + .switch__track::after { transform: translateX(18px); }
+.switch input:checked+.switch__track::after {
+  transform: translateX(18px);
+}
 
-.switch input:focus-visible + .switch__track {
+.switch input:focus-visible+.switch__track {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
@@ -6397,6 +7063,7 @@ a.btn {
 }
 
 @media (max-width: 560px) {
+
   /* 설명과 조작을 한 줄에 두면 둘 다 좁아져 글이 두 자씩 끊긴다 */
   .settings__row {
     flex-direction: column;
@@ -6413,18 +7080,26 @@ a.btn {
 :root {
   /* 배경은 회색이 아니라 크림 쪽으로 눕힌다. 음식 사진과 주황 브랜드색이
      중성 회색 위에 앉으면 차갑게 식어 보인다 */
-  --color-bg: #faf7f2;            /* warm white — 화면 바탕 */
+  --color-bg: #faf7f2;
+  /* warm white — 화면 바탕 */
   --color-surface: #ffffff;
-  --color-soft: #fdf2e9;          /* light cream — 히어로 · 안내 카드 */
-  --color-peach: #ffeadd;         /* soft peach — 그라데이션의 짙은 쪽 */
+  --color-soft: #fdf2e9;
+  /* light cream — 히어로 · 안내 카드 */
+  --color-peach: #ffeadd;
+  /* soft peach — 그라데이션의 짙은 쪽 */
   --color-border: #f0eae2;
   --color-text: #1f1c19;
-  --color-muted: #857d74;         /* 설명글 */
-  --color-subtle: #a79f96;        /* 부가 정보(light gray) */
+  --color-muted: #857d74;
+  /* 설명글 */
+  --color-subtle: #a79f96;
+  /* 부가 정보(light gray) */
 
-  --color-accent: #e8481c;        /* 브랜드 주황. CTA · 선택 상태에만 진하게 */
-  --color-accent-soft: #f97c3c;   /* 그라데이션의 밝은 쪽 */
-  --color-accent-weak: #fdece5;   /* 강조색의 아주 연한 배경 */
+  --color-accent: #e8481c;
+  /* 브랜드 주황. CTA · 선택 상태에만 진하게 */
+  --color-accent-soft: #f97c3c;
+  /* 그라데이션의 밝은 쪽 */
+  --color-accent-weak: #fdece5;
+  /* 강조색의 아주 연한 배경 */
   --color-heart: #e03131;
 
   --color-ok: #2f8a5b;
@@ -6463,9 +7138,12 @@ a.btn {
   --select-arrow:
     url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23857d74' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
 
-  --radius: 20px;                 /* 카드 공통 */
-  --radius-sm: 12px;              /* 카드 안의 작은 요소 */
-  --radius-pill: 999px;           /* 버튼 · 칩 */
+  --radius: 20px;
+  /* 카드 공통 */
+  --radius-sm: 12px;
+  /* 카드 안의 작은 요소 */
+  --radius-pill: 999px;
+  /* 버튼 · 칩 */
 
   --sidebar-width: 260px;
   --topbar-height: 72px;
@@ -6526,9 +7204,13 @@ a.btn {
   color-scheme: dark;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html { height: 100%; }
+html {
+  height: 100%;
+}
 
 body {
   margin: 0;
@@ -6545,10 +7227,20 @@ body {
   overscroll-behavior-y: none;
 }
 
-a { color: inherit; text-decoration: none; }
-img, video { max-width: 100%; height: auto; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-button { font-family: inherit; }
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  font-family: inherit;
+}
 
 /* ===== 드롭다운 · 파일 선택 =====
  *
@@ -6567,7 +7259,8 @@ select {
   appearance: none;
   -webkit-appearance: none;
 
-  padding: 10px 34px 10px 12px; /* 오른쪽은 화살표 자리 */
+  padding: 10px 34px 10px 12px;
+  /* 오른쪽은 화살표 자리 */
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background-color: var(--color-bg);
@@ -6662,7 +7355,9 @@ input[type='file']:disabled::file-selector-button {
   box-shadow: var(--shadow-rest);
 }
 
-.muted { color: var(--color-muted); }
+.muted {
+  color: var(--color-muted);
+}
 
 /* 필수 입력 표시 (FormField) */
 .form-field__required {
@@ -6670,6 +7365,7 @@ input[type='file']:disabled::file-selector-button {
   color: var(--color-accent);
   font-style: normal;
 }
+
 /* 섹션 제목 + 우측 '더보기' */
 .section-head {
   display: flex;
@@ -6692,7 +7388,9 @@ input[type='file']:disabled::file-selector-button {
   white-space: nowrap;
 }
 
-.section-more:hover { color: var(--color-accent); }
+.section-more:hover {
+  color: var(--color-accent);
+}
 
 /* 태그 · 칩 */
 .tag {
@@ -6749,7 +7447,9 @@ input[type='file']:disabled::file-selector-button {
 
 /* hover에서 주황 테두리까지 켜면 고른 칩과 그냥 지나가는 칩이 구별되지 않는다.
    지나갈 때는 배경만 아주 살짝, 고른 것만 주황으로 남긴다 */
-.chip:hover { background: var(--color-bg); }
+.chip:hover {
+  background: var(--color-bg);
+}
 
 .chip.is-active {
   border-color: var(--color-accent);
@@ -6758,7 +7458,9 @@ input[type='file']:disabled::file-selector-button {
   font-weight: 700;
 }
 
-.chip.is-active:hover { background: var(--color-accent-weak); }
+.chip.is-active:hover {
+  background: var(--color-accent-weak);
+}
 
 .chip-row {
   display: flex;
@@ -6821,7 +7523,10 @@ input[type='file']:disabled::file-selector-button {
   box-shadow: none;
 }
 
-.btn--outline:hover { background: var(--color-accent-weak); }
+.btn--outline:hover {
+  background: var(--color-accent-weak);
+}
+
 .btn--ghost:hover {
   background: var(--color-bg);
   border-color: var(--color-subtle);
@@ -6842,10 +7547,19 @@ input[type='file']:disabled::file-selector-button {
   font-weight: 500;
 }
 
-.btn--sm { padding: 8px 15px; font-size: 13px; }
-.btn--block { width: 100%; }
+.btn--sm {
+  padding: 8px 15px;
+  font-size: 13px;
+}
 
-a.btn { display: inline-block; text-align: center; }
+.btn--block {
+  width: 100%;
+}
+
+a.btn {
+  display: inline-block;
+  text-align: center;
+}
 
 /* 입력 */
 .field {
@@ -6876,14 +7590,16 @@ a.btn { display: inline-block; text-align: center; }
 }
 
 /* 목록 구분선 */
-.divided > * + * {
+.divided>*+* {
   border-top: 1px solid var(--color-border);
   padding-top: 16px;
   margin-top: 16px;
 }
 
 /* 표 */
-.table-wrap { overflow-x: auto; }
+.table-wrap {
+  overflow-x: auto;
+}
 
 .table {
   width: 100%;
@@ -6901,8 +7617,13 @@ a.btn { display: inline-block; text-align: center; }
   white-space: nowrap;
 }
 
-.table thead th:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
-.table thead th:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.table thead th:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.table thead th:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
 
 .table td {
   padding: 12px 14px;
@@ -6910,8 +7631,13 @@ a.btn { display: inline-block; text-align: center; }
   white-space: nowrap;
 }
 
-.table tbody tr:last-child td { border-bottom: none; }
-.table td.num { text-align: right; }
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table td.num {
+  text-align: right;
+}
 
 /* 가격 강조 — 숫자는 본문보다 한 단계 크고 굵게 */
 .price {
@@ -6924,14 +7650,27 @@ a.btn { display: inline-block; text-align: center; }
 
 /* ===== 앱 모드 ===== */
 @media (max-width: 1023px) {
-  .card { padding: 18px; }
+  .card {
+    padding: 18px;
+  }
 
-  .section-title { font-size: 18px; }
+  .section-title {
+    font-size: 18px;
+  }
 
   /* iOS는 입력칸 글자가 16px 미만이면 포커스 시 화면을 확대한다 */
-  input, select, textarea { font-size: 16px !important; }
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 
-  .btn { padding: 12px 18px; }
+  .btn {
+    padding: 12px 18px;
+  }
 
-  .table thead th, .table td { padding: 10px 12px; }
+  .table thead th,
+  .table td {
+    padding: 10px 12px;
+  }
 }

@@ -5,8 +5,8 @@ import Loading from '../../../components/common/Loading'
 import RecipeView from '../../../components/common/RecipeView'
 import { getHistories } from '../../../api/histories'
 import { formatDate, formatPrice } from '../../../utils/format'
-import { SAMPLE_PHOTO } from '../../../data/sampleBoard'
 import useForm from '../../../hooks/useForm'
+import { createReview, uploadReviewFile } from '../../../api/reviews'
 
 // 글쓰기 화면 (/community/write).
 // 글은 내 식사 기록(History) 하나를 골라서 쓴다. 사진은 선택.
@@ -101,6 +101,11 @@ export default function ReviewWritePage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!selected) {
+      setError('공유할 식사 기록을 선택해 주세요')
+      return
+    }
+
     if (!values.title.trim()) {
       setError('제목을 입력해 주세요')
       return
@@ -113,26 +118,40 @@ export default function ReviewWritePage() {
     setError('')
     setSaving(true)
     try {
-      const created = await createReviewPost({
+      // 글 등록
+      const created = await createReview({
+        meal_history_id: selected.id,
         title: values.title.trim(),
         content: values.content,
       })
       if (file) {
-        await uploadReviewPost(created.id, file)
+        await uploadReviewFile(created.id, file)
       }
-
-      navigate(`/reci`)
+      // 사진
+      navigate(`/reviews/${created.id}`)
+    } catch (err) {
+      if (err.response) {
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        setError('서버에 연결할 수 없습니다. 백앤드가 실행 중인지 확인하세요.')
+      } else {
+        setError(err.message)
+      }
+    } finally {
+      setSaving(false)
     }
   }
-
-
-
 
   return (
     <div className="card write">
       <div className="write__head">
         <h2 className="section-title" style={{ margin: 0 }}>
-          글쓰기
+          레시피 후기 쓰기
         </h2>
         <Link to="/community" className="muted write__cancel">
           취소
@@ -150,10 +169,13 @@ export default function ReviewWritePage() {
       )}
 
       {!loading && !error && histories.length > 0 && (
-        <div>
+        <form onSubmit={handleSubmit}>
           <label className="write__field">
             <span>제목</span>
-            <input type="text" placeholder="어떤 이야기인가요?" maxLength={200} />
+            <input type="text"
+              name="title" value={values.title} placeholder="어떤 이야기인가요?"
+              maxLength={200}
+              onChange={handleChange} />
           </label>
 
           <label className="write__field">
@@ -187,23 +209,35 @@ export default function ReviewWritePage() {
 
           <label className="write__field">
             <span>내용</span>
-            <textarea placeholder="만들면서 있었던 일, 팁, 후기를 자유롭게 적어주세요." rows={12} />
+            <textarea
+              name="content"
+              value={values.content}
+              onChange={handleChange}
+              placeholder="만들면서 있었던 일, 팁, 후기를 자유롭게 적어주세요."
+              rows={12}
+              maxLength={CONTENT_MAX} />
+            <p className={values.content.length > CONTENT_MAX - 100 ? 'free-write__count-warn' : 'muted free-write_help'}>
+              {values.content.length} / {CONTENT_MAX}
+            </p>
           </label>
 
           <label className="write__field">
             <span>사진 (선택)</span>
-            <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp" />
-            <p className="muted write__help">한 장까지 올릴 수 있어요. 5MB 이하 이미지.</p>
+            <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp" onChange={handleFileChange} />
+            <p className="muted write__help">
+              한 장까지 올릴 수 있어요. 5MB 이하 이미지.</p>
             {/* 고른 사진이 이 자리에 보인다. 지금은 가데이터 그림이다 */}
-            <img className="write__preview" src={SAMPLE_PHOTO} alt="올릴 사진 미리보기" />
+            <img className="write__preview" src={photoUrl} alt="올릴 사진 미리보기" />
           </label>
 
+          <ErrorMessage message={error} />
+
           <div className="write__actions">
-            <button type="button" className="btn">
-              등록
+            <button type="submit" className="btn" disabled={saving}>
+              {saving ? '등록 중...' : '등록'}
             </button>
           </div>
-        </div>
+        </form>
       )}
     </div>
   )
