@@ -68,7 +68,7 @@ export default function ReviewWritePage() {
   // 고른 기록 한 건. 목록에 없는 id 면 (이미 공유했거나 남의 기록) undefined
   const selected = histories.find((history) => String(history.id) === historyId)
 
-  const { values, handleChange } = useForm({ title: '', content: '' })
+  const { values, handleChange } = useForm({ title: '', content: '', meal_history_id: ''})
   const [file, setFile] = useState(null) // 고른 사진 파일
   const [photoUrl, setPhotoUrl] = useState('') // 고른 사진 미리보기 주소
   const [saving, setSaving] = useState(false)
@@ -101,7 +101,7 @@ export default function ReviewWritePage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!selected) {
+    if (!selected.meal_history_id) {
       setError('공유할 식사 기록을 선택해 주세요')
       return
     }
