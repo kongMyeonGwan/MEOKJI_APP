@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import FoodCard from '../../components/common/FoodCard'
+import Icon from '../../components/common/Icon'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
@@ -196,10 +197,16 @@ export default function BalancePage({ user }) {
       <div className="list-page list-page--wide game-screen">
         <div className="section-head">
           <h2 className="section-title">이런 메뉴는 어떠세요?</h2>
-          <button type="button" className="game-btn" onClick={restart}>
-            <span className="game-icon game-icon--restart" aria-hidden="true" />
-            다시 하기
-          </button>
+          <div className="game-head-actions">
+            <Link to="/game" className="game-btn">
+              <Icon name="gamepad" className="game-icon-svg" />
+              게임 목록
+            </Link>
+            <button type="button" className="game-btn" onClick={restart}>
+              <span className="game-icon game-icon--restart" aria-hidden="true" />
+              다시 하기
+            </button>
+          </div>
         </div>
 
         <p className="muted list-page__desc">고르신 답: {makeQuery(answers)}</p>
@@ -245,6 +252,10 @@ export default function BalancePage({ user }) {
           <span className="muted section-more">
             {step + 1} / {questions.length}
           </span>
+          <Link to="/game" className="game-btn">
+            <Icon name="gamepad" className="game-icon-svg" />
+            게임 목록
+          </Link>
           <button type="button" className="game-btn" onClick={restart}>
             <span className="game-icon game-icon--restart" aria-hidden="true" />
             처음부터 다시하기
@@ -266,6 +277,11 @@ export default function BalancePage({ user }) {
             <strong className="balance__label">{option.label}</strong>
           </button>
         ))}
+
+        {/* 두 보기 사이의 VS. 보기를 눌러도 가려지지 않게 맨 위에 그린다 */}
+        <span className="balance__vs" aria-hidden="true">
+          VS
+        </span>
       </div>
 
       {step > 0 && (

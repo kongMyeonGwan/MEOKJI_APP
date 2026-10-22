@@ -3680,7 +3680,20 @@ a.price-table__best:hover { text-decoration: underline; }
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
   gap: 18px;
-  align-items: start;
+  /* 통계 칸과 오늘의 게임 결과 칸을 같은 높이로 맞춘다 */
+  align-items: stretch;
+}
+
+/* 결과 칸이 늘어난 만큼 내용은 남는 높이의 가운데에 둔다 */
+.gpage__result {
+  display: flex;
+  flex-direction: column;
+}
+
+.gpage__result-on,
+.gpage__result-off {
+  flex: 1;
+  align-content: center;
 }
 
 .gpage__box-title {
@@ -3787,35 +3800,86 @@ a.price-table__best:hover { text-decoration: underline; }
   .gpage__stat-track { grid-column: 1 / 3; }
 }
 
-/* 최근 선택한 메뉴 */
-.gpage__recent-list {
+/* 오늘의 게임 결과 - 아직 안 했을 때 */
+.gpage__result-off {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin: 14px 0 0;
-  padding: 0;
-  list-style: none;
+  justify-items: center;
+  gap: 4px;
+  padding: 26px 0 8px;
+  text-align: center;
 }
 
-.gpage__recent-list .thumb--lg { height: 84px; }
+.gpage__result-icon {
+  font-size: 34px;
+  opacity: 0.55;
+}
 
-.gpage__recent-name {
-  display: block;
-  margin-top: 8px;
-  font-size: 14px;
+.gpage__result-lead {
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.gpage__result-desc {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* 오늘의 게임 결과 - 했을 때 */
+.gpage__result-on {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 22px 0 10px;
+  text-align: center;
+}
+
+.gpage__result-from {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* 뽑힌 요리 사진. 결과 칸 가운데라 동그랗게 키운다 */
+.gpage__result-thumb .thumb--md {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+}
+
+.gpage__result-food {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.gpage__result-go { margin-top: 8px; }
+
+/* 아직 안 했을 때 게임으로 바로 가는 버튼 */
+.gpage__result-start {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.gpage__result-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
   font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--color-text);
+  transition: transform var(--dur) var(--ease);
 }
 
-.gpage__recent-list a:hover .gpage__recent-name { color: var(--color-accent); }
+.gpage__result-chip:hover { transform: translateY(-2px); }
 
-.gpage__recent-date {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-}
+/* 색은 게임 카드와 같다 */
+.gpage__result-chip--orange { background: #fdf0e8; }
+.gpage__result-chip--purple { background: #efecfb; }
+.gpage__result-chip--yellow { background: #fdf6e3; }
+
+[data-theme='dark'] .gpage__result-chip { color: #2a2420; }
 
 /*
  * 1279px 밑으로 내려오면 글자와 그림 사이가 좁아진다. 그림을 줄이고 가리개를
@@ -3940,6 +4004,11 @@ a.price-table__best:hover { text-decoration: underline; }
   font-weight: 800;
 }
 
+/* VS 는 왼쪽 카드 안에 있다. 오른쪽 카드를 누르거나 마우스를 올려 움직여도
+   VS 를 덮지 않게 왼쪽 카드를 늘 오른쪽 카드보다 위에 둔다 */
+.wc__match > .wc__pick { z-index: 1; }
+.wc__match > .wc__pick:first-child { z-index: 2; }
+
 /* ===== 우승 화면 ===== */
 .wc--done { text-align: center; }
 
@@ -4002,9 +4071,33 @@ a.price-table__best:hover { text-decoration: underline; }
 }
 
 .balance__options {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+/* 두 보기 사이 가운데의 VS. 월드컵 VS 와 같은 모양이다.
+   보기 뒤에 놓인 형제라 z-index 로 보기보다 위에 그리고, 클릭은 보기로 넘긴다 */
+.balance__vs {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  pointer-events: none;
 }
 
 .balance__option {
@@ -7211,6 +7304,13 @@ a.btn { display: inline-block; text-align: center; }
 
 .game-screen .balance__options { gap: 24px; }
 
+.game-screen .balance__vs {
+  width: 56px;
+  height: 56px;
+  font-size: 17px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
 .game-screen .balance__option {
   gap: 12px;
   padding: clamp(14px, 2.5vh, 24px) 20px;
@@ -7560,6 +7660,13 @@ a.btn { display: inline-block; text-align: center; }
 .game-icon--restart { --icon: url('/images/game/icon-restart.png'); }
 .game-icon--back { --icon: url('/images/game/icon-back.png'); }
 
+/* '게임 목록' 의 게임기 아이콘. 사이드바 '메뉴 게임' 과 같은 SVG(Icon name="gamepad") */
+.game-icon-svg {
+  flex-shrink: 0;
+  width: 1.3em;
+  height: 1.3em;
+}
+
 /* 잘 보이는 테두리 버튼 */
 .game-btn {
   display: inline-flex;
@@ -7598,11 +7705,22 @@ a.btn { display: inline-block; text-align: center; }
   margin-top: 24px;
 }
 
-/* 밸런스 질문 화면 제목 줄 오른쪽 [1 / 8][처음부터 다시하기] */
+/* 제목 줄 오른쪽 버튼 묶음 [게임 목록][처음부터 다시하기] */
+.game-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 밸런스 질문 화면 제목 줄 오른쪽 [1 / 8][게임 목록][처음부터 다시하기] */
 .balance__head-side {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
+  justify-content: flex-end;
+  gap: 8px 10px;
 }
 
 @media (max-width: 560px) {

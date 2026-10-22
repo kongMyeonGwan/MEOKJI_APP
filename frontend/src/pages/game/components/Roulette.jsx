@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FoodThumb from '../../../components/common/FoodThumb'
+import Icon from '../../../components/common/Icon'
 import Loading from '../../../components/common/Loading'
 import { getCatalog } from '../../../api/catalog'
 import { getRecommendations } from '../../../api/recommendations'
@@ -181,11 +182,17 @@ export default function Roulette() {
     <section className="card roulette">
       <div className="section-head">
         <h2 className="section-title">음식 룰렛</h2>
-        {/* 초기화. 그림은 public/images/game/icon-reset.png */}
-        <button type="button" className="roulette__reset" onClick={reset} disabled={spinning}>
-          <img src="/images/game/icon-reset.png" alt="" />
-          <span className="roulette__reset-label">다시하기</span>
-        </button>
+        <div className="game-head-actions">
+          <Link to="/game" className="game-btn">
+            <Icon name="gamepad" className="game-icon-svg" />
+            게임 목록
+          </Link>
+          {/* 초기화. 그림은 public/images/game/icon-reset.png */}
+          <button type="button" className="roulette__reset" onClick={reset} disabled={spinning}>
+            <img src="/images/game/icon-reset.png" alt="" />
+            <span className="roulette__reset-label">다시하기</span>
+          </button>
+        </div>
       </div>
 
       <p className="muted roulette__desc">뭘 먹을지 고민될 땐 룰렛을 돌려보세요.</p>
@@ -305,6 +312,10 @@ export default function Roulette() {
                 <span className="game-icon game-icon--restart" aria-hidden="true" />
                 다시 돌리기
               </button>
+              <Link to="/game" className="btn btn--ghost game-btn--plain">
+                <Icon name="gamepad" className="game-icon-svg" />
+                게임 목록
+              </Link>
             </div>
 
             {/* 나머지 추천 둘 */}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import FoodThumb from '../../components/common/FoodThumb'
+import Icon from '../../components/common/Icon'
 import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
@@ -305,6 +306,10 @@ export default function WorldCupPage({ user }) {
               <span className="game-icon game-icon--restart" aria-hidden="true" />
               다시 하기
             </button>
+            <Link to="/game" className="btn btn--ghost game-btn--plain">
+              <Icon name="gamepad" className="game-icon-svg" />
+              게임 목록
+            </Link>
           </div>
         </div>
 
@@ -325,11 +330,17 @@ export default function WorldCupPage({ user }) {
     <div className="list-page game-screen game-screen--wide">
       <div className="section-head">
         <h2 className="section-title">음식 이상형 월드컵</h2>
-        {/* 라운드 고르는 화면으로 돌아간다 */}
-        <button type="button" className="game-btn" onClick={backToPicker}>
-          <span className="game-icon game-icon--restart" aria-hidden="true" />
-          처음부터 다시하기
-        </button>
+        {/* 게임 목록(/game) · 라운드 고르는 화면으로 돌아간다 */}
+        <div className="game-head-actions">
+          <Link to="/game" className="game-btn">
+            <Icon name="gamepad" className="game-icon-svg" />
+            게임 목록
+          </Link>
+          <button type="button" className="game-btn" onClick={backToPicker}>
+            <span className="game-icon game-icon--restart" aria-hidden="true" />
+            처음부터 다시하기
+          </button>
+        </div>
       </div>
 
       <p className="wc__round">

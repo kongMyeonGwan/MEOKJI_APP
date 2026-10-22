@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom'
 import FoodThumb from '../../components/common/FoodThumb'
 import { getCatalog } from '../../api/catalog'
 import { getGameStats } from '../../api/gameStats'
-import { getHistories } from '../../api/histories'
-import { getToken } from '../../utils/token'
-import { formatDate } from '../../utils/format'
+import { getTodayResult } from '../../utils/gameResult'
 
 // 메뉴 게임 목록 (월드컵 / 밸런스 / 룰렛).
 //   위   : 배너
 //   가운데: 게임 카드 셋
-//   아래 : [게임 플레이 통계][최근 선택한 메뉴]
+//   아래 : [게임 플레이 통계][오늘의 게임 결과]  같은 높이로 나란히 둔다.
+//          왼쪽은 전체 회원, 오른쪽은 나의 결과다
 //
 // 게임 목록은 서버(/api/catalog)에서 온다.
 
@@ -43,8 +42,8 @@ function Crown({ rank }) {
 
 export default function GamePage() {
   const [games, setGames] = useState([])
-  const [recent, setRecent] = useState([]) // 최근 선택한 메뉴 (식사 기록)
   const [stats, setStats] = useState(null) // 게임별 플레이 횟수 { items, total }. 못 받으면 null
+  const [today, setToday] = useState(null) // 오늘의 게임 결과. 오늘 게임을 안 했으면 null
 
   useEffect(() => {
     const load = async () => {
@@ -66,23 +65,9 @@ export default function GamePage() {
       }
     }
     loadStats()
-  }, [])
 
-  // 최근 선택한 메뉴. 로그인했을 때만 받아온다
-  useEffect(() => {
-    if (!getToken()) {
-      return
-    }
-
-    const load = async () => {
-      try {
-        const data = await getHistories({ page: 1, size: 3 })
-        setRecent(data.items || [])
-      } catch (err) {
-        // 못 받아오면 그 칸만 안 보인다
-      }
-    }
-    load()
+    // 게임 결과는 서버가 아니라 브라우저에 있다 (utils/gameResult.js)
+    setToday(getTodayResult())
   }, [])
 
   // 서버가 모르는 게임을 보내도 색이 비지 않게 기본값을 준다
@@ -185,29 +170,43 @@ export default function GamePage() {
           )}
         </section>
 
-        {/* 최근 선택한 메뉴. 로그인해야 보인다 */}
-        {recent.length > 0 && (
-          <section className="card gpage__recent">
-            <div className="section-head">
-              <h3 className="gpage__box-title">🕐 최근 선택한 메뉴</h3>
-              <Link to="/history" className="section-more">
-                전체보기 →
+        {/* 오늘의 게임 결과 */}
+        <section className="card gpage__result">
+          <h3 className="gpage__box-title">🎉 오늘의 게임 결과</h3>
+
+          {today ? (
+            <div className="gpage__result-on">
+              <p className="muted gpage__result-from">{titleOf(today.game_key, today.game_title)}에서 고른 메뉴</p>
+
+              {/* 뽑힌 요리 사진. 룰렛이 메뉴를 못 고르고 분류(한식)만 남겼으면 사진을 안 그린다 */}
+              {today.link.startsWith('/recipe/') && (
+                <span className="gpage__result-thumb">
+                  <FoodThumb item={today} size="md" />
+                </span>
+              )}
+
+              <strong className="gpage__result-food">{today.food_name}</strong>
+              <Link to={today.link} className="btn btn--sm gpage__result-go">
+                레시피 보기 →
               </Link>
             </div>
+          ) : (
+            <div className="gpage__result-off">
+              <span className="gpage__result-icon">📋</span>
+              <p className="gpage__result-lead">아직 오늘의 메뉴를 정하지 못했어요.</p>
+              <p className="muted gpage__result-desc">게임을 하면 고른 메뉴가 여기에 나타나요.</p>
 
-            <ul className="gpage__recent-list">
-              {recent.map((item) => (
-                <li key={item.id}>
-                  <Link to={`/recipe/${item.food_name}`}>
-                    <FoodThumb item={item} size="lg" />
-                    <strong className="gpage__recent-name">{item.food_name}</strong>
-                    <span className="muted gpage__recent-date">{formatDate(item.selected_at)}</span>
+              {/* 게임으로 바로 가기 */}
+              <div className="gpage__result-start">
+                {games.map((game) => (
+                  <Link key={game.key} to={game.to} className={`gpage__result-chip gpage__result-chip--${toneOf(game.key)}`}>
+                    {game.emoji} {titleOf(game.key, game.title)}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   )
