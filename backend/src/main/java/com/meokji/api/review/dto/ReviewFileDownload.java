@@ -1,4 +1,4 @@
 package com.meokji.api.review.dto;
 
-public class ReviewFileDownload {
+public record ReviewFileDownload(String name, String ext, byte[] bytes) {
 }

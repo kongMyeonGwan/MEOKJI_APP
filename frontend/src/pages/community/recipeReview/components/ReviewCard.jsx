@@ -5,7 +5,7 @@ import { formatDate } from '../../../../utils/format'
 export default function ReviewCard({ review }) {
   return (
     <article className="review-card">
-      <Link to={`/community/${review.id}`} className="review-card__link">
+      <Link to={`/reviews/${review.id}`} className="review-card__link">
         <h3 className="review-card__title">
           {review.title}
           {review.has_file && <span className="review-card__clip" title="사진 있음">📎</span>}
@@ -18,7 +18,7 @@ export default function ReviewCard({ review }) {
         <span className="muted">{review.nickname}</span>
         <span className="muted">{formatDate(review.created_at)}</span>
         <span className="muted review-card__counts">
-          ♥ {review.like_count} · 💬 {review.comment_count} · 조회 {review.view_count}
+          💬 {review.comment_count ?? 0} · 조회 {review.view_count ?? 0}
         </span>
       </footer>
     </article>

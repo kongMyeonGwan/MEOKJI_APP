@@ -1,55 +1,79 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ReviewCard from './components/ReviewCard'
-import CommunityTabs from '../components/CommunityTabs'
 import Pagination from '../../../components/common/Pagination'
-import { SAMPLE_REVIEWS } from '../../../data/sampleBoard'
+import Loading from '../../../components/common/Loading'
+import ErrorMessage from '../../../components/common/ErrorMessage'
+import { getReviewPosts } from '../../../api/reviews'
 
-// 레시피리뷰 목록 (/community).
-//
-// 위쪽 탭(레시피 추천 · 공지사항 · 자유게시판)은 세 화면이 같이 쓰는 조각이다
-// — community/components/CommunityTabs. 사이드바에는 '커뮤니티' 하나만 있고,
-// 게시판 사이는 이 탭으로 옮겨 다닌다.
-//
-// 퍼블리싱만 된 화면이다. 가데이터를 그리고, 페이지 번호 색만 바뀐다.
-//
-// TODO(게시판 담당)
-//   - 목록을 getReviews(keyword, page) 로 받아온다 (reviews · totalPages 를 state 로)
-//   - 검색창에 값을 묶어 keyword 로 넘긴다
-//   - 글쓰기 버튼을 로그인했을 때만 보이게 한다
-//     (App.jsx 의 <Route> 에서 user={user} 를 넘겨받아 판단한다)
-//   - 로딩 · 오류 · 빈 목록 상태를 붙인다 (CODE_STYLE 3번)
 export default function ReviewListPage() {
   const [page, setPage] = useState(1)
+  const [keyword, setKeyword] = useState('')
+  const [searched, setSearched] = useState('')
+  const [reviews, setReviews] = useState([])
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const reviews = SAMPLE_REVIEWS
-  const totalPages = 3 // 가데이터. 버튼 모양만 보여준다
+  useEffect(() => {
+    let active = true
+    const load = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await getReviewPosts(searched, page)
+        if (active) {
+          setReviews(data.items || [])
+          setTotalPages(data.total_pages || 1)
+        }
+      } catch (err) {
+        if (!active) return
+        if (err.response) {
+          const detail = err.response.data?.detail
+          setError(Array.isArray(detail) ? detail[0]?.msg : detail || '글을 불러오지 못했습니다.')
+        } else if (err.request) {
+          setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+        } else {
+          setError(err.message)
+        }
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+    load()
+    return () => { active = false }
+  }, [searched, page])
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    setPage(1)
+    setSearched(keyword.trim())
+  }
 
   return (
     <div className="card">
       <div className="community__head">
-        <h2 className="section-title" style={{ margin: 0 }}>
-          레시피 추천
-        </h2>
-
-        <Link to="/reviews/write" className="btn btn--sm">
-          글쓰기
-        </Link>
+        <h2 className="section-title" style={{ margin: 0 }}>레시피 추천</h2>
+        <Link to="/reviews/write" className="btn btn--sm">글쓰기</Link>
       </div>
-
       <p className="muted community__desc">요리와 레시피에 대한 정보를 나누고 소통하는 공간입니다.</p>
-
-      {/* <CommunityTabs /> */}
-
-      <input type="search" className="community__search" placeholder="제목이나 내용으로 검색" />
-
-      <div className="divided community__list">
-        {reviews.map((review) => (
-          <ReviewCard key={review.id} review={review} />
-        ))}
-      </div>
-
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <form onSubmit={handleSearch}>
+        <input type="search" className="community__search" placeholder="제목이나 내용으로 검색 (Enter)"
+          value={keyword} onChange={(e) => setKeyword(e.target.value)} maxLength={100} />
+      </form>
+      {loading && <Loading message="글을 불러오는 중..." />}
+      <ErrorMessage message={error} />
+      {!loading && !error && reviews.length === 0 && (
+        <p className="empty">{searched ? '검색 결과가 없습니다.' : '아직 등록된 글이 없습니다. 첫 글을 남겨보세요.'}</p>
+      )}
+      {!loading && !error && reviews.length > 0 && (
+        <>
+          <div className="divided community__list">
+            {reviews.map((review) => <ReviewCard key={review.id} review={review} />)}
+          </div>
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        </>
+      )}
     </div>
   )
 }

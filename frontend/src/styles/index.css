@@ -6106,6 +6106,8 @@ a.btn {
   color: var(--color-subtle);
 }
 
+.review__edit-field input,
+.review__edit-field textarea,
 .free-detail__edit-field input,
 .free-detail__edit-field textarea {
   width: 100%;
@@ -6118,10 +6120,13 @@ a.btn {
   line-height: 1.6;
 }
 
+.review__edit-field textarea,
 .free-detail__edit-field textarea {
   resize: vertical;
 }
 
+.review__edit-field input:focus,
+.review__edit-field textarea:focus,
 .free-detail__edit-field input:focus,
 .free-detail__edit-field textarea:focus {
   outline: 2px solid var(--color-accent);

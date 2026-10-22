@@ -26,7 +26,7 @@ export const getReviewPosts = async (keyword, page) => {
 
 // 게시글 상세 + 댓글
 export const getReview = async (reviewId) => {
-  const response = await client.get(`api/reviews/${reviewId}`, { headers: authHeader() })
+  const response = await client.get(`/api/reviews/${reviewId}`, { headers: authHeader() })
   return response.data
 }
 
@@ -49,9 +49,10 @@ export const setReviewLike = async (reviewId, liked) => {
 export const updateReview = async (reviewId, form) => {
   const response = await client.put(
     `/api/reviews/${reviewId}`,
-    { title: form.title, content: form.content },
+    { title: form.title, content: form.content, meal_history_id: form.meal_history_id },
     { headers: authHeader() },
   )
+  return response.data
 }
 
 // 글 삭제
@@ -94,7 +95,7 @@ export const reviewFileUrl = (path) => {
 }
 
 // 댓글 작성
-export const addComment = async (reviewId, content) => {
+export const addReviewComment = async (reviewId, content) => {
   const response = await client.post(
     `/api/reviews/${reviewId}/comments`,
     { content: content },
@@ -104,7 +105,7 @@ export const addComment = async (reviewId, content) => {
 }
 
 // 댓글 수정
-export const updateComment = async (reviewId, commentId, content) => {
+export const updateReviewComment = async (reviewId, commentId, content) => {
   const response = await client.put(
     `/api/reviews/${reviewId}/comments/${commentId}`,
     { content: content },
@@ -114,8 +115,8 @@ export const updateComment = async (reviewId, commentId, content) => {
 }
 
 // 댓글 삭제
-export const removeComment = async (reviewId, commentId) => {
-  await client.delete(`/api/free-posts/${postId}/comments/${commentId}`, { headers: authHeader() })
+export const removeReviewComment = async (reviewId, commentId) => {
+  await client.delete(`/api/reviews/${reviewId}/comments/${commentId}`, { headers: authHeader() })
 }
 
 // 인기 레시피. 기간 안에 좋아요를 많이 받은 순.
