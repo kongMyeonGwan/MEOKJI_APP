@@ -19,10 +19,10 @@ export default function CommentItem({ comment }) {
     <li>
       <div className="review__comment-head">
         <strong>{comment.nickname}</strong>
-        <span className="muted">{formatDateTime(comment.created_at)}</span>
+        <span className="muted">{formatDateTime(comment.createdAt)}</span>
 
         {/* 내 댓글이면 수정/삭제 버튼 */}
-        {comment.is_mine && !editing && (
+        {comment.isMine && !editing && (
           <span className="review__comment-actions">
             <button type="button" onClick={() => setEditing(true)}>
               수정

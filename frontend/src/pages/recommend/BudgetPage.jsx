@@ -134,7 +134,7 @@ export default function BudgetPage() {
       {!loading && !error && items.length > 0 && (
         <div className="list-page__cards">
           {items.map((food) => (
-            <FoodCard key={food.food_name} food={food} />
+            <FoodCard key={food.foodName} food={food} />
           ))}
         </div>
       )}

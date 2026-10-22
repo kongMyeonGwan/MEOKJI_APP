@@ -20,13 +20,13 @@ export default function FoodCard({ food }) {
     const load = async () => {
       try {
         const data = await getFavorites()
-        setLiked(data.names.includes(food.food_name))
+        setLiked(data.names.includes(food.foodName))
       } catch (err) {
         // 몰라도 하트가 빈 채로 보일 뿐이다
       }
     }
     load()
-  }, [food.food_name])
+  }, [food.foodName])
 
   // 하트를 눌렀을 때. 로그인 안 했으면 로그인 화면으로 보낸다.
   const handleLike = async () => {
@@ -36,14 +36,14 @@ export default function FoodCard({ food }) {
     }
 
     try {
-      const result = await toggleFavorite(food.food_name)
+      const result = await toggleFavorite(food.foodName)
       setLiked(result.favorited)
     } catch (err) {
       alert('찜하지 못했습니다.')
     }
   }
 
-  const recipeUrl = `/recipe/${food.food_name}`
+  const recipeUrl = `/recipe/${food.foodName}`
   const tags = food.tags || []
 
   return (
@@ -60,14 +60,14 @@ export default function FoodCard({ food }) {
 
       <div className="food-card__body">
         <header className="food-card__head">
-          <h3 className="food-card__name">{food.food_name}</h3>
-          <span className="price">{formatPrice(food.estimated_cost)}</span>
+          <h3 className="food-card__name">{food.foodName}</h3>
+          <span className="price">{formatPrice(food.estimatedCost)}</span>
         </header>
 
         <p className="muted food-card__reason">{food.reason}</p>
 
         <div className="food-card__meta">
-          <span className="tag tag--plain">🕐 {formatMinutes(food.cook_time_minutes)}</span>
+          <span className="tag tag--plain">🕐 {formatMinutes(food.cookTimeMinutes)}</span>
           <span className="tag tag--plain">난이도 {food.difficulty}</span>
           {tags.map((tag) => (
             <span key={tag} className="tag tag--plain food-card__hash">

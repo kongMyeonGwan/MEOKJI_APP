@@ -71,7 +71,7 @@ export default function MyPage({ user, onLogout, onUserChange }) {
     }
 
     // 이미 등록한 재료인지 목록에서 찾아본다
-    const already = bans.find((ban) => ban.ingredient_name === name)
+    const already = bans.find((ban) => ban.ingredientName === name)
     if (already) {
       setError('이미 등록한 재료입니다')
       return
@@ -145,12 +145,12 @@ export default function MyPage({ user, onLogout, onUserChange }) {
           <dt>이메일</dt>
           <dd>{user.email}</dd>
           <dt>가입일</dt>
-          <dd>{formatDate(user.created_at)}</dd>
+          <dd>{formatDate(user.createdAt)}</dd>
           {profile && (
             <>
               <dt>활동</dt>
               <dd className="muted">
-                요리 {profile.cook_count}회 · 연속 {profile.streak_days}일
+                요리 {profile.cookCount}회 · 연속 {profile.streakDays}일
               </dd>
             </>
           )}

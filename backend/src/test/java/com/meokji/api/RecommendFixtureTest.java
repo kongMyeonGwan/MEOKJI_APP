@@ -81,7 +81,7 @@ class RecommendFixtureTest {
         List<String> names = new ArrayList<>();
 
         for (JsonNode item : response.get("items")) {
-            names.add(item.get("food_name").asString());
+            names.add(item.get("foodName").asString());
         }
 
         return names;
@@ -92,7 +92,7 @@ class RecommendFixtureTest {
     void plainRecommendMatchesFixture() throws Exception {
         JsonNode want = fixture("recommend_plain").get("body");
 
-        JsonNode actual = recommend("{\"limit\":5,\"use_weather\":false}");
+        JsonNode actual = recommend("{\"limit\":5,\"useWeather\":false}");
 
         // 점수가 같으면 싼 순 -> 이름순으로 정렬한다. 그 규칙까지 맞아야
         // 순서가 같다 - 순서가 다르면 정렬 기준을 잘못 옮긴 것이다.
@@ -111,7 +111,7 @@ class RecommendFixtureTest {
     void itemFieldsMatchFixture() throws Exception {
         JsonNode want = fixture("recommend_plain").get("body").get("items").get(0);
 
-        JsonNode actual = recommend("{\"limit\":5,\"use_weather\":false}").get("items").get(0);
+        JsonNode actual = recommend("{\"limit\":5,\"useWeather\":false}").get("items").get(0);
 
         assertThat(actual.propertyNames())
                 .containsExactlyInAnyOrderElementsOf(want.propertyNames());
@@ -124,7 +124,7 @@ class RecommendFixtureTest {
         JsonNode want = fixture("recommend_category").get("body");
 
         JsonNode actual = recommend(
-                "{\"limit\":5,\"use_weather\":false,\"category\":\"한식\"}");
+                "{\"limit\":5,\"useWeather\":false,\"category\":\"한식\"}");
 
         assertThat(names(actual)).isEqualTo(names(want));
         assertThat(actual.get("condition").asString()).isEqualTo("한식");
@@ -140,7 +140,7 @@ class RecommendFixtureTest {
         JsonNode want = fixture("recommend_empty_category").get("body");
 
         JsonNode actual = recommend(
-                "{\"limit\":5,\"use_weather\":false,\"category\":\"양식\"}");
+                "{\"limit\":5,\"useWeather\":false,\"category\":\"양식\"}");
 
         // 카탈로그가 한식 76 · 국탕 15 로 쏠려 있어서 양식은 0종이다.
         // 화면은 빈 상태를 견딘다 - 404 를 내면 화면이 깨진 것처럼 보인다.
@@ -154,7 +154,7 @@ class RecommendFixtureTest {
         JsonNode want = fixture("recommend_budget").get("body");
 
         JsonNode actual = recommend(
-                "{\"limit\":5,\"use_weather\":false,\"budget_min\":3000,\"budget_max\":8000}");
+                "{\"limit\":5,\"useWeather\":false,\"budgetMin\":3000,\"budgetMax\":8000}");
 
         assertThat(names(actual)).isEqualTo(names(want));
         assertThat(actual.get("condition").asString())
@@ -162,7 +162,7 @@ class RecommendFixtureTest {
                 .isEqualTo(want.get("condition").asString());
 
         for (JsonNode item : actual.get("items")) {
-            assertThat(item.get("estimated_cost").asInt()).isBetween(3000, 8000);
+            assertThat(item.get("estimatedCost").asInt()).isBetween(3000, 8000);
         }
     }
 
@@ -172,7 +172,7 @@ class RecommendFixtureTest {
         JsonNode want = fixture("recommend_query").get("body");
 
         JsonNode actual = recommend(
-                "{\"limit\":5,\"use_weather\":false,\"query\":\"얼큰한 국물\"}");
+                "{\"limit\":5,\"useWeather\":false,\"query\":\"얼큰한 국물\"}");
 
         // 이름 10점 · 카테고리/태그 6점 · 재료 4점 · 설명 2점. 배점이 하나라도
         // 다르면 순서가 달라진다.
@@ -183,22 +183,22 @@ class RecommendFixtureTest {
     @Test
     @DisplayName("날씨를 켜면 mock(28도 맑음) 기준으로 시원한 것이 위로 온다")
     void weatherScoringPrefersColdWhenHot() throws Exception {
-        JsonNode actual = recommend("{\"limit\":5,\"use_weather\":true}");
+        JsonNode actual = recommend("{\"limit\":5,\"useWeather\":true}");
 
         JsonNode weather = actual.get("weather");
-        assertThat(weather.isNull()).as("use_weather 를 켜면 날씨가 실려야 한다").isFalse();
+        assertThat(weather.isNull()).as("useWeather 를 켜면 날씨가 실려야 한다").isFalse();
 
         // 기본값이 mock 이라 바깥을 부르지 않는다. 28도 맑음이 고정으로 온다.
         assertThat(weather.get("temp").asInt()).isEqualTo(28);
         assertThat(weather.get("condition").asString()).isEqualTo("CLEAR");
         assertThat(weather.get("comment").asString()).contains("더운");
-        assertThat(weather.get("pick_lead").asString()).contains("시원한");
+        assertThat(weather.get("pickLead").asString()).contains("시원한");
 
         // 더운 날 점수에서 hot_weather_picks 가 8점으로 가장 강하다.
         // 첫 번째는 그 목록에 있거나 '시원한음식'·'면' 태그를 가져야 한다.
         JsonNode first = actual.get("items").get(0);
-        assertThat(first.get("tags").toString() + first.get("food_name").asString())
-                .as("더운 날 1등: %s", first.get("food_name").asString())
+        assertThat(first.get("tags").toString() + first.get("foodName").asString())
+                .as("더운 날 1등: %s", first.get("foodName").asString())
                 .containsAnyOf("시원한음식", "면", "냉", "국수");
 
         // 문구에 날씨가 들어간다
@@ -208,7 +208,7 @@ class RecommendFixtureTest {
     @Test
     @DisplayName("exclude 에 넣은 메뉴는 다시 나오지 않는다")
     void excludeIsRespected() throws Exception {
-        JsonNode first = recommend("{\"limit\":3,\"use_weather\":false}");
+        JsonNode first = recommend("{\"limit\":3,\"useWeather\":false}");
         List<String> shown = names(first);
 
         StringBuilder excluded = new StringBuilder();
@@ -220,7 +220,7 @@ class RecommendFixtureTest {
         }
 
         JsonNode second = recommend(
-                "{\"limit\":3,\"use_weather\":false,\"exclude\":[" + excluded + "]}");
+                "{\"limit\":3,\"useWeather\":false,\"exclude\":[" + excluded + "]}");
 
         assertThat(names(second)).doesNotContainAnyElementsOf(shown);
     }
@@ -231,13 +231,13 @@ class RecommendFixtureTest {
         // 1,600원(감자전)이 가장 싸다. 1,000원 이하로 걸면 0건이 나와야 하는데,
         // 3,000원을 넓히면 4,000원 이하가 되어 후보가 생긴다.
         JsonNode actual = recommend(
-                "{\"limit\":5,\"use_weather\":false,\"budget_max\":1000}");
+                "{\"limit\":5,\"useWeather\":false,\"budgetMax\":1000}");
 
         assertThat(actual.get("items").isEmpty())
                 .as("넓혀서 다시 보므로 비어 있지 않아야 한다").isFalse();
 
         for (JsonNode item : actual.get("items")) {
-            assertThat(item.get("estimated_cost").asInt()).isLessThanOrEqualTo(4000);
+            assertThat(item.get("estimatedCost").asInt()).isLessThanOrEqualTo(4000);
         }
 
         // 문구에는 원래 예산이 적혀 있다. 넓힌 것을 적으면 사용자가 요청한 조건과
@@ -267,13 +267,13 @@ class RecommendFixtureTest {
 
         String auth = "Bearer " + MAPPER.readTree(
                 login.getResponse().getContentAsString(StandardCharsets.UTF_8))
-                .get("access_token").asString();
+                .get("accessToken").asString();
 
         // 알레르기로 돼지고기를 등록한다
         MvcResult created = mvc.perform(post("/api/bans")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ingredient_name\":\"돼지고기\",\"ban_type\":\"ALLERGY\"}"))
+                        .content("{\"ingredientName\":\"돼지고기\",\"banType\":\"ALLERGY\"}"))
                 .andReturn();
 
         long banId = MAPPER.readTree(
@@ -284,7 +284,7 @@ class RecommendFixtureTest {
             MvcResult result = mvc.perform(post("/api/recommendations")
                             .header("Authorization", auth)
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"limit\":12,\"use_weather\":false}"))
+                            .content("{\"limit\":12,\"useWeather\":false}"))
                     .andReturn();
 
             JsonNode actual = MAPPER.readTree(
@@ -292,7 +292,7 @@ class RecommendFixtureTest {
 
             // 알레르기 재료가 든 메뉴는 통째로 빠진다
             for (JsonNode item : actual.get("items")) {
-                assertThat(item.get("food_name").asString())
+                assertThat(item.get("foodName").asString())
                         .as("알레르기 재료가 든 메뉴는 빠져야 한다")
                         .doesNotContain("돼지고기");
             }

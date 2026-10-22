@@ -400,10 +400,10 @@ public class KamisClient {
 
         ObjectNode trend = MAPPER.createObjectNode();
         trend.put("percent", Numbers.round(percent, 1));
-        trend.put("from_price", was);
-        trend.put("to_price", now);
-        trend.put("from_day", firstDay);
-        trend.put("to_day", lastDay);
+        trend.put("fromPrice", was);
+        trend.put("toPrice", now);
+        trend.put("fromDay", firstDay);
+        trend.put("toDay", lastDay);
 
         return trend;
     }

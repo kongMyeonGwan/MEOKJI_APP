@@ -27,7 +27,7 @@ export default function BalancePage({ user }) {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setQuestions(data.balance_questions || [])
+        setQuestions(data.balanceQuestions || [])
       } catch (err) {
         setError('질문을 불러오지 못했습니다.')
       }
@@ -66,7 +66,7 @@ export default function BalancePage({ user }) {
 
       // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값. 셋 중 첫 번째(가장 잘 맞는 것)를 쓴다
       if (data.items && data.items.length > 0) {
-        const top = data.items[0].food_name
+        const top = data.items[0].foodName
         saveResult('balance', '취향 밸런스', top, `/recipe/${top}`)
       }
     } catch (err) {
@@ -153,7 +153,7 @@ export default function BalancePage({ user }) {
         {!loading && !error && items.length > 0 && (
           <div className="list-page__cards">
             {items.map((food) => (
-              <FoodCard key={food.food_name} food={food} />
+              <FoodCard key={food.foodName} food={food} />
             ))}
           </div>
         )}

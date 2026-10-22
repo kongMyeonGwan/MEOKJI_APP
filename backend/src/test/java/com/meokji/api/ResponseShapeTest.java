@@ -13,7 +13,6 @@ import com.meokji.api.history.vo.MealHistoryVO;
 import com.meokji.api.user.vo.UserVO;
 
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -25,14 +24,12 @@ import tools.jackson.databind.json.JsonMapper;
  * 검사해주지 않는다 — 빠뜨려도 서버는 멀쩡히 뜨고 응답만 조용히 새어나간다.
  *
  * <p>그래서 여기서 실제로 JSON 을 만들어보고 칸 이름을 확인한다.
- * {@code application.yml} 의 {@code property-naming-strategy: SNAKE_CASE} 와
- * 같은 설정을 쓴다.
+ * {@code application.yml} 과 같은 설정을 쓴다 — 이름 바꾸기를 걸지 않으므로
+ * 자바 필드 이름(카멜)이 그대로 JSON 키가 된다.
  */
 class ResponseShapeTest {
 
-    private static final JsonMapper MAPPER = JsonMapper.builder()
-            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-            .build();
+    private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
     private JsonNode toJson(Object value) {
         return MAPPER.readTree(MAPPER.writeValueAsString(value));
@@ -57,30 +54,30 @@ class ResponseShapeTest {
         JsonNode json = toJson(user);
 
         // 나가면 안 되는 것
-        assertThat(json.has("password_hash")).as("비밀번호 해시").isFalse();
-        assertThat(json.has("user_level")).as("권한 등급 숫자").isFalse();
-        assertThat(json.has("login_fail_count")).as("로그인 실패 횟수").isFalse();
-        assertThat(json.has("is_locked")).as("계정 잠김").isFalse();
-        assertThat(json.has("locked_at")).isFalse();
-        assertThat(json.has("use_yn")).as("탈퇴 여부").isFalse();
-        assertThat(json.has("locked_account")).as("isLockedAccount() 가 새어나감").isFalse();
+        assertThat(json.has("passwordHash")).as("비밀번호 해시").isFalse();
+        assertThat(json.has("userLevel")).as("권한 등급 숫자").isFalse();
+        assertThat(json.has("loginFailCount")).as("로그인 실패 횟수").isFalse();
+        assertThat(json.has("isLocked")).as("계정 잠김").isFalse();
+        assertThat(json.has("lockedAt")).isFalse();
+        assertThat(json.has("useYn")).as("탈퇴 여부").isFalse();
+        assertThat(json.has("lockedAccount")).as("isLockedAccount() 가 새어나감").isFalse();
 
         // 마이페이지 전용 칸은 여기 없다 (ProfileVO 가 따로 있다)
         assertThat(json.has("latitude")).as("로그인 응답에 좌표").isFalse();
         assertThat(json.has("longitude")).isFalse();
-        assertThat(json.has("streak_days")).as("로그인 응답에 연속 기록일").isFalse();
-        assertThat(json.has("cook_count")).as("로그인 응답에 요리 횟수").isFalse();
+        assertThat(json.has("streakDays")).as("로그인 응답에 연속 기록일").isFalse();
+        assertThat(json.has("cookCount")).as("로그인 응답에 요리 횟수").isFalse();
 
         // 화면이 읽는 칸 (옛 UserResponse 와 같아야 한다)
         assertThat(json.get("id").asInt()).isEqualTo(7);
         assertThat(json.get("email").asString()).isEqualTo("minji@example.com");
         assertThat(json.get("nickname").asString()).isEqualTo("민지");
-        assertThat(json.get("is_admin").asBoolean()).isTrue();
-        assertThat(json.get("created_at").asString()).isEqualTo("2026-09-11T21:29:42Z");
+        assertThat(json.get("isAdmin").asBoolean()).isTrue();
+        assertThat(json.get("createdAt").asString()).isEqualTo("2026-09-11T21:29:42Z");
     }
 
     @Test
-    @DisplayName("UserBanVO 는 created_at 을 글자로 주고 user_id 는 감춘다")
+    @DisplayName("UserBanVO 는 createdAt 을 글자로 주고 user_id 는 감춘다")
     void banVoShape() {
         UserBanVO ban = new UserBanVO();
         ban.setId(3L);
@@ -92,16 +89,16 @@ class ResponseShapeTest {
 
         JsonNode json = toJson(ban);
 
-        assertThat(json.has("user_id")).isFalse();
-        assertThat(json.has("use_yn")).isFalse();
+        assertThat(json.has("userId")).isFalse();
+        assertThat(json.has("useYn")).isFalse();
         assertThat(json.get("id").asInt()).isEqualTo(3);
-        assertThat(json.get("ingredient_name").asString()).isEqualTo("오이");
-        assertThat(json.get("ban_type").asString()).isEqualTo("ALLERGY");
-        assertThat(json.get("created_at").asString()).isEqualTo("2026-09-11T21:29:42Z");
+        assertThat(json.get("ingredientName").asString()).isEqualTo("오이");
+        assertThat(json.get("banType").asString()).isEqualTo("ALLERGY");
+        assertThat(json.get("createdAt").asString()).isEqualTo("2026-09-11T21:29:42Z");
     }
 
     @Test
-    @DisplayName("MealHistoryVO 의 recipe_json 은 글자가 아니라 JSON 으로 나간다")
+    @DisplayName("MealHistoryVO 의 recipeJson 은 글자가 아니라 JSON 으로 나간다")
     void historyVoKeepsJsonShape() {
         MealHistoryVO history = new MealHistoryVO();
         history.setId(12L);
@@ -115,14 +112,14 @@ class ResponseShapeTest {
 
         JsonNode json = toJson(history);
 
-        assertThat(json.has("user_id")).isFalse();
-        assertThat(json.has("use_yn")).isFalse();
+        assertThat(json.has("userId")).isFalse();
+        assertThat(json.has("useYn")).isFalse();
 
-        // React 가 recipe_json.steps 를 읽는다. 따옴표 붙은 글자로 나가면 안 된다.
-        assertThat(json.get("recipe_json").isObject()).as("recipe_json 이 객체인가").isTrue();
-        assertThat(json.get("recipe_json").get("servings").asInt()).isEqualTo(2);
-        assertThat(json.get("ingredients_json").isArray()).isTrue();
-        assertThat(json.get("selected_at").asString()).isEqualTo("2026-09-11T21:29:42Z");
+        // React 가 recipeJson.steps 를 읽는다. 따옴표 붙은 글자로 나가면 안 된다.
+        assertThat(json.get("recipeJson").isObject()).as("recipeJson 이 객체인가").isTrue();
+        assertThat(json.get("recipeJson").get("servings").asInt()).isEqualTo(2);
+        assertThat(json.get("ingredientsJson").isArray()).isTrue();
+        assertThat(json.get("selectedAt").asString()).isEqualTo("2026-09-11T21:29:42Z");
         assertThat(json.get("art").asString()).isEqualTo("stew");
     }
 }

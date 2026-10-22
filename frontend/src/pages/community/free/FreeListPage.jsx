@@ -14,7 +14,7 @@ import { getFreePosts } from '../../../api/freePosts'
 // user 는 App 이 내려주는 로그인한 사람이다. 비로그인이면 null 이고,
 // 글쓰기 버튼 대신 로그인 안내를 보여주는 데에만 쓴다.
 // 목록에는 수정 · 삭제가 없으므로 "내 글인지" 는 여기서 따지지 않는다
-// (서버 응답에 is_mine 칸 자체가 없다 — 그건 상세에만 온다).
+// (서버 응답에 isMine 칸 자체가 없다 — 그건 상세에만 온다).
 //
 // 레시피 후기(/community)와 다른 점
 //   후기는 내 식사 기록을 하나 골라야 글을 쓸 수 있지만, 여기는 그 조건이 없다.
@@ -74,14 +74,14 @@ export default function FreeListPage({ user }) {
         // 없는 페이지면 (?page=99, 또는 마지막 페이지의 글이 지워진 경우)
         // 빈 목록과 함께 페이지 버튼까지 사라져서 빠져나올 길이 없다.
         // 마지막 페이지로 옮긴다. replace 라서 뒤로 가기에 99페이지가 남지 않는다
-        if (data.total_pages > 0 && page > data.total_pages) {
+        if (data.totalPages > 0 && page > data.totalPages) {
           moved = true
-          moveTo(searched, data.total_pages, true)
+          moveTo(searched, data.totalPages, true)
           return
         }
 
         setPosts(data.items || [])
-        setTotalPages(data.total_pages)
+        setTotalPages(data.totalPages)
         setTotal(data.total)
         setError('')
       } catch (err) {

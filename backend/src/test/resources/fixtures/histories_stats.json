@@ -7,7 +7,7 @@
   "status": 200,
   "body": {
     "count": 3,
-    "total_cost": 19800,
-    "streak_days": 1
+    "totalCost": 19800,
+    "streakDays": 1
   }
 }

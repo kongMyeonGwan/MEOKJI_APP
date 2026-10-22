@@ -6,9 +6,9 @@
   },
   "status": 200,
   "body": {
-    "food_name": "김치찌개",
-    "recipe_name": "돼지고기 김치찌개",
-    "recipe_json": {
+    "foodName": "김치찌개",
+    "recipeName": "돼지고기 김치찌개",
+    "recipeJson": {
       "cook_time_minutes": 25,
       "servings": 2,
       "difficulty": "쉬움",
@@ -29,7 +29,7 @@
         "5분쯤 뜸을 들였다가 상에 냅니다. 갓 끓인 것보다 한 김 식혔다 다시 데운 것이 더 맛있습니다."
       ]
     },
-    "ingredients_json": [
+    "ingredientsJson": [
       {
         "name": "돼지고기",
         "quantity": 300,
@@ -85,11 +85,11 @@
         "grams": 15
       }
     ],
-    "substitutes_json": [],
-    "estimated_cost": 6900,
+    "substitutesJson": [],
+    "estimatedCost": 6900,
     "category": "한식",
     "art": "stew",
-    "image_url": "/images/food/김치찌개.png",
+    "imageUrl": "/images/food/김치찌개.png",
     "prices": [
       {
         "name": "돼지고기 300g",
@@ -99,134 +99,134 @@
             "price": 1611,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "부산",
             "price": 1619,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "광주",
             "price": 1635,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "경남",
             "price": 1637,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "충남",
             "price": 1657,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "경북",
             "price": 1672,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "대구",
             "price": 1679,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "대전",
             "price": 1690,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "전국",
             "price": 1695,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "전남",
             "price": 1696,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "경기",
             "price": 1706,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "인천",
             "price": 1714,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "충북",
             "price": 1718,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "세종",
             "price": 1721,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "강원",
             "price": 1723,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "서울",
             "price": 1728,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "제주",
             "price": 1759,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           },
           {
             "shop": "전북",
             "price": 1762,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8F%BC%EC%A7%80%EA%B3%A0%EA%B8%B0",
             "unit": "100g",
-            "surveyed_at": "20260926"
+            "surveyedAt": "20260926"
           }
         ],
         "trend": null,
-        "need_text": "300g",
-        "low_cost": 4833,
-        "high_cost": 5286,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": "300g",
+        "lowCost": 4833,
+        "highCost": 5286,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": true
       },
       {
@@ -237,348 +237,348 @@
             "price": 3960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 E-유통",
             "price": 4320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "성남 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B`-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 B-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 D-유통",
             "price": 4980,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 H-유통",
             "price": 5580,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "안동 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "세종 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "천안 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "용인 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "강릉 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 C-유통",
             "price": 5610,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 I-유통",
             "price": 6320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 남부",
             "price": 6550,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 부전",
             "price": 7000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 지동",
             "price": 7000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 상남",
             "price": 7330,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 역전",
             "price": 7440,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 양동",
             "price": 7470,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 죽도",
             "price": 7660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 칠성",
             "price": 7750,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 경동",
             "price": 7880,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 현대",
             "price": 8000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 역전",
             "price": 8000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 복조리",
             "price": 8110,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 신정",
             "price": 8330,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 동문",
             "price": 8500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 육거리",
             "price": 9000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "춘천 중앙",
             "price": 9220,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%B0%B0%EC%B6%94",
             "unit": "1포기",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           }
         ],
         "trend": null,
-        "need_text": "0.25포기",
-        "low_cost": 3960,
-        "high_cost": 9220,
-        "min_unit": true,
-        "buy_text": "1포기",
+        "needText": "0.25포기",
+        "lowCost": 3960,
+        "highCost": 9220,
+        "minUnit": true,
+        "buyText": "1포기",
         "surveyed": true
       },
       {
         "name": "두부 0.5모",
         "offers": [],
         "trend": null,
-        "need_text": null,
-        "low_cost": null,
-        "high_cost": null,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": null,
+        "lowCost": null,
+        "highCost": null,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": false
       },
       {
@@ -589,358 +589,358 @@
             "price": 680,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 B-유통",
             "price": 1660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B-유통",
             "price": 1790,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 B-유통",
             "price": 1790,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 B-유통",
             "price": 1790,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 B-유통",
             "price": 1790,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "성남 B-유통",
             "price": 1790,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B`-유통",
             "price": 1790,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 B-유통",
             "price": 1960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 B-유통",
             "price": 1990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "안동 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "세종 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "용인 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "강릉 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 C-유통",
             "price": 2290,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 K-유통",
             "price": 2480,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 부전",
             "price": 2500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 역전",
             "price": 2500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 복조리",
             "price": 2500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 J-유통",
             "price": 2630,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 양동",
             "price": 2660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 남부",
             "price": 2660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 지동",
             "price": 2680,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 상남",
             "price": 2700,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 신정",
             "price": 2700,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "춘천 중앙",
             "price": 2760,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 경동",
             "price": 2830,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 K-유통",
             "price": 2870,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 칠성",
             "price": 2870,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 현대",
             "price": 3000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 육거리",
             "price": 3000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 역전",
             "price": 3000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 I-유통",
             "price": 3410,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 죽도",
             "price": 3440,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 H-유통",
             "price": 3480,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 동문",
             "price": 3500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 D-유통",
             "price": 3590,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 L-유통",
             "price": 4250,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 E-유통",
             "price": 4780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%8C%80%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           }
         ],
         "trend": null,
-        "need_text": "1대",
-        "low_cost": 54,
-        "high_cost": 382,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": "1대",
+        "lowCost": 54,
+        "highCost": 382,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": true
       },
       {
@@ -951,358 +951,358 @@
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 B-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 B-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 B-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 B-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 B-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "성남 B-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B`-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 B-유통",
             "price": 1320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 L-유통",
             "price": 1380,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 칠성",
             "price": 1580,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "안동 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "세종 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "천안 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "용인 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "강릉 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 C-유통",
             "price": 1620,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 D-유통",
             "price": 1660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 죽도",
             "price": 1720,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 J-유통",
             "price": 1740,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 H-유통",
             "price": 1740,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 역전",
             "price": 1750,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 남부",
             "price": 1830,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 상남",
             "price": 1920,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 I-유통",
             "price": 1930,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 K-유통",
             "price": 1990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 K-유통",
             "price": 1990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 역전",
             "price": 2000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 지동",
             "price": 2070,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 신정",
             "price": 2200,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 복조리",
             "price": 2260,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 경동",
             "price": 2400,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 양동",
             "price": 2410,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "춘천 중앙",
             "price": 2440,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 현대",
             "price": 2480,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 E-유통",
             "price": 2490,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 E-유통",
             "price": 2490,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 E-유통",
             "price": 2490,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 E-유통",
             "price": 2490,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 E-유통",
             "price": 2490,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 E-유통",
             "price": 2490,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 E-유통",
             "price": 2490,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 육거리",
             "price": 2530,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 동문",
             "price": 2660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 부전",
             "price": 2960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 E-유통",
             "price": 3320,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EC%96%91%ED%8C%8C",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           }
         ],
         "trend": null,
-        "need_text": "0.5개",
-        "low_cost": 132,
-        "high_cost": 332,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": "0.5개",
+        "lowCost": 132,
+        "highCost": 332,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": true
       },
       {
@@ -1313,505 +1313,505 @@
             "price": 5800,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 칠성",
             "price": 7660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 B-유통",
             "price": 7780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 E-유통",
             "price": 7990,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 지동",
             "price": 8000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 육거리",
             "price": 8500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 현대",
             "price": 8660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 죽도",
             "price": 8660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 역전",
             "price": 8660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 K-유통",
             "price": 8730,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 K-유통",
             "price": 8730,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 B-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 B-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 B-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 B-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "성남 B-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B`-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 B-유통",
             "price": 8780,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 남부",
             "price": 8830,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 역전",
             "price": 8870,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 상남",
             "price": 8960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 칠성",
             "price": 9000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 경동",
             "price": 9000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 H-유통",
             "price": 9180,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 부전",
             "price": 9330,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 죽도",
             "price": 9500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 동문",
             "price": 9660,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 역전",
             "price": 9870,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 I-유통",
             "price": 9940,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "안동 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 복조리",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "세종 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "천안 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "용인 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "강릉 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 C-유통",
             "price": 9960,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 D-유통",
             "price": 9980,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 경동",
             "price": 10000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 육거리",
             "price": 10000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 남부",
             "price": 10000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 신정",
             "price": 10000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 역전",
             "price": 10000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 지동",
             "price": 10200,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 상남",
             "price": 10200,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 부전",
             "price": 10300,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 현대",
             "price": 10300,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 양동",
             "price": 10300,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "춘천 중앙",
             "price": 10300,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 동문",
             "price": 10600,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 J-유통",
             "price": 11900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 L-유통",
             "price": 12500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 E-유통",
             "price": 15100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EB%A7%88%EB%8A%98",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           }
         ],
         "trend": null,
-        "need_text": "1큰술",
-        "low_cost": 87,
-        "high_cost": 226,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": "1큰술",
+        "lowCost": 87,
+        "highCost": 226,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": true
       },
       {
@@ -1822,380 +1822,380 @@
             "price": 25000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 J-유통",
             "price": 25400,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 칠성",
             "price": 26900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 L-유통",
             "price": 26900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 역전",
             "price": 28100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 남부",
             "price": 28800,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 B-유통",
             "price": 29500,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 K-유통",
             "price": 29900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B`-유통",
             "price": 29900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 K-유통",
             "price": 29900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 부전",
             "price": 30000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 역전",
             "price": 30100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 죽도",
             "price": 30800,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 신정",
             "price": 31100,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 B-유통",
             "price": 31200,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "청주 육거리",
             "price": 32000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "고양 B-유통",
             "price": 32000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 상남",
             "price": 32700,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 I-유통",
             "price": 32800,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 D-유통",
             "price": 32900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 B-유통",
             "price": 32900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 B-유통",
             "price": 33000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 동문",
             "price": 33300,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "안동 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "창원 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "세종 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "천안 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "용인 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "강릉 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "순천 C-유통",
             "price": 34900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "성남 B-유통",
             "price": 35000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 현대",
             "price": 35200,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "춘천 중앙",
             "price": 35300,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "전주 C-유통",
             "price": 35900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "수원 지동",
             "price": 36000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "인천 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대전 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "포항 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "제주 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "대구 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 E-유통",
             "price": 36900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "울산 B-유통",
             "price": 37600,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 복조리",
             "price": 38600,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "광주 B-유통",
             "price": 40000,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "서울 경동",
             "price": 42600,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           },
           {
             "shop": "부산 H-유통",
             "price": 43900,
             "link": "https://www.kamis.or.kr/customer/price/retail/item.do?keyword=%EA%B3%A0%EC%B6%A7%EA%B0%80%EB%A3%A8",
             "unit": "1kg",
-            "surveyed_at": "20260923"
+            "surveyedAt": "20260923"
           }
         ],
         "trend": null,
-        "need_text": "1큰술",
-        "low_cost": 375,
-        "high_cost": 658,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": "1큰술",
+        "lowCost": 375,
+        "highCost": 658,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": true
       },
       {
         "name": "설탕 1작은술",
         "offers": [],
         "trend": null,
-        "need_text": null,
-        "low_cost": null,
-        "high_cost": null,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": null,
+        "lowCost": null,
+        "highCost": null,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": false
       },
       {
         "name": "식용유 1큰술",
         "offers": [],
         "trend": null,
-        "need_text": null,
-        "low_cost": null,
-        "high_cost": null,
-        "min_unit": false,
-        "buy_text": null,
+        "needText": null,
+        "lowCost": null,
+        "highCost": null,
+        "minUnit": false,
+        "buyText": null,
         "surveyed": false
       }
     ]

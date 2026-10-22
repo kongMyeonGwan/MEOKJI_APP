@@ -103,7 +103,7 @@ src/main/resources/
 ### 요청이 흘러가는 순서 (예: 못 먹는 재료 추가)
 
 ```
-화면  POST /api/bans  { "ingredient_name": "오이" }
+화면  POST /api/bans  { "ingredientName": "오이" }
   ↓
 BanController.add()          로그인 확인 → 서비스 부르기
   ↓
@@ -117,15 +117,25 @@ BanMapper.xml  <insert id="insert">  INSERT INTO user_bans ...
 **처음 보는 사람은 Ban 파일 5개부터 읽는다.** 가장 짧고 기본 모양이 다 들어 있다.
 `BanController` → `BanService` → `BanServiceImpl` → `BanDAO` → `resources/mapper/BanMapper.xml`
 
-### 이름 규칙이 세 가지다
+### 이름 규칙이 두 가지다
 
 | 어디 | 모양 | 예 |
 |---|---|---|
 | DB 컬럼 | snake_case | `ingredient_name` |
-| 자바 필드 | camelCase | `ingredientName` |
-| JSON (화면) | snake_case | `ingredient_name` |
+| 자바 필드 · JSON (화면) | camelCase | `ingredientName` |
 
-DB ↔ 자바는 MyBatis 가, 자바 ↔ JSON 은 Jackson 이 **알아서 바꿔준다**(`application.yml` 설정). 그래서 자바에서는 camelCase 만 쓰면 된다.
+DB ↔ 자바는 MyBatis 가 **알아서 바꿔준다**(`application.yml` 의
+`map-underscore-to-camel-case`). 자바 ↔ JSON 은 바꿀 것이 없다 — 필드 이름이
+그대로 JSON 키가 된다.
+
+예전에는 JSON 도 snake_case 였다. 프론트가 파이썬(FastAPI) 백엔드를 보고
+짜였기 때문이다. 스프링으로 옮기면서 프론트까지 카멜로 맞췄다.
+
+두 군데만 아직 snake 다. Jackson 이 만드는 이름이 아니라서 그렇다.
+
+- `RECIPE_JSON` 안쪽 키 (`cook_time_minutes` 등) — DB 에 문자열로 저장된 JSON
+- `resources/data` 의 파일 키 (`catalog.json` 의 `foods[].food_name` 등) —
+  읽기만 하는 데이터 파일
 
 ---
 

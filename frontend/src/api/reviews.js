@@ -12,7 +12,7 @@
 
 const NOT_READY = '게시판 기능은 아직 준비 중입니다.'
 
-// 게시글 목록 한 페이지. { items, total, page, size, total_pages } 가 온다.
+// 게시글 목록 한 페이지. { items, total, page, size, totalPages } 가 온다.
 //
 // 로그인이 필요한 함수(글쓰기 · 수정 · 삭제 · 좋아요 · 댓글)는
 // { headers: authHeader() } 를 같이 넘겨야 한다. 목록 · 상세 · 조회수는
@@ -35,7 +35,7 @@ export const createReview = async (form) => {
   throw new Error(NOT_READY)
 }
 
-// 좋아요 켜기 / 끄기. { liked, like_count } 가 온다.
+// 좋아요 켜기 / 끄기. { liked, likeCount } 가 온다.
 export const setReviewLike = async (reviewId, liked) => {
   throw new Error(NOT_READY)
 }

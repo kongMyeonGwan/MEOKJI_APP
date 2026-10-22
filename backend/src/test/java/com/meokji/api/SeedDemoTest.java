@@ -112,8 +112,8 @@ class SeedDemoTest {
     private static final Map<String, String> ADMIN = Map.of(
             "email", "admin@meokji.com",
             "nickname", "뭐먹지운영팀",
-            "address_sido", "서울특별시",
-            "address_sigungu", "강남구");
+            "addressSido", "서울특별시",
+            "addressSigungu", "강남구");
 
     /**
      * 후기는 일반 회원이 쓰는 글이다. 한 계정으로 다 하면 "운영팀이 자기 후기를
@@ -123,8 +123,8 @@ class SeedDemoTest {
             "email", "minji@example.com",
             "nickname", "민지의부엌",
             "gender", "FEMALE",
-            "address_sido", "서울특별시",
-            "address_sigungu", "마포구");
+            "addressSido", "서울특별시",
+            "addressSigungu", "마포구");
 
     private record NoticeVO(String title, String content, boolean pinned) {
     }
@@ -361,7 +361,7 @@ class SeedDemoTest {
         assertThat(logged.getResponse().getStatus())
                 .as("로그인 실패: %s", body(logged)).isEqualTo(200);
 
-        return body(logged).get("access_token").asString();
+        return body(logged).get("accessToken").asString();
     }
 
     /**
@@ -456,10 +456,10 @@ class SeedDemoTest {
         String member = signUp(MEMBER);
 
         // 등급을 바꿨으니 토큰을 다시 받는다. 토큰 안에 등급이 들어 있는 건
-        // 아니지만(요청마다 DB 를 본다), is_admin 이 실린 user 는 로그인 응답에
+        // 아니지만(요청마다 DB 를 본다), isAdmin 이 실린 user 는 로그인 응답에
         // 담겨오므로 화면이 쓰려면 새로 받아야 한다.
         String admin = signUp(ADMIN);
-        ok("is_admin = " + body(getJson("/api/auth/me", admin)).get("is_admin").asBoolean());
+        ok("isAdmin = " + body(getJson("/api/auth/me", admin)).get("isAdmin").asBoolean());
 
         step("2", "공지사항 작성 (관리자 · 첨부 없음)");
         seedNotices(admin);
@@ -526,7 +526,7 @@ class SeedDemoTest {
         Map<String, JsonNode> histories = new LinkedHashMap<>();
 
         for (JsonNode row : body(getJson("/api/histories", member)).path("items")) {
-            histories.put(row.path("food_name").asString(""), row);
+            histories.put(row.path("foodName").asString(""), row);
         }
 
         for (String food : FOODS) {
@@ -543,12 +543,12 @@ class SeedDemoTest {
             JsonNode recipe = body(fetched);
 
             ObjectNode payload = MAPPER.createObjectNode();
-            payload.put("food_name", recipe.path("food_name").asString());
-            payload.put("recipe_name", recipe.path("recipe_name").asString());
-            payload.set("recipe_json", recipe.path("recipe_json"));
-            payload.set("ingredients_json", recipe.path("ingredients_json"));
-            payload.set("substitutes_json", recipe.path("substitutes_json"));
-            payload.put("estimated_cost", recipe.path("estimated_cost").asInt());
+            payload.put("foodName", recipe.path("foodName").asString());
+            payload.put("recipeName", recipe.path("recipeName").asString());
+            payload.set("recipeJson", recipe.path("recipeJson"));
+            payload.set("ingredientsJson", recipe.path("ingredientsJson"));
+            payload.set("substitutesJson", recipe.path("substitutesJson"));
+            payload.put("estimatedCost", recipe.path("estimatedCost").asInt());
 
             MvcResult created = postJson("/api/histories", member, payload);
 
@@ -559,9 +559,9 @@ class SeedDemoTest {
             histories.put(food, saved);
 
             ok(String.format("%s - %s (%,d원)",
-                    saved.path("food_name").asString(),
-                    saved.path("recipe_name").asString(),
-                    saved.path("estimated_cost").asInt()));
+                    saved.path("foodName").asString(),
+                    saved.path("recipeName").asString(),
+                    saved.path("estimatedCost").asInt()));
         }
 
         return histories;
@@ -631,15 +631,15 @@ class SeedDemoTest {
             }
 
             // 한 기록에는 후기를 한 번만 쓸 수 있다(uq_reviews_meal).
-            // 이미 썼으면 recipe_review_id 가 채워져 있으니 그 글을 이어서 쓴다.
-            JsonNode shared = history.path("recipe_review_id");
+            // 이미 썼으면 recipeReviewId 가 채워져 있으니 그 글을 이어서 쓴다.
+            JsonNode shared = history.path("recipeReviewId");
             Long reviewId = shared.isNull() || shared.isMissingNode() ? null : shared.asLong();
 
             if (reviewId != null) {
                 skip("이미 공유한 기록 - #" + reviewId + " " + item.title());
             } else {
                 MvcResult created = postJson("/api/reviews", member, Map.of(
-                        "meal_history_id", history.path("id").asLong(),
+                        "mealHistoryId", history.path("id").asLong(),
                         "title", item.title(),
                         "content", item.content()));
 
@@ -679,7 +679,7 @@ class SeedDemoTest {
 
             JsonNode saved = body(attached).path("file");
             ok("   첨부 " + saved.path("name").asString()
-                    + " (" + saved.path("size_text").asString() + ")"
+                    + " (" + saved.path("sizeText").asString() + ")"
                     + " -> " + saved.path("url").asString());
         }
     }
@@ -706,7 +706,7 @@ class SeedDemoTest {
             JsonNode page = body(posts);
             long withFile = 0;
             for (JsonNode row : page.path("items")) {
-                if (row.path("has_file").asBoolean()) {
+                if (row.path("hasFile").asBoolean()) {
                     withFile++;
                 }
             }
@@ -715,7 +715,7 @@ class SeedDemoTest {
 
         JsonNode stats = body(getJson("/api/histories/stats", member));
         System.out.printf("  식사 기록 %d 건 · 누적 %,d원%n",
-                stats.path("count").asInt(), stats.path("total_cost").asInt());
+                stats.path("count").asInt(), stats.path("totalCost").asInt());
 
         System.out.printf("%n  로그인    %s (관리자) / %s%n",
                 ADMIN.get("email"), MEMBER.get("email"));

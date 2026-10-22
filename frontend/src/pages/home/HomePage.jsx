@@ -38,8 +38,8 @@ export default function HomePage() {
         const data = await getCatalog()
         setCategories(data.categories || [])
         setGames(data.games || [])
-        setSearchSuggestions(data.search_suggestions || [])
-        setBudgetPresets(data.budget_presets || [])
+        setSearchSuggestions(data.searchSuggestions || [])
+        setBudgetPresets(data.budgetPresets || [])
       } catch (err) {
         // 서버가 꺼져 있어도 화면은 떠야 한다. 빈 목록 그대로 둔다.
       }
@@ -117,7 +117,7 @@ export default function HomePage() {
             <div className="dash__recs-row">
               <div className="dash__cards">
                 {foods.map((food) => (
-                  <FoodCard key={food.food_name} food={food} />
+                  <FoodCard key={food.foodName} food={food} />
                 ))}
               </div>
 

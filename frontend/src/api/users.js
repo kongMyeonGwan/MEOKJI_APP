@@ -16,8 +16,8 @@ export const updateProfile = async (form) => {
     {
       nickname: form.nickname,
       gender: form.gender,
-      address_sido: form.addressSido,
-      address_sigungu: form.addressSigungu,
+      addressSido: form.addressSido,
+      addressSigungu: form.addressSigungu,
     },
     { headers: authHeader() },
   )
@@ -29,8 +29,8 @@ export const changeMyPassword = async (currentPassword, newPassword) => {
   const response = await client.post(
     '/api/users/me/password',
     {
-      current_password: currentPassword,
-      new_password: newPassword,
+      currentPassword: currentPassword,
+      newPassword: newPassword,
     },
     { headers: authHeader() },
   )

@@ -41,12 +41,12 @@ export const saveResult = (gameKey, gameTitle, foodName, link) => {
 
   const result = {
     id: Date.now(),
-    game_key: gameKey,
-    game_title: gameTitle,
-    food_name: foodName,
+    gameKey: gameKey,
+    gameTitle: gameTitle,
+    foodName: foodName,
     link: link,
     day: todayKey(),
-    created_at: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
   }
 
   saveResults([result, ...getResults()].slice(0, MAX_RESULTS))

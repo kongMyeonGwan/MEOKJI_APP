@@ -139,7 +139,7 @@ export default function App() {
     if (!user) {
       return <Navigate to="/login" />
     }
-    if (!user.is_admin) {
+    if (!user.isAdmin) {
       return <Navigate to="/notice" replace />
     }
     return page

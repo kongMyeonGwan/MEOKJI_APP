@@ -70,7 +70,7 @@ class AuthFixtureTest {
 
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
 
-        return body(result).get("access_token").asString();
+        return body(result).get("accessToken").asString();
     }
 
     @Test
@@ -89,16 +89,16 @@ class AuthFixtureTest {
         JsonNode actual = body(result);
 
         // 토큰은 매번 달라지므로 모양만 본다.
-        assertThat(actual.get("access_token").asString()).isNotBlank();
-        assertThat(actual.get("token_type").asString())
+        assertThat(actual.get("accessToken").asString()).isNotBlank();
+        assertThat(actual.get("tokenType").asString())
                 .as("프론트가 이 값을 Authorization 헤더에 그대로 붙인다")
-                .isEqualTo(want.get("token_type").asString());
-        assertThat(actual.get("expires_in").asInt())
-                .isEqualTo(want.get("expires_in").asInt());
+                .isEqualTo(want.get("tokenType").asString());
+        assertThat(actual.get("expiresIn").asInt())
+                .isEqualTo(want.get("expiresIn").asInt());
 
         // 회원 정보는 글자까지 같아야 한다. bcrypt 해시가 그대로 통한다는 확인도 된다 -
         // 이 계정의 비밀번호 해시는 다른 bcrypt 구현($2b$)이 만든 것이다.
-        // 단 DB 가 정하는 id · created_at 은 모양만 본다 (MemberDbValues 참고).
+        // 단 DB 가 정하는 id · createdAt 은 모양만 본다 (MemberDbValues 참고).
         MemberDbValues.assertShape(actual.get("user"));
         assertThat(MemberDbValues.without(actual.get("user")))
                 .isEqualTo(MemberDbValues.without(want.get("user")));
@@ -115,7 +115,7 @@ class AuthFixtureTest {
 
         assertThat(result.getResponse().getStatus()).isEqualTo(200);
 
-        // DB 가 정하는 id · created_at 은 모양만 보고, 나머지는 글자까지 같아야 한다
+        // DB 가 정하는 id · createdAt 은 모양만 보고, 나머지는 글자까지 같아야 한다
         MemberDbValues.assertShape(body(result));
         assertThat(MemberDbValues.without(body(result))).isEqualTo(MemberDbValues.without(want));
     }

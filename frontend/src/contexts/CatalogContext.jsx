@@ -18,9 +18,9 @@ const EMPTY = {
   categories: [],
   roulette: [],
   games: [],
-  balance_questions: [],
-  search_suggestions: [],
-  budget_presets: [],
+  balanceQuestions: [],
+  searchSuggestions: [],
+  budgetPresets: [],
 }
 
 export function CatalogProvider({ children }) {
@@ -58,9 +58,9 @@ export function CatalogProvider({ children }) {
     categories: catalog.categories || [],
     roulette: catalog.roulette || [],
     games: catalog.games || [],
-    balanceQuestions: catalog.balance_questions || [],
-    searchSuggestions: catalog.search_suggestions || [],
-    budgetPresets: catalog.budget_presets || [],
+    balanceQuestions: catalog.balanceQuestions || [],
+    searchSuggestions: catalog.searchSuggestions || [],
+    budgetPresets: catalog.budgetPresets || [],
   }
 
   return (

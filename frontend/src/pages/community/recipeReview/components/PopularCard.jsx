@@ -37,14 +37,14 @@ export default function PopularCard({ item, rank }) {
         </Link>
 
         <span className={rankClass()}>{rank}</span>
-        <span className="rank-card__time">🕐 {formatMinutes(item.cook_time_minutes)}</span>
+        <span className="rank-card__time">🕐 {formatMinutes(item.cookTimeMinutes)}</span>
       </div>
 
       <div className="rank-card__body">
         <div className="rank-card__head">
           <h3 className="rank-card__name">
             {/* 레시피 이름이 없으면 음식 이름을 쓴다 */}
-            <Link to={postUrl}>{item.recipe_name || item.food_name}</Link>
+            <Link to={postUrl}>{item.recipeName || item.foodName}</Link>
           </h3>
 
           <button
@@ -66,8 +66,8 @@ export default function PopularCard({ item, rank }) {
           </span>
 
           <span className="rank-card__counts">
-            <span className="rank-card__heart">♥ {item.like_count}</span>
-            <span className="muted">💬 {item.comment_count}</span>
+            <span className="rank-card__heart">♥ {item.likeCount}</span>
+            <span className="muted">💬 {item.commentCount}</span>
           </span>
         </div>
 

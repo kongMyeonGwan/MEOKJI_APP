@@ -84,7 +84,7 @@ class FreePostTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
                 .andReturn();
-        return "Bearer " + body(result).get("access_token").asString();
+        return "Bearer " + body(result).get("accessToken").asString();
     }
 
     private JsonNode body(MvcResult result) throws Exception {
@@ -101,8 +101,8 @@ class FreePostTest {
 
         assertThat(result.getResponse().getStatus()).as("글쓰기").isEqualTo(201);
         // DB 가 채우는 값(작성 시각 · 조회수)과 JOIN 으로 오는 닉네임이 쓰자마자 응답에 있어야 한다
-        assertThat(body(result).get("created_at").isNull()).as("작성 시각이 같이 온다").isFalse();
-        assertThat(body(result).get("view_count").asInt()).isEqualTo(0);
+        assertThat(body(result).get("createdAt").isNull()).as("작성 시각이 같이 온다").isFalse();
+        assertThat(body(result).get("viewCount").asInt()).isEqualTo(0);
         assertThat(body(result).get("nickname").isNull()).as("닉네임이 같이 온다").isFalse();
 
         long postId = body(result).get("id").asLong();
@@ -115,26 +115,26 @@ class FreePostTest {
     void postLifecycle() throws Exception {
         long postId = writePost("테스트 글입니다", "본문입니다.\\n둘째 줄입니다.");
 
-        // 1. 상세로 읽으면 쓴 그대로다. 내 글이라 is_mine 이 true
+        // 1. 상세로 읽으면 쓴 그대로다. 내 글이라 isMine 이 true
         MvcResult detail = mvc.perform(get("/api/free-posts/" + postId).header("Authorization", auth))
                 .andReturn();
         assertThat(detail.getResponse().getStatus()).isEqualTo(200);
         assertThat(body(detail).get("title").asString()).isEqualTo("테스트 글입니다");
-        assertThat(body(detail).get("is_mine").asBoolean()).isTrue();
+        assertThat(body(detail).get("isMine").asBoolean()).isTrue();
         assertThat(body(detail).get("file").isNull()).as("첨부는 아직 없다").isTrue();
         assertThat(body(detail).get("comments").size()).isEqualTo(0);
 
         // 2. 로그인 없이도 보인다. 다만 내 글로 보이지는 않는다
         MvcResult guest = mvc.perform(get("/api/free-posts/" + postId)).andReturn();
         assertThat(guest.getResponse().getStatus()).isEqualTo(200);
-        assertThat(body(guest).get("is_mine").asBoolean()).as("비로그인은 남의 글").isFalse();
+        assertThat(body(guest).get("isMine").asBoolean()).as("비로그인은 남의 글").isFalse();
 
         // 3. 목록 첫 페이지에 방금 쓴 글이 맨 앞에 온다 (최신순)
         MvcResult list = mvc.perform(get("/api/free-posts?page=1&size=20")).andReturn();
         assertThat(list.getResponse().getStatus()).isEqualTo(200);
         assertThat(body(list).get("items").get(0).get("id").asLong()).isEqualTo(postId);
-        assertThat(body(list).get("items").get(0).get("comment_count").asInt()).isEqualTo(0);
-        assertThat(body(list).get("total_pages").asInt()).isGreaterThanOrEqualTo(1);
+        assertThat(body(list).get("items").get(0).get("commentCount").asInt()).isEqualTo(0);
+        assertThat(body(list).get("totalPages").asInt()).isGreaterThanOrEqualTo(1);
 
         // 4. 수정하면 바뀐 값이 읽힌다
         MvcResult updated = mvc.perform(put("/api/free-posts/" + postId)
@@ -171,7 +171,7 @@ class FreePostTest {
                 .andReturn();
         assertThat(added.getResponse().getStatus()).isEqualTo(201);
         assertThat(body(added).get("content").asString()).isEqualTo("첫 댓글");
-        assertThat(body(added).get("is_mine").asBoolean()).isTrue();
+        assertThat(body(added).get("isMine").asBoolean()).isTrue();
         assertThat(body(added).get("nickname").isNull()).as("닉네임이 같이 온다").isFalse();
 
         long commentId = body(added).get("id").asLong();
@@ -183,7 +183,7 @@ class FreePostTest {
 
         // 3. 목록의 댓글 수도 1 이다
         MvcResult list = mvc.perform(get("/api/free-posts?page=1&size=20")).andReturn();
-        assertThat(body(list).get("items").get(0).get("comment_count").asInt()).isEqualTo(1);
+        assertThat(body(list).get("items").get(0).get("commentCount").asInt()).isEqualTo(1);
 
         // 4. 댓글 수정
         MvcResult edited = mvc.perform(put("/api/free-posts/" + postId + "/comments/" + commentId)
@@ -271,15 +271,15 @@ class FreePostTest {
         assertThat(body(attached).get("ext").asString()).isEqualTo("png");
         assertThat(body(attached).get("url").asString())
                 .isEqualTo("/api/free-posts/" + postId + "/file");
-        assertThat(body(attached).get("size_text").asString()).isEqualTo("5 B");
+        assertThat(body(attached).get("sizeText").asString()).isEqualTo("5 B");
 
         // 서버 사정은 안 나간다. 저장 폴더와 UUID 이름이 보이면 남의 파일 주소를 짐작할 수 있다
         assertThat(body(attached).has("path")).as("저장 폴더").isFalse();
-        assertThat(body(attached).has("saved_name")).as("UUID 이름").isFalse();
+        assertThat(body(attached).has("savedName")).as("UUID 이름").isFalse();
 
-        // 2. 목록의 has_file 이 켜진다
+        // 2. 목록의 hasFile 이 켜진다
         MvcResult list = mvc.perform(get("/api/free-posts?page=1&size=20")).andReturn();
-        assertThat(body(list).get("items").get(0).get("has_file").asBoolean()).isTrue();
+        assertThat(body(list).get("items").get(0).get("hasFile").asBoolean()).isTrue();
 
         // 3. 받아보면 올린 바이트 그대로다
         MvcResult downloaded = mvc.perform(get("/api/free-posts/" + postId + "/file")).andReturn();

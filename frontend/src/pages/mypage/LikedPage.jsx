@@ -63,7 +63,7 @@ export default function LikedPage() {
   }
 
   // 검색창에 친 글자가 음식 이름에 들어 있는 것만 남긴다
-  const shown = items.filter((item) => item.food_name.includes(keyword.trim()))
+  const shown = items.filter((item) => item.foodName.includes(keyword.trim()))
 
   // 지금 페이지 몫만 잘라낸다.
   // 마지막 페이지의 마지막 하나를 찜 해제하면 그 페이지가 사라지므로, 남은 마지막 페이지로 당겨서 본다
@@ -136,7 +136,7 @@ export default function LikedPage() {
       {!loading && shown.length > 0 && view === 'grid' && (
         <div className="liked-grid">
           {pageItems.map((item) => (
-            <LikedCard key={item.food_name} item={item} onUnlike={handleUnlike} />
+            <LikedCard key={item.foodName} item={item} onUnlike={handleUnlike} />
           ))}
         </div>
       )}
@@ -145,11 +145,11 @@ export default function LikedPage() {
         <div className="card">
           <ul className="liked">
             {pageItems.map((item) => (
-              <li key={item.food_name}>
-                <Link to={`/recipe/${item.food_name}`} className="liked__row">
+              <li key={item.foodName}>
+                <Link to={`/recipe/${item.foodName}`} className="liked__row">
                   <FoodThumb item={item} size="md" />
                   <span className="liked__body">
-                    <span className="liked__name">{item.food_name}</span>
+                    <span className="liked__name">{item.foodName}</span>
                     <span className="liked__meta muted">{item.reason || '눌러서 레시피를 만들어 보세요'}</span>
                   </span>
                 </Link>
@@ -157,7 +157,7 @@ export default function LikedPage() {
                 <button
                   type="button"
                   className="liked__unlike"
-                  onClick={() => handleUnlike(item.food_name)}
+                  onClick={() => handleUnlike(item.foodName)}
                   title="찜 해제"
                 >
                   <Icon name="heart-fill" size={18} />

@@ -3,7 +3,7 @@ import { authHeader } from '../utils/token'
 
 // 내 식사 기록 API. 로그인이 필요하다.
 
-// 내 기록 한 페이지. { items, total, page, size, total_pages } 가 온다.
+// 내 기록 한 페이지. { items, total, page, size, totalPages } 가 온다.
 // shared: false 를 넘기면 아직 커뮤니티에 공유 안 한 기록만 온다.
 export const getHistories = async (options) => {
   const response = await client.get('/api/histories', {
@@ -28,12 +28,12 @@ export const createHistory = async (recipe) => {
   const response = await client.post(
     '/api/histories',
     {
-      food_name: recipe.food_name,
-      recipe_name: recipe.recipe_name,
-      recipe_json: recipe.recipe_json,
-      ingredients_json: recipe.ingredients_json,
-      substitutes_json: recipe.substitutes_json,
-      estimated_cost: recipe.estimated_cost,
+      foodName: recipe.foodName,
+      recipeName: recipe.recipeName,
+      recipeJson: recipe.recipeJson,
+      ingredientsJson: recipe.ingredientsJson,
+      substitutesJson: recipe.substitutesJson,
+      estimatedCost: recipe.estimatedCost,
     },
     { headers: authHeader() },
   )

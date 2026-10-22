@@ -6222,6 +6222,260 @@ a.btn {
   }
 }
 
+/* ----- BansPage ----- */
+/*
+ * 못 먹는 재료(/BansPage).
+ *
+ * 카드 하나짜리 화면이라 .list-page 와 같이 왼쪽에 붙인다(margin: 0 auto 없음).
+ * 가운데 정렬하면 사이드바가 있는 웹 모드에서 카드만 오른쪽으로 밀려 보인다.
+ *
+ * 카드 안은 위에서부터 네 덩어리다.
+ *   머리말(아이콘 + 제목 + 등록 개수) / 요약 숫자 세 칸 / 재료 추가 / 등록된 재료
+ */
+.BansPage {
+  width: 100%;
+  /* .list-page 와 같은 1040px. 목록 화면에서 넘어와도 카드 오른쪽 끝이 제자리다 */
+  max-width: 1040px;
+}
+
+.BansPage__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* 제목 옆 동그란 아이콘. 카드가 글자만으로 시작하면 머리말이 안 읽힌다 */
+.BansPage__header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+}
+
+/* 제목과 설명이 남는 자리를 다 쓰고, 등록 개수는 오른쪽 끝에 붙는다 */
+.BansPage__header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.BansPage__count {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.BansPage__desc {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+}
+
+/* 요약 숫자 세 칸. 카드가 흰 면이라 칸은 바탕색으로 눌러 넣는다 */
+.BansPage__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.BansPage__stat {
+  padding: 14px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  text-align: center;
+}
+
+.BansPage__stat-value {
+  display: block;
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1.2;
+}
+
+.BansPage__stat-label {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.BansPage__add { margin-top: 20px; }
+
+.BansPage__label {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.BansPage__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px auto;
+  gap: 8px;
+}
+
+.BansPage__form input,
+.BansPage__form select {
+  min-width: 0;
+  padding: 11px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-bg);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.BansPage__form input {
+  width: 100%;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.BansPage__form input:hover,
+.BansPage__form select:hover:not(:disabled) {
+  border-color: var(--color-subtle);
+}
+
+.BansPage__form input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -1px;
+}
+
+.BansPage__form select { padding-right: 34px; }
+
+.BansPage__form input:disabled,
+.BansPage__form select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* 입력칸과 목록 사이를 선 하나로 끊는다 */
+.BansPage__list {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border);
+}
+
+.BansPage__list-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.BansPage__list-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.BansPage__list-count {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-subtle);
+}
+
+.BansPage__bans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.BansPage__ban {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 5px 6px 5px 11px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+
+/* 알레르기는 '가능하면 피함'이 아니라 '반드시 제외'라 눈에 띄어야 한다.
+   칩 안에 라벨을 또 넣으면 알약 안에 알약이 들어가므로 테두리 색으로만 알린다 */
+.BansPage__ban--allergy { border-color: var(--color-error); }
+
+.BansPage__ban-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.BansPage__ban-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.BansPage__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.BansPage__remove:hover:not(:disabled) {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.BansPage__remove:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.BansPage .empty {
+  margin: 0;
+  padding: 24px 18px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  text-align: center;
+}
+
+/* 앱 모드. 요약 세 칸은 그대로 두되 글자를 줄이고, 입력칸은 아래로 쌓는다 */
+@media (max-width: 1023px) {
+  .BansPage__stat { padding: 12px 6px; }
+  .BansPage__stat-value { font-size: 19px; }
+  .BansPage__stat-label { font-size: 11.5px; }
+}
+
+@media (max-width: 560px) {
+  .BansPage__header-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .BansPage__form {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .BansPage__form input { grid-column: 1 / -1; }
+  .BansPage__form select { min-width: 0; }
+  .BansPage__form .btn { width: 100%; }
+}
+
 /* ----- MyPage ----- */
 .mypage {
   display: grid;
