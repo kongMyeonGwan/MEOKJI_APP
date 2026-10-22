@@ -76,9 +76,9 @@ COMMIT;
 -- 2. 실행 결과 확인
 --    USER_LEVEL 이 생겼는지 — 1줄이 나와야 합니다
 -- ---------------------------------------------------------
--- SELECT column_name, data_type, data_length, nullable, data_default
--- FROM   user_tab_columns
--- WHERE  table_name = 'USERS' AND column_name = 'USER_LEVEL';
+SELECT column_name, data_type, data_length, nullable, data_default
+FROM   user_tab_columns
+WHERE  table_name = 'USERS' AND column_name = 'USER_LEVEL';
 
 
 -- ---------------------------------------------------------

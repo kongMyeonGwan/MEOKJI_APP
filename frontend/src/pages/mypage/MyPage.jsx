@@ -53,9 +53,79 @@ export default function MyPage({ user, onLogout, onUserChange }) {
   }, [])
 
   // 정보 수정 폼에서 저장했을 때. 바뀐 닉네임을 상단바에도 반영한다.
-  const handleProfileSaved = (nickname) => {
+  const handleProfileSaved = (updatedProfile) => {
     loadProfile()
-    onUserChange({ ...user, nickname })
+
+    onUserChange({ ...user, nickname: updatedProfile.nickname, gender: updatedProfile.gender })
+  }
+
+  // 재료 추가
+  const handleAddBan = async (e) => {
+    e.preventDefault() // 폼을 제출하면 페이지가 새로고침되는데, 그걸 막는다
+
+    const name = banName.trim()
+
+    if (name === '') {
+      setError('재료 이름을 입력해주세요')
+      return
+    }
+
+    // 이미 등록한 재료인지 목록에서 찾아본다
+    const already = bans.find((ban) => ban.ingredient_name === name)
+    if (already) {
+      setError('이미 등록한 재료입니다')
+      return
+    }
+
+    setError('')
+
+    try {
+      const created = await addBan({ ingredientName: name, banType: banType })
+      setBans([...bans, created]) // 서버가 돌려준 재료를 목록 뒤에 붙인다
+      setBanName('')
+    } catch (err) {
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
+    }
+  }
+
+  // 재료 삭제
+  const handleRemoveBan = async (ban) => {
+    try {
+      await removeBan(ban.id)
+      setBans(bans.filter((item) => item.id !== ban.id)) // 지운 것만 빼고 남긴다
+    } catch (err) {
+      // 서버가 보낸 오류 문장을 그대로 보여준다.
+      if (err.response) {
+        // 입력값 검사에 걸리면 detail 이 배열로 온다. 예) [{ msg: '닉네임을 입력해주세요' }]
+        const detail = err.response.data.detail
+        if (Array.isArray(detail)) {
+          setError(detail[0].msg)
+        } else {
+          setError(detail || '요청을 처리하지 못했습니다.')
+        }
+      } else if (err.request) {
+        // 백엔드를 안 켰거나 30초가 지난 경우
+        setError('서버에 연결할 수 없습니다. 백엔드가 실행 중인지 확인하세요.')
+      } else {
+        // 그 밖의 에러 (예: api/reviews.js 의 "게시판 기능은 아직 준비 중입니다.")
+        setError(err.message)
+      }
+    }
   }
 
   // 탈퇴가 끝나면 로그아웃하고 홈으로
@@ -91,7 +161,7 @@ export default function MyPage({ user, onLogout, onUserChange }) {
 
       {/* 2. 정보 수정. 내 정보를 받아온 다음에 보여준다 (입력칸을 그 값으로 채우려고) */}
       {profile && <ProfileForm profile={profile} onSaved={handleProfileSaved} />}
-      
+
       {/* 3. 비밀번호 변경 · 탈퇴 */}
       <AccountSection onWithdrawn={handleWithdrawn} />
 

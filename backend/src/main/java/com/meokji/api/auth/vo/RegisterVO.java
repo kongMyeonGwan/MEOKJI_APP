@@ -30,7 +30,8 @@ public class RegisterVO {
     private String nickname;
 
     // 아래 셋은 선택 항목. 안 보내면 null 로 저장된다.
-    @Pattern(regexp = "MALE|FEMALE|OTHER", message = "성별 값이 올바르지 않습니다")
+//    @Pattern(regexp = "MALE|FEMALE|OTHER", message = "성별 값이 올바르지 않습니다")
+    @Pattern(regexp = "(MALE|FEMALE|OTHER)?", message = "성별 값이 올바르지 않습니다")
     private String gender;
 
     @Size(max = 30)

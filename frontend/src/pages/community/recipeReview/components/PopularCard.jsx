@@ -7,7 +7,7 @@ import { formatMinutes } from '../../../../utils/format'
 // 인기 레시피 카드 한 장. 순위(rank)는 목록에서 몇 번째인지다.
 //
 // TODO(게시판 담당): 저장(북마크) 버튼은 지금 화면에서만 켜졌다 꺼진다.
-//   찜 API 가 붙으면 FoodCard 처럼 toggleLike 를 부르고, 로그인 안 했으면
+//   찜 API 가 붙으면 FoodCard 처럼 toggleFavorite 를 부르고, 로그인 안 했으면
 //   로그인 화면으로 보낸다.
 export default function PopularCard({ item, rank }) {
   const [saved, setSaved] = useState(false)

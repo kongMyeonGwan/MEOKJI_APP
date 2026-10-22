@@ -53,12 +53,15 @@ export default function ProfileForm({ profile, onSaved }) {
       await updateProfile({
         nickname: values.nickname.trim(),
         // 선택 안 한 항목(빈 글자)은 null 로 보내야 서버에서도 비워진다
-        gender: values.gender || null,
+        gender: values.gender,
         addressSido: sido || null,
         addressSigungu: sigungu || null,
       })
       setDone(true)
-      onSaved(values.nickname.trim())
+      onSaved({
+        nickname: values.nickname.trim(),
+        gender: values.gender || null,
+      })
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.
       if (err.response) {

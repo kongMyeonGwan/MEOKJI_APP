@@ -247,7 +247,7 @@ import Loading from '../../components/common/Loading'
 import ProfileForm from './components/ProfileForm'     // 이 기능 전용은 언제나 './'
 
 // pages/mypage/components/ProfileForm.jsx — 조각 (한 겹 더)
-import { getLikes } from '../../../api/likes'
+import { getFavorites } from '../../../api/favorites'
 
 // pages/community/free/FreeListPage.jsx — 게시판은 community 아래라 또 한 겹
 import Pagination from '../../../components/common/Pagination'
