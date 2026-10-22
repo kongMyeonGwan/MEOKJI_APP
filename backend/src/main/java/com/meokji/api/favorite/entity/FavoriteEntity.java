@@ -46,12 +46,4 @@ public class FavoriteEntity {
         return favorite;
     }
 
-
-
-
-
-
-
-
-
 }

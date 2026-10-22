@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import FreeAttachment from './components/FreeAttachment'
 import FreeCommentItem from './components/FreeCommentItem'
 import Modal from '../../../components/common/Modal'
@@ -67,6 +67,11 @@ export default function FreeDetailPage({ user }) {
   const [fileError, setFileError] = useState('')
 
   const navigate = useNavigate()
+
+  // 돌아갈 목록 주소. 목록에서 글을 열었으면 그때 보던 페이지(FreePostCard 가
+  // state 로 넘긴다), 주소를 직접 쳐서 들어왔으면 1페이지다
+  const location = useLocation()
+  const listUrl = location.state?.from || '/free'
 
   // 서버가 보낸 오류 문장을 꺼낸다. 화면 여러 군데에서 같은 방식으로 쓴다
   const messageOf = (err) => {
@@ -150,7 +155,7 @@ export default function FreeDetailPage({ user }) {
     setConfirmOpen(false)
     try {
       await removeFreePost(postId)
-      navigate('/free', { replace: true })
+      navigate(listUrl, { replace: true })
     } catch (err) {
       setActionError(messageOf(err))
     }
@@ -251,7 +256,7 @@ export default function FreeDetailPage({ user }) {
     return (
       <div className="free-detail">
         <p className="muted free-detail__back">
-          <Link to="/free">← 자유게시판</Link>
+          <Link to={listUrl}>← 자유게시판</Link>
         </p>
         <div className="card">
           <ErrorMessage message={error} />
@@ -263,7 +268,7 @@ export default function FreeDetailPage({ user }) {
   return (
     <div className="free-detail">
       <p className="muted free-detail__back">
-        <Link to="/free">← 자유게시판</Link>
+        <Link to={listUrl}>← 자유게시판</Link>
       </p>
 
       <article className="card">
@@ -328,7 +333,7 @@ export default function FreeDetailPage({ user }) {
         <ErrorMessage message={actionError} />
 
         <div className="free-detail__actions">
-          <Link to="/free" className="btn btn--ghost btn--sm">
+          <Link to={listUrl} className="btn btn--ghost btn--sm">
             목록
           </Link>
 
