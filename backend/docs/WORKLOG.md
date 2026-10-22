@@ -76,7 +76,7 @@ vo/XxxVO (테이블 한 행, Lombok @Data)      dto/ (요청·응답, Lombok @Da
 계층별(`controller/` · `service/` · `dao/` · `vo/` · `dto/`)에서
 **기능별 + 그 아래 계층**으로 바꿨다. 기능 12개 —
 `auth` · `user` · `ban` · `recommend` · `recipe` · `history` · `like` · `game` ·
-`review` · `notice` · `catalog` · `health`.
+`review` · `Notice` · `catalog` · `health`.
 
 - 자바 101개 파일 이동 · package 선언과 import 전부 교체
 - 매퍼 XML 9개의 `namespace` 도 새 경로로 (예: `com.meokji.api.ban.dao.BanDAO`)

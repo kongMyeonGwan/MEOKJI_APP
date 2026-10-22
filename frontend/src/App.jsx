@@ -130,6 +130,19 @@ export default function App() {
     return <Navigate to="/login" />
   }
 
+  // 관리자만 볼 수 있는 화면을 감싼다.
+  // 로그인 안 했으면 로그인 화면으로, 로그인했지만 관리자가 아니면 공지 목록으로 보낸다.
+  // (서버도 한 번 더 막는다. 이건 화면에서 길을 안내하는 것뿐이다)
+  const adminOnly = (page) => {
+    if (!user) {
+      return <Navigate to="/login" />
+    }
+    if (!user.is_admin) {
+      return <Navigate to="/notice" replace />
+    }
+    return page
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -178,10 +191,10 @@ export default function App() {
           <Route path="reviews/:reviewId" element={<ReviewDetailPage />} />
           <Route path="reviews/write" element={loginOnly(<ReviewWritePage />)} />
 
-          {/* 공지사항. 보기는 누구나, 작성 · 수정 · 삭제는 관리자만 (지금은 퍼블리싱만) */}
-          <Route path="notice" element={<NoticeListPage />} />
-          <Route path="notice/write" element={<NoticeWritePage />} />
-          <Route path="notice/:noticeId" element={<NoticeDetailPage />} />
+          {/* 공지사항. 보기는 누구나, 작성 · 수정 · 삭제는 관리자만 */}
+          <Route path="notice" element={<NoticeListPage user={user} />} />
+          <Route path="notice/write" element={adminOnly(<NoticeWritePage />)} />
+          <Route path="notice/:noticeId" element={<NoticeDetailPage user={user} />} />
 
           {/* 자유게시판. 후기와 달리 아무 주제나 쓸 수 있다. 보는 것은 로그인 없이도 된다 */}
           <Route path="free" element={<FreeListPage user={user} />} />

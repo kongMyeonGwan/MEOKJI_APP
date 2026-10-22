@@ -182,3 +182,5 @@ COMMIT;
 --
 -- 4) 게시판별 댓글 수
 -- SELECT board_type, COUNT(*) FROM post_comments GROUP BY board_type;
+
+CREATE INDEX idx_post_comments_post ON post_comments (board_type, post_id, use_yn, created_at);
