@@ -164,7 +164,7 @@ export default function SettingsPage({ user, onLogout, theme, onThemeChange, not
             <p className="settings__label">못 먹는 재료</p>
             <p className="settings__desc muted">알레르기 재료는 추천에서 완전히 제외돼요.</p>
           </div>
-          <Link to="/mypage" className="btn btn--ghost btn--sm">
+          <Link to="/BansPage" className="btn btn--ghost btn--sm">
             관리하기
           </Link>
         </div>

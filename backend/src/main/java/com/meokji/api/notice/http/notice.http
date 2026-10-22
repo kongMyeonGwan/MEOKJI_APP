@@ -1,0 +1,195 @@
+@host = localhost:8090
+
+# ──────────────────────────────────────────────────────────────
+# 시작 전에 확인할 것 (아래 값이 실제와 다르면 고친다)
+#  1. 비밀번호      : gradlew seedDemo 가 만든 계정의 비밀번호 (db/02_seed.sql 또는 SEED_PASSWORD)
+#  2. 토큰 칸 이름  : 로그인 응답에서 토큰이 담긴 칸 (access_token 으로 가정했다)
+#  3. 헤더 모양     : Authorization: Bearer 토큰  으로 가정했다
+#  4. 로그인 요청 칸: email / password 로 가정했다
+# ──────────────────────────────────────────────────────────────
+
+
+### 0. 서버와 DB 상태 (기대 결과 : 200, status ok)
+GET http://{{host}}/api/health
+
+
+### 1. 공지 목록 - 로그인 없이 (기대 결과 : 200, 비어 있어도 정상)
+GET http://{{host}}/api/notices
+
+
+### 2. 공지 작성 - 로그인 안 함 (기대 결과 : 401)
+POST http://{{host}}/api/notices
+Content-Type: application/json
+
+{
+  "title": "로그인 없이 쓰기",
+  "content": "막혀야 정상"
+}
+
+
+### 3. 일반 회원 로그인 (기대 결과 : 200, 토큰 발급)
+# @name loginUser
+POST http://{{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "minji@example.com",
+  "password": "여기에_비밀번호"
+}
+
+
+### 4. 공지 작성 - 일반 회원 (기대 결과 : 403)
+POST http://{{host}}/api/notices
+Content-Type: application/json
+Authorization: Bearer {{loginUser.response.body.access_token}}
+
+{
+  "title": "일반 회원이 쓰기",
+  "content": "막혀야 정상"
+}
+
+
+### 5. 관리자 로그인 (기대 결과 : 200, 토큰 발급)
+# @name loginAdmin
+POST http://{{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@meokji.com",
+  "password": "여기에_비밀번호"
+}
+
+
+### 6. 공지 작성 - 관리자, 일반 공지 (기대 결과 : 201, id / view_count 0 / pinned false / created_at)
+# @name createNotice
+POST http://{{host}}/api/notices
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
+
+{
+  "title": "REST Client 로 쓴 공지",
+  "content": "첫째 줄\n둘째 줄"
+}
+
+
+### 7. 공지 작성 - 관리자, 상단 고정 (기대 결과 : 201, pinned true)
+# @name createPinned
+POST http://{{host}}/api/notices
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
+
+{
+  "title": "상단에 고정할 공지",
+  "content": "목록 맨 위에 와야 한다",
+  "pinned": true
+}
+
+
+### 8. 공지 목록 (기대 결과 : 200, 고정 공지가 맨 위 → 그 다음 최신순)
+GET http://{{host}}/api/notices
+
+
+### 9. 공지 목록 - 페이지 나누기 (기대 결과 : 200, 한 페이지에 1건씩)
+GET http://{{host}}/api/notices?page=1&size=1
+
+
+### 10. 공지 목록 - 잘못된 페이지 번호 (기대 결과 : 400)
+GET http://{{host}}/api/notices?page=0
+
+
+### 11. 방금 쓴 공지 상세 (기대 결과 : 200, 조회수는 안 올라야 한다)
+GET http://{{host}}/api/notices/{{createNotice.response.body.id}}
+
+
+### 12. 없는 공지 상세 (기대 결과 : 404)
+GET http://{{host}}/api/notices/999999
+
+
+### 13. 조회수 +1 - 로그인 없이 (기대 결과 : 200, 숫자 1)
+POST http://{{host}}/api/notices/{{createNotice.response.body.id}}/view
+
+
+### 14. 조회수 +1 한 번 더 (기대 결과 : 200, 숫자 2)
+POST http://{{host}}/api/notices/{{createNotice.response.body.id}}/view
+
+
+### 15. 상세 다시 (기대 결과 : 200, view_count 2)
+GET http://{{host}}/api/notices/{{createNotice.response.body.id}}
+
+
+### 16. 공지 작성 - 입력값 오류 (기대 결과 : 400, 제목 / 내용 메시지)
+POST http://{{host}}/api/notices
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
+
+{
+  "title": "",
+  "content": "   "
+}
+
+
+### 17. 공지 수정 - 관리자 (기대 결과 : 200, 바뀐 제목, pinned true)
+PUT http://{{host}}/api/notices/{{createNotice.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
+
+{
+  "title": "REST Client 로 수정한 공지",
+  "content": "수정된 내용입니다.",
+  "pinned": true
+}
+
+
+### 18. 공지 수정 - 일반 회원 (기대 결과 : 403)
+PUT http://{{host}}/api/notices/{{createNotice.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser.response.body.access_token}}
+
+{
+  "title": "남이 고치기",
+  "content": "막혀야 정상"
+}
+
+
+### 19. 공지 수정 - 없는 공지 (기대 결과 : 404)
+PUT http://{{host}}/api/notices/999999
+Content-Type: application/json
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
+
+{
+  "title": "없는 공지",
+  "content": "404 여야 정상"
+}
+
+
+### 20. 공지 삭제 - 일반 회원 (기대 결과 : 403)
+DELETE http://{{host}}/api/notices/{{createNotice.response.body.id}}
+Authorization: Bearer {{loginUser.response.body.access_token}}
+
+
+### 21. 공지 삭제 - 관리자 (기대 결과 : 204)
+# DBeaver 에서 행이 남아 있고 use_yn = 'N' 인지도 확인한다
+DELETE http://{{host}}/api/notices/{{createNotice.response.body.id}}
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
+
+
+### 22. 같은 공지 한 번 더 삭제 (기대 결과 : 404)
+DELETE http://{{host}}/api/notices/{{createNotice.response.body.id}}
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
+
+
+### 23. 삭제한 공지 상세 (기대 결과 : 404)
+GET http://{{host}}/api/notices/{{createNotice.response.body.id}}
+
+
+### 24. 삭제한 공지 조회수 +1 (기대 결과 : 404)
+POST http://{{host}}/api/notices/{{createNotice.response.body.id}}/view
+
+
+### 25. 공지 목록 (기대 결과 : 200, 삭제한 공지는 안 보이고 고정 공지만 남음)
+GET http://{{host}}/api/notices
+
+
+### 26. 뒷정리 - 상단 고정 공지 삭제 (기대 결과 : 204)
+DELETE http://{{host}}/api/notices/{{createPinned.response.body.id}}
+Authorization: Bearer {{loginAdmin.response.body.access_token}}
