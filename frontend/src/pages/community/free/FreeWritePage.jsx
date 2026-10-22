@@ -8,6 +8,13 @@ const CONTENT_MAX = 2000 // 본문 최대 글자 수
 
 // 자유게시판 글쓰기 (/free/write). 로그인해야 들어올 수 있다.
 //
+// user 를 받지 않는다. App.jsx 의 라우터가 loginOnly 로 이 화면을 감싸서,
+// 로그인 안 한 사람은 여기까지 오지 못하고 로그인 화면으로 보내진다.
+// 글쓴이가 누구인지도 받을 필요가 없다 — 서버가 토큰에서 꺼내 쓴다.
+//
+// is_mine 을 쓸 일도 없다. 아직 글이 없으니 주인을 따질 것이 없고,
+// 등록하고 나면 상세 화면(FreeDetailPage)으로 넘어가 거기서 따진다.
+//
 // 레시피 후기 글쓰기(/community/write)와 다른 점
 //   후기는 "공유할 내 기록" 드롭다운에서 식사 기록을 하나 골라야 했지만,
 //   여기는 고를 것이 없다. 제목 · 내용 · 사진(선택) 세 칸뿐이다.
@@ -20,7 +27,8 @@ export default function FreeWritePage() {
 
   const navigate = useNavigate()
 
-  // 미리보기 주소가 바뀌거나 화면을 떠나면, 쓰던 주소를 지워 메모리를 돌려준다
+  // 미리보기 주소가 바뀌거나 화면을 떠나면, 쓰던 주소를 지워 메모리를 돌려준다.
+  // return 으로 넘긴 함수가 그 '치우는 일' 이다 (리액트가 알아서 불러준다)
   useEffect(() => {
     return () => {
       if (photoUrl) {
@@ -68,7 +76,10 @@ export default function FreeWritePage() {
         content: values.content,
       })
 
-      // 2. 사진이 있으면 따로 올린다 (글이 있어야 어디에 붙일지 정해진다)
+      // 2. 사진이 있으면 따로 올린다 (글이 있어야 어디에 붙일지 정해진다).
+      //    글과 사진을 한 번에 못 보내는 이유 — 사진은 FormData, 글은 JSON 이라
+      //    보내는 모양이 다르고, 서버의 첨부 주소가 /{글번호}/file 이라 글 번호가
+      //    먼저 나와야 한다
       if (file) {
         await uploadFreePostFile(created.id, file)
       }

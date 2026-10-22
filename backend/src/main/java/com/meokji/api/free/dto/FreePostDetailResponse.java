@@ -27,7 +27,19 @@ public class FreePostDetailResponse {
     private final Integer commentCount;         // 아래 comments 의 개수
     private final boolean hasFile;
     private final FreeFileResponse file;        // 첨부가 없으면 null — 화면이 사진 자리를 안 그린다
-    private final Boolean isMine;               // Boolean 인 이유는 FreeCommentResponse 참고
+    /**
+     * 이 글을 로그인한 사람이 썼는지. 화면이 글 수정 · 삭제 · 사진 버튼을
+     * 보일지 정하는 데 쓴다.
+     *
+     * 아래 comments 안에도 is_mine 이 하나씩 따로 있다. 이쪽은 글쓴이 기준,
+     * 그쪽은 그 댓글을 쓴 사람 기준이라 값이 다를 수 있다 — 남의 글에 내가
+     * 댓글을 달면 이 칸은 false 인데 그 댓글의 칸은 true 다. 그래서 한 칸으로
+     * 합치지 못한다.
+     *
+     * boolean 이 아니라 Boolean 인 이유는 FreeCommentResponse 참고.
+     */
+    private final Boolean isMine;
+
     private final List<FreeCommentResponse> comments; // 오래된 순
     private final String createdAt;
     private final String updatedAt;
