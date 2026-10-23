@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getReviewPosts } from '../../../api/reviews'
 import { Link } from 'react-router-dom'
 import ReviewCard from './components/ReviewCard'
 import CommunityTabs from '../components/CommunityTabs'
 import Pagination from '../../../components/common/Pagination'
-import { SAMPLE_REVIEWS } from '../../../data/sampleBoard'
 
 // 레시피리뷰 목록 (/community).
 //
@@ -21,9 +21,22 @@ import { SAMPLE_REVIEWS } from '../../../data/sampleBoard'
 //   - 로딩 · 오류 · 빈 목록 상태를 붙인다 (CODE_STYLE 3번)
 export default function ReviewListPage() {
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState("")
+  const [reviews, setReviews] = useState([])
+  const [totalPages, setTotalPages] = useState(0)
 
-  const reviews = SAMPLE_REVIEWS
-  const totalPages = 3 // 가데이터. 버튼 모양만 보여준다
+  useEffect(() => {
+    const loadReviews = async () => {
+      const data = await getReviewPosts(search, page)
+      console.log("API 페이지 정보:", data.page, data.total_pages)
+
+      setReviews(data.items)
+      setTotalPages(data.total_pages)
+      console.log("현재 페이지:", page, "전체 페이지:", data.total_pages)
+    }
+
+    loadReviews()
+  }, [page, search])
 
   return (
     <div className="card">
@@ -41,7 +54,16 @@ export default function ReviewListPage() {
 
       {/* <CommunityTabs /> */}
 
-      <input type="search" className="community__search" placeholder="제목이나 내용으로 검색" />
+      <input
+        type="search"
+        className="community__search"
+        placeholder="제목이나 내용으로 검색"
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value)
+          setPage(1)
+        }}
+      />
 
       <div className="divided community__list">
         {reviews.map((review) => (
