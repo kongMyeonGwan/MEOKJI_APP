@@ -108,7 +108,7 @@ export default function ReviewWritePage() {
       return
     }
 
-    if (selected.recipe_review_id) {
+    if (selected.recipeReviewId) {
       setError('이미 작성한 레시피입니다.')
       return
     }
@@ -197,13 +197,13 @@ export default function ReviewWritePage() {
             <select value={selected ? historyId : ''} onChange={(e) => setHistoryId(e.target.value)}>
               <option value="">기록을 선택해주세요</option>
               {histories.map((history) => (
-                <option key={history.id} value={history.id} disabled={Boolean(history.recipe_review_id)}>
-                  {formatDate(history.selected_at)} · {history.food_name} — {history.recipe_name}
-                  {history.recipe_review_id ? ' (이미 작성한 레시피입니다.)' : ''}
+                <option key={history.id} value={history.id} disabled={Boolean(history.recipeReviewId)}>
+                  {formatDate(history.selectedAt)} · {history.foodName} — {history.recipeName}
+                  {history.recipeReviewId ? ' (이미 작성한 레시피입니다.)' : ''}
                 </option>
               ))}
             </select>
-            {selected?.recipe_review_id && (
+            {selected?.recipeReviewId && (
               <p className="write__help" role="status">이미 작성한 레시피입니다.</p>
             )}
             <p className="muted write__help">선택한 기록의 레시피와 재료가 게시글에 함께 표시됩니다.</p>
@@ -251,7 +251,7 @@ export default function ReviewWritePage() {
           <ErrorMessage message={error} />
 
           <div className="write__actions">
-            <button type="submit" className="btn" disabled={saving || Boolean(selected?.recipe_review_id)}>
+            <button type="submit" className="btn" disabled={saving || Boolean(selected?.recipeReviewId)}>
               {saving ? '등록 중...' : '등록'}
             </button>
           </div>

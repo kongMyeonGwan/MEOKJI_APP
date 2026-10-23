@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Modal from '../../../components/common/Modal'
 import ReviewCommentItem from './components/CommentItem'
 import ReviewAttachment from './components/ReviewAttachment'
+import RecipeView from '../../../components/common/RecipeView'
 import Loading from '../../../components/common/Loading'
 import ErrorMessage from '../../../components/common/ErrorMessage'
 import {
@@ -22,29 +23,14 @@ const COMMENT_MAX = 1000
 export default function ReviewDetailPage({ user }) {
   const { reviewId } = useParams()
 
-<<<<<<< HEAD
   const [review, setReview] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionError, setActionError] = useState('')
-=======
-// 게시글 상세 (/community/3) + 좋아요 + 댓글.
-//
-// 퍼블리싱만 된 화면이다. 가데이터를 그리고, 주소의 번호와 상관없이 같은 글이 나온다.
-// 수정 폼 열고 닫기만 동작하고 버튼들은 아직 아무 일도 하지 않는다.
-//
-// TODO(게시판 담당)
-//   - useParams 로 :reviewId 를 꺼내 getReview(reviewId) 로 받아온다
-//   - 조회수를 countReviewView(reviewId) 로 올린다
-//   - 좋아요 · 댓글 등록/수정/삭제 · 글 수정/삭제 · 사진 첨부를 붙인다
-//   - 로그인 여부로 버튼을 가린다 (App.jsx 의 <Route> 에서 user={user} 를 넘겨받는다)
-//   - 내 글인지는 서버가 주는 isMine 으로 판단한다
-export default function ReviewDetailPage() {
-  const review = SAMPLE_REVIEW_DETAIL
-  const comments = SAMPLE_REVIEW_DETAIL.comments
->>>>>>> develop
+
 
   const [editing, setEditing] = useState(false)
+  const [editSaving, setEditSaving] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editContent, setEditContent] = useState('')
   const [editMealId, setEditMealId] = useState('')
@@ -90,7 +76,7 @@ export default function ReviewDetailPage() {
         // 실패해도 글은 이미 보이니 화면을 막지 않는다.
         try {
           const count = await countReviewView(reviewId)
-          if (active) setReview({ ...data, view_count: count })
+          if (active) setReview((current) => ({ ...current, viewCount: count }))
         } catch (ignore) {
           // 조회수만 못 올린 것이라 넘어간다
         }
@@ -114,6 +100,7 @@ export default function ReviewDetailPage() {
 
   const handleEditSave = async (e) => {
     e.preventDefault()
+    if (editSaving) return
 
     if (!editTitle.trim()) {
       setActionError('제목을 입력해 주세요')
@@ -125,6 +112,7 @@ export default function ReviewDetailPage() {
     }
 
     setActionError('')
+    setEditSaving(true)
     try {
       const data = await updateReview(reviewId, {
         title: editTitle.trim(),
@@ -135,6 +123,8 @@ export default function ReviewDetailPage() {
       setEditing(false)
     } catch (err) {
       setActionError(messageOf(err))
+    } finally {
+      setEditSaving(false)
     }
   }
 
@@ -265,12 +255,13 @@ export default function ReviewDetailPage() {
               />
             </label>
             <div className="review__edit-actions">
-              <button type="submit" className="btn btn--sm">
-                저장
+              <button type="submit" className="btn btn--sm" disabled={editSaving}>
+                {editSaving ? '저장 중...' : '저장'}
               </button>
               <button
                 type="button"
                 className="btn btn--ghost btn--sm"
+                disabled={editSaving}
                 onClick={() => setEditing(false)}
               >
                 취소
@@ -289,19 +280,15 @@ export default function ReviewDetailPage() {
               {review.foodName && <span className="tag">{review.foodName}</span>}
             </div>
             <div className="review__content">{review.content}</div>
-            {/* 사진은 글에 붙는 것이라 글의 is_mine 을 넘긴다.
-                  댓글의 is_mine 과는 아무 상관이 없다 */}
+            {/* 사진 관리 권한은 글의 작성 여부로 판단한다. */}
             <ReviewAttachment
               file={review.file}
-              isMine={review.is_mine}
+              isMine={review.isMine}
               busy={fileBusy}
               error={fileError}
               onPick={handlePickFile}
               onRemove={handleRemoveFile}
             />
-          </>
-=======
-            <ReviewAttachment file={review.file} />
           </>
         )}
 
@@ -317,18 +304,7 @@ export default function ReviewDetailPage() {
             ♥ {review.likeCount}
           </button>
 
-          {/* 내 글이면 수정/삭제 버튼 */}
-          {review.isMine && !editing && (
-            <span className="review__owner-actions">
-              <button type="button" className="btn btn--ghost btn--sm" onClick={() => setEditing(true)}>
-                수정
-              </button>
-              <button type="button" className="btn btn--ghost btn--sm review__danger">
-                삭제
-              </button>
-            </span>
->>>>>>> develop
-        )}
+        </div>
 
         <ErrorMessage message={actionError} />
 
@@ -337,10 +313,8 @@ export default function ReviewDetailPage() {
             목록
           </Link>
 
-          {/* 내가 쓴 글일 때만 수정 · 삭제. 여기는 글의 is_mine 이다 —
-                이 글에 달린 댓글들의 is_mine 과는 따로 논다.
-                수정 중(editing)에는 폼 안에 저장 · 취소가 따로 있으니 숨긴다 */}
-          {review.is_mine && !editing && (
+          {/* 내 글에만 수정·삭제 버튼을 표시한다. */}
+          {review.isMine && !editing && (
             <span className="review__owner-actions">
               <button type="button" className="btn btn--ghost btn--sm" onClick={handleEditOpen}>
                 수정
