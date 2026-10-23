@@ -18,6 +18,8 @@ import BudgetPage from './pages/recommend/BudgetPage'
 import SearchPage from './pages/recommend/SearchPage'
 import RecipePage from './pages/recommend/RecipePage'
 
+import BansPage from './pages/bans/BansPage'
+
 import GamePage from './pages/game/GamePage'
 import WorldCupPage from './pages/game/WorldCupPage'
 import BalancePage from './pages/game/BalancePage'
@@ -130,6 +132,19 @@ export default function App() {
     return <Navigate to="/login" />
   }
 
+  // 관리자만 볼 수 있는 화면을 감싼다.
+  // 로그인 안 했으면 로그인 화면으로, 로그인했지만 관리자가 아니면 공지 목록으로 보낸다.
+  // (서버도 한 번 더 막는다. 이건 화면에서 길을 안내하는 것뿐이다)
+  const adminOnly = (page) => {
+    if (!user) {
+      return <Navigate to="/login" />
+    }
+    if (!user.isAdmin) {
+      return <Navigate to="/notice" replace />
+    }
+    return page
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -161,6 +176,9 @@ export default function App() {
           <Route path="search" element={<SearchPage />} />
           <Route path="recipe/:foodName" element={<RecipePage user={user} />} />
 
+          {/* 못 먹는 재료 */}
+          <Route path="BansPage" element={loginOnly(<BansPage />)} />
+
           {/* 메뉴 게임 */}
           <Route path="game" element={<GamePage />} />
           <Route path="game/worldcup" element={<WorldCupPage user={user} />} />
@@ -175,13 +193,13 @@ export default function App() {
           {/* 레시피리뷰 · 공지는 퍼블리싱만 돼 있다. 로그인한 사람(user)을 아직 쓰지 않아
               props 를 넘기지 않는다 — 기능 담당이 user={user} 를 붙이는 자리다 */}
           <Route path="reviews" element={<ReviewListPage />} />
-          <Route path="reviews/:reviewId" element={<ReviewDetailPage />} />
+          <Route path="reviews/:reviewId" element={<ReviewDetailPage user={user} />} />
           <Route path="reviews/write" element={loginOnly(<ReviewWritePage />)} />
 
-          {/* 공지사항. 보기는 누구나, 작성 · 수정 · 삭제는 관리자만 (지금은 퍼블리싱만) */}
-          <Route path="notice" element={<NoticeListPage />} />
-          <Route path="notice/write" element={<NoticeWritePage />} />
-          <Route path="notice/:noticeId" element={<NoticeDetailPage />} />
+          {/* 공지사항. 보기는 누구나, 작성 · 수정 · 삭제는 관리자만 */}
+          <Route path="notice" element={<NoticeListPage user={user} />} />
+          <Route path="notice/write" element={adminOnly(<NoticeWritePage />)} />
+          <Route path="notice/:noticeId" element={<NoticeDetailPage user={user} />} />
 
           {/* 자유게시판. 후기와 달리 아무 주제나 쓸 수 있다. 보는 것은 로그인 없이도 된다 */}
           <Route path="free" element={<FreeListPage user={user} />} />

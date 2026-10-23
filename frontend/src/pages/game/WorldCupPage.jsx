@@ -78,8 +78,8 @@ const fetchCandidates = async () => {
   while (items.length < MAX_CANDIDATES) {
     // 이미 받은 것 중 이번 최소 금액 이상인 메뉴만 다시 나올 수 있다
     const seen = items
-      .filter((food) => food.estimated_cost >= minCost)
-      .map((food) => food.food_name)
+      .filter((food) => food.estimatedCost >= minCost)
+      .map((food) => food.foodName)
       .slice(-MAX_EXCLUDE)
 
     const data = await getRecommendations({
@@ -89,8 +89,8 @@ const fetchCandidates = async () => {
       exclude: seen,
     })
     // 혹시 이미 받은 메뉴가 또 오면 뺀다
-    const names = items.map((food) => food.food_name)
-    const page = (data.items || []).filter((food) => !names.includes(food.food_name))
+    const names = items.map((food) => food.foodName)
+    const page = (data.items || []).filter((food) => !names.includes(food.foodName))
 
     if (items.length === 0) {
       condition = data.condition // 첫 번째 것만 기록에 남긴다 (금액 조건이 안 붙은 문구)
@@ -100,7 +100,7 @@ const fetchCandidates = async () => {
     }
 
     items = [...items, ...page]
-    minCost = Math.max(...page.map((food) => food.estimated_cost))
+    minCost = Math.max(...page.map((food) => food.estimatedCost))
   }
 
   return { items: items, condition: condition }
@@ -201,7 +201,7 @@ export default function WorldCupPage({ user }) {
 
     // 우승이 정해졌으면
     if (nextWinners.length === 1) {
-      const champion = nextWinners[0].food_name
+      const champion = nextWinners[0].foodName
       markPicked(champion) // AI 추천 기록에 "이걸로 정함" 표시
       // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값 (브라우저에만 저장한다)
       saveResult('worldcup', '음식 이상형 월드컵', champion, `/recipe/${champion}`)
@@ -209,12 +209,12 @@ export default function WorldCupPage({ user }) {
       // 명예의 전당에 남긴다 (로그인했을 때만). 결승에서 진 쪽도 같이 보내 결승 진출 횟수를 센다
       if (user) {
         const runnerUp = food === round[index] ? round[index + 1] : round[index]
-        recordWorldcupWin({ foodName: champion, runnerUp: runnerUp.food_name, roundSize: size }).then(() => {
+        recordWorldcupWin({ foodName: champion, runnerUp: runnerUp.foodName, roundSize: size }).then(() => {
           setRankKey((key) => key + 1)
         })
       }
       setLiked(false)
-      checkLiked(nextWinners[0].food_name)
+      checkLiked(nextWinners[0].foodName)
     }
   }
 
@@ -297,12 +297,12 @@ export default function WorldCupPage({ user }) {
         <div className="card wc wc--done">
           {/* 오른쪽 위: 명예의 전당 바로가기. 이번 우승이 저장되면 순위를 새로 받아온다 */}
           <div className="wc__done-corner">
-            <HallOfFameButton highlight={champion.food_name} refreshKey={rankKey} />
+            <HallOfFameButton highlight={champion.foodName} refreshKey={rankKey} />
           </div>
 
           <p className="wc__crown">🏆</p>
           <p className="wc__round">오늘의 우승 메뉴</p>
-          <h2 className="wc__champion">{champion.food_name}</h2>
+          <h2 className="wc__champion">{champion.foodName}</h2>
 
           <div className="wc__champion-thumb">
             <FoodThumb item={champion} size="lg" />
@@ -310,15 +310,15 @@ export default function WorldCupPage({ user }) {
 
           <p className="muted wc__champion-reason">{champion.reason}</p>
           <p className="wc__champion-meta">
-            <span className="price">{formatPrice(champion.estimated_cost)}</span> ·{' '}
-            {formatMinutes(champion.cook_time_minutes)} · 난이도 {champion.difficulty}
+            <span className="price">{formatPrice(champion.estimatedCost)}</span> ·{' '}
+            {formatMinutes(champion.cookTimeMinutes)} · 난이도 {champion.difficulty}
           </p>
 
           <div className="wc__actions">
-            <Link to={`/recipe/${champion.food_name}`} className="btn">
+            <Link to={`/recipe/${champion.foodName}`} className="btn">
               레시피 보기
             </Link>
-            <button type="button" className="btn btn--ghost" onClick={() => handleLike(champion.food_name)}>
+            <button type="button" className="btn btn--ghost" onClick={() => handleLike(champion.foodName)}>
               {liked ? '♥ 찜 해제' : '♡ 찜하기'}
             </button>
             <button type="button" className="btn btn--ghost game-btn--plain" onClick={backToPicker}>
@@ -368,12 +368,12 @@ export default function WorldCupPage({ user }) {
 
       <div className="wc__match">
         {[left, right].map((food, i) => (
-          <button key={food.food_name} type="button" className="card wc__pick" onClick={() => choose(food)}>
+          <button key={food.foodName} type="button" className="card wc__pick" onClick={() => choose(food)}>
             <FoodThumb item={food} size="lg" />
-            <strong className="wc__pick-name">{food.food_name}</strong>
+            <strong className="wc__pick-name">{food.foodName}</strong>
             <span className="muted wc__pick-reason">{food.reason}</span>
             <span className="wc__pick-meta">
-              <span className="price">{formatPrice(food.estimated_cost)}</span> · {formatMinutes(food.cook_time_minutes)}
+              <span className="price">{formatPrice(food.estimatedCost)}</span> · {formatMinutes(food.cookTimeMinutes)}
             </span>
             {/* 두 카드 사이의 VS 글자 (왼쪽 카드에만 붙인다) */}
             {i === 0 && <span className="wc__vs">VS</span>}

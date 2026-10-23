@@ -75,21 +75,21 @@ class RecipeFixtureTest {
         assertThat(actual.propertyNames())
                 .containsExactlyInAnyOrderElementsOf(want.propertyNames());
 
-        assertThat(actual.get("food_name")).isEqualTo(want.get("food_name"));
-        assertThat(actual.get("recipe_name")).isEqualTo(want.get("recipe_name"));
-        assertThat(actual.get("estimated_cost")).isEqualTo(want.get("estimated_cost"));
+        assertThat(actual.get("foodName")).isEqualTo(want.get("foodName"));
+        assertThat(actual.get("recipeName")).isEqualTo(want.get("recipeName"));
+        assertThat(actual.get("estimatedCost")).isEqualTo(want.get("estimatedCost"));
         assertThat(actual.get("category")).isEqualTo(want.get("category"));
         assertThat(actual.get("art")).isEqualTo(want.get("art"));
-        assertThat(actual.get("image_url")).isEqualTo(want.get("image_url"));
+        assertThat(actual.get("imageUrl")).isEqualTo(want.get("imageUrl"));
 
         // 조리 정보와 순서
-        assertThat(actual.get("recipe_json")).isEqualTo(want.get("recipe_json"));
+        assertThat(actual.get("recipeJson")).isEqualTo(want.get("recipeJson"));
 
         // 재료. grams 의 정수/소수 구분까지 같아야 한다 -
         // quantity 가 정수면 grams 도 정수(80), 소수면 소수(625.0)로 내보낸다.
-        assertThat(actual.get("ingredients_json")).isEqualTo(want.get("ingredients_json"));
+        assertThat(actual.get("ingredientsJson")).isEqualTo(want.get("ingredientsJson"));
 
-        assertThat(actual.get("substitutes_json")).isEqualTo(want.get("substitutes_json"));
+        assertThat(actual.get("substitutesJson")).isEqualTo(want.get("substitutesJson"));
     }
 
     @Test
@@ -99,12 +99,12 @@ class RecipeFixtureTest {
             JsonNode want = fixture("recipe_" + name).get("body");
             JsonNode actual = recipe(name);
 
-            assertThat(actual.get("recipe_json")).as("%s 조리 정보", name)
-                    .isEqualTo(want.get("recipe_json"));
-            assertThat(actual.get("ingredients_json")).as("%s 재료", name)
-                    .isEqualTo(want.get("ingredients_json"));
-            assertThat(actual.get("estimated_cost")).as("%s 예상비용", name)
-                    .isEqualTo(want.get("estimated_cost"));
+            assertThat(actual.get("recipeJson")).as("%s 조리 정보", name)
+                    .isEqualTo(want.get("recipeJson"));
+            assertThat(actual.get("ingredientsJson")).as("%s 재료", name)
+                    .isEqualTo(want.get("ingredientsJson"));
+            assertThat(actual.get("estimatedCost")).as("%s 예상비용", name)
+                    .isEqualTo(want.get("estimatedCost"));
         }
     }
 
@@ -141,9 +141,9 @@ class RecipeFixtureTest {
             assertThat(recipeBook.has(name)).as("%s 레시피가 있어야 한다", name).isTrue();
 
             JsonNode actual = recipe(name);
-            assertThat(actual.get("recipe_json").get("steps").isEmpty())
+            assertThat(actual.get("recipeJson").get("steps").isEmpty())
                     .as("%s 조리 순서", name).isFalse();
-            assertThat(actual.get("ingredients_json").isEmpty())
+            assertThat(actual.get("ingredientsJson").isEmpty())
                     .as("%s 재료", name).isFalse();
             built++;
         }
@@ -165,12 +165,12 @@ class RecipeFixtureTest {
 
         String auth = "Bearer " + MAPPER.readTree(
                 login.getResponse().getContentAsString(StandardCharsets.UTF_8))
-                .get("access_token").asString();
+                .get("accessToken").asString();
 
         MvcResult created = mvc.perform(post("/api/bans")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ingredient_name\":\"두부\",\"ban_type\":\"ALLERGY\"}"))
+                        .content("{\"ingredientName\":\"두부\",\"banType\":\"ALLERGY\"}"))
                 .andReturn();
 
         long banId = MAPPER.readTree(
@@ -186,11 +186,11 @@ class RecipeFixtureTest {
                     result.getResponse().getContentAsString(StandardCharsets.UTF_8));
 
             // 목록에서 빠졌다
-            assertThat(actual.get("ingredients_json").toString()).doesNotContain("두부");
+            assertThat(actual.get("ingredientsJson").toString()).doesNotContain("두부");
 
             // 순서 맨 앞에 안내가 붙었다. 순서 중간에 그 재료가 나오는데 목록에
             // 없으면 따라 만드는 사람이 멈춘다.
-            String firstStep = actual.get("recipe_json").get("steps").get(0).asString();
+            String firstStep = actual.get("recipeJson").get("steps").get(0).asString();
             assertThat(firstStep).contains("알레르기 재료").contains("두부");
         } finally {
             mvc.perform(delete("/api/bans/" + banId).header("Authorization", auth))
@@ -209,12 +209,12 @@ class RecipeFixtureTest {
 
         String auth = "Bearer " + MAPPER.readTree(
                 login.getResponse().getContentAsString(StandardCharsets.UTF_8))
-                .get("access_token").asString();
+                .get("accessToken").asString();
 
         MvcResult created = mvc.perform(post("/api/bans")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ingredient_name\":\"돼지고기\",\"ban_type\":\"DISLIKE\"}"))
+                        .content("{\"ingredientName\":\"돼지고기\",\"banType\":\"DISLIKE\"}"))
                 .andReturn();
 
         long banId = MAPPER.readTree(
@@ -229,10 +229,10 @@ class RecipeFixtureTest {
                             .getContentAsString(StandardCharsets.UTF_8));
 
             // 재료는 그대로 있다. 빼버리면 요리가 성립하지 않는다.
-            assertThat(actual.get("ingredients_json").toString()).contains("돼지고기");
+            assertThat(actual.get("ingredientsJson").toString()).contains("돼지고기");
 
             // 대신 바꿀 방법을 적어준다
-            JsonNode substitutes = actual.get("substitutes_json");
+            JsonNode substitutes = actual.get("substitutesJson");
             assertThat(substitutes.isEmpty()).isFalse();
             assertThat(substitutes.get(0).get("original").asString()).isEqualTo("돼지고기");
             assertThat(substitutes.get(0).get("substitute").asString()).isEqualTo("닭고기");

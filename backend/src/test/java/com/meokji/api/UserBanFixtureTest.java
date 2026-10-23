@@ -54,7 +54,7 @@ class UserBanFixtureTest {
                                 + "\"password\":\"" + MEMBER_PASSWORD + "\"}"))
                 .andReturn();
 
-        auth = "Bearer " + body(login).get("access_token").asString();
+        auth = "Bearer " + body(login).get("accessToken").asString();
     }
 
     private JsonNode fixture(String name) throws Exception {
@@ -89,18 +89,18 @@ class UserBanFixtureTest {
         assertThat(actual.get("latitude")).isEqualTo(want.get("latitude"));
         assertThat(actual.get("longitude")).isEqualTo(want.get("longitude"));
 
-        // id · created_at 은 DB 가 정하는 값이라 모양만 본다 (MemberDbValues 참고)
+        // id · createdAt 은 DB 가 정하는 값이라 모양만 본다 (MemberDbValues 참고)
         MemberDbValues.assertShape(actual);
         assertThat(actual.get("email")).isEqualTo(want.get("email"));
         assertThat(actual.get("nickname")).isEqualTo(want.get("nickname"));
         assertThat(actual.get("gender")).isEqualTo(want.get("gender"));
-        assertThat(actual.get("address_sido")).isEqualTo(want.get("address_sido"));
-        assertThat(actual.get("address_sigungu")).isEqualTo(want.get("address_sigungu"));
+        assertThat(actual.get("addressSido")).isEqualTo(want.get("addressSido"));
+        assertThat(actual.get("addressSigungu")).isEqualTo(want.get("addressSigungu"));
 
         // 요리 횟수와 연속 방문일은 DB 상태에 따라 달라지므로 형만 본다.
-        assertThat(actual.get("cook_count").isNumber()).isTrue();
-        assertThat(actual.get("streak_days").isNumber()).isTrue();
-        assertThat(actual.get("cook_count").asInt()).isGreaterThanOrEqualTo(0);
+        assertThat(actual.get("cookCount").isNumber()).isTrue();
+        assertThat(actual.get("streakDays").isNumber()).isTrue();
+        assertThat(actual.get("cookCount").asInt()).isGreaterThanOrEqualTo(0);
     }
 
     @Test
@@ -130,8 +130,8 @@ class UserBanFixtureTest {
         MvcResult created = mvc.perform(post("/api/bans")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ingredient_name\":\"픽스처확인용재료\","
-                                + "\"ban_type\":\"DISLIKE\"}"))
+                        .content("{\"ingredientName\":\"픽스처확인용재료\","
+                                + "\"banType\":\"DISLIKE\"}"))
                 .andReturn();
 
         assertThat(created.getResponse().getStatus())
@@ -140,8 +140,8 @@ class UserBanFixtureTest {
         JsonNode createdBody = body(created);
         assertThat(createdBody.propertyNames()).containsExactlyInAnyOrderElementsOf(
                 wantCreate.get("body").propertyNames());
-        assertThat(createdBody.get("ingredient_name").asString()).isEqualTo("픽스처확인용재료");
-        assertThat(createdBody.get("ban_type").asString()).isEqualTo("DISLIKE");
+        assertThat(createdBody.get("ingredientName").asString()).isEqualTo("픽스처확인용재료");
+        assertThat(createdBody.get("banType").asString()).isEqualTo("DISLIKE");
 
         long banId = createdBody.get("id").asLong();
 
@@ -149,8 +149,8 @@ class UserBanFixtureTest {
         MvcResult duplicated = mvc.perform(post("/api/bans")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ingredient_name\":\"픽스처확인용재료\","
-                                + "\"ban_type\":\"DISLIKE\"}"))
+                        .content("{\"ingredientName\":\"픽스처확인용재료\","
+                                + "\"banType\":\"DISLIKE\"}"))
                 .andReturn();
 
         assertThat(duplicated.getResponse().getStatus()).isEqualTo(409);
@@ -191,7 +191,7 @@ class UserBanFixtureTest {
         MvcResult result = mvc.perform(post("/api/bans")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ingredient_name\":\"   \"}"))
+                        .content("{\"ingredientName\":\"   \"}"))
                 .andReturn();
 
         assertThat(result.getResponse().getStatus()).isEqualTo(422);
@@ -217,8 +217,8 @@ class UserBanFixtureTest {
         JsonNode actual = body(patched);
         assertThat(actual.get("gender").asString()).isEqualTo("OTHER");
         assertThat(actual.get("nickname")).isEqualTo(original.get("nickname"));
-        assertThat(actual.get("address_sido")).isEqualTo(original.get("address_sido"));
-        assertThat(actual.get("address_sigungu")).isEqualTo(original.get("address_sigungu"));
+        assertThat(actual.get("addressSido")).isEqualTo(original.get("addressSido"));
+        assertThat(actual.get("addressSigungu")).isEqualTo(original.get("addressSigungu"));
         assertThat(actual.get("latitude")).isEqualTo(original.get("latitude"));
 
         // 되돌려 놓는다. 안 그러면 다음 실행의 정답지 대조가 어긋난다.
@@ -235,8 +235,8 @@ class UserBanFixtureTest {
         MvcResult wrong = mvc.perform(post("/api/users/me/password")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"current_password\":\"not-my-password\","
-                                + "\"new_password\":\"Whatever1234!\"}"))
+                        .content("{\"currentPassword\":\"not-my-password\","
+                                + "\"newPassword\":\"Whatever1234!\"}"))
                 .andReturn();
 
         assertThat(wrong.getResponse().getStatus()).isEqualTo(400);
@@ -247,8 +247,8 @@ class UserBanFixtureTest {
         MvcResult same = mvc.perform(post("/api/users/me/password")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"current_password\":\"" + MEMBER_PASSWORD + "\","
-                                + "\"new_password\":\"" + MEMBER_PASSWORD + "\"}"))
+                        .content("{\"currentPassword\":\"" + MEMBER_PASSWORD + "\","
+                                + "\"newPassword\":\"" + MEMBER_PASSWORD + "\"}"))
                 .andReturn();
 
         assertThat(same.getResponse().getStatus()).isEqualTo(400);

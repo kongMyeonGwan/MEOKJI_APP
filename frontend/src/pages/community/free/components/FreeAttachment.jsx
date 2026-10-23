@@ -4,14 +4,14 @@ import ErrorMessage from '../../../../components/common/ErrorMessage'
 // 자유게시판 글에 붙은 사진 한 장.
 // 글 하나당 파일 하나라(DB 의 FILE_* 컬럼) 갤러리가 아니다 — 본문 아래에 한 장만 놓인다.
 //
-//   file    : 붙어 있는 사진 { name, ext, size, size_text, url }. 없으면 null
+//   file    : 붙어 있는 사진 { name, ext, size, sizeText, url }. 없으면 null
 //   isMine  : 이 글을 내가 썼는지. 버튼을 보일지 정한다
 //   busy    : 올리는 중인지. 다 올라가기 전에 또 누르는 것을 막는다
 //   error   : 올리다 실패했을 때 보여줄 문장
 //   onPick / onRemove : 실제 업로드 · 삭제는 부모(FreeDetailPage)가 한다
 //
-// isMine 은 글의 is_mine 이다 (부모가 post.is_mine 을 넘긴다).
-// 사진은 글에 붙는 것이지 댓글에 붙는 것이 아니라서, 댓글의 is_mine 과는
+// isMine 은 글의 isMine 이다 (부모가 post.isMine 을 넘긴다).
+// 사진은 글에 붙는 것이지 댓글에 붙는 것이 아니라서, 댓글의 isMine 과는
 // 아무 상관이 없다. 내 글이면 바꾸기 · 지우기가 보이고, 남의 글이면 사진만 보인다.
 export default function FreeAttachment({ file, isMine, busy, error, onPick, onRemove }) {
   // 사진도 없고 내 글도 아니면 그릴 게 없다.
@@ -42,7 +42,7 @@ export default function FreeAttachment({ file, isMine, busy, error, onPick, onRe
             >
               {file.name}
             </a>
-            {file.size_text && <span> · {file.size_text}</span>}
+            {file.sizeText && <span> · {file.sizeText}</span>}
           </figcaption>
         </figure>
       )}

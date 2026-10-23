@@ -198,7 +198,7 @@ UNIQUE 가 제약조건이 아니라 함수 기반 인덱스이고, 중복 INSER
 처리하고, 검색은 `LOWER(col) LIKE LOWER(:kw)` 다. JPA 로 우회하는 것보다 SQL 을
 직접 쓰는 쪽이 맞다.
 
-### 이름 규칙이 세 층이다
+### 이름 규칙이 세 층이었다
 
 ```
 DB      snake_case   FOOD_NAME     스키마는 그대로 쓴다
@@ -206,9 +206,15 @@ DB      snake_case   FOOD_NAME     스키마는 그대로 쓴다
 JSON    snake_case   food_name     jackson: property-naming-strategy
 ```
 
-**가운데만 카멜이다.** 프론트 77개 파일이 `food_name` · `has_file` 을 그대로
+**가운데만 카멜이었다.** 프론트 77개 파일이 `food_name` · `has_file` 을 그대로
 읽고 있어서, 나가는 JSON 을 카멜로 바꾸면 **화면이 빈 값으로 뜨면서 에러도 안
 난다.** React 가 없는 필드를 읽어 `undefined` 를 받고 그대로 그리기 때문이다.
+
+> 나중에 이 줄을 걷어냈다. `property-naming-strategy` 를 빼고 프론트 55개 파일
+> 386곳을 카멜로 고쳐서, 지금은 **DB 만 snake 이고 자바와 JSON 은 카멜**이다.
+> 위에 적은 위험은 그대로였기에 한 번에 바꿨다 — 응답 정답지(fixtures) 38개와
+> 테스트 14개가 키 이름을 글자까지 대조하고 있어서, 빠뜨린 자리는 화면이 아니라
+> 테스트가 먼저 잡는다.
 
 ### 0단계 — 정답지를 먼저 떴다
 

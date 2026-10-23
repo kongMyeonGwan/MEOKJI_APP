@@ -13,7 +13,7 @@ import useForm from '../../hooks/useForm'
 //
 // 로그인 순서
 //   1. 이메일, 비밀번호를 입력했는지 확인한다
-//   2. 서버에 보낸다 → 서버가 { access_token: '토큰', user: { 내 정보 } } 를 준다
+//   2. 서버에 보낸다 → 서버가 { accessToken: '토큰', user: { 내 정보 } } 를 준다
 //   3. onLogin 으로 App 에 알려준다 → App 이 브라우저에 저장하고 화면을 바꾼다
 //   4. 홈으로 이동한다
 //
@@ -80,7 +80,7 @@ export default function LoginPage({ onLogin }) {
       const result = await login({ email: values.email.trim(), password: values.password })
 
       // 3. App 에 알려준다 (토큰과 내 정보, 그리고 어디에 저장할지)
-      onLogin(result.access_token, result.user, keep)
+      onLogin(result.accessToken, result.user, keep)
 
       // 4. 홈으로 이동
       navigate('/')

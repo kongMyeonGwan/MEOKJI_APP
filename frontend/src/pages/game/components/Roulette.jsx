@@ -151,7 +151,7 @@ export default function Roulette() {
 
       // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값. 오늘의 한 끼(첫 번째)의 레시피로 보낸다
       if (items.length > 0) {
-        const top = items[0].food_name
+        const top = items[0].foodName
         saveResult('roulette', '음식 룰렛', top, `/recipe/${top}`)
       } else {
         saveResult('roulette', '음식 룰렛', label, categoryLink)
@@ -239,8 +239,8 @@ export default function Roulette() {
         <div className="roulette__result">
           {foods.length > 0 ? (
             <>
-              오늘의 한 끼는 <strong>{foods[0].food_name}</strong>
-              <Link to={`/recipe/${foods[0].food_name}`} className="btn btn--sm">
+              오늘의 한 끼는 <strong>{foods[0].foodName}</strong>
+              <Link to={`/recipe/${foods[0].foodName}`} className="btn btn--sm">
                 레시피 보기
               </Link>
             </>
@@ -286,10 +286,10 @@ export default function Roulette() {
                 <div className="roulette-win__thumb">
                   <FoodThumb item={foods[0]} size="lg" />
                 </div>
-                <strong className="roulette-win__food">{foods[0].food_name}</strong>
+                <strong className="roulette-win__food">{foods[0].foodName}</strong>
                 <p className="muted roulette-win__meta">
-                  <span className="price">{formatPrice(foods[0].estimated_cost)}</span> ·{' '}
-                  {formatMinutes(foods[0].cook_time_minutes)}
+                  <span className="price">{formatPrice(foods[0].estimatedCost)}</span> ·{' '}
+                  {formatMinutes(foods[0].cookTimeMinutes)}
                 </p>
               </>
             )}
@@ -304,7 +304,7 @@ export default function Roulette() {
 
             <div className="roulette-win__actions">
               {!loading && foods.length > 0 && (
-                <Link to={`/recipe/${foods[0].food_name}`} className="btn">
+                <Link to={`/recipe/${foods[0].foodName}`} className="btn">
                   레시피 보기
                 </Link>
               )}
@@ -324,10 +324,10 @@ export default function Roulette() {
                 <p className="muted roulette-win__more-title">이런 메뉴도 있어요</p>
                 <ul className="roulette-win__more-list">
                   {foods.slice(1).map((food) => (
-                    <li key={food.food_name}>
-                      <Link to={`/recipe/${food.food_name}`}>
+                    <li key={food.foodName}>
+                      <Link to={`/recipe/${food.foodName}`}>
                         <FoodThumb item={food} size="sm" />
-                        <span>{food.food_name}</span>
+                        <span>{food.foodName}</span>
                       </Link>
                     </li>
                   ))}

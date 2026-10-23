@@ -59,7 +59,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
       try {
         const data = await getCatalog()
 
-        setSearchSuggestions(data.search_suggestions || [])
+        setSearchSuggestions(data.searchSuggestions || [])
       } catch (error) {
         console.log('검색 추천 목록을 가져오지 못했습니다.')
       }
@@ -108,7 +108,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
 
   // 마지막으로 알림 창을 연 뒤에 온 알림인지
   const isUnread = (noti) => {
-    return noti.created_at > readAt
+    return noti.createdAt > readAt
   }
 
   // 안 읽은 알림 개수. 알림을 꺼뒀으면 0
@@ -274,7 +274,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
 
                         <span className="muted">{noti.body}</span>
 
-                        <span className="topbar__noti-date muted">{formatDate(noti.created_at)}</span>
+                        <span className="topbar__noti-date muted">{formatDate(noti.createdAt)}</span>
                       </Link>
                     </li>
                   ))}

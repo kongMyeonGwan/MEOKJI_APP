@@ -71,9 +71,9 @@ class DataFileTest {
         assertThat(catalog.path("categories")).as("분류 칩").hasSize(11);
         assertThat(catalog.path("roulette")).as("룰렛 칸").hasSize(8);
         assertThat(catalog.path("games")).as("미니게임 카드").hasSize(3);
-        assertThat(catalog.path("balance_questions")).as("밸런스 게임").hasSize(5);
-        assertThat(catalog.path("search_suggestions")).as("검색 추천어").hasSize(8);
-        assertThat(catalog.path("budget_presets")).as("예산 버튼").hasSize(4);
+        assertThat(catalog.path("balanceQuestions")).as("밸런스 게임").hasSize(5);
+        assertThat(catalog.path("searchSuggestions")).as("검색 추천어").hasSize(8);
+        assertThat(catalog.path("budgetPresets")).as("예산 버튼").hasSize(4);
 
         // 더운 날 고르는 메뉴. 태그만 봐서는 냉면과 칼국수가 같은 점수를 받는다
         // (docs/PROGRESS.md 의 "추천 점수가 가장 조용히 틀릴 수 있는 부분").

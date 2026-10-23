@@ -167,6 +167,7 @@
     -->
     <select id="findCommentNotifications"
             resultType="com.meokji.api.user.vo.NotificationVO">
+        /* UserDAO.findCommentNotifications */
         SELECT * FROM (
             SELECT c.id             AS id,
                    c.post_id        AS reviewId,

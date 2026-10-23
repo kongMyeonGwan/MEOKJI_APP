@@ -24,7 +24,7 @@ public class GameStatsController {
     private GameStatsService gameStatsService;
 
     // 게임별 플레이 횟수  GET /api/games/stats
-    // { "items": [{ "game_key": "worldcup", "game_type": "A", "plays": 120 }, ...], "total": 245 }
+    // { "items": [{ "gameKey": "worldcup", "gameType": "A", "plays": 120 }, ...], "total": 245 }
     @GetMapping("/stats")
     public Map<String, Object> getStats() {
         List<GameStatVO> items = gameStatsService.getPlayCounts();

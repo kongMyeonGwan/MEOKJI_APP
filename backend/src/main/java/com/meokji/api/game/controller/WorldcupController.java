@@ -36,7 +36,7 @@ public class WorldcupController {
     private WorldcupService worldcupService;
 
     // 우승 기록  POST /api/games/worldcup/wins
-    // { "food_name": "김치찌개", "runner_up": "된장찌개", "round_size": 32 }
+    // { "foodName": "김치찌개", "runnerUp": "된장찌개", "roundSize": 32 }
     @PostMapping("/wins")
     @ResponseStatus(HttpStatus.CREATED) // 201
     public Map<String, Object> recordWin(
@@ -46,12 +46,12 @@ public class WorldcupController {
         worldcupService.recordWin(loginUser, win);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("food_name", win.getFoodName());
+        response.put("foodName", win.getFoodName());
         return response;
     }
 
     // 명예의 전당  GET /api/games/worldcup/rankings?limit=5
-    // { "items": [{ "rank": 1, "food_name": "김치찌개", "wins": 5, "finals": 7 }, ...], "total": 12 }
+    // { "items": [{ "rank": 1, "foodName": "김치찌개", "wins": 5, "finals": 7 }, ...], "total": 12 }
     @GetMapping("/rankings")
     public Map<String, Object> getRankings(@RequestParam(defaultValue = "5") int limit) {
         List<WorldcupRankVO> items = worldcupService.getRankings(limit);

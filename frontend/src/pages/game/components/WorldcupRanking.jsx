@@ -49,17 +49,17 @@ export default function WorldcupRanking({ highlight, bare = false }) {
         <ol className="wc-rank__list">
           {data.items.map((item) => (
             <li
-              key={item.food_name}
-              className={`wc-rank__item${item.rank === 1 ? ' wc-rank__item--top' : ''}${item.food_name === highlight ? ' wc-rank__item--mine' : ''}`}
+              key={item.foodName}
+              className={`wc-rank__item${item.rank === 1 ? ' wc-rank__item--top' : ''}${item.foodName === highlight ? ' wc-rank__item--mine' : ''}`}
             >
               <span className="wc-rank__no">
                 {item.rank <= 3 && <Crown rank={item.rank} className="wc-rank__crown" />}
                 {item.rank}위
               </span>
-              <Link to={`/recipe/${item.food_name}`} className="wc-rank__food">
+              <Link to={`/recipe/${item.foodName}`} className="wc-rank__food">
                 <FoodThumb item={item} size="sm" />
-                <strong>{item.food_name}</strong>
-                {item.food_name === highlight && <span className="wc-rank__mine">오늘의 우승</span>}
+                <strong>{item.foodName}</strong>
+                {item.foodName === highlight && <span className="wc-rank__mine">오늘의 우승</span>}
               </Link>
               <span className="wc-rank__count">
                 <strong>우승 {item.wins}회</strong>

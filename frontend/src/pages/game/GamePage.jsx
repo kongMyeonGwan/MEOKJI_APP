@@ -142,12 +142,12 @@ export default function GamePage() {
                 // 나보다 많이 한 게임 수 + 1. 횟수가 같으면 같은 등수다. 한 번도 안 했으면 등수가 없다
                 const rank = item.plays > 0 ? stats.items.filter((one) => one.plays > item.plays).length + 1 : 0
                 return (
-                  <li key={item.game_key} className={`gpage__stat gpage__stat--${toneOf(item.game_key)}`} title={`${titleOf(item.game_key, item.game_key)} ${item.plays.toLocaleString()}회 (${share}%)`}>
+                  <li key={item.gameKey} className={`gpage__stat gpage__stat--${toneOf(item.gameKey)}`} title={`${titleOf(item.gameKey, item.gameKey)} ${item.plays.toLocaleString()}회 (${share}%)`}>
                     <span className="gpage__stat-rank">
                       {rank >= 1 && rank <= 3 && <Crown rank={rank} className="gpage__crown" />}
                       <span className="gpage__stat-rank-no">{rank > 0 ? `${rank}위` : '-'}</span>
                     </span>
-                    <span className="gpage__stat-name">{titleOf(item.game_key, item.game_key)}</span>
+                    <span className="gpage__stat-name">{titleOf(item.gameKey, item.gameKey)}</span>
                     <span className="gpage__stat-track">
                       <span className="gpage__stat-bar" style={{ width: `${(item.plays / max) * 100}%` }} />
                     </span>
@@ -167,7 +167,7 @@ export default function GamePage() {
 
           {today ? (
             <div className="gpage__result-on">
-              <p className="muted gpage__result-from">{titleOf(today.game_key, today.game_title)}에서 고른 메뉴</p>
+              <p className="muted gpage__result-from">{titleOf(today.gameKey, today.gameTitle)}에서 고른 메뉴</p>
 
               {/* 뽑힌 요리 사진. 룰렛이 메뉴를 못 고르고 분류(한식)만 남겼으면 사진을 안 그린다 */}
               {today.link.startsWith('/recipe/') && (
@@ -176,7 +176,7 @@ export default function GamePage() {
                 </span>
               )}
 
-              <strong className="gpage__result-food">{today.food_name}</strong>
+              <strong className="gpage__result-food">{today.foodName}</strong>
               <Link to={today.link} className="btn btn--sm gpage__result-go">
                 레시피 보기 →
               </Link>

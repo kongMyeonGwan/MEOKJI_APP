@@ -9,7 +9,7 @@ export const recordWorldcupWin = async ({ foodName, runnerUp, roundSize }) => {
   try {
     await client.post(
       '/api/games/worldcup/wins',
-      { food_name: foodName, runner_up: runnerUp, round_size: roundSize },
+      { foodName, runnerUp, roundSize },
       { headers: authHeader() },
     )
   } catch (err) {
@@ -18,7 +18,7 @@ export const recordWorldcupWin = async ({ foodName, runnerUp, roundSize }) => {
 }
 
 // 우승 횟수 순위. 로그인 없이도 부를 수 있다.
-// { items: [{ rank: 1, food_name: '김치찌개', wins: 5, finals: 7 }, ...], total: 12 }
+// { items: [{ rank: 1, foodName: '김치찌개', wins: 5, finals: 7 }, ...], total: 12 }
 export const getWorldcupRankings = async (limit = 5) => {
   const response = await client.get('/api/games/worldcup/rankings', { params: { limit } })
   return response.data

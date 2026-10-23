@@ -1,46 +1,44 @@
 // 공지사항 API.
-//
-// TODO(게시판 담당): 아직 서버가 501(미구현)을 돌려준다.
-//   1. 서버의 공지 기능을 만든다
-//   2. 아래 import 주석을 풀고, 함수 안의 throw 를 client 호출로 바꾼다
-//   3. pages/community/notice/ 의 화면들에서 SAMPLE_NOTICE* 대신 이 함수를 부른다
-
-// import client from './client'
-// import { authHeader } from '../utils/token'
-
-const NOT_READY = '공지사항 기능은 아직 준비 중입니다.'
-
 // 작성 · 수정 · 삭제는 관리자만 된다. { headers: authHeader() } 를 같이 넘긴다.
-// 목록과 조회수는 누구나 볼 수 있어서 넘기지 않아도 된다.
+// 목록 · 상세 · 조회수는 누구나 볼 수 있어서 넘기지 않는다.
+
+import client from './client'
+import { authHeader } from '../utils/token'
 
 // 공지 목록 한 페이지. 고정 공지가 위, 그 다음 최신순.
-export const getNotices = async (options) => {
-  throw new Error(NOT_READY)
+// options: { page, size }  →  { items, page, size, total, totalPages }
+export const getNotices = async ({ page = 1, size = 20 } = {}) => {
+  const res = await client.get('/api/notices', { params: { page, size } })
+  return res.data
 }
 
-// 공지 하나. 상세 화면이 부른다.
+// 공지 하나. 상세 화면이 부른다. (조회수는 올리지 않는다)
 export const getNotice = async (noticeId) => {
-  throw new Error(NOT_READY)
+  const res = await client.get(`/api/notices/${noticeId}`)
+  return res.data
 }
 
-// 조회수 +1
+// 조회수 +1. 올린 뒤의 숫자를 돌려준다.
 export const countNoticeView = async (noticeId) => {
-  throw new Error(NOT_READY)
+  const res = await client.post(`/api/notices/${noticeId}/view`)
+  return res.data
 }
 
 // 아래는 관리자만 쓸 수 있다
 
-// 공지 작성
+// 공지 작성. form: { title, content, pinned }
 export const createNotice = async (form) => {
-  throw new Error(NOT_READY)
+  const res = await client.post('/api/notices', form, { headers: authHeader() })
+  return res.data
 }
 
-// 공지 수정
+// 공지 수정. form: { title, content, pinned }
 export const updateNotice = async (noticeId, form) => {
-  throw new Error(NOT_READY)
+  const res = await client.put(`/api/notices/${noticeId}`, form, { headers: authHeader() })
+  return res.data
 }
 
-// 공지 삭제
+// 공지 삭제. 서버가 204 (돌려줄 내용 없음) 라서 값을 안 돌려준다.
 export const deleteNotice = async (noticeId) => {
-  throw new Error(NOT_READY)
+  await client.delete(`/api/notices/${noticeId}`, { headers: authHeader() })
 }

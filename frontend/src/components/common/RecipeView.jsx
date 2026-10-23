@@ -5,6 +5,10 @@ import { formatMinutes } from '../../utils/format'
 //
 // prices 에서 surveyed 가 false 인 재료는 정부 시세 조사 대상이 아닌 것(두부, 간장 등)이라
 // 재료 옆에 "조사 대상 아님" 을 붙여준다.
+//
+// recipe 안의 cook_time_minutes 만 snake 다. 이 값은 서버가 만든 응답이 아니라
+// DB(RECIPE_JSON) 에 문자열로 저장돼 있던 JSON 을 그대로 푼 것이다. 서버 응답은
+// 전부 카멜이지만 저장된 내용까지 바꾸려면 쌓인 기록을 전부 고쳐야 한다.
 export default function RecipeView({ recipe, ingredients, substitutes, prices }) {
   if (!recipe) {
     return null
