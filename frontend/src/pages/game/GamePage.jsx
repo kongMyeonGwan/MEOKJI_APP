@@ -4,6 +4,7 @@ import FoodThumb from '../../components/common/FoodThumb'
 import { getCatalog } from '../../api/catalog'
 import { getGameStats } from '../../api/gameStats'
 import { getTodayResult } from '../../utils/gameResult'
+import { getToken } from '../../utils/token'
 import Crown from './components/Crown'
 
 // 메뉴 게임 목록 (월드컵 / 밸런스 / 룰렛).
@@ -35,6 +36,9 @@ export default function GamePage() {
   const [games, setGames] = useState([])
   const [stats, setStats] = useState(null) // 게임별 플레이 횟수 { items, total }. 못 받으면 null
   const [today, setToday] = useState(null) // 오늘의 게임 결과. 오늘 게임을 안 했으면 null
+
+  // 오늘의 게임 결과는 로그인한 회원마다 따로 저장된다 (utils/gameResult.js)
+  const loggedIn = Boolean(getToken())
 
   useEffect(() => {
     const load = async () => {
@@ -199,9 +203,18 @@ export default function GamePage() {
             </div>
           ) : (
             <div className="gpage__result-off">
-              <span className="gpage__result-icon">📋</span>
-              <p className="gpage__result-lead">아직 오늘의 메뉴를 정하지 못했어요.</p>
-              <p className="muted gpage__result-desc">오늘 게임을 하면 이 칸이 열려요. 매일 00시에 새로 시작해요.</p>
+              <span className="gpage__result-icon">{loggedIn ? '📋' : '🔒'}</span>
+              {loggedIn ? (
+                <>
+                  <p className="gpage__result-lead">아직 오늘의 메뉴를 정하지 못했어요.</p>
+                  <p className="muted gpage__result-desc">오늘 게임을 하면 이 칸이 열려요. 매일 00시에 새로 시작해요.</p>
+                </>
+              ) : (
+                <>
+                  <p className="gpage__result-lead">로그인하면 나의 오늘의 게임 결과가 보여요.</p>
+                  <p className="muted gpage__result-desc">결과는 회원마다 따로 남아요. 매일 00시에 새로 시작해요.</p>
+                </>
+              )}
             </div>
           )}
         </section>
