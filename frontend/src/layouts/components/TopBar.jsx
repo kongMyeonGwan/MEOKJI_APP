@@ -18,7 +18,7 @@ const READ_AT_KEY = 'meokji.notify.readAt'
 // 서버 API(/api/users/me/notifications)는 그대로 있으니 true 로 바꾸면 다시 보인다.
 const SHOW_NOTIFICATIONS = false
 
-export default function TopBar({ onToggleNav, user, onLogout, notify }) {
+export default function TopBar({ onToggleNav, user, onLogout, notify, likeCount, onLikeCountChange }) {
   // ---------------------------------------
   // state
   // ---------------------------------------
@@ -32,9 +32,6 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
 
   // AI 검색 추천 문장
   const [searchSuggestions, setSearchSuggestions] = useState([])
-
-  // 찜 개수
-  const [likeCount, setLikeCount] = useState(0)
 
   // 알림 목록
   const [notifications, setNotifications] = useState([])
@@ -81,7 +78,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
   useEffect(() => {
     // 로그인하지 않았으면 서버 요청 안 함
     if (!user) {
-      setLikeCount(0)
+      onLikeCountChange(0)
       setNotifications([])
 
       return
@@ -92,7 +89,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
         // 찜 목록
         const likes = await getFavorites()
 
-        setLikeCount(likes.count)
+        onLikeCountChange(likes.count)
 
         // 알림 목록. 숨겨둔 동안은 서버에 묻지 않는다
         if (SHOW_NOTIFICATIONS) {
@@ -239,57 +236,57 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
         {/* 알림. 숨겨둔 동안은 종 아이콘을 그리지 않는다 */}
 
         {SHOW_NOTIFICATIONS && (
-        <div className="topbar__bell-wrap">
-          <button type="button" className="topbar__icon-btn" onClick={() => togglePanel('bell')}>
-            <Icon name="bell" size={21} />
+          <div className="topbar__bell-wrap">
+            <button type="button" className="topbar__icon-btn" onClick={() => togglePanel('bell')}>
+              <Icon name="bell" size={21} />
 
-            {unreadCount > 0 && <span className="badge topbar__count">{unreadCount}</span>}
-          </button>
+              {unreadCount > 0 && <span className="badge topbar__count">{unreadCount}</span>}
+            </button>
 
-          {/* 알림창 */}
+            {/* 알림창 */}
 
-          {open === 'bell' && (
-            <div className="topbar__panel topbar__panel--bell">
-              <p className="topbar__panel-title">알림</p>
+            {open === 'bell' && (
+              <div className="topbar__panel topbar__panel--bell">
+                <p className="topbar__panel-title">알림</p>
 
-              {/* 알림 기능을 꺼놓은 경우 */}
+                {/* 알림 기능을 꺼놓은 경우 */}
 
-              {!notify && (
-                <p className="topbar__panel-foot muted">
-                  알림을 꺼두셨습니다.
-                  <Link to="/settings">설정</Link>
-                  에서 다시 켤 수 있습니다.
-                </p>
-              )}
+                {!notify && (
+                  <p className="topbar__panel-foot muted">
+                    알림을 꺼두셨습니다.
+                    <Link to="/settings">설정</Link>
+                    에서 다시 켤 수 있습니다.
+                  </p>
+                )}
 
-              {/* 알림은 켜져 있지만 알림이 없는 경우 */}
+                {/* 알림은 켜져 있지만 알림이 없는 경우 */}
 
-              {notify && notifications.length === 0 && (
-                <p className="topbar__panel-foot muted">아직 알림이 없습니다.</p>
-              )}
+                {notify && notifications.length === 0 && (
+                  <p className="topbar__panel-foot muted">아직 알림이 없습니다.</p>
+                )}
 
-              {/* 알림이 있는 경우 */}
+                {/* 알림이 있는 경우 */}
 
-              {notify && notifications.length > 0 && (
-                <ul className="topbar__notis">
-                  {notifications.map((noti) => (
-                    <li key={noti.id} className={isUnread(noti) ? 'is-unread' : ''}>
-                      <span className="topbar__noti-icon">{noti.icon}</span>
+                {notify && notifications.length > 0 && (
+                  <ul className="topbar__notis">
+                    {notifications.map((noti) => (
+                      <li key={noti.id} className={isUnread(noti) ? 'is-unread' : ''}>
+                        <span className="topbar__noti-icon">{noti.icon}</span>
 
-                      <Link to={noti.link} className="topbar__noti-body" onClick={closePanel}>
-                        <strong>{noti.title}</strong>
+                        <Link to={noti.link} className="topbar__noti-body" onClick={closePanel}>
+                          <strong>{noti.title}</strong>
 
-                        <span className="muted">{noti.body}</span>
+                          <span className="muted">{noti.body}</span>
 
-                        <span className="topbar__noti-date muted">{formatDate(noti.createdAt)}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
+                          <span className="topbar__noti-date muted">{formatDate(noti.createdAt)}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
         {/* =========================

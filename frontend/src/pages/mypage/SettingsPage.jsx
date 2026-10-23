@@ -1,33 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Icon from '../../components/common/Icon'
-import { clearFavorites, getFavorites } from '../../api/favorites'
+import { clearFavorites } from '../../api/favorites'
 import { clearLogs, getLogs } from '../../utils/aiLog'
 
 // 설정 화면. 로그인 없이도 열린다 (테마, 알림은 브라우저에 저장되는 값이라).
 // user, theme, notify 와 바꾸는 함수들은 App.jsx 가 props 로 넘겨준다.
-export default function SettingsPage({ user, onLogout, theme, onThemeChange, notify, onNotifyChange }) {
-  const [likeCount, setLikeCount] = useState(0) // 찜 개수 (서버)
+export default function SettingsPage({
+  user,
+  onLogout,
+  theme,
+  onThemeChange,
+  notify,
+  onNotifyChange,
+  likeCount,
+  onLikeCountChange,
+}) {
   const [logCount, setLogCount] = useState(getLogs().length) // AI 추천 기록 개수 (브라우저)
 
   const navigate = useNavigate()
-
-  // 로그인했으면 찜 개수를 받아온다
-  useEffect(() => {
-    if (!user) {
-      return
-    }
-
-    const load = async () => {
-      try {
-        const data = await getFavorites()
-        setLikeCount(data.count)
-      } catch (err) {
-        // 개수가 0 으로 보일 뿐이다
-      }
-    }
-    load()
-  }, [user])
 
   const handleLogout = () => {
     onLogout()
@@ -41,7 +32,7 @@ export default function SettingsPage({ user, onLogout, theme, onThemeChange, not
     }
     try {
       await clearFavorites()
-      setLikeCount(0)
+      onLikeCountChange(0)
     } catch (err) {
       alert('지우지 못했습니다.')
     }
@@ -142,7 +133,9 @@ export default function SettingsPage({ user, onLogout, theme, onThemeChange, not
         <div className="settings__row">
           <div>
             <p className="settings__label">AI 추천 기록 {logCount}건</p>
-            <p className="settings__desc muted">언제 어떤 조건으로 추천받았는지의 기록이에요. 이 브라우저에만 저장됩니다.</p>
+            <p className="settings__desc muted">
+              언제 어떤 조건으로 추천받았는지의 기록이에요. 이 브라우저에만 저장됩니다.
+            </p>
           </div>
           <div className="settings__actions">
             <Link to="/ai-history" className="btn btn--ghost btn--sm">

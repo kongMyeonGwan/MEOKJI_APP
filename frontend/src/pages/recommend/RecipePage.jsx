@@ -17,7 +17,7 @@ import { formatPrice } from '../../utils/format'
 // "이걸로 먹을래요" 를 누르면 내 기록(History)에 저장된다.
 //
 // user 는 App.jsx 가 넘겨준 로그인한 사람. 로그인 안 했으면 null
-export default function RecipePage({ user }) {
+export default function RecipePage({ user, onLikeCountChange }) {
   const { foodName } = useParams() // 주소의 :foodName 부분
   const navigate = useNavigate()
 
@@ -86,6 +86,7 @@ export default function RecipePage({ user }) {
     try {
       const result = await toggleFavorite(foodName)
       setLiked(result.favorited)
+      onLikeCountChange(result.count)
     } catch (err) {
       alert('찜하지 못했습니다.')
     }

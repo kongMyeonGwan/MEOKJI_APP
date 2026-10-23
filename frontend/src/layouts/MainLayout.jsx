@@ -57,7 +57,14 @@ export default function MainLayout({
 
       <div className="shell__body">
         {/* 상단 메뉴 */}
-        <TopBar user={user} notify={notify} onLogout={onLogout} onToggleNav={toggleNav} />
+        <TopBar
+          user={user}
+          notify={notify}
+          onLogout={onLogout}
+          onToggleNav={toggleNav}
+          likeCount={likeCount}
+          onLikeCountChange={onLikeCountChange}
+        />
 
         {/* 페이지가 표시되는 부분 */}
         <main className="shell__main">

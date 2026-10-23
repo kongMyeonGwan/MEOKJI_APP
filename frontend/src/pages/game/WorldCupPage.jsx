@@ -116,7 +116,7 @@ const makeBracket = (items, wantSize) => {
   return shuffle(items).slice(0, size)
 }
 
-export default function WorldCupPage({ user }) {
+export default function WorldCupPage({ user, onLikeCountChange }) {
   const navigate = useNavigate()
 
   const [size, setSize] = useState(null)
@@ -178,6 +178,7 @@ export default function WorldCupPage({ user }) {
     try {
       const data = await getFavorites()
       setLiked(data.names.includes(foodName))
+      onLikeCountChange(data.count) // 찜 개수도 부모에게 알려준다
     } catch (err) {
       // 몰라도 괜찮다
     }
@@ -241,6 +242,7 @@ export default function WorldCupPage({ user }) {
     try {
       const result = await toggleFavorite(foodName)
       setLiked(result.favorited)
+      onLikeCountChange(result.count)
     } catch (err) {
       alert('찜하지 못했습니다.')
     }

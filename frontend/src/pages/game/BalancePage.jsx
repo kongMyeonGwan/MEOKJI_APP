@@ -69,7 +69,7 @@ const pickQuestions = (count) => {
   return BALANCE_QUESTIONS.filter((q) => picked.includes(q.id))
 }
 
-export default function BalancePage({ user }) {
+export default function BalancePage({ user, onLikeCountChange }) {
   const [questions, setQuestions] = useState([]) // 이번 판의 질문들. 비어 있으면 고르는 화면
   const [answers, setAnswers] = useState([]) // 지금까지 고른 답들
   const [items, setItems] = useState([]) // 추천 결과
@@ -227,7 +227,7 @@ export default function BalancePage({ user }) {
         {!loading && !error && items.length > 0 && (
           <div className="list-page__cards">
             {items.map((food) => (
-              <FoodCard key={food.foodName} food={food} />
+              <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
             ))}
           </div>
         )}

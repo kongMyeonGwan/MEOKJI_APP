@@ -7,7 +7,7 @@ import { getToken } from '../../utils/token'
 import { formatMinutes, formatPrice } from '../../utils/format'
 
 // AI 가 추천한 음식 카드 한 장. 오른쪽 위 하트로 찜할 수 있다.
-export default function FoodCard({ food }) {
+export default function FoodCard({ food, onLikeCountChange }) {
   const [liked, setLiked] = useState(false)
   const navigate = useNavigate()
 
@@ -38,6 +38,7 @@ export default function FoodCard({ food }) {
     try {
       const result = await toggleFavorite(food.foodName)
       setLiked(result.favorited)
+      onLikeCountChange(result.count)
     } catch (err) {
       alert('찜하지 못했습니다.')
     }

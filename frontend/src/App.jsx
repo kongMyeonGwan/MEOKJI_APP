@@ -166,7 +166,7 @@ export default function App() {
           }
         >
           {/* index 는 부모 주소 그대로(/) 일 때 보여줄 화면이다 */}
-          <Route index element={<HomePage />} />
+          <Route index element={<HomePage onLikeCountChange={setLikeCount} />} />
 
           {/* 로그인 · 회원가입 */}
           <Route path="login" element={<LoginPage onLogin={handleLogin} />} />
@@ -174,18 +174,18 @@ export default function App() {
           <Route path="password-reset" element={<PasswordResetPage />} />
 
           {/* 추천 · 레시피 */}
-          <Route path="recommend" element={<RecommendPage />} />
-          <Route path="budget" element={<BudgetPage />} />
-          <Route path="search" element={<SearchPage />} />
-          <Route path="recipe/:foodName" element={<RecipePage user={user} />} />
+          <Route path="recommend" element={<RecommendPage onLikeCountChange={setLikeCount} />} />
+          <Route path="budget" element={<BudgetPage onLikeCountChange={setLikeCount} />} />
+          <Route path="search" element={<SearchPage onLikeCountChange={setLikeCount} />} />
+          <Route path="recipe/:foodName" element={<RecipePage user={user} onLikeCountChange={setLikeCount} />} />
 
           {/* 못 먹는 재료 */}
           <Route path="BansPage" element={loginOnly(<BansPage />)} />
 
           {/* 메뉴 게임 */}
           <Route path="game" element={<GamePage />} />
-          <Route path="game/worldcup" element={<WorldCupPage user={user} />} />
-          <Route path="game/balance" element={<BalancePage user={user} />} />
+          <Route path="game/worldcup" element={<WorldCupPage user={user} onLikeCountChange={setLikeCount} />} />
+          <Route path="game/balance" element={<BalancePage user={user} onLikeCountChange={setLikeCount} />} />
           <Route path="roulette" element={<RoulettePage />} />
 
           {/* 커뮤니티. 보는 것은 로그인 없이도 된다 */}
@@ -220,6 +220,8 @@ export default function App() {
                 onThemeChange={handleThemeChange}
                 notify={notify}
                 onNotifyChange={handleNotifyChange}
+                likeCount={likeCount}
+                onLikeCountChange={setLikeCount}
               />
             }
           />
@@ -229,7 +231,7 @@ export default function App() {
           />
           <Route path="history" element={loginOnly(<HistoryPage />)} />
           <Route path="ai-history" element={loginOnly(<AiHistoryPage />)} />
-          <Route path="liked" element={loginOnly(<LikedPage />)} />
+          <Route path="liked" element={loginOnly(<LikedPage onLikeCountChange={setLikeCount} />)} />
 
           {/* 위에 없는 주소 */}
           <Route path="*" element={<NotFoundPage />} />
