@@ -58,29 +58,6 @@ export default function ReviewListPage() {
         <Link to="/reviews/write" className="btn btn--sm">글쓰기</Link>
       </div>
       <p className="muted community__desc">요리와 레시피에 대한 정보를 나누고 소통하는 공간입니다.</p>
-<<<<<<< HEAD
-
-  {/* <CommunityTabs /> */ }
-
-      <input
-        type="search"
-        className="community__search"
-        placeholder="제목이나 내용으로 검색"
-        value={search}
-        onChange={(e) => {
-          setSearch(e.target.value)
-          setPage(1)
-        }}
-      />
-
-      <div className="divided community__list">
-        {reviews.map((review) => (
-          <ReviewCard key={review.id} review={review} />
-        ))}
-      </div>
-
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-=======
       <form onSubmit={handleSearch}>
         <input type="search" className="community__search" placeholder="제목이나 내용으로 검색 (Enter)"
           value={keyword} onChange={(e) => setKeyword(e.target.value)} maxLength={100} />
@@ -98,7 +75,6 @@ export default function ReviewListPage() {
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </>
       )}
->>>>>>> feature/JuHwang
     </div >
   )
 }
