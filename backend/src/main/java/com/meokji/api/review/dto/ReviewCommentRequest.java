@@ -2,7 +2,11 @@ package com.meokji.api.review.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
 public class ReviewCommentRequest {
 
     @NotBlank(message = "댓글을 입력해 주세요")

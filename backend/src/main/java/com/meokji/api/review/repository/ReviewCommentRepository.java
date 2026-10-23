@@ -11,10 +11,8 @@ import java.util.Optional;
 /** 후기 게시판 댓글(board_type = 'R')의 저장과 조회. */
 public interface ReviewCommentRepository extends JpaRepository<ReviewCommentEntity, Long> {
 
-    /** 해당 후기에 속한 삭제되지 않은 댓글. 게시판 구분은 Entity의 SQLRestriction이 적용한다. */
     Optional<ReviewCommentEntity> findByIdAndPostIdAndUseYn(Long id, Long postId, String useYn);
 
-    /** 후기 댓글 목록. 네이티브 SQL에는 게시판 구분을 직접 지정한다. */
     @Query(value = """
             SELECT c.id         AS "id",
                    c.user_id    AS "userId",
@@ -30,7 +28,6 @@ public interface ReviewCommentRepository extends JpaRepository<ReviewCommentEnti
             """, nativeQuery = true)
     List<ReviewCommentView> findViewsByPost(@Param("postId") Long postId);
 
-    /** 작성·수정 후 응답에 사용할 삭제되지 않은 댓글 한 건. */
     @Query(value = """
             SELECT c.id         AS "id",
                    c.user_id    AS "userId",
