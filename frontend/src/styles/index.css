@@ -4578,33 +4578,20 @@ a.price-table__best:hover {
   margin-top: 8px;
 }
 
-/* 아직 안 했을 때 게임으로 바로 가는 버튼 */
-.gpage__result-start {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 12px;
+/* 오늘 게임을 안 했을 때: 칸 전체를 흐리게 잠근다. 안에 누를 것이 없고, 마우스도 반응하지 않는다 */
+.gpage__result--off {
+  background: var(--color-bg);
+  border-style: dashed;
+  box-shadow: none;
+  cursor: default;
+  user-select: none;
 }
 
-.gpage__result-chip {
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text);
-  transition: transform var(--dur) var(--ease);
+.gpage__result--off > * {
+  opacity: 0.55;
+  filter: grayscale(1);
+  pointer-events: none;
 }
-
-.gpage__result-chip:hover { transform: translateY(-2px); }
-
-/* 색은 게임 카드와 같다 */
-.gpage__result-chip--orange { background: #fdf0e8; }
-.gpage__result-chip--purple { background: #efecfb; }
-.gpage__result-chip--yellow { background: #fdf6e3; }
-
-[data-theme='dark'] .gpage__result-chip { color: #2a2420; }
-
 /*
  * 1279px 밑으로 내려오면 글자와 그림 사이가 좁아진다. 그림을 줄이고 가리개를
  * 더 오른쪽까지 끌어, 글자가 그림 위로 올라타지 않게 한다.

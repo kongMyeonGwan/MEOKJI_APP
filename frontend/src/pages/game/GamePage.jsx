@@ -61,6 +61,22 @@ export default function GamePage() {
     setToday(getTodayResult())
   }, [])
 
+  // 자정(00시)이 되면 '오늘' 이 바뀌므로 결과 칸을 다시 읽는다.
+  // 화면을 켜 둔 채 날짜가 넘어가도 어제 결과가 남아 있지 않게 한다
+  useEffect(() => {
+    let timer
+    const scheduleMidnight = () => {
+      const now = new Date()
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+      timer = setTimeout(() => {
+        setToday(getTodayResult())
+        scheduleMidnight()
+      }, midnight - now + 1000) // 00:00:01 에 다시 읽는다
+    }
+    scheduleMidnight()
+    return () => clearTimeout(timer)
+  }, [])
+
   // 서버가 모르는 게임을 보내도 색이 비지 않게 기본값을 준다
   const toneOf = (key) => {
     if (TONES[key]) {
@@ -161,8 +177,8 @@ export default function GamePage() {
           )}
         </section>
 
-        {/* 오늘의 게임 결과 */}
-        <section className="card gpage__result">
+        {/* 오늘의 게임 결과. 오늘(00시 이후) 게임을 안 했으면 흐리게 잠가 두고 아무것도 누를 수 없다 */}
+        <section className={`card gpage__result${today ? '' : ' gpage__result--off'}`} aria-disabled={!today}>
           <h3 className="gpage__box-title">🎉 오늘의 게임 결과</h3>
 
           {today ? (
@@ -185,16 +201,7 @@ export default function GamePage() {
             <div className="gpage__result-off">
               <span className="gpage__result-icon">📋</span>
               <p className="gpage__result-lead">아직 오늘의 메뉴를 정하지 못했어요.</p>
-              <p className="muted gpage__result-desc">게임을 하면 고른 메뉴가 여기에 나타나요.</p>
-
-              {/* 게임으로 바로 가기 */}
-              <div className="gpage__result-start">
-                {games.map((game) => (
-                  <Link key={game.key} to={game.to} className={`gpage__result-chip gpage__result-chip--${toneOf(game.key)}`}>
-                    {game.emoji} {titleOf(game.key, game.title)}
-                  </Link>
-                ))}
-              </div>
+              <p className="muted gpage__result-desc">오늘 게임을 하면 이 칸이 열려요. 매일 00시에 새로 시작해요.</p>
             </div>
           )}
         </section>
