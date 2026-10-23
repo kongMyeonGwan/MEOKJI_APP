@@ -193,7 +193,7 @@ export default function App() {
           {/* 레시피리뷰 · 공지는 퍼블리싱만 돼 있다. 로그인한 사람(user)을 아직 쓰지 않아
               props 를 넘기지 않는다 — 기능 담당이 user={user} 를 붙이는 자리다 */}
           <Route path="reviews" element={<ReviewListPage />} />
-          <Route path="reviews/:reviewId" element={<ReviewDetailPage />} />
+          <Route path="reviews/:reviewId" element={<ReviewDetailPage user={user} />} />
           <Route path="reviews/write" element={loginOnly(<ReviewWritePage />)} />
 
           {/* 공지사항. 보기는 누구나, 작성 · 수정 · 삭제는 관리자만 */}

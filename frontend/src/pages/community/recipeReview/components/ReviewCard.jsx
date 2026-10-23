@@ -5,7 +5,7 @@ import { formatDate } from '../../../../utils/format'
 export default function ReviewCard({ review }) {
   return (
     <article className="review-card">
-      <Link to={`/community/${review.id}`} className="review-card__link">
+      <Link to={`/reviews/${review.id}`} className="review-card__link">
         <h3 className="review-card__title">
           {review.title}
           {review.hasFile && <span className="review-card__clip" title="사진 있음">📎</span>}

@@ -1,14 +1,22 @@
 package com.meokji.api.review.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import com.meokji.api.review.repository.ReviewCommentView;
+import com.meokji.api.util.Times;
 
-@Data
-@NoArgsConstructor
+@Getter
 public class ReviewCommentResponse {
-    @NotBlank(message = "댓글을 입력해주세요")
-    @Size(max = 1000, message = "댓글은 1000자 이하여야 합니다")
-    private String content;
+    private final Long id;
+    private final String nickname;
+    private final String content;
+    private final String createdAt;
+    private final Boolean isMine;
+
+    public ReviewCommentResponse(ReviewCommentView row, boolean isMine) {
+        this.id = row.getId();
+        this.nickname = row.getNickname();
+        this.content = row.getContent();
+        this.createdAt = Times.toText(row.getCreatedAt());
+        this.isMine = isMine;
+    }
 }
