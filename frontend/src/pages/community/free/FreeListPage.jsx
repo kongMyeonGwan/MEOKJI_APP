@@ -180,7 +180,7 @@ export default function FreeListPage({ user }) {
             ))}
           </div>
 
-          <Pagination page={page} totalPages={totalPages} onChange={changePage} />
+          <Pagination page={page} totalPages={totalPages} onChange={changePage} showSingle />
         </>
       )}
     </div>
