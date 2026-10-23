@@ -26,7 +26,7 @@ export default function NoticeDetailPage({ user }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   // 로그인하지 않았으면 user 가 null 이다
-  const isAdmin = Boolean(user?.is_admin)
+  const isAdmin = Boolean(user?.isAdmin)
 
   // 서버가 보낸 오류 문장을 꺼낸다 (FreeDetailPage 와 같은 방식)
   const messageOf = (err) => {
@@ -66,7 +66,7 @@ export default function NoticeDetailPage({ user }) {
         try {
           const count = await countNoticeView(noticeId)
           if (!cancelled) {
-            setNotice({ ...data, view_count: count })
+            setNotice({ ...data, viewCount: count })
           }
         } catch (ignore) {
           // 조회수만 못 올린 것이라 넘어간다
@@ -142,8 +142,8 @@ export default function NoticeDetailPage({ user }) {
 
           <div className="notice-detail__meta">
             <span>뭐먹지? 운영팀</span>
-            <span className="muted">{formatDateTime(notice.created_at)}</span>
-            <span className="muted">조회 {notice.view_count}</span>
+            <span className="muted">{formatDateTime(notice.createdAt)}</span>
+            <span className="muted">조회 {notice.viewCount}</span>
           </div>
 
           <p className="notice__content notice-detail__content">{notice.content}</p>

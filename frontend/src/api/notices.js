@@ -6,7 +6,7 @@ import client from './client'
 import { authHeader } from '../utils/token'
 
 // 공지 목록 한 페이지. 고정 공지가 위, 그 다음 최신순.
-// options: { page, size }  →  { items, page, size, total, total_pages }
+// options: { page, size }  →  { items, page, size, total, totalPages }
 export const getNotices = async ({ page = 1, size = 20 } = {}) => {
   const res = await client.get('/api/notices', { params: { page, size } })
   return res.data

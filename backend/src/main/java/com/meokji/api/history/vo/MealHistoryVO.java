@@ -82,44 +82,48 @@ public class MealHistoryVO {
     private String art;
 
     // ---------- 화면과 주고받는 JSON 세 칸 ----------
-    // getter 는 내보낼 때, setter 는 받을 때 쓰인다. 이름을 둘 다
-    // @JsonProperty 로 못박아서 recipe_json 으로 오가게 한다.
+    // getter 는 내보낼 때, setter 는 받을 때 쓰인다. 메서드 이름이
+    // getRecipeJsonNode 라서 그대로 두면 recipeJsonNode 로 나간다.
+    // 그래서 둘 다 @JsonProperty 로 recipeJson 이라고 못박는다.
+    //
+    // 이 JSON 안쪽 키(cook_time_minutes 등)는 아직 snake 다 - AI 가 만들어
+    // CLOB 에 넣은 내용이라 Jackson 과 상관이 없다.
 
     @NotNull(message = "레시피가 없습니다")
-    @JsonProperty("recipe_json")
+    @JsonProperty("recipeJson")
     public JsonNode getRecipeJsonNode() {
         return Json.node(recipeJson);
     }
 
-    @JsonProperty("recipe_json")
+    @JsonProperty("recipeJson")
     public void setRecipeJsonNode(JsonNode node) {
         this.recipeJson = Json.text(node);
     }
 
     @NotNull(message = "재료 목록이 없습니다")
-    @JsonProperty("ingredients_json")
+    @JsonProperty("ingredientsJson")
     public JsonNode getIngredientsJsonNode() {
         return Json.node(ingredientsJson);
     }
 
-    @JsonProperty("ingredients_json")
+    @JsonProperty("ingredientsJson")
     public void setIngredientsJsonNode(JsonNode node) {
         this.ingredientsJson = Json.text(node);
     }
 
     /** 대체 재료 (없어도 된다) */
-    @JsonProperty("substitutes_json")
+    @JsonProperty("substitutesJson")
     public JsonNode getSubstitutesJsonNode() {
         return Json.node(substitutesJson);
     }
 
-    @JsonProperty("substitutes_json")
+    @JsonProperty("substitutesJson")
     public void setSubstitutesJsonNode(JsonNode node) {
         this.substitutesJson = Json.text(node);
     }
 
-    /** 화면이 읽는 selected_at. 예) "2026-09-11T21:29:42Z" */
-    @JsonProperty("selected_at")
+    /** 화면이 읽는 selectedAt. 예) "2026-09-11T21:29:42Z" */
+    @JsonProperty("selectedAt")
     public String getSelectedAtText() {
         return Times.toText(selectedAt);
     }

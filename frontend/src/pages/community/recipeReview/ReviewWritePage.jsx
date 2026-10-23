@@ -26,6 +26,7 @@ import { createReview, uploadReviewFile } from '../../../api/reviews'
 
 const CONTENT_MAX = 2000 // 본문 최대 글자 수
 
+//     서버는 snake_case 로 받는다 → { mealHistoryId: selected.id, title, content }
 export default function ReviewWritePage() {
   // 주소의 ?historyId=5 (없으면 빈 문자열)
   const [searchParams] = useSearchParams()
@@ -68,7 +69,7 @@ export default function ReviewWritePage() {
   // 고른 내 식사 기록. 목록에 없는 id 면 undefined.
   const selected = histories.find((history) => String(history.id) === historyId)
 
-  const { values, handleChange } = useForm({ title: '', content: '', meal_history_id: ''})
+  const { values, handleChange } = useForm({ title: '', content: '', meal_history_id: '' })
   const [file, setFile] = useState(null) // 고른 사진 파일
   const [photoUrl, setPhotoUrl] = useState('') // 고른 사진 미리보기 주소
   const [saving, setSaving] = useState(false)
@@ -212,14 +213,14 @@ export default function ReviewWritePage() {
           {selected && (
             <div className="write__history">
               <p className="write__history-head">
-                <strong>{selected.food_name}</strong>
-                <span className="muted"> · {selected.recipe_name}</span>
-                <span className="muted write__history-cost">{formatPrice(selected.estimated_cost)}</span>
+                <strong>{selected.foodName}</strong>
+                <span className="muted"> · {selected.recipeName}</span>
+                <span className="muted write__history-cost">{formatPrice(selected.estimatedCost)}</span>
               </p>
               <RecipeView
-                recipe={selected.recipe_json}
-                ingredients={selected.ingredients_json}
-                substitutes={selected.substitutes_json}
+                recipe={selected.recipeJson}
+                ingredients={selected.ingredientsJson}
+                substitutes={selected.substitutesJson}
               />
             </div>
           )}

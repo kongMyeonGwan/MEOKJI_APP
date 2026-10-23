@@ -15,6 +15,10 @@ import tools.jackson.databind.JsonNode;
 /**
  * 고정 목록은 표가 아니라 파일(resources/data)에서 온다.
  * 그래서 이 기능에는 DAO 와 VO 가 없다.
+ *
+ * 여기만 응답이 VO 가 아니라 Map 이다. Jackson 의 이름 바꾸기는 VO 의 필드에만
+ * 걸리고 Map 의 키에는 안 걸리므로, 아래 이름이 그대로 JSON 키가 된다.
+ * 그래서 catalog.json 의 키 자체를 카멜로 적어 두었다.
  */
 @Service
 public class CatalogServiceImpl implements CatalogService {
@@ -23,7 +27,7 @@ public class CatalogServiceImpl implements CatalogService {
     // 화면이 목록 전체를 쓰지 않고, 48KB 를 매번 내려보낼 이유가 없다.
     private static final List<String> SECTIONS = List.of(
             "categories", "roulette", "games",
-            "balance_questions", "search_suggestions", "budget_presets");
+            "balanceQuestions", "searchSuggestions", "budgetPresets");
 
     @Autowired
     private FoodCatalog catalog;

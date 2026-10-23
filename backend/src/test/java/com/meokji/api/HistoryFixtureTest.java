@@ -40,19 +40,19 @@ class HistoryFixtureTest {
     /** 확정 요청 본문. 레시피와 재료는 카탈로그가 주는 모양을 그대로 흉내냈다. */
     private static final String CREATE_BODY = """
             {
-              "food_name": "테스트확정용음식",
-              "recipe_name": "테스트 레시피",
-              "recipe_json": {
+              "foodName": "테스트확정용음식",
+              "recipeName": "테스트 레시피",
+              "recipeJson": {
                 "cook_time_minutes": 25,
                 "servings": 2,
                 "difficulty": "쉬움",
                 "steps": ["재료를 썬다.", "끓인다."]
               },
-              "ingredients_json": [
+              "ingredientsJson": [
                 {"name": "돼지고기", "quantity": 300, "unit": "g", "grams": 300}
               ],
-              "substitutes_json": [],
-              "estimated_cost": 6900
+              "substitutesJson": [],
+              "estimatedCost": 6900
             }
             """;
 
@@ -72,7 +72,7 @@ class HistoryFixtureTest {
                                 + "\"password\":\"" + MEMBER_PASSWORD + "\"}"))
                 .andReturn();
 
-        auth = "Bearer " + body(login).get("access_token").asString();
+        auth = "Bearer " + body(login).get("accessToken").asString();
     }
 
     private JsonNode fixture(String name) throws Exception {
@@ -116,15 +116,15 @@ class HistoryFixtureTest {
                 .containsExactlyInAnyOrderElementsOf(wantItem.propertyNames());
 
         // JSON 칸이 문자열이 아니라 JSON 이어야 한다. 문자열로 나가면 화면이
-        // recipe_json.steps 를 읽지 못한다.
-        assertThat(item.get("recipe_json").isObject())
-                .as("recipe_json 은 객체여야 한다").isTrue();
-        assertThat(item.get("ingredients_json").isArray())
-                .as("ingredients_json 은 배열이어야 한다").isTrue();
-        assertThat(item.get("recipe_json").has("steps")).isTrue();
+        // recipeJson.steps 를 읽지 못한다.
+        assertThat(item.get("recipeJson").isObject())
+                .as("recipeJson 은 객체여야 한다").isTrue();
+        assertThat(item.get("ingredientsJson").isArray())
+                .as("ingredientsJson 은 배열이어야 한다").isTrue();
+        assertThat(item.get("recipeJson").has("steps")).isTrue();
 
         // 시각 형식이 정답지와 같아야 한다 (util/Times: 뒤에 Z, 마이크로초 여섯 자리)
-        assertThat(item.get("selected_at").asString()).endsWith("Z");
+        assertThat(item.get("selectedAt").asString()).endsWith("Z");
     }
 
     @Test
@@ -218,15 +218,15 @@ class HistoryFixtureTest {
         JsonNode item = body(created);
         long historyId = item.get("id").asLong();
 
-        assertThat(item.get("food_name").asString()).isEqualTo("테스트확정용음식");
-        assertThat(item.get("recipe_review_id").isNull())
+        assertThat(item.get("foodName").asString()).isEqualTo("테스트확정용음식");
+        assertThat(item.get("recipeReviewId").isNull())
                 .as("방금 만든 기록은 아직 공유했을 수 없다").isTrue();
         assertThat(item.get("art").isNull())
                 .as("카탈로그에 없는 이름이라 썸네일이 없다").isTrue();
 
         // 넣은 JSON 이 그대로 돌아와야 한다. CLOB 왕복에서 깨지지 않는지 본다.
-        assertThat(item.get("recipe_json").get("steps").size()).isEqualTo(2);
-        assertThat(item.get("ingredients_json").get(0).get("name").asString())
+        assertThat(item.get("recipeJson").get("steps").size()).isEqualTo(2);
+        assertThat(item.get("ingredientsJson").get(0).get("name").asString())
                 .isEqualTo("돼지고기");
 
         // 목록에 보인다
@@ -259,8 +259,8 @@ class HistoryFixtureTest {
         MvcResult result = mvc.perform(post("/api/histories")
                         .header("Authorization", auth)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"food_name\":\"  \",\"recipe_json\":{},"
-                                + "\"ingredients_json\":[]}"))
+                        .content("{\"foodName\":\"  \",\"recipeJson\":{},"
+                                + "\"ingredientsJson\":[]}"))
                 .andReturn();
 
         assertThat(result.getResponse().getStatus()).isEqualTo(422);

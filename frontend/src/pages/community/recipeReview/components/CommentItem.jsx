@@ -45,12 +45,10 @@ export default function CommentItem({ comment, onEdit, onDelete }) {
     <li>
       <div className="review__comment-head">
         <strong>{comment.nickname}</strong>
-        <span className="muted">{formatDateTime(comment.created_at)}</span>
+        <span className="muted">{formatDateTime(comment.createdAt)}</span>
 
-        {/* 이 댓글을 내가 썼을 때만 수정 · 삭제.
-            글쓴이인지와는 상관이 없다 — 남의 글이어도 내 댓글이면 보이고,
-            내 글이어도 남이 단 댓글이면 안 보인다 */}
-        {comment.is_mine && !editing && (
+        {/* 내 댓글이면 수정/삭제 버튼 */}
+        {comment.isMine && !editing && (
           <span className="review__comment-actions">
             <button type="button" onClick={() => setEditing(true)}>
               수정

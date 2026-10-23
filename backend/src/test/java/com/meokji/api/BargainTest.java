@@ -25,7 +25,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * 떨이 재료 (use_bargains).
+ * 떨이 재료 (useBargains).
  *
  * <h2>값이 실제로 나오는지는 확인하지 않는다</h2>
  *
@@ -110,7 +110,7 @@ class BargainTest {
     }
 
     @Test
-    @DisplayName("use_bargains 를 끄면 bargains 가 빈 배열로 나간다")
+    @DisplayName("useBargains 를 끄면 bargains 가 빈 배열로 나간다")
     void offGivesEmptyArray() throws Exception {
         JsonNode body = recommend("{\"limit\":4}");
 
@@ -124,9 +124,9 @@ class BargainTest {
     }
 
     @Test
-    @DisplayName("use_bargains 를 켜도 추천 응답 모양은 그대로다")
+    @DisplayName("useBargains 를 켜도 추천 응답 모양은 그대로다")
     void onKeepsResponseShape() throws Exception {
-        JsonNode body = recommend("{\"limit\":4,\"use_bargains\":true}");
+        JsonNode body = recommend("{\"limit\":4,\"useBargains\":true}");
 
         assertThat(body.get("bargains").isArray()).isTrue();
 
@@ -141,7 +141,7 @@ class BargainTest {
             assertThat(row.has("percent")).isTrue();
             assertThat(row.has("price")).isTrue();
             assertThat(row.has("unit")).as("단위 없이 가격만 주면 비교가 안 된다").isTrue();
-            assertThat(row.has("surveyed_at")).isTrue();
+            assertThat(row.has("surveyedAt")).isTrue();
         }
     }
 }

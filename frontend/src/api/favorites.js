@@ -11,9 +11,9 @@ export const getFavorites = async () => {
 }
 
 // 하트 누르기. 찜돼 있으면 풀리고 아니면 찜된다.
-// { food_name: '김치찌개', favorited: true, count: 3 } 가 온다.
+// { foodName: '김치찌개', favorited: true, count: 3 } 가 온다.
 export const toggleFavorite = async (foodName) => {
-  const response = await client.put('/api/favorites', { food_name: foodName }, { headers: authHeader() })
+  const response = await client.put('/api/favorites', { foodName: foodName }, { headers: authHeader() })
   return response.data
 }
 

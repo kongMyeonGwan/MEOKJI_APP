@@ -6,14 +6,14 @@ import { formatMinutes, formatPrice } from '../../../utils/format'
 // 찜한 레시피 카드 한 장 (격자 보기).
 //
 // item 은 서버가 /api/favorites 의 items 로 주는 음식 정보다. 카탈로그에 없는 이름이면
-// food_name 만 채워져서 오기 때문에, 나머지 칸은 있을 때만 그린다.
+// foodName 만 채워져서 오기 때문에, 나머지 칸은 있을 때만 그린다.
 export default function LikedCard({ item, onUnlike }) {
   // 분류(한식)를 앞에 두고 태그를 뒤에 붙인다. 태그에 분류와 같은 말이 또 들어
   // 있어서(예: 한식) 그건 뺀다
   const tags = item.tags || []
   const extraTags = tags.filter((tag) => tag !== item.category)
 
-  const recipeUrl = `/recipe/${item.food_name}`
+  const recipeUrl = `/recipe/${item.foodName}`
 
   return (
     <article className="lcard">
@@ -22,7 +22,7 @@ export default function LikedCard({ item, onUnlike }) {
           <FoodThumb item={item} size="lg" />
         </Link>
 
-        <button type="button" className="lcard__unlike" onClick={() => onUnlike(item.food_name)} title="찜 해제">
+        <button type="button" className="lcard__unlike" onClick={() => onUnlike(item.foodName)} title="찜 해제">
           <Icon name="heart-fill" size={19} />
         </button>
       </div>
@@ -38,17 +38,17 @@ export default function LikedCard({ item, onUnlike }) {
         </div>
 
         <h3 className="lcard__name">
-          <Link to={recipeUrl}>{item.food_name}</Link>
+          <Link to={recipeUrl}>{item.foodName}</Link>
         </h3>
 
         {item.reason && <p className="muted lcard__desc">{item.reason}</p>}
 
         {/* 카탈로그에 없는 음식은 조리 시간이 0 으로 와서 이 줄을 통째로 숨긴다 */}
-        {item.cook_time_minutes > 0 && (
+        {item.cookTimeMinutes > 0 && (
           <p className="lcard__meta">
-            <span>🕐 {formatMinutes(item.cook_time_minutes)}</span>
+            <span>🕐 {formatMinutes(item.cookTimeMinutes)}</span>
             <span>👨‍🍳 {item.difficulty}</span>
-            <span className="lcard__price">💰 {formatPrice(item.estimated_cost)}</span>
+            <span className="lcard__price">💰 {formatPrice(item.estimatedCost)}</span>
           </p>
         )}
 

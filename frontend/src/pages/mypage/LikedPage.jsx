@@ -4,17 +4,26 @@ import Icon from '../../components/common/Icon'
 import FoodThumb from '../../components/common/FoodThumb'
 import Loading from '../../components/common/Loading'
 import LikedCard from './components/LikedCard'
+import Pagination from '../../components/common/Pagination'
 import { getFavorites, toggleFavorite } from '../../api/favorites'
+
+// 한 페이지에 보여줄 개수.
+// 격자는 화면 폭에 따라 1~4열이 되는데, 12 는 2 · 3 · 4 어느 열로도 나누어떨어져 마지막 줄이 비지 않는다.
+const PAGE_SIZE = 12
 
 // 찜한 레시피 목록.
 //
 // 서버는 음식 이름(names)과 그 이름으로 카탈로그에서 찾은 정보(items)를 같이 준다.
 // 화면은 items 를 그린다. 격자 보기와 목록 보기를 버튼으로 오간다.
+//
+// 페이징은 화면에서 한다. 서버는 찜 전체를 한 번에 주고(한 사람의 찜은 많아야 수백 개),
+// 검색으로 거른 뒤 지금 페이지 몫만 잘라서 그린다.
 export default function LikedPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [keyword, setKeyword] = useState('') // 검색창에 친 글자
   const [view, setView] = useState('grid') // 'grid'(격자) 또는 'list'(목록)
+  const [page, setPage] = useState(1) // 지금 페이지 (1부터)
 
   // 찜 목록을 서버에서 받아온다
   const loadLikes = async () => {
@@ -42,8 +51,25 @@ export default function LikedPage() {
     }
   }
 
+  // 검색어가 바뀌면 1페이지부터 본다. 3페이지에서 검색하면 결과가 1페이지 분량뿐이라 빈 화면이 된다
+  const changeKeyword = (value) => {
+    setKeyword(value)
+    setPage(1)
+  }
+
+  const changePage = (nextPage) => {
+    setPage(nextPage)
+    window.scrollTo(0, 0)
+  }
+
   // 검색창에 친 글자가 음식 이름에 들어 있는 것만 남긴다
-  const shown = items.filter((item) => item.food_name.includes(keyword.trim()))
+  const shown = items.filter((item) => item.foodName.includes(keyword.trim()))
+
+  // 지금 페이지 몫만 잘라낸다.
+  // 마지막 페이지의 마지막 하나를 찜 해제하면 그 페이지가 사라지므로, 남은 마지막 페이지로 당겨서 본다
+  const totalPages = Math.ceil(shown.length / PAGE_SIZE)
+  const currentPage = Math.min(page, Math.max(totalPages, 1))
+  const pageItems = shown.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   return (
     <div className="list-page list-page--wide">
@@ -60,7 +86,7 @@ export default function LikedPage() {
               className="liked-head__search"
               placeholder="찜한 레시피에서 검색하기..."
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => changeKeyword(e.target.value)}
             />
 
             <div className="liked-head__views">
@@ -109,8 +135,8 @@ export default function LikedPage() {
 
       {!loading && shown.length > 0 && view === 'grid' && (
         <div className="liked-grid">
-          {shown.map((item) => (
-            <LikedCard key={item.food_name} item={item} onUnlike={handleUnlike} />
+          {pageItems.map((item) => (
+            <LikedCard key={item.foodName} item={item} onUnlike={handleUnlike} />
           ))}
         </div>
       )}
@@ -118,12 +144,12 @@ export default function LikedPage() {
       {!loading && shown.length > 0 && view === 'list' && (
         <div className="card">
           <ul className="liked">
-            {shown.map((item) => (
-              <li key={item.food_name}>
-                <Link to={`/recipe/${item.food_name}`} className="liked__row">
+            {pageItems.map((item) => (
+              <li key={item.foodName}>
+                <Link to={`/recipe/${item.foodName}`} className="liked__row">
                   <FoodThumb item={item} size="md" />
                   <span className="liked__body">
-                    <span className="liked__name">{item.food_name}</span>
+                    <span className="liked__name">{item.foodName}</span>
                     <span className="liked__meta muted">{item.reason || '눌러서 레시피를 만들어 보세요'}</span>
                   </span>
                 </Link>
@@ -131,7 +157,7 @@ export default function LikedPage() {
                 <button
                   type="button"
                   className="liked__unlike"
-                  onClick={() => handleUnlike(item.food_name)}
+                  onClick={() => handleUnlike(item.foodName)}
                   title="찜 해제"
                 >
                   <Icon name="heart-fill" size={18} />
@@ -141,6 +167,9 @@ export default function LikedPage() {
           </ul>
         </div>
       )}
+
+      {/* 격자 · 목록 어느 보기든 같은 페이지를 유지한다. 한 페이지뿐이면 Pagination 이 알아서 숨는다 */}
+      {!loading && <Pagination page={currentPage} totalPages={totalPages} onChange={changePage} />}
     </div>
   )
 }

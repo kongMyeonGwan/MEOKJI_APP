@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import FreeAttachment from './components/FreeAttachment'
 import FreeCommentItem from './components/FreeCommentItem'
 import Modal from '../../../components/common/Modal'
@@ -25,22 +25,22 @@ const COMMENT_MAX = 1000 // 댓글 최대 글자 수
 // 좋아요는 없다 — 표를 만들지 않았다 (db/09_add_free_posts.sql 참고).
 //
 // "내 것인지" 는 화면이 판단하지 않는다. 서버가 토큰을 보고 이미 정해서
-// is_mine 으로 보내준다. 그래서 여기에는 회원 번호를 견주는 코드가 없다.
+// isMine 으로 보내준다. 그래서 여기에는 회원 번호를 견주는 코드가 없다.
 //
-// is_mine 은 두 종류이고 값이 다를 수 있다
-//   post.is_mine        이 글을 내가 썼는지      → 글 수정 · 삭제 · 사진 버튼
-//   comment.is_mine     그 댓글을 내가 썼는지    → 그 댓글의 수정 · 삭제 버튼
+// isMine 은 두 종류이고 값이 다를 수 있다
+//   post.isMine        이 글을 내가 썼는지      → 글 수정 · 삭제 · 사진 버튼
+//   comment.isMine     그 댓글을 내가 썼는지    → 그 댓글의 수정 · 삭제 버튼
 //
 // 남의 글에도 내가 댓글을 달 수 있으니 둘은 서로 상관이 없다.
 // 글은 false 인데 그 안의 내 댓글만 true 인 경우가 가장 흔하다. 그래서 글의
-// is_mine 하나로 댓글 버튼까지 정하면 안 된다 — 그렇게 하면 남의 글에 쓴 내
+// isMine 하나로 댓글 버튼까지 정하면 안 된다 — 그렇게 하면 남의 글에 쓴 내
 // 댓글은 고칠 수 없고, 내 글에 달린 남의 댓글에 삭제 버튼이 생긴다.
 //
 // 그리고 이건 버튼을 보일지 정하는 것일 뿐이다. 진짜로 막는 쪽은 서버다.
 // 버튼이 안 보여도 요청을 직접 보내면 서버가 403 을 돌려준다.
 //
 // user 는 App 이 내려주는 로그인한 사람이다. 댓글 입력칸을 보일지 정하는
-// 데에만 쓴다 — 버튼 판단은 전부 위의 is_mine 이 한다.
+// 데에만 쓴다 — 버튼 판단은 전부 위의 isMine 이 한다.
 export default function FreeDetailPage({ user }) {
   const { postId } = useParams() // 주소의 :postId 부분
 
@@ -67,6 +67,11 @@ export default function FreeDetailPage({ user }) {
   const [fileError, setFileError] = useState('')
 
   const navigate = useNavigate()
+
+  // 돌아갈 목록 주소. 목록에서 글을 열었으면 그때 보던 페이지(FreePostCard 가
+  // state 로 넘긴다), 주소를 직접 쳐서 들어왔으면 1페이지다
+  const location = useLocation()
+  const listUrl = location.state?.from || '/free'
 
   // 서버가 보낸 오류 문장을 꺼낸다. 화면 여러 군데에서 같은 방식으로 쓴다
   const messageOf = (err) => {
@@ -98,7 +103,7 @@ export default function FreeDetailPage({ user }) {
         // 실패해도 글은 이미 보이니 화면을 막지 않는다.
         try {
           const count = await countFreePostView(postId)
-          setPost({ ...data, view_count: count })
+          setPost({ ...data, viewCount: count })
         } catch (ignore) {
           // 조회수만 못 올린 것이라 넘어간다
         }
@@ -150,14 +155,14 @@ export default function FreeDetailPage({ user }) {
     setConfirmOpen(false)
     try {
       await removeFreePost(postId)
-      navigate('/free', { replace: true })
+      navigate(listUrl, { replace: true })
     } catch (err) {
       setActionError(messageOf(err))
     }
   }
 
   // 댓글 등록.
-  // 서버가 돌려준 댓글에는 is_mine 이 true 로 들어 있다. 그래서 목록 끝에
+  // 서버가 돌려준 댓글에는 isMine 이 true 로 들어 있다. 그래서 목록 끝에
   // 붙이기만 하면 방금 쓴 댓글에 수정 · 삭제 버튼이 바로 보인다.
   // 글 전체를 다시 받아오지 않는 이유는 화면이 한 번 깜빡이고 요청만 늘기 때문이다.
   const handleCommentSubmit = async (e) => {
@@ -251,7 +256,7 @@ export default function FreeDetailPage({ user }) {
     return (
       <div className="free-detail">
         <p className="muted free-detail__back">
-          <Link to="/free">← 자유게시판</Link>
+          <Link to={listUrl}>← 자유게시판</Link>
         </p>
         <div className="card">
           <ErrorMessage message={error} />
@@ -263,7 +268,7 @@ export default function FreeDetailPage({ user }) {
   return (
     <div className="free-detail">
       <p className="muted free-detail__back">
-        <Link to="/free">← 자유게시판</Link>
+        <Link to={listUrl}>← 자유게시판</Link>
       </p>
 
       <article className="card">
@@ -306,17 +311,17 @@ export default function FreeDetailPage({ user }) {
 
             <div className="free-detail__meta">
               <span>{post.nickname}</span>
-              <span className="muted">{formatDateTime(post.created_at)}</span>
-              <span className="muted">조회 {post.view_count}</span>
+              <span className="muted">{formatDateTime(post.createdAt)}</span>
+              <span className="muted">조회 {post.viewCount}</span>
             </div>
 
             <div className="free-detail__content">{post.content}</div>
 
-            {/* 사진은 글에 붙는 것이라 글의 is_mine 을 넘긴다.
-                댓글의 is_mine 과는 아무 상관이 없다 */}
+            {/* 사진은 글에 붙는 것이라 글의 isMine 을 넘긴다.
+                댓글의 isMine 과는 아무 상관이 없다 */}
             <FreeAttachment
               file={post.file}
-              isMine={post.is_mine}
+              isMine={post.isMine}
               busy={fileBusy}
               error={fileError}
               onPick={handlePickFile}
@@ -328,14 +333,14 @@ export default function FreeDetailPage({ user }) {
         <ErrorMessage message={actionError} />
 
         <div className="free-detail__actions">
-          <Link to="/free" className="btn btn--ghost btn--sm">
+          <Link to={listUrl} className="btn btn--ghost btn--sm">
             목록
           </Link>
 
-          {/* 내가 쓴 글일 때만 수정 · 삭제. 여기는 글의 is_mine 이다 —
-              이 글에 달린 댓글들의 is_mine 과는 따로 논다.
+          {/* 내가 쓴 글일 때만 수정 · 삭제. 여기는 글의 isMine 이다 —
+              이 글에 달린 댓글들의 isMine 과는 따로 논다.
               수정 중(editing)에는 폼 안에 저장 · 취소가 따로 있으니 숨긴다 */}
-          {post.is_mine && !editing && (
+          {post.isMine && !editing && (
             <span className="free-detail__owner-actions">
               <button type="button" className="btn btn--ghost btn--sm" onClick={handleEditOpen}>
                 수정
@@ -357,7 +362,7 @@ export default function FreeDetailPage({ user }) {
 
         {post.comments.length === 0 && <p className="empty">첫 댓글을 남겨보세요.</p>}
 
-        {/* 댓글마다 자기 is_mine 을 달고 온다. 그래서 로그인한 사람을 따로
+        {/* 댓글마다 자기 isMine 을 달고 온다. 그래서 로그인한 사람을 따로
             넘기지 않아도 FreeCommentItem 이 그 댓글의 버튼을 정할 수 있다.
             key 는 화면을 다시 그릴 때 리액트가 어느 줄이 그대로인지 알아보는
             표식이다 — 댓글 하나를 지웠을 때 엉뚱한 줄이 지워지지 않게 한다 */}
@@ -374,7 +379,7 @@ export default function FreeDetailPage({ user }) {
           </ul>
         )}
 
-        {/* 댓글 입력칸은 로그인한 사람에게만. 여기는 is_mine 이 아니라 user 를
+        {/* 댓글 입력칸은 로그인한 사람에게만. 여기는 isMine 이 아니라 user 를
             본다 — 댓글은 남의 글에도 달 수 있어서 "내 글인지" 와 무관하다 */}
         {user ? (
           <form className="free-detail__form" onSubmit={handleCommentSubmit}>

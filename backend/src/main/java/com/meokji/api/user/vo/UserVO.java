@@ -79,8 +79,8 @@ public class UserVO {
 
     // ---------- 화면이 읽는 모양 ----------
 
-    /** 관리자인지. 응답의 is_admin 이 이 값이다. */
-    @JsonProperty("is_admin")
+    /** 관리자인지. 응답의 isAdmin 이 이 값이다. */
+    @JsonProperty("isAdmin")
     public boolean isAdmin() {
         return userLevel != null && userLevel == 1;
     }
@@ -91,8 +91,8 @@ public class UserVO {
         return isLocked != null && isLocked == 1;
     }
 
-    /** 화면이 읽는 created_at (가입일). 예) "2026-09-11T21:29:42Z" */
-    @JsonProperty("created_at")
+    /** 화면이 읽는 createdAt (가입일). 예) "2026-09-11T21:29:42Z" */
+    @JsonProperty("createdAt")
     public String getCreatedAtText() {
         return Times.toText(createdAt);
     }

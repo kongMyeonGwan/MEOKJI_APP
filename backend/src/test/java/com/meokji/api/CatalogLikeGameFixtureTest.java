@@ -46,7 +46,7 @@ class CatalogLikeGameFixtureTest {
                                 + "\"password\":\"meokji1234!\"}"))
                 .andReturn();
 
-        auth = "Bearer " + body(login).get("access_token").asString();
+        auth = "Bearer " + body(login).get("accessToken").asString();
     }
 
     private JsonNode fixture(String name) throws Exception {
@@ -109,10 +109,10 @@ class CatalogLikeGameFixtureTest {
         JsonNode actual = body(result);
         assertThat(actual.propertyNames())
                 .containsExactlyInAnyOrderElementsOf(want.propertyNames());
-        assertThat(actual.get("game_key").asString()).isEqualTo("worldcup");
-        assertThat(actual.get("game_type").asString())
+        assertThat(actual.get("gameKey").asString()).isEqualTo("worldcup");
+        assertThat(actual.get("gameType").asString())
                 .as("worldcup 은 DDL 의 ck_game_histories_type 에서 A 다").isEqualTo("A");
-        assertThat(actual.get("played_at").asString()).endsWith("Z");
+        assertThat(actual.get("playedAt").asString()).endsWith("Z");
     }
 
     @Test
@@ -125,7 +125,7 @@ class CatalogLikeGameFixtureTest {
                             .header("Authorization", auth))
                     .andReturn();
 
-            assertThat(body(result).get("game_type").asString())
+            assertThat(body(result).get("gameType").asString())
                     .as("%s -> %s", pair[0], pair[1]).isEqualTo(pair[1]);
         }
     }

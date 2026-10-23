@@ -120,7 +120,7 @@
         "desc": "운명의 돌림판을 돌려 오늘의 메뉴를 결정해요!"
       }
     ],
-    "balance_questions": [
+    "balanceQuestions": [
       {
         "id": 1,
         "question": "오늘 당기는 쪽은?",
@@ -229,7 +229,7 @@
         ]
       }
     ],
-    "search_suggestions": [
+    "searchSuggestions": [
       "김치찌개",
       "닭가슴살",
       "8천원 이하 파스타",
@@ -239,7 +239,7 @@
       "자취 첫 요리로 좋은 메뉴",
       "비 오는 날 어울리는 음식"
     ],
-    "budget_presets": [
+    "budgetPresets": [
       {
         "key": "UNDER_5K",
         "label": "5천원 이하",

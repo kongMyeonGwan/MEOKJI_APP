@@ -101,12 +101,12 @@ export default function WorldCupPage({ user }) {
 
     // 우승이 정해졌으면
     if (nextWinners.length === 1) {
-      const champion = nextWinners[0].food_name
+      const champion = nextWinners[0].foodName
       markPicked(champion) // AI 추천 기록에 "이걸로 정함" 표시
       // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값 (브라우저에만 저장한다)
       saveResult('worldcup', '음식 월드컵', champion, `/recipe/${champion}`)
       setLiked(false)
-      checkLiked(nextWinners[0].food_name)
+      checkLiked(nextWinners[0].foodName)
     }
   }
 
@@ -156,7 +156,7 @@ export default function WorldCupPage({ user }) {
         <div className="card wc wc--done">
           <p className="wc__crown">🏆</p>
           <p className="wc__round">오늘의 우승 메뉴</p>
-          <h2 className="wc__champion">{champion.food_name}</h2>
+          <h2 className="wc__champion">{champion.foodName}</h2>
 
           <div className="wc__champion-thumb">
             <FoodThumb item={champion} size="lg" />
@@ -164,15 +164,15 @@ export default function WorldCupPage({ user }) {
 
           <p className="muted wc__champion-reason">{champion.reason}</p>
           <p className="wc__champion-meta">
-            <span className="price">{formatPrice(champion.estimated_cost)}</span> ·{' '}
-            {formatMinutes(champion.cook_time_minutes)} · 난이도 {champion.difficulty}
+            <span className="price">{formatPrice(champion.estimatedCost)}</span> ·{' '}
+            {formatMinutes(champion.cookTimeMinutes)} · 난이도 {champion.difficulty}
           </p>
 
           <div className="wc__actions">
-            <Link to={`/recipe/${champion.food_name}`} className="btn">
+            <Link to={`/recipe/${champion.foodName}`} className="btn">
               레시피 보기
             </Link>
-            <button type="button" className="btn btn--ghost" onClick={() => handleLike(champion.food_name)}>
+            <button type="button" className="btn btn--ghost" onClick={() => handleLike(champion.foodName)}>
               {liked ? '♥ 찜 해제' : '♡ 찜하기'}
             </button>
             <button type="button" className="btn btn--ghost" onClick={startGame}>
@@ -206,12 +206,12 @@ export default function WorldCupPage({ user }) {
 
       <div className="wc__match">
         {[left, right].map((food, i) => (
-          <button key={food.food_name} type="button" className="card wc__pick" onClick={() => choose(food)}>
+          <button key={food.foodName} type="button" className="card wc__pick" onClick={() => choose(food)}>
             <FoodThumb item={food} size="lg" />
-            <strong className="wc__pick-name">{food.food_name}</strong>
+            <strong className="wc__pick-name">{food.foodName}</strong>
             <span className="muted wc__pick-reason">{food.reason}</span>
             <span className="wc__pick-meta">
-              <span className="price">{formatPrice(food.estimated_cost)}</span> · {formatMinutes(food.cook_time_minutes)}
+              <span className="price">{formatPrice(food.estimatedCost)}</span> · {formatMinutes(food.cookTimeMinutes)}
             </span>
             {/* 두 카드 사이의 VS 글자 (왼쪽 카드에만 붙인다) */}
             {i === 0 && <span className="wc__vs">VS</span>}

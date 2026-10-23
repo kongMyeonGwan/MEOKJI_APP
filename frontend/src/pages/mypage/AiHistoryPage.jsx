@@ -46,7 +46,7 @@ export default function AiHistoryPage() {
           <li key={log.id} className="card ailog__item">
             <div className="ailog__head">
               <span className="tag ailog__source">{log.source}</span>
-              <span className="muted ailog__date">{formatDateTime(log.created_at)}</span>
+              <span className="muted ailog__date">{formatDateTime(log.createdAt)}</span>
             </div>
 
             <p className="ailog__condition">{log.condition}</p>

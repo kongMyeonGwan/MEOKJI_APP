@@ -9,78 +9,78 @@
     "condition": "조건 없음",
     "items": [
       {
-        "food_name": "감자전",
+        "foodName": "감자전",
         "category": "한식",
         "reason": "감자만 갈아 부쳐도 쫀득하게 나오는 소박한 전",
-        "cook_time_minutes": 25,
+        "cookTimeMinutes": 25,
         "difficulty": "쉬움",
-        "estimated_cost": 1600,
+        "estimatedCost": 1600,
         "tags": [
           "부침",
           "튀김",
           "한식"
         ],
         "art": "pancake",
-        "image_url": "/images/food/감자전.png"
+        "imageUrl": "/images/food/감자전.png"
       },
       {
-        "food_name": "야채튀김",
+        "foodName": "야채튀김",
         "category": "분식",
         "reason": "고구마와 당근을 채썰어 한 번에 튀겨낸 모듬 튀김",
-        "cook_time_minutes": 25,
+        "cookTimeMinutes": 25,
         "difficulty": "쉬움",
-        "estimated_cost": 1800,
+        "estimatedCost": 1800,
         "tags": [
           "튀김",
           "분식"
         ],
         "art": "pancake",
-        "image_url": "/images/food/야채튀김.png"
+        "imageUrl": "/images/food/야채튀김.png"
       },
       {
-        "food_name": "버섯전",
+        "foodName": "버섯전",
         "category": "한식",
         "reason": "새송이버섯을 도톰하게 썰어 부친 쫄깃한 전",
-        "cook_time_minutes": 20,
+        "cookTimeMinutes": 20,
         "difficulty": "쉬움",
-        "estimated_cost": 1900,
+        "estimatedCost": 1900,
         "tags": [
           "부침",
           "튀김",
           "한식"
         ],
         "art": "pancake",
-        "image_url": "/images/food/버섯전.png"
+        "imageUrl": "/images/food/버섯전.png"
       },
       {
-        "food_name": "부추전",
+        "foodName": "부추전",
         "category": "한식",
         "reason": "부추 향이 살아있는 가볍고 바삭한 전",
-        "cook_time_minutes": 20,
+        "cookTimeMinutes": 20,
         "difficulty": "쉬움",
-        "estimated_cost": 1900,
+        "estimatedCost": 1900,
         "tags": [
           "부침",
           "튀김",
           "한식"
         ],
         "art": "pancake",
-        "image_url": null
+        "imageUrl": null
       },
       {
-        "food_name": "애호박전",
+        "foodName": "애호박전",
         "category": "한식",
         "reason": "애호박을 도톰하게 썰어 계란옷을 입힌 담백한 전",
-        "cook_time_minutes": 20,
+        "cookTimeMinutes": 20,
         "difficulty": "쉬움",
-        "estimated_cost": 2000,
+        "estimatedCost": 2000,
         "tags": [
           "부침",
           "튀김",
           "한식"
         ],
         "art": "pancake",
-        "image_url": null
+        "imageUrl": null
       }
     ],
     "weather": null,

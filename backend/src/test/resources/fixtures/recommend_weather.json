@@ -9,90 +9,90 @@
     "condition": "서울 중구 명동 · 맑음 17°",
     "items": [
       {
-        "food_name": "멸치볶음",
+        "foodName": "멸치볶음",
         "category": "한식",
         "reason": "멸치와 꽈리고추를 간장에 볶아낸 밑반찬",
-        "cook_time_minutes": 15,
+        "cookTimeMinutes": 15,
         "difficulty": "쉬움",
-        "estimated_cost": 2400,
+        "estimatedCost": 2400,
         "tags": [
           "볶음",
           "선선한",
           "한식"
         ],
         "art": "stirfry",
-        "image_url": "/images/food/멸치볶음.png"
+        "imageUrl": "/images/food/멸치볶음.png"
       },
       {
-        "food_name": "감자조림",
+        "foodName": "감자조림",
         "category": "한식",
         "reason": "간장에 조려 윤기가 도는 밑반찬 겸 한 끼",
-        "cook_time_minutes": 25,
+        "cookTimeMinutes": 25,
         "difficulty": "쉬움",
-        "estimated_cost": 2600,
+        "estimatedCost": 2600,
         "tags": [
           "조림",
           "선선한",
           "한식"
         ],
         "art": "stew",
-        "image_url": "/images/food/감자조림.png"
+        "imageUrl": "/images/food/감자조림.png"
       },
       {
-        "food_name": "들깨수제비",
+        "foodName": "들깨수제비",
         "category": "한식",
         "reason": "들깨를 풀어 고소하고 걸쭉하게 끓인 수제비",
-        "cook_time_minutes": 35,
+        "cookTimeMinutes": 35,
         "difficulty": "보통",
-        "estimated_cost": 2900,
+        "estimatedCost": 2900,
         "tags": [
           "면",
           "선선한",
           "한식"
         ],
         "art": "noodle",
-        "image_url": "/images/food/들깨수제비.png"
+        "imageUrl": "/images/food/들깨수제비.png"
       },
       {
-        "food_name": "열무비빔밥",
+        "foodName": "열무비빔밥",
         "category": "한식",
         "reason": "아삭한 열무김치를 올려 고추장에 비벼 먹는 밥",
-        "cook_time_minutes": 20,
+        "cookTimeMinutes": 20,
         "difficulty": "쉬움",
-        "estimated_cost": 3500,
+        "estimatedCost": 3500,
         "tags": [
           "덮밥",
           "선선한",
           "한식"
         ],
         "art": "donburi",
-        "image_url": "/images/food/열무비빔밥.png"
+        "imageUrl": "/images/food/열무비빔밥.png"
       },
       {
-        "food_name": "야채볶음",
+        "foodName": "야채볶음",
         "category": "한식",
         "reason": "피망과 당근을 센 불에 빠르게 볶아낸 반찬",
-        "cook_time_minutes": 15,
+        "cookTimeMinutes": 15,
         "difficulty": "쉬움",
-        "estimated_cost": 3600,
+        "estimatedCost": 3600,
         "tags": [
           "볶음",
           "선선한",
           "한식"
         ],
         "art": "stirfry",
-        "image_url": "/images/food/야채볶음.png"
+        "imageUrl": "/images/food/야채볶음.png"
       }
     ],
     "weather": {
       "city": "서울 중구 명동",
       "temp": 17,
-      "feels_like": 17,
+      "feelsLike": 17,
       "humidity": 100,
       "condition": "CLEAR",
-      "condition_text": "맑음",
+      "conditionText": "맑음",
       "comment": "오늘은 맑고 선선한 날씨에요!\n가볍고 든든한 메뉴가 잘 어울려요",
-      "pick_lead": "선선한 날엔 든든한 한 끼 어떠세요?"
+      "pickLead": "선선한 날엔 든든한 한 끼 어떠세요?"
     },
     "bargains": []
   }

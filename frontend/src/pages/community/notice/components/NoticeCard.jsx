@@ -14,7 +14,7 @@ export default function NoticeCard({ notice }) {
         )}
         <span className="notice__title">{notice.title}</span>
         <span className="muted notice__meta">
-          {formatDate(notice.created_at)} · 조회 {notice.view_count}
+          {formatDate(notice.createdAt)} · 조회 {notice.viewCount}
         </span>
         <span className="notice__caret">›</span>
       </Link>

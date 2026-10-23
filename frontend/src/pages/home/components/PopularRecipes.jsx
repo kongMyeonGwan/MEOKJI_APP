@@ -88,8 +88,8 @@ export default function PopularRecipes() {
                 <span className="popular__rank">{index + 1}</span>
                 <FoodThumb item={item} size="md" />
                 <span className="popular__body">
-                  <span className="popular__name">{item.recipe_name || item.food_name}</span>
-                  <span className="popular__likes">♥ {item.like_count}</span>
+                  <span className="popular__name">{item.recipeName || item.foodName}</span>
+                  <span className="popular__likes">♥ {item.likeCount}</span>
                 </span>
               </Link>
             </li>

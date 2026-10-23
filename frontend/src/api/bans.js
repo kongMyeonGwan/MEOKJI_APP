@@ -14,8 +14,8 @@ export const addBan = async (form) => {
   const response = await client.post(
     '/api/bans',
     {
-      ingredient_name: form.ingredientName,
-      ban_type: form.banType,
+      ingredientName: form.ingredientName,
+      banType: form.banType,
     },
     { headers: authHeader() },
   )

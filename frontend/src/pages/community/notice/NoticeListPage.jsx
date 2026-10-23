@@ -29,7 +29,7 @@ export default function NoticeListPage({ user }) {
           return
         }
         setNotices(data.items)
-        setTotalPages(data.total_pages)
+        setTotalPages(data.totalPages)
       } catch (e) {
         if (cancelled) {
           return
@@ -50,7 +50,7 @@ export default function NoticeListPage({ user }) {
   }, [page])
 
   // 로그인하지 않았으면 user 가 null 이다
-  const isAdmin = Boolean(user?.is_admin)
+  const isAdmin = Boolean(user?.isAdmin)
 
   return (
     <div className="card">

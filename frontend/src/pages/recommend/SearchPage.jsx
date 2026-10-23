@@ -26,7 +26,7 @@ export default function SearchPage() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setSuggestions(data.search_suggestions || [])
+        setSuggestions(data.searchSuggestions || [])
       } catch (err) {
         // 예시가 안 보일 뿐이다
       }
@@ -136,7 +136,7 @@ export default function SearchPage() {
       {query && !loading && !error && items.length > 0 && (
         <div className="list-page__cards">
           {items.map((food) => (
-            <FoodCard key={food.food_name} food={food} />
+            <FoodCard key={food.foodName} food={food} />
           ))}
         </div>
       )}

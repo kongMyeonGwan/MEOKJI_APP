@@ -6,6 +6,7 @@ import com.meokji.api.free.entity.FreePostEntity;
 import com.meokji.api.util.Times;
 
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * 글 상세 (서버 → 화면). 글쓰기 · 글 수정의 응답도 이 모양이다.
@@ -17,6 +18,7 @@ import lombok.Getter;
  * 글쓴이 회원 번호 · use_yn 은 내보내지 않는다.
  */
 @Getter
+@ToString
 public class FreePostDetailResponse {
 
     private final Long id;
