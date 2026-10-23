@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import FreePostCard from './components/FreePostCard'
 import CommunityTabs from '../components/CommunityTabs'
 import Pagination from '../../../components/common/Pagination'
@@ -14,17 +14,26 @@ import { getFreePosts } from '../../../api/freePosts'
 // user 는 App 이 내려주는 로그인한 사람이다. 비로그인이면 null 이고,
 // 글쓰기 버튼 대신 로그인 안내를 보여주는 데에만 쓴다.
 // 목록에는 수정 · 삭제가 없으므로 "내 글인지" 는 여기서 따지지 않는다
-// (서버 응답에 is_mine 칸 자체가 없다 — 그건 상세에만 온다).
+// (서버 응답에 isMine 칸 자체가 없다 — 그건 상세에만 온다).
 //
 // 레시피 후기(/community)와 다른 점
 //   후기는 내 식사 기록을 하나 골라야 글을 쓸 수 있지만, 여기는 그 조건이 없다.
 export default function FreeListPage({ user }) {
+  // 검색어와 페이지는 state 가 아니라 주소에 둔다 (/free?keyword=두부&page=3).
+  // state 에만 두면 3페이지에서 글을 열었다가 뒤로 오거나 새로고침했을 때
+  // 1페이지로 돌아간다. 주소에 있으면 브라우저가 기억해 준다
+  const [searchParams, setSearchParams] = useSearchParams()
+  const searched = searchParams.get('keyword') || '' // 실제로 서버에 보낸 검색어
+
+  // 주소의 page 는 사람이 고쳐 넣을 수도 있다 (?page=abc, ?page=0).
+  // 서버는 1 미만을 400 으로 막으므로 여기서 1 로 맞춘다
+  const pageParam = Number(searchParams.get('page'))
+  const page = Number.isInteger(pageParam) && pageParam >= 1 ? pageParam : 1
+
   // 입력칸 글자와 "실제로 검색한 말" 을 따로 둔다. 하나로 쓰면 한 글자 칠
-  // 때마다 useEffect 가 돌아 서버를 계속 부른다. Enter 를 누를 때만 searched 에
+  // 때마다 useEffect 가 돌아 서버를 계속 부른다. Enter 를 누를 때만 주소에
   // 옮겨 담아서 그때 한 번만 받아오게 한다
-  const [keyword, setKeyword] = useState('') // 입력칸에 치고 있는 글자
-  const [searched, setSearched] = useState('') // 실제로 서버에 보낸 검색어
-  const [page, setPage] = useState(1)
+  const [keyword, setKeyword] = useState(searched) // 입력칸에 치고 있는 글자
 
   const [posts, setPosts] = useState([])
   const [totalPages, setTotalPages] = useState(1)
@@ -32,14 +41,47 @@ export default function FreeListPage({ user }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // 주소를 바꾼다. 기본값(검색어 없음 · 1페이지)은 주소에 적지 않는다
+  const moveTo = (nextKeyword, nextPage, replace = false) => {
+    const params = {}
+    if (nextKeyword) {
+      params.keyword = nextKeyword
+    }
+    if (nextPage > 1) {
+      params.page = String(nextPage)
+    }
+    setSearchParams(params, { replace: replace })
+  }
+
+  // 뒤로 가기로 주소의 검색어가 바뀌면 입력칸도 맞춘다
+  useEffect(() => {
+    setKeyword(searched)
+  }, [searched])
+
+  // 지금 보고 있는 목록 주소. 글을 열 때 같이 넘겨서, 상세의 "목록" 버튼이
+  // 1페이지가 아니라 보던 페이지로 돌아오게 한다
+  const query = searchParams.toString()
+  const listUrl = query ? `/free?${query}` : '/free'
+
   // 검색어나 페이지가 바뀌면 다시 받아온다
   useEffect(() => {
     const load = async () => {
       setLoading(true)
+      let moved = false // 마지막 페이지로 옮겼는지
       try {
         const data = await getFreePosts(searched, page)
+
+        // 없는 페이지면 (?page=99, 또는 마지막 페이지의 글이 지워진 경우)
+        // 빈 목록과 함께 페이지 버튼까지 사라져서 빠져나올 길이 없다.
+        // 마지막 페이지로 옮긴다. replace 라서 뒤로 가기에 99페이지가 남지 않는다
+        if (data.totalPages > 0 && page > data.totalPages) {
+          moved = true
+          moveTo(searched, data.totalPages, true)
+          return
+        }
+
         setPosts(data.items || [])
-        setTotalPages(data.total_pages)
+        setTotalPages(data.totalPages)
         setTotal(data.total)
         setError('')
       } catch (err) {
@@ -59,7 +101,11 @@ export default function FreeListPage({ user }) {
           setError(err.message)
         }
       } finally {
-        setLoading(false)
+        // 옮겼으면 새 페이지를 받아올 때까지 로딩을 그대로 둔다.
+        // 여기서 끄면 그 사이에 "아직 글이 없습니다" 가 잠깐 보인다
+        if (!moved) {
+          setLoading(false)
+        }
       }
     }
     load()
@@ -68,12 +114,11 @@ export default function FreeListPage({ user }) {
   // 검색. 2페이지를 보다가 검색하면 1페이지부터 다시 본다
   const handleSearch = (e) => {
     e.preventDefault() // 폼이 새로고침되는 걸 막는다
-    setPage(1)
-    setSearched(keyword.trim())
+    moveTo(keyword.trim(), 1)
   }
 
   const changePage = (nextPage) => {
-    setPage(nextPage)
+    moveTo(searched, nextPage)
     window.scrollTo(0, 0)
   }
 
@@ -131,7 +176,7 @@ export default function FreeListPage({ user }) {
 
           <div className="divided free__list">
             {posts.map((post) => (
-              <FreePostCard key={post.id} post={post} />
+              <FreePostCard key={post.id} post={post} listUrl={listUrl} />
             ))}
           </div>
 

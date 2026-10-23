@@ -28,6 +28,7 @@ public interface PostCommentRepository extends JpaRepository<PostCommentEntity, 
 
     /** 글 하나의 댓글 전부. 오래된 순 (대화 순서로 읽힌다) */
     @Query(value = """
+            /* findViewsByPost */
             SELECT c.id         AS "id",
                    c.user_id    AS "userId",
                    c.content    AS "content",

@@ -122,16 +122,16 @@ export default function GamePage() {
 
           {today ? (
             <div className="gpage__result-on">
-              <p className="muted gpage__result-from">{today.game_title}에서 고른 메뉴</p>
+              <p className="muted gpage__result-from">{today.gameTitle}에서 고른 메뉴</p>
 
               {/* 뽑힌 요리 사진. 룰렛은 요리가 아니라 분류(한식)를 뽑아서 사진을 안 그린다 */}
-              {today.game_key !== 'roulette' && (
+              {today.gameKey !== 'roulette' && (
                 <span className="gpage__result-thumb">
                   <FoodThumb item={today} size="md" />
                 </span>
               )}
 
-              <strong className="gpage__result-food">{today.food_name}</strong>
+              <strong className="gpage__result-food">{today.foodName}</strong>
               <Link to={today.link} className="btn btn--sm gpage__result-go">
                 레시피 보기 →
               </Link>
@@ -158,10 +158,10 @@ export default function GamePage() {
             <ul className="gpage__recent-list">
               {recent.map((item) => (
                 <li key={item.id}>
-                  <Link to={`/recipe/${item.food_name}`}>
+                  <Link to={`/recipe/${item.foodName}`}>
                     <FoodThumb item={item} size="lg" />
-                    <strong className="gpage__recent-name">{item.food_name}</strong>
-                    <span className="muted gpage__recent-date">{formatDate(item.selected_at)}</span>
+                    <strong className="gpage__recent-name">{item.foodName}</strong>
+                    <span className="muted gpage__recent-date">{formatDate(item.selectedAt)}</span>
                   </Link>
                 </li>
               ))}

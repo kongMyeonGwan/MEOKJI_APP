@@ -10,13 +10,13 @@ export const register = async (form) => {
     password: form.password,
     nickname: form.nickname,
     gender: form.gender,
-    address_sido: form.addressSido,
-    address_sigungu: form.addressSigungu,
+    addressSido: form.addressSido,
+    addressSigungu: form.addressSigungu,
   })
   return response.data
 }
 
-// 로그인. { access_token, user } 가 온다.
+// 로그인. { accessToken, user } 가 온다.
 export const login = async (form) => {
   const response = await client.post('/api/auth/login', {
     email: form.email,
@@ -48,7 +48,7 @@ export const changePassword = async (email, code, newPassword) => {
   const response = await client.post('/api/auth/password-reset/change', {
     email,
     code,
-    new_password: newPassword,
+    newPassword: newPassword,
   })
   return response.data
 }

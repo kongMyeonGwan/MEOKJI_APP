@@ -1,27 +1,56 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import NoticeCard from './components/NoticeCard'
 import CommunityTabs from '../components/CommunityTabs'
 import Pagination from '../../../components/common/Pagination'
-import { SAMPLE_NOTICES } from '../../../data/sampleBoard'
+import { getNotices } from '../../../api/notices' // ★ noticeApi → notices
 
 // 공지사항 목록 (/notice).
 // 보기는 누구나 되고, 작성 · 수정 · 삭제는 관리자만 된다.
-//
-// 퍼블리싱만 된 화면이다. 가데이터를 그리고, 페이지 번호 색만 바뀐다.
-// 공지 작성 버튼도 지금은 늘 보인다.
-//
-// TODO(공지 담당)
-//   - 목록을 getNotices({ page }) 로 받아온다 (notices · totalPages 를 state 로)
-//     고정 공지(pinned)가 위, 그 다음 최신순으로 서버가 정렬해서 준다
-//   - 공지 작성 버튼을 관리자일 때만 보이게 한다 (user.is_admin)
-//     로그인한 사람은 App.jsx 의 <Route> 에서 user={user} 로 받는다
-//   - 로딩 · 오류 · 빈 목록 상태를 붙인다 (CODE_STYLE 3번)
-export default function NoticeListPage() {
+// 고정 공지(pinned)가 위, 그 다음 최신순으로 서버가 정렬해서 준다.
+export default function NoticeListPage({ user }) {
   const [page, setPage] = useState(1)
+  const [notices, setNotices] = useState([])
+  const [totalPages, setTotalPages] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const notices = SAMPLE_NOTICES
-  const totalPages = 2 // 가데이터. 버튼 모양만 보여준다
+  // page 가 바뀔 때마다 서버에서 다시 받아온다
+  useEffect(() => {
+    // 페이지를 빠르게 넘겼을 때 늦게 도착한 옛 응답이 화면을 덮어쓰지 않게 한다
+    let cancelled = false
+
+    const load = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await getNotices({ page })
+        if (cancelled) {
+          return
+        }
+        setNotices(data.items)
+        setTotalPages(data.totalPages)
+      } catch (e) {
+        if (cancelled) {
+          return
+        }
+        setError('공지사항을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [page])
+
+  // 로그인하지 않았으면 user 가 null 이다
+  const isAdmin = Boolean(user?.isAdmin)
 
   return (
     <div className="card">
@@ -30,14 +59,20 @@ export default function NoticeListPage() {
           공지사항
         </h2>
 
-        <Link to="/notice/write" className="btn btn--sm">
-          공지 작성
-        </Link>
+        {isAdmin && (
+          <Link to="/notice/write" className="btn btn--sm">
+            공지 작성
+          </Link>
+        )}
       </div>
 
       <p className="muted notice-page__desc">서비스 점검 · 업데이트 소식을 안내해드립니다.</p>
 
       <CommunityTabs />
+
+      {loading && <p className="muted">불러오는 중입니다...</p>}
+      {error && <p className="muted">{error}</p>}
+      {!loading && !error && notices.length === 0 && <p className="muted">등록된 공지가 없습니다.</p>}
 
       <ul className="notice-list">
         {notices.map((notice) => (
@@ -45,7 +80,7 @@ export default function NoticeListPage() {
         ))}
       </ul>
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      {totalPages > 0 && <Pagination page={page} totalPages={totalPages} onChange={setPage} />}
     </div>
   )
 }

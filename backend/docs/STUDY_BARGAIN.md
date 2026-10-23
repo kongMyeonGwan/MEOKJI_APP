@@ -66,7 +66,7 @@ data/bargains.json                         훑은 결과 캐시 파일 (git 에 
 ```json
 {
   "condition": "시세 시금치 26%↓ 외 7건",
-  "items":    [ { "food_name": "부추전", "reason": "부추 향이 살아있는 ...", ... } ],
+  "items":    [ { "foodName": "부추전", "reason": "부추 향이 살아있는 ...", ... } ],
   "weather":  null,
   "bargains": [ { "name": "시금치", "percent": -26.4, "price": 530,
                   "unit": "100g", "surveyed_at": "20261007" } ]
@@ -199,7 +199,7 @@ percent = (now - was) / was × 100
 
 이 카드의 요청은 검색어도, 날씨도, 카테고리도, 예산도 없다. 그러면
 `FoodScorer.scoreFood()` 는 모든 메뉴에 0점을 준다. 정렬이
-**점수 → `estimated_cost` 싼 순 → 이름순** 이라, 결국
+**점수 → `estimatedCost` 싼 순 → 이름순** 이라, 결국
 
 > **카탈로그에서 예상 비용이 가장 싼 메뉴 4개** 가 나온다.
 

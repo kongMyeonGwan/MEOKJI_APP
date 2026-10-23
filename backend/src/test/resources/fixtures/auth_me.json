@@ -9,10 +9,10 @@
     "id": 197,
     "email": "minji@example.com",
     "nickname": "민지의부엌",
-    "created_at": "2026-09-11T21:29:42.955000Z",
+    "createdAt": "2026-09-11T21:29:42.955000Z",
     "gender": "FEMALE",
-    "address_sido": "서울특별시",
-    "address_sigungu": "마포구",
-    "is_admin": false
+    "addressSido": "서울특별시",
+    "addressSigungu": "마포구",
+    "isAdmin": false
   }
 }

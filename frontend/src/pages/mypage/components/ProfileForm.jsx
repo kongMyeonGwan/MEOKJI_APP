@@ -13,7 +13,7 @@ const GENDERS = [
   { value: '', label: '선택 안 함' },
   { value: 'MALE', label: '남성' },
   { value: 'FEMALE', label: '여성' },
-  { value: 'OTHER', label: '기타' },
+  { value: 'OTHER', label: '익명' },
 ]
 
 export default function ProfileForm({ profile, onSaved }) {
@@ -24,8 +24,8 @@ export default function ProfileForm({ profile, onSaved }) {
   })
 
   // 사는 곳. AddressPicker 가 두 값을 같이 바꿔서 따로 둔다
-  const [sido, setSido] = useState(profile.address_sido || '')
-  const [sigungu, setSigungu] = useState(profile.address_sigungu || '')
+  const [sido, setSido] = useState(profile.addressSido || '')
+  const [sigungu, setSigungu] = useState(profile.addressSigungu || '')
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')

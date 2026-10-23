@@ -103,7 +103,7 @@ export default function RecipePage({ user }) {
     try {
       await createHistory(recipe)
       setSaved(true)
-      markPicked(recipe.food_name) // AI 추천 기록에도 "이걸로 정함" 표시
+      markPicked(recipe.foodName) // AI 추천 기록에도 "이걸로 정함" 표시
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.
       if (err.response) {
@@ -177,8 +177,8 @@ export default function RecipePage({ user }) {
 
         <header className="recipe-page__head">
           <div>
-            <h2 className="recipe-page__name">{recipe.food_name}</h2>
-            <p className="muted recipe-page__sub">{recipe.recipe_name}</p>
+            <h2 className="recipe-page__name">{recipe.foodName}</h2>
+            <p className="muted recipe-page__sub">{recipe.recipeName}</p>
           </div>
           <span className="recipe-page__cost">
             재료비 {formatPrice(price.min)}
@@ -192,9 +192,9 @@ export default function RecipePage({ user }) {
         </header>
 
         <RecipeView
-          recipe={recipe.recipe_json}
-          ingredients={recipe.ingredients_json}
-          substitutes={recipe.substitutes_json}
+          recipe={recipe.recipeJson}
+          ingredients={recipe.ingredientsJson}
+          substitutes={recipe.substitutesJson}
           prices={recipe.prices}
         />
       </section>

@@ -22,9 +22,11 @@ import { createReview, uploadReviewFile } from '../../../api/reviews'
 //   - 제목 · 기록 · 내용이 비었는지 검사한다 (기록은 selected 가 있는지로 본다)
 //   - 고른 사진을 미리보기로 바꿔 보여준다 (5MB 이하 이미지만)
 //   - 등록하면 createReview → uploadReviewFile 순서로 보내고 쓴 글로 이동한다
-//     서버는 snake_case 로 받는다 → { meal_history_id: selected.id, title, content }
 
+//     서버는 snake_case 로 받는다 → { meal_history_id: selected.id, title, content }
 const CONTENT_MAX = 2000 // 본문 최대 글자 수
+
+//     서버는 snake_case 로 받는다 → { mealHistoryId: selected.id, title, content }
 
 export default function ReviewWritePage() {
   // 주소의 ?historyId=5 (없으면 빈 문자열)
@@ -184,7 +186,7 @@ export default function ReviewWritePage() {
               <option value="">기록을 선택해주세요</option>
               {histories.map((history) => (
                 <option key={history.id} value={history.id}>
-                  {formatDate(history.selected_at)} · {history.food_name} — {history.recipe_name}
+                  {formatDate(history.selectedAt)} · {history.foodName} — {history.recipeName}
                 </option>
               ))}
             </select>
@@ -195,14 +197,14 @@ export default function ReviewWritePage() {
           {selected && (
             <div className="write__history">
               <p className="write__history-head">
-                <strong>{selected.food_name}</strong>
-                <span className="muted"> · {selected.recipe_name}</span>
-                <span className="muted write__history-cost">{formatPrice(selected.estimated_cost)}</span>
+                <strong>{selected.foodName}</strong>
+                <span className="muted"> · {selected.recipeName}</span>
+                <span className="muted write__history-cost">{formatPrice(selected.estimatedCost)}</span>
               </p>
               <RecipeView
-                recipe={selected.recipe_json}
-                ingredients={selected.ingredients_json}
-                substitutes={selected.substitutes_json}
+                recipe={selected.recipeJson}
+                ingredients={selected.ingredientsJson}
+                substitutes={selected.substitutesJson}
               />
             </div>
           )}

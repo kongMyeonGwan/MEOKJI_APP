@@ -90,11 +90,11 @@ export default function WeatherPick() {
             {weather.temp}
             <span className="wpick__unit">°C</span>
           </strong>
-          <span className="wpick__cond">{weather.condition_text}</span>
+          <span className="wpick__cond">{weather.conditionText}</span>
         </p>
         <p className="wpick__location muted">{weather.city}</p>
         <p className="wpick__meta muted">
-          <span>체감 {weather.feels_like}°C</span>
+          <span>체감 {weather.feelsLike}°C</span>
           <span className="wpick__bar" />
           <span>습도 {weather.humidity}%</span>
         </p>
@@ -112,27 +112,27 @@ export default function WeatherPick() {
             if (food.tags) {
               food.tags.forEach((tag) => tags.push(tag))
             }
-            const band = priceBand(food.estimated_cost)
+            const band = priceBand(food.estimatedCost)
             if (band) {
               tags.push(band)
             }
 
             return (
-              <li className="wpick__pick" key={`${food.food_name}-${index}`}>
-                <Link to={`/recipe/${food.food_name}`} className="wpick__thumb">
+              <li className="wpick__pick" key={`${food.foodName}-${index}`}>
+                <Link to={`/recipe/${food.foodName}`} className="wpick__thumb">
                   <FoodThumb item={food} size="lg" />
                 </Link>
 
                 <div className="wpick__body">
                   <span className="wpick__badge">AI가 추천했어요! ✨</span>
-                  <p className="wpick__lead">{weather.pick_lead}</p>
-                  <h1 className="wpick__name">{food.food_name}</h1>
+                  <p className="wpick__lead">{weather.pickLead}</p>
+                  <h1 className="wpick__name">{food.foodName}</h1>
 
                   <p className="wpick__meta-line">
-                    예상 비용 <span className="price">{formatPrice(food.estimated_cost)}</span>
+                    예상 비용 <span className="price">{formatPrice(food.estimatedCost)}</span>
                     <span className="wpick__dot" />
                     <Icon name="clock" size={15} className="wpick__meta-icon" />
-                    {formatMinutes(food.cook_time_minutes)}
+                    {formatMinutes(food.cookTimeMinutes)}
                     <span className="wpick__dot" />
                     난이도 {food.difficulty}
                   </p>
@@ -140,7 +140,7 @@ export default function WeatherPick() {
                   {food.reason && <p className="muted wpick__reason">{food.reason}</p>}
 
                   <div className="wpick__actions">
-                    <Link to={`/recipe/${food.food_name}`} className="btn">
+                    <Link to={`/recipe/${food.foodName}`} className="btn">
                       레시피 보기
                     </Link>
                   </div>

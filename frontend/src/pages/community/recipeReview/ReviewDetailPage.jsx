@@ -18,7 +18,7 @@ const COMMENT_MAX = 1000 // 댓글 최대 글자 수
 //   - 조회수를 countReviewView(reviewId) 로 올린다
 //   - 좋아요 · 댓글 등록/수정/삭제 · 글 수정/삭제 · 사진 첨부를 붙인다
 //   - 로그인 여부로 버튼을 가린다 (App.jsx 의 <Route> 에서 user={user} 를 넘겨받는다)
-//   - 내 글인지는 서버가 주는 is_mine 으로 판단한다
+//   - 내 글인지는 서버가 주는 isMine 으로 판단한다
 export default function ReviewDetailPage() {
   const review = SAMPLE_REVIEW_DETAIL
   const comments = SAMPLE_REVIEW_DETAIL.comments
@@ -58,9 +58,9 @@ export default function ReviewDetailPage() {
 
             <div className="review__meta">
               <span>{review.nickname}</span>
-              <span className="muted">{formatDateTime(review.created_at)}</span>
-              <span className="muted">조회 {review.view_count}</span>
-              {review.food_name && <span className="tag">{review.food_name}</span>}
+              <span className="muted">{formatDateTime(review.createdAt)}</span>
+              <span className="muted">조회 {review.viewCount}</span>
+              {review.foodName && <span className="tag">{review.foodName}</span>}
             </div>
 
             <div className="review__content">{review.content}</div>
@@ -70,19 +70,19 @@ export default function ReviewDetailPage() {
         )}
 
         {/* 글쓴이가 먹은 레시피 */}
-        {review.recipe_json && (
+        {review.recipeJson && (
           <div className="review__recipe">
-            <RecipeView recipe={review.recipe_json} ingredients={review.ingredients_json} />
+            <RecipeView recipe={review.recipeJson} ingredients={review.ingredientsJson} />
           </div>
         )}
 
         <div className="review__actions">
           <button type="button" className={review.liked ? 'review__like is-on' : 'review__like'}>
-            ♥ {review.like_count}
+            ♥ {review.likeCount}
           </button>
 
           {/* 내 글이면 수정/삭제 버튼 */}
-          {review.is_mine && !editing && (
+          {review.isMine && !editing && (
             <span className="review__owner-actions">
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => setEditing(true)}>
                 수정

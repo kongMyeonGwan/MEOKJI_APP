@@ -204,7 +204,7 @@ class PriceTest {
         // 없으면 화면이 재료 목록과 가격표의 줄 수가 안 맞는다.
         assertThat(prices.size())
                 .as("재료 수와 가격 줄 수가 같아야 한다")
-                .isEqualTo(body.get("ingredients_json").size());
+                .isEqualTo(body.get("ingredientsJson").size());
 
         int surveyed = 0;
         int withOffers = 0;
@@ -212,18 +212,18 @@ class PriceTest {
         for (JsonNode item : prices) {
             // 칸이 하나도 빠지지 않아야 한다
             assertThat(item.propertyNames()).contains(
-                    "name", "offers", "trend", "need_text",
-                    "low_cost", "high_cost", "min_unit", "buy_text", "surveyed");
+                    "name", "offers", "trend", "needText",
+                    "lowCost", "highCost", "minUnit", "buyText", "surveyed");
 
             // 이름에 분량이 붙어 있다 ("돼지고기 300g")
             assertThat(item.get("name").asString()).contains(" ");
 
-            // need_text 는 조사가격이 있을 때만 채운다. 값은 알 수 있지만
+            // needText 는 조사가격이 있을 때만 채운다. 값은 알 수 있지만
             // 정답지가 그 모양이라 맞춘다 (PriceServiceImpl: 가격이 없으면 그 전에 돌려준다).
             if (item.get("offers").isEmpty()) {
-                assertThat(item.get("need_text").isNull()).as("%s", item.get("name")).isTrue();
+                assertThat(item.get("needText").isNull()).as("%s", item.get("name")).isTrue();
             } else {
-                assertThat(item.get("need_text").isNull()).isFalse();
+                assertThat(item.get("needText").isNull()).isFalse();
             }
 
             if (item.get("surveyed").asBoolean()) {
@@ -233,10 +233,10 @@ class PriceTest {
                 withOffers++;
 
                 // 조사가격이 있으면 계산된 값도 있어야 한다
-                assertThat(item.get("low_cost").isNull()).isFalse();
-                assertThat(item.get("high_cost").isNull()).isFalse();
-                assertThat(item.get("low_cost").asInt())
-                        .isLessThanOrEqualTo(item.get("high_cost").asInt());
+                assertThat(item.get("lowCost").isNull()).isFalse();
+                assertThat(item.get("highCost").isNull()).isFalse();
+                assertThat(item.get("lowCost").asInt())
+                        .isLessThanOrEqualTo(item.get("highCost").asInt());
 
                 JsonNode first = item.get("offers").get(0);
                 assertThat(first.get("link").asString()).startsWith("https://www.kamis.or.kr");

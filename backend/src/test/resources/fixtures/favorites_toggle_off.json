@@ -6,7 +6,7 @@
   },
   "status": 200,
   "body": {
-    "food_name": "김치찌개",
+    "foodName": "김치찌개",
     "favorited": false,
     "count": 0
   }

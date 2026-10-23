@@ -30,7 +30,7 @@ export const addLog = (source, condition, foods) => {
     condition: condition || '',
     foods: foods,
     picked: null,
-    created_at: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
   }
 
   // 최신이 위로 오게 앞에 넣고, 50개까지만 남긴다
@@ -53,7 +53,7 @@ export const clearLogs = () => {
 }
 
 // 추천 결과에서 음식 이름만 뽑는다
-//   [{ food_name: '김치찌개', ... }] -> ['김치찌개']
+//   [{ foodName: '김치찌개', ... }] -> ['김치찌개']
 export const foodNames = (items) => {
-  return items.map((item) => item.food_name)
+  return items.map((item) => item.foodName)
 }

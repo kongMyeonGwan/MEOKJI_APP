@@ -278,7 +278,7 @@ MEOKJI_APP/
 | | `GET /api/notices/{id}` | | ✗ 공지 상세 |
 | | `POST·PUT·DELETE /api/notices[/{id}]` | ▲ | ✗ 공지 작성 · 수정 · 삭제 |
 | free-posts | `GET /api/free-posts` | | 자유게시판 목록 · 검색 · 페이징 (`?keyword=&page=1&size=20`) |
-| | `GET /api/free-posts/{id}` | | 상세 + 댓글 (로그인하면 `is_mine` 이 채워진다) |
+| | `GET /api/free-posts/{id}` | | 상세 + 댓글 (로그인하면 `isMine` 이 채워진다) |
 | | `POST·PUT·DELETE /api/free-posts[/{id}]` | ● | 글쓰기 · 수정 · 삭제 (내 글만) |
 | | `POST /api/free-posts/{id}/view` | | 조회수 +1 |
 | | `POST·PUT·DELETE /api/free-posts/{id}/comments[/{cid}]` | ● | 댓글 (내 댓글만 수정 · 삭제) |
