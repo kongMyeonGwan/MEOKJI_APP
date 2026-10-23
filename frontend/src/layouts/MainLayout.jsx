@@ -5,7 +5,16 @@ import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
 import BottomNav from './components/BottomNav'
 
-export default function MainLayout({ user, onLogout, theme, onThemeChange, notify, onNotifyChange }) {
+export default function MainLayout({
+  user,
+  onLogout,
+  theme,
+  onThemeChange,
+  notify,
+  onNotifyChange,
+  likeCount,
+  onLikeCountChange,
+}) {
   const location = useLocation()
 
   // 사이드바 열기 / 닫기. 웹 모드(1024px 이상)는 연 채로 시작한다

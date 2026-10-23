@@ -55,6 +55,7 @@ export default function App() {
   const [user, setUser] = useState(getSavedUser())
   const [theme, setTheme] = useState(getSavedTheme())
   const [notify, setNotify] = useState(getSavedNotify())
+  const [likeCount, setLikeCount] = useState(0)
 
   // ----- 로그인 · 로그아웃 -----
   // 로그인 정보를 브라우저에 저장하고 지우는 건 전부 여기서 한다.
@@ -159,6 +160,8 @@ export default function App() {
               onThemeChange={handleThemeChange}
               notify={notify}
               onNotifyChange={handleNotifyChange}
+              likeCount={likeCount}
+              onLikeCountChange={setLikeCount}
             />
           }
         >
