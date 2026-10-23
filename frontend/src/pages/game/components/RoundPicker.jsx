@@ -17,9 +17,10 @@ import { Link } from 'react-router-dom'
 //   describe     : (value) => 드롭다운 아래 안내 문장
 //   steps        : (value) => 진행 순서 ['32강', '16강', ..., '결승']
 //   onStart      : 시작하기를 누르면 고른 value 를 넘겨 부른다
+//   corner       : (없어도 된다) 카드 오른쪽 위에 둘 버튼. 예) 월드컵의 명예의 전당
 //
 // 스타일은 styles/index.css 의 '메뉴 게임' 구역(RoundPicker)에 있다.
-export default function RoundPicker({ icon, title, tags, label, choices, defaultValue, describe, steps, onStart }) {
+export default function RoundPicker({ icon, title, tags, label, choices, defaultValue, describe, steps, onStart, corner }) {
   const [value, setValue] = useState(defaultValue)
 
   // select 의 값은 늘 글자로 온다. 숫자로 바꿔서 들고 있는다
@@ -37,6 +38,8 @@ export default function RoundPicker({ icon, title, tags, label, choices, default
       <section className="card round-pick">
         {/* ----- 위: 아이콘 · 제목 · 태그 ----- */}
         <header className="round-pick__head">
+          {corner && <div className="round-pick__corner">{corner}</div>}
+
           <span className="round-pick__icon">{icon}</span>
           <h2 className="round-pick__title">{title}</h2>
 

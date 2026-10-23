@@ -7,11 +7,13 @@ import Loading from '../../components/common/Loading'
 import { getRecommendations } from '../../api/recommendations'
 import { GAME_KEYS, recordGamePlay } from '../../api/games'
 import { getFavorites, toggleFavorite } from '../../api/favorites'
+import { recordWorldcupWin } from '../../api/worldcup'
 import { addLog, foodNames, markPicked } from '../../utils/aiLog'
 import { saveResult } from '../../utils/gameResult'
 import { formatMinutes, formatPrice } from '../../utils/format'
 import RoundPicker from './components/RoundPicker'
 import Confetti from './components/Confetti'
+import HallOfFameButton from './components/HallOfFameButton'
 
 // 음식 이상형 월드컵. 후보를 둘씩 붙여서 하나를 고르면 다음 라운드로 올라간다.
 // 시작 전에 64강 · 32강 · 16강 중 하나를 고른다.
@@ -124,6 +126,9 @@ export default function WorldCupPage({ user }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [liked, setLiked] = useState(false) // 우승 메뉴를 찜했는지
+  // 명예의 전당을 다시 받아오게 하는 값. 이번 우승이 저장되면 1 늘려서
+  // 우승 화면의 순위표가 방금 판까지 센 순위로 새로 뜨게 한다
+  const [rankKey, setRankKey] = useState(0)
 
   // 후보를 받아와서 고른 크기만큼 대진표를 새로 짠다
   const startGame = async (bracketSize) => {
@@ -200,6 +205,14 @@ export default function WorldCupPage({ user }) {
       markPicked(champion) // AI 추천 기록에 "이걸로 정함" 표시
       // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값 (브라우저에만 저장한다)
       saveResult('worldcup', '음식 이상형 월드컵', champion, `/recipe/${champion}`)
+
+      // 명예의 전당에 남긴다 (로그인했을 때만). 결승에서 진 쪽도 같이 보내 결승 진출 횟수를 센다
+      if (user) {
+        const runnerUp = food === round[index] ? round[index + 1] : round[index]
+        recordWorldcupWin({ foodName: champion, runnerUp: runnerUp.food_name, roundSize: size }).then(() => {
+          setRankKey((key) => key + 1)
+        })
+      }
       setLiked(false)
       checkLiked(nextWinners[0].food_name)
     }
@@ -233,7 +246,7 @@ export default function WorldCupPage({ user }) {
     }
   }
 
-  // 아직 크기를 안 골랐으면 고르는 화면
+  // 아직 크기를 안 골랐으면 고르는 화면. 카드 오른쪽 위에 명예의 전당 바로가기 버튼을 둔다
   if (size === null) {
     return (
       <RoundPicker
@@ -246,6 +259,7 @@ export default function WorldCupPage({ user }) {
         describe={describeSize}
         steps={sizeSteps}
         onStart={handleSelectSize}
+        corner={<HallOfFameButton />}
       />
     )
   }
@@ -281,6 +295,11 @@ export default function WorldCupPage({ user }) {
     return (
       <div className="list-page list-page--narrow game-screen">
         <div className="card wc wc--done">
+          {/* 오른쪽 위: 명예의 전당 바로가기. 이번 우승이 저장되면 순위를 새로 받아온다 */}
+          <div className="wc__done-corner">
+            <HallOfFameButton highlight={champion.food_name} refreshKey={rankKey} />
+          </div>
+
           <p className="wc__crown">🏆</p>
           <p className="wc__round">오늘의 우승 메뉴</p>
           <h2 className="wc__champion">{champion.food_name}</h2>

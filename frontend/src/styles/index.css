@@ -7728,3 +7728,249 @@ a.btn { display: inline-block; text-align: center; }
   /* 좁으면 제목 줄의 버튼이 제목 아래로 내려간다 */
   .game-screen .section-head { flex-wrap: wrap; }
 }
+
+/* ----- 월드컵 명예의 전당 ----- */
+/* 라운드 고르는 화면: 카드 오른쪽 위 구석에 [🏆 명예의 전당] 을 띄운다.
+   카드 위에 따로 줄을 두면 카드가 아래로 밀려 시작하기 버튼이 화면 밖으로 잘린다 */
+.round-pick__head { position: relative; }
+
+.round-pick__corner {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+@media (max-width: 640px) {
+  /* 좁으면 아이콘과 겹치니 제목 줄 위에 가운데로 둔다 */
+  .round-pick__corner { position: static; margin: -28px 0 6px; }
+}
+
+.wc-rank {
+  width: 100%;
+  max-width: 720px;
+  justify-self: center;
+  padding: 22px 24px 18px;
+}
+
+.wc-rank__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 12px;
+}
+
+.wc-rank__title { margin: 0; font-size: 18px; font-weight: 800; }
+
+.wc-rank__total { font-size: 13px; }
+
+.wc-rank__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 한 줄: [왕관 1위][사진 음식 이름][우승 · 결승 횟수] */
+.wc-rank__item {
+  display: grid;
+  grid-template-columns: 4.2em minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+
+/* 1등 줄은 연한 금색으로 띄운다 */
+.wc-rank__item--top { background: #fff6d9; }
+[data-theme='dark'] .wc-rank__item--top { background: #3a3220; }
+
+.wc-rank__no {
+  position: relative;
+  padding-left: 24px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-muted);
+}
+
+.wc-rank__crown {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translateY(-50%);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+
+/* 금 · 은 · 동 (메뉴 게임 화면의 플레이 통계 왕관과 같은 색) */
+.wc-rank__crown--1 { fill: #f5b800; stroke: #b07f00; }
+.wc-rank__crown--2 { fill: #c3cad3; stroke: #7f8a97; }
+.wc-rank__crown--3 { fill: #d0874a; stroke: #8c5422; }
+
+.wc-rank__food {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font-size: 15px;
+}
+
+.wc-rank__food strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wc-rank__food:hover strong { color: var(--color-accent); }
+
+.wc-rank__food .thumb--sm { border-radius: 50%; }
+
+/* 창(HallOfFameButton) 안에 들어간 순위. 카드 테두리 · 여백 없이 창 폭을 다 쓴다 */
+.wc-rank--bare {
+  max-width: none;
+  padding: 0;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.wc-rank--bare .wc-rank__head { justify-content: center; margin-bottom: 10px; }
+
+/* 명예의 전당 창. 모양은 룰렛 당첨 창(.roulette-win__box)을 그대로 쓰고 폭만 넓힌다 */
+.hof-modal { max-width: 480px; }
+
+.hof-modal__desc { margin: -4px 0 4px; font-size: 13px; }
+
+/* 우승 화면 오른쪽 위 [🏆 명예의 전당] */
+.wc--done { position: relative; }
+
+.wc__done-corner {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+/* [🏆 명예의 전당] 버튼. 금색 트로피 느낌으로 띄운다.
+   금색 그라데이션 + 진한 금 테두리 + 위쪽 하이라이트, 그리고 몇 초마다 빛이 한 번 스쳐 지나간다 */
+.hof-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px 8px 10px;
+  border: 1.5px solid #c99400;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #ffe680 0%, #ffcc33 55%, #f2b100 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 4px 12px rgba(201, 148, 0, 0.35);
+  font: inherit;
+  color: #4a3200;
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+/* 지나가는 빛줄기 */
+.hof-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+  transform: skewX(-20deg);
+  animation: hof-shine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hof-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 8px 18px rgba(201, 148, 0, 0.45);
+}
+
+.hof-btn:active { transform: translateY(0); }
+
+/* 트로피는 흰 동그라미 안에 넣어 크게 */
+.hof-btn__trophy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 0 0 1.5px rgba(201, 148, 0, 0.5);
+  font-size: 19px;
+  line-height: 1;
+}
+
+.hof-btn:hover .hof-btn__trophy { animation: hof-bounce 0.5s ease; }
+
+.hof-btn__text {
+  display: grid;
+  justify-items: start;
+  line-height: 1.15;
+}
+
+.hof-btn__text strong { font-size: 15px; font-weight: 800; letter-spacing: 0.02em; }
+
+.hof-btn__text small { font-size: 11px; font-weight: 600; color: #7a5600; }
+
+@keyframes hof-shine {
+  0%, 60% { left: -60%; }
+  100% { left: 130%; }
+}
+
+@keyframes hof-bounce {
+  40% { transform: translateY(-4px) rotate(-8deg); }
+  70% { transform: translateY(0) rotate(4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hof-btn::after { animation: none; display: none; }
+  .hof-btn:hover .hof-btn__trophy { animation: none; }
+}
+
+@media (max-width: 560px) {
+  /* 좁으면 오른쪽 위에 겹치지 않게 카드 맨 위 줄로 내린다 */
+  .wc__done-corner { position: static; display: flex; justify-content: flex-end; margin-bottom: 8px; }
+}
+
+/* 우승 화면에서 방금 우승한 메뉴의 줄 */
+.wc-rank__item--mine { box-shadow: inset 0 0 0 2px var(--color-accent); }
+
+.wc-rank__mine {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.wc-rank__count {
+  display: grid;
+  justify-items: end;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.wc-rank__count .muted { font-size: 12px; }
+
+.wc-rank__empty { margin: 6px 0; font-size: 14px; text-align: center; }
+
+.wc-rank__note { margin: 12px 0 0; font-size: 12px; text-align: center; }
+
+@media (max-width: 560px) {
+  .wc-rank { padding: 18px 16px 14px; }
+  .wc-rank__item { grid-template-columns: 3.8em minmax(0, 1fr) auto; gap: 8px; padding: 8px; }
+}

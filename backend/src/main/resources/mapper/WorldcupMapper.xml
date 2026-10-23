@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.meokji.api.game.dao.WorldcupDAO">
+
+    <insert id="insertWin">
+        INSERT INTO worldcup_wins (user_id, food_name, runner_up, round_size)
+        VALUES (#{userId}, #{foodName}, #{runnerUp, jdbcType=VARCHAR}, #{roundSize})
+    </insert>
+
+    <!--
+        우승한 음식은 win = 1, 결승에서 진 음식은 win = 0 으로 한 줄씩 펼친 뒤 음식별로 센다.
+          wins   : win 의 합 = 우승 횟수
+          finals : 줄 수     = 결승 진출 횟수
+        준우승만 하고 우승은 못 한 음식은 순위에 넣지 않는다 (HAVING).
+    -->
+    <select id="selectRankings" resultType="com.meokji.api.game.vo.WorldcupRankVO">
+        SELECT food_name, SUM(win) AS wins, COUNT(*) AS finals
+        FROM (
+            SELECT food_name, 1 AS win FROM worldcup_wins
+            UNION ALL
+            SELECT runner_up, 0 AS win FROM worldcup_wins WHERE runner_up IS NOT NULL
+        )
+        GROUP  BY food_name
+        HAVING SUM(win) > 0
+        ORDER  BY wins DESC, finals DESC, food_name
+        FETCH FIRST #{limit} ROWS ONLY
+    </select>
+
+    <select id="countWins" resultType="long">
+        SELECT COUNT(*) FROM worldcup_wins
+    </select>
+
+</mapper>

@@ -4,6 +4,7 @@ import FoodThumb from '../../components/common/FoodThumb'
 import { getCatalog } from '../../api/catalog'
 import { getGameStats } from '../../api/gameStats'
 import { getTodayResult } from '../../utils/gameResult'
+import Crown from './components/Crown'
 
 // 메뉴 게임 목록 (월드컵 / 밸런스 / 룰렛).
 //   위   : 배너
@@ -28,16 +29,6 @@ const TITLES = {
   worldcup: '음식 이상형 월드컵',
   balance: '음식 취향 밸런스 게임',
   roulette: '음식 룰렛',
-}
-
-// 순위 왕관. 색은 CSS 가 순위(1 · 2 · 3)에 따라 금 · 은 · 동으로 칠한다
-function Crown({ rank }) {
-  return (
-    <svg className={`gpage__crown gpage__crown--${rank}`} viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M3 8.5l4.6 3.6L12 4.5l4.4 7.6L21 8.5 19.4 18H4.6z" />
-      <rect x="4.6" y="19.2" width="14.8" height="2.3" rx="1" />
-    </svg>
-  )
 }
 
 export default function GamePage() {
@@ -153,7 +144,7 @@ export default function GamePage() {
                 return (
                   <li key={item.game_key} className={`gpage__stat gpage__stat--${toneOf(item.game_key)}`} title={`${titleOf(item.game_key, item.game_key)} ${item.plays.toLocaleString()}회 (${share}%)`}>
                     <span className="gpage__stat-rank">
-                      {rank >= 1 && rank <= 3 && <Crown rank={rank} />}
+                      {rank >= 1 && rank <= 3 && <Crown rank={rank} className="gpage__crown" />}
                       <span className="gpage__stat-rank-no">{rank > 0 ? `${rank}위` : '-'}</span>
                     </span>
                     <span className="gpage__stat-name">{titleOf(item.game_key, item.game_key)}</span>
