@@ -1,9 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import FoodThumb from '../../../components/common/FoodThumb'
+import Icon from '../../../components/common/Icon'
+import Loading from '../../../components/common/Loading'
 import { getCatalog } from '../../../api/catalog'
+import { getRecommendations } from '../../../api/recommendations'
+import { addLog, foodNames } from '../../../utils/aiLog'
 import { saveResult } from '../../../utils/gameResult'
+import { formatMinutes, formatPrice } from '../../../utils/format'
+import Confetti from './Confetti'
 
-// 음식 추천 룰렛. 돌려서 나온 종류(한식, 중식...)로 추천 화면에 넘어간다.
+// 음식 추천 룰렛. 돌려서 나온 종류(한식, 중식...)에서 오늘의 한 끼를 하나 골라준다.
+//
+// 당첨되면
+//   1. 폭죽이 터지고 '오늘의 한 끼!' 창이 뜬다
+//   2. 그 분류에서 음식 3개를 추천받아, 첫 번째를 오늘의 한 끼로 크게 보여주고
+//      나머지 둘은 '이런 메뉴도 있어요' 로 작게 보여준다
+//   3. 창을 닫으면 판 아래에 결과 한 줄이 남는다
 //
 // 그리는 방법
 //   CSS 의 conic-gradient 로 동그라미를 색깔별로 나눈다.
@@ -16,13 +29,49 @@ import { saveResult } from '../../../utils/gameResult'
 
 const SPIN_TIME = 3000 // 도는 시간 (3초)
 
+// 당첨될 수 있는 분류. 판에는 서버가 주는 8가지(한식 · 중식 · 일식 ...)가 다 보이지만,
+// 요리 100종이 거의 한식 · 국탕이라 나머지가 걸리면 추천이 텅 빈다. 그래서 바늘은 이 둘에만 멈춘다.
+const WINNABLE = ['한식', '국탕']
+
+// 조각 이름 위에 붙는 그림. 서버가 모르는 분류를 보내면 그림 없이 이름만 나온다
+const EMOJI = {
+  한식: '🍚',
+  중식: '🥟',
+  일식: '🍣',
+  양식: '🍝',
+  분식: '🍢',
+  아시안: '🍜',
+  샐러드: '🥗',
+  국탕: '🍲',
+}
+
+// 판 테두리에 두르는 전구 개수
+const BULBS = 16
+
 export default function Roulette() {
   const [slices, setSlices] = useState([]) // 조각 목록 [{ label: '한식', color: '#f97316' }, ...]
   const [angle, setAngle] = useState(0) // 지금 돌아간 각도
   const [spinning, setSpinning] = useState(false) // 도는 중인지
   const [result, setResult] = useState(null) // 당첨된 조각
+  const [foods, setFoods] = useState([]) // 당첨된 분류의 추천 음식 3개. 첫 번째가 오늘의 한 끼
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [popupOpen, setPopupOpen] = useState(false) // 당첨 창이 떠 있는지
+  const [confetti, setConfetti] = useState(0) // 바뀔 때마다 폭죽이 한 번 터진다
 
-  const navigate = useNavigate()
+  // 당첨 창은 Esc 로도 닫는다
+  useEffect(() => {
+    if (!popupOpen) {
+      return
+    }
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setPopupOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [popupOpen])
 
   // 룰렛 조각 목록을 서버에서 받아온다
   useEffect(() => {
@@ -54,8 +103,14 @@ export default function Roulette() {
       return
     }
 
-    // 1. 당첨 조각 번호를 뽑는다 (0 ~ 조각수-1)
-    const picked = Math.floor(Math.random() * slices.length)
+    // 1. 당첨 조각 번호를 뽑는다. WINNABLE 에 든 조각 중에서만 고른다
+    //    (서버가 한식 · 국탕을 안 보내면 판 전체에서 고른다)
+    const indexes = slices.map((slice, i) => i)
+    let candidates = indexes.filter((i) => WINNABLE.includes(slices[i].label))
+    if (candidates.length === 0) {
+      candidates = indexes
+    }
+    const picked = candidates[Math.floor(Math.random() * candidates.length)]
 
     // 2. 당첨 조각의 가운데가 12시(바늘)에 오려면 얼마나 돌려야 하는지
     const pickedCenter = picked * sliceDeg + sliceDeg / 2
@@ -67,37 +122,87 @@ export default function Roulette() {
 
     setSpinning(true)
     setResult(null)
+    setFoods([])
+    setError('')
+    setPopupOpen(false)
 
     // 4. 다 돈 다음(3초 뒤)에 결과를 보여준다
     setTimeout(() => {
       setSpinning(false)
       setResult(slices[picked])
+      setPopupOpen(true)
+      setConfetti((count) => count + 1)
 
-      // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값.
-      // 룰렛은 음식이 아니라 분류(한식 · 중식)를 뽑아서, 레시피가 아니라
-      // 그 분류의 추천 목록으로 보낸다
-      const label = slices[picked].label
-      saveResult('roulette', '랜덤 돌림판', label, `/recommend?category=${encodeURIComponent(label)}`)
+      loadFoods(slices[picked].label)
     }, SPIN_TIME)
+  }
+
+  // 당첨된 분류에서 음식 3개를 추천받는다
+  const loadFoods = async (label) => {
+    // 오늘의 한 끼를 못 고르면 '오늘의 게임 결과' 는 분류의 추천 목록으로 보낸다
+    const categoryLink = `/recommend?category=${encodeURIComponent(label)}`
+
+    setLoading(true)
+    try {
+      const data = await getRecommendations({ source: '메뉴 게임', limit: 3, category: label })
+      const items = data.items || []
+      setFoods(items)
+      addLog('음식 룰렛', label, foodNames(items))
+
+      // 메뉴 게임 화면의 '오늘의 게임 결과' 에 띄울 값. 오늘의 한 끼(첫 번째)의 레시피로 보낸다
+      if (items.length > 0) {
+        const top = items[0].foodName
+        saveResult('roulette', '음식 룰렛', top, `/recipe/${top}`)
+      } else {
+        saveResult('roulette', '음식 룰렛', label, categoryLink)
+      }
+    } catch (err) {
+      setError('추천 메뉴를 불러오지 못했어요.')
+      saveResult('roulette', '음식 룰렛', label, categoryLink)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const reset = () => {
     setResult(null)
+    setFoods([])
+    setError('')
+    setPopupOpen(false)
     setAngle(0)
+  }
+
+  // 당첨 창에서 '다시 돌리기'
+  const spinAgain = () => {
+    setPopupOpen(false)
+    spin()
   }
 
   return (
     <section className="card roulette">
       <div className="section-head">
-        <h2 className="section-title">음식 추천 룰렛</h2>
-        <button type="button" className="roulette__reset" onClick={reset} disabled={spinning}>
-          ↻
-        </button>
+        <h2 className="section-title">음식 룰렛</h2>
+        <div className="game-head-actions">
+          <Link to="/game" className="game-btn">
+            <Icon name="gamepad" className="game-icon-svg" />
+            게임 목록
+          </Link>
+          {/* 초기화. 그림은 public/images/game/icon-reset.png */}
+          <button type="button" className="roulette__reset" onClick={reset} disabled={spinning}>
+            <img src="/images/game/icon-reset.png" alt="" />
+            <span className="roulette__reset-label">다시하기</span>
+          </button>
+        </div>
       </div>
 
       <p className="muted roulette__desc">뭘 먹을지 고민될 땐 룰렛을 돌려보세요.</p>
 
-      <div className="roulette__stage">
+      <div className={`roulette__stage${spinning ? ' roulette__stage--spinning' : ''}`}>
+        {/* 테두리 전구. 판과 같이 돌지 않게 판 바깥에 둔다. 도는 동안 깜빡인다 */}
+        {Array.from({ length: BULBS }, (_, i) => (
+          <span key={i} className="roulette__bulb" style={{ transform: `rotate(${(360 / BULBS) * i}deg)` }} />
+        ))}
+
         {/* 12시 방향 바늘 */}
         <span className="roulette__needle" />
 
@@ -118,6 +223,7 @@ export default function Roulette() {
               className="roulette__label"
               style={{ transform: `translateX(-50%) rotate(${i * sliceDeg + sliceDeg / 2}deg)` }}
             >
+              {EMOJI[slice.label] && <span className="roulette__label-emoji">{EMOJI[slice.label]}</span>}
               {slice.label}
             </span>
           ))}
@@ -128,14 +234,111 @@ export default function Roulette() {
         </button>
       </div>
 
-      {result && (
+      {/* 창을 닫은 뒤 판 아래에 남는 결과 한 줄 */}
+      {result && !popupOpen && (
         <div className="roulette__result">
-          오늘은 <strong>{result.label}</strong> 어떠세요?
-          <button type="button" className="btn btn--sm" onClick={() => navigate(`/recommend?category=${result.label}`)}>
-            추천 보기
+          {foods.length > 0 ? (
+            <>
+              오늘의 한 끼는 <strong>{foods[0].foodName}</strong>
+              <Link to={`/recipe/${foods[0].foodName}`} className="btn btn--sm">
+                레시피 보기
+              </Link>
+            </>
+          ) : (
+            <>
+              오늘은 <strong>{result.label}</strong> 어떠세요?
+              <Link to={`/recommend?category=${encodeURIComponent(result.label)}`} className="btn btn--sm">
+                추천 보기
+              </Link>
+            </>
+          )}
+          <button type="button" className="btn btn--ghost btn--sm" onClick={() => setPopupOpen(true)}>
+            결과 다시 보기
           </button>
         </div>
       )}
+
+      {/* 당첨 창. 바깥(어두운 곳)을 누르거나 Esc · × 로 닫는다 */}
+      {result && popupOpen && (
+        <div className="roulette-win" onClick={() => setPopupOpen(false)}>
+          <div
+            className="card roulette-win__box"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="roulette-win-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button type="button" className="roulette-win__close" onClick={() => setPopupOpen(false)} aria-label="닫기">
+              ×
+            </button>
+
+            <p className="roulette-win__kicker">
+              {EMOJI[result.label] || '🎯'} {result.label} 당첨!
+            </p>
+            <h3 id="roulette-win-title" className="roulette-win__title">
+              🎉 오늘의 한 끼!
+            </h3>
+
+            {loading && <Loading message={`${result.label} 중에서 고르는 중...`} />}
+
+            {!loading && foods.length > 0 && (
+              <>
+                <div className="roulette-win__thumb">
+                  <FoodThumb item={foods[0]} size="lg" />
+                </div>
+                <strong className="roulette-win__food">{foods[0].foodName}</strong>
+                <p className="muted roulette-win__meta">
+                  <span className="price">{formatPrice(foods[0].estimatedCost)}</span> ·{' '}
+                  {formatMinutes(foods[0].cookTimeMinutes)}
+                </p>
+              </>
+            )}
+
+            {!loading && foods.length === 0 && (
+              <p className="roulette-win__empty">
+                {error || `${result.label} 메뉴를 찾지 못했어요.`}
+                <br />
+                <Link to={`/recommend?category=${encodeURIComponent(result.label)}`}>{result.label} 추천 목록 보기 →</Link>
+              </p>
+            )}
+
+            <div className="roulette-win__actions">
+              {!loading && foods.length > 0 && (
+                <Link to={`/recipe/${foods[0].foodName}`} className="btn">
+                  레시피 보기
+                </Link>
+              )}
+              <button type="button" className="btn btn--ghost game-btn--plain" onClick={spinAgain}>
+                <span className="game-icon game-icon--restart" aria-hidden="true" />
+                다시 돌리기
+              </button>
+              <Link to="/game" className="btn btn--ghost game-btn--plain">
+                <Icon name="gamepad" className="game-icon-svg" />
+                게임 목록
+              </Link>
+            </div>
+
+            {/* 나머지 추천 둘 */}
+            {!loading && foods.length > 1 && (
+              <div className="roulette-win__more">
+                <p className="muted roulette-win__more-title">이런 메뉴도 있어요</p>
+                <ul className="roulette-win__more-list">
+                  {foods.slice(1).map((food) => (
+                    <li key={food.foodName}>
+                      <Link to={`/recipe/${food.foodName}`}>
+                        <FoodThumb item={food} size="sm" />
+                        <span>{food.foodName}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <Confetti fire={confetti} />
     </section>
   )
 }
