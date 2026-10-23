@@ -14,6 +14,10 @@ import { formatDate } from '../../utils/format'
 // 그보다 나중에 온 알림을 "안 읽음" 으로 센다.
 const READ_AT_KEY = 'meokji.notify.readAt'
 
+// 알림은 화면에서 숨겨둔다. 알림 표가 없어서 하나씩 읽음 처리를 할 수 없다.
+// 서버 API(/api/users/me/notifications)는 그대로 있으니 true 로 바꾸면 다시 보인다.
+const SHOW_NOTIFICATIONS = false
+
 export default function TopBar({ onToggleNav, user, onLogout, notify }) {
   // ---------------------------------------
   // state
@@ -90,10 +94,12 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
 
         setLikeCount(likes.count)
 
-        // 알림 목록
-        const notificationList = await getNotifications()
+        // 알림 목록. 숨겨둔 동안은 서버에 묻지 않는다
+        if (SHOW_NOTIFICATIONS) {
+          const notificationList = await getNotifications()
 
-        setNotifications(notificationList)
+          setNotifications(notificationList)
+        }
       } catch (error) {
         console.log('사용자 정보를 가져오지 못했습니다.')
       }
@@ -230,8 +236,9 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
          ========================= */}
 
       <div className="topbar__actions">
-        {/* 알림 */}
+        {/* 알림. 숨겨둔 동안은 종 아이콘을 그리지 않는다 */}
 
+        {SHOW_NOTIFICATIONS && (
         <div className="topbar__bell-wrap">
           <button type="button" className="topbar__icon-btn" onClick={() => togglePanel('bell')}>
             <Icon name="bell" size={21} />
@@ -283,6 +290,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify }) {
             </div>
           )}
         </div>
+        )}
 
         {/* =========================
             찜

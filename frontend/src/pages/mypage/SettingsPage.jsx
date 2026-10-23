@@ -88,22 +88,22 @@ export default function SettingsPage({ user, onLogout, theme, onThemeChange, not
         </div>
       </section>
 
-      {/* 알림 */}
-      <section className="card settings">
+      {/* 알림. 알림을 숨겨둬서 설정도 숨긴다 (TopBar.jsx 의 SHOW_NOTIFICATIONS)
+          체크박스를 CSS 로 스위치 모양으로 꾸몄다 */}
+      {/* <section className="card settings">
         <h3 className="settings__title">알림</h3>
         <div className="settings__row">
           <div>
             <p className="settings__label">댓글 · 좋아요 알림</p>
             <p className="settings__desc muted">내 글에 달린 댓글과 좋아요를 상단 종 아이콘에 모아서 보여드려요.</p>
           </div>
-          {/* 체크박스를 CSS 로 스위치 모양으로 꾸몄다 */}
           <label className="switch">
             <input type="checkbox" checked={notify} onChange={(e) => onNotifyChange(e.target.checked)} />
             <span className="switch__track" />
             <span className="switch__text">{notify ? '켜짐' : '꺼짐'}</span>
           </label>
         </div>
-      </section>
+      </section> */}
 
       {/* 내 데이터 */}
       <section className="card settings">
