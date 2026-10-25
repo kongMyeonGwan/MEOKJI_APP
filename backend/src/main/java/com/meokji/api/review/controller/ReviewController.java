@@ -1,7 +1,9 @@
 package com.meokji.api.review.controller;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import com.meokji.api.review.repository.ReviewPopularView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -164,4 +166,40 @@ public class ReviewController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
                 .body(file.bytes());
     }
+
+    @PostMapping("/{postId}/like")
+    public  void toggleLike(
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @PathVariable Long postId){
+        UserVO loginUser = authService.getLoginUser(token);
+        Long userId = loginUser.getId();
+
+        reviewService.toggleLike(postId, userId);
+    }
+
+    @GetMapping("/{postId}/like/count")
+    public long getLikeCount(@PathVariable Long postId) {
+        return reviewService.getLikeCount(postId);
+    }
+
+    @GetMapping("/{postId}/likes/me")
+    public boolean isLiked(
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @PathVariable Long postId) {
+
+        UserVO loginUser = authService.getLoginUser(token);
+        Long userId = loginUser.getId();
+
+        return reviewService.isLiked(postId, userId);
+    }
+
+    // 인기 레시피 조회
+    @GetMapping("/popular")
+    public List<ReviewPopularView> getPopular(
+            @RequestParam String start,
+            @RequestParam String end){
+
+        return reviewService.getPopular(start, end);
+    }
+
 }

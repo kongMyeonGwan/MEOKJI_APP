@@ -66,4 +66,41 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     @Query(value = "SELECT view_count FROM recipe_reviews WHERE id = :id", nativeQuery = true)
     int findViewCount(@Param("id") Long id);
 
+    // [인기 레시피] 선택한 기간에 좋아요를 많이 받은 게시글 조회
+    @Query(value = """
+    SELECT R.ID AS "id",
+           R.TITLE AS "title",
+        MAX(DBMS_LOB.SUBSTR(R.CONTENT, 200, 1)) AS "summary",
+        COUNT(*) AS "likeCount",
+        M.FOOD_NAME AS "foodName",
+        M.RECIPE_NAME AS "recipeName",
+        U.NICKNAME AS "nickname",
+        M.ESTIMATED_COST AS "estimatedCost",
+        JSON_VALUE(M.RECIPE_JSON, '$.cook_time_minutes' RETURNING NUMBER) AS "cookTimeMinutes",
+            (SELECT COUNT(c.id)
+               FROM post_comments c
+              WHERE c.board_type = 'R'
+                AND c.post_id = R.ID
+                AND c.use_yn = 'Y') AS "commentCount"
+    FROM REVIEW_LIKES L
+    JOIN RECIPE_REVIEWS R ON L.REVIEW_ID = R.ID
+        JOIN MEAL_HISTORIES M ON R.MEAL_HISTORY_ID = M.ID
+        JOIN USERS U ON R.USER_ID = U.ID
+    WHERE L.USE_YN = 'Y'
+      AND R.USE_YN = 'Y'
+      AND L.CREATED_AT >= TO_DATE(:start, 'YYYY-MM-DD')
+      AND L.CREATED_AT < TO_DATE(:end, 'YYYY-MM-DD') + 1
+    GROUP BY R.ID,
+             R.TITLE,
+             M.FOOD_NAME,
+             M.RECIPE_NAME,
+             U.NICKNAME,
+             M.ESTIMATED_COST,
+             JSON_VALUE(M.RECIPE_JSON,'$.cook_time_minutes' RETURNING NUMBER)
+    ORDER BY COUNT(*) DESC, R.ID ASC
+    FETCH FIRST 6 ROWS ONLY
+    """, nativeQuery = true)
+    List<ReviewPopularView> findPopular(@Param("start") String start,
+                                        @Param("end") String end);
+
 }

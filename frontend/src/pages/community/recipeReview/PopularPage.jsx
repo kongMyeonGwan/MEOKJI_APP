@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DateRangeFilter from '../../../components/common/DateRangeFilter'
 import PopularCard from './components/PopularCard'
-import { SAMPLE_POPULAR } from '../../../data/sampleBoard'
+//import { SAMPLE_POPULAR } from '../../../data/sampleBoard'
 import { shiftDays, toDateKey } from '../../../utils/format'
+import { getPopular } from '../../../api/reviews'
+
 
 // 인기 레시피 전체 목록 + 기간 검색. 좋아요가 많은 순으로 카드를 늘어놓는다.
 //
@@ -24,8 +26,23 @@ export default function PopularPage() {
   const [preset, setPreset] = useState('ALL')
   const [start, setStart] = useState(toDateKey(shiftDays(-364)))
   const [end, setEnd] = useState(toDateKey(new Date()))
+  const [items, setItems] = useState([])
+  const [error, setError] = useState('')
 
-  const items = SAMPLE_POPULAR
+  // 데이터 조회 getPopular
+  useEffect(() => {
+    const load = async () => {
+     
+        
+      
+      const data = await getPopular({ start, end })
+
+      setItems(data)
+      
+      
+    }
+    load()
+  }, [start, end])
 
   // 전체 / 오늘 / 이번 주 / 이번 달 칩을 눌렀을 때
   const choosePreset = (item) => {

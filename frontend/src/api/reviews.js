@@ -42,8 +42,15 @@ export const createReview = async (form) => {
 
 // 좋아요 켜기 / 끄기. { liked, likeCount } 가 온다.
 export const setReviewLike = async (reviewId, liked) => {
-  throw new Error(NOT_READY)
+  const response = await client.post(
+    `/api/reviews/${reviewId}/like`,
+    null,
+    { headers: authHeader() }
+  )
 }
+
+
+
 
 // 글 수정 (제목, 본문)
 export const updateReview = async (reviewId, form) => {
@@ -121,5 +128,11 @@ export const removeReviewComment = async (reviewId, commentId) => {
 
 // 인기 레시피. 기간 안에 좋아요를 많이 받은 순.
 export const getPopular = async (options) => {
-  throw new Error(NOT_READY)
+  const response = await client.get(`/api/reviews/popular`, {
+    params: {
+      start: options.start,
+      end: options.end,
+    },
+  })
+  return response.data
 }

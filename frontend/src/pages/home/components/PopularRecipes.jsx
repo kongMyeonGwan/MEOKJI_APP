@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import FoodThumb from '../../../components/common/FoodThumb'
 import DateRangeFilter from '../../../components/common/DateRangeFilter'
-import { SAMPLE_POPULAR } from '../../../data/sampleBoard'
+//import { SAMPLE_POPULAR } from '../../../data/sampleBoard'
 import { shiftDays, toDateKey } from '../../../utils/format'
+import { getPopular } from '../../../api/reviews'
 
 // 인기 레시피 순위 (첫 화면 오른쪽). 기간 안에 좋아요를 많이 받은 순.
 //
@@ -22,8 +23,18 @@ export default function PopularRecipes() {
   const [preset, setPreset] = useState('D30')
   const [start, setStart] = useState(toDateKey(shiftDays(-29)))
   const [end, setEnd] = useState(toDateKey(new Date()))
+  const [items, setItems] = useState([])
 
-  const items = SAMPLE_POPULAR
+  useEffect(() => {
+    const load = async () => {
+      const data = await getPopular({ start, end })
+
+      setItems(data)
+    }
+    load()
+  }, [start, end])
+
+  // const items = SAMPLE_POPULAR
 
   // 오늘 / 7일 / 30일 탭을 눌렀을 때
   const choosePreset = (item) => {
@@ -84,7 +95,7 @@ export default function PopularRecipes() {
           {items.map((item, index) => (
             <li key={item.id}>
               {/* 레시피가 아니라 '레시피 추천' 게시판의 후기 글로 간다 */}
-              <Link to={`/community/${item.id}`} className="popular__row">
+              <Link to={`/reviews/${item.id}`} className="popular__row">
                 <span className="popular__rank">{index + 1}</span>
                 <FoodThumb item={item} size="md" />
                 <span className="popular__body">

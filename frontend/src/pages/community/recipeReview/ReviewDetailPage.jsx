@@ -7,6 +7,7 @@ import RecipeView from '../../../components/common/RecipeView'
 import Loading from '../../../components/common/Loading'
 import ErrorMessage from '../../../components/common/ErrorMessage'
 import {
+  setReviewLike,
   addReviewComment,
   countReviewView,
   removeReviewComment,
@@ -44,6 +45,20 @@ export default function ReviewDetailPage({ user }) {
 
   const navigate = useNavigate()
 
+  // 좋아요 버튼 클릭시 하트색 변경
+  const handleLike = async () => {
+    try {
+      await setReviewLike(reviewId, review.liked);
+      const data = await getReview(reviewId);
+
+      console.log("좋아요 여부:", data.liked);
+      console.log("좋아요 개수:", data.likeCount);
+
+      setReview(data);
+    } catch (err) {
+      setActionError(messageOf(err));
+    }
+  };
 
   const messageOf = (err) => {
     if (err.response) {
@@ -300,7 +315,9 @@ export default function ReviewDetailPage({ user }) {
         )}
 
         <div className="review__actions">
-          <button type="button" className={review.liked ? 'review__like is-on' : 'review__like'}>
+          <button type="button"
+            onClick={handleLike}
+            className={review.liked ? 'review__like is-on' : 'review__like'}>
             ♥ {review.likeCount}
           </button>
 

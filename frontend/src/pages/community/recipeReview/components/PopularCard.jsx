@@ -27,7 +27,7 @@ export default function PopularCard({ item, rank }) {
   }
 
   // 레시피가 아니라 '레시피 추천' 게시판의 후기 글로 간다
-  const postUrl = `/community/${item.id}`
+  const postUrl = `/reviews/${item.id}`
 
   return (
     <article className="rank-card">
@@ -44,7 +44,8 @@ export default function PopularCard({ item, rank }) {
         <div className="rank-card__head">
           <h3 className="rank-card__name">
             {/* 레시피 이름이 없으면 음식 이름을 쓴다 */}
-            <Link to={postUrl}>{item.recipeName || item.foodName}</Link>
+            {/* item.recipeName || item.foodName */}
+            <Link to={postUrl}>{item.title}</Link>
           </h3>
 
           <button
@@ -61,7 +62,8 @@ export default function PopularCard({ item, rank }) {
 
         <div className="rank-card__meta">
           <span className="rank-card__writer">
-            <span className="rank-card__avatar">{item.nickname.slice(0, 1)}</span>
+            {/* {item.nickname.slice(0, 1)}</span> */}
+            <span className="rank-card__avatar">{item.nickname?.slice(0, 1) || '?'}</span>
             {item.nickname}
           </span>
 
@@ -72,7 +74,7 @@ export default function PopularCard({ item, rank }) {
         </div>
 
         <div className="rank-card__tags">
-          {item.tags.map((tag) => (
+          {(item.tags ?? []).map((tag) => (
             <span key={tag} className="tag rank-card__tag">
               #{tag}
             </span>

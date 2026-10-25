@@ -11,12 +11,10 @@ import com.meokji.api.review.dto.ReviewFileResponse;
 import com.meokji.api.review.dto.ReviewRequest;
 import com.meokji.api.review.entity.ReviewEntity;
 import com.meokji.api.review.entity.ReviewCommentEntity;
-import com.meokji.api.review.repository.ReviewCommentView;
+import com.meokji.api.review.entity.ReviewLikeEntity;
+import com.meokji.api.review.repository.*;
 import com.meokji.api.review.dto.ReviewDetailResponse;
 import com.meokji.api.review.dto.ReviewListResponse;
-import com.meokji.api.review.repository.ReviewCommentRepository;
-import com.meokji.api.review.repository.ReviewListView;
-import com.meokji.api.review.repository.ReviewRepository;
 import com.meokji.api.user.vo.UserVO;
 import com.meokji.api.util.FileStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 public class ReviewService {
+
+    @Autowired
+    private ReviewLikeRepository reviewLikeRepository;
 
     @Autowired
     private ReviewRepository reviewRepository;
@@ -40,9 +42,14 @@ public class ReviewService {
     @Autowired
     private FileStore fileStore;
 
-    public Page<ReviewListResponse> getList(String keyword, int page, int size){
+
+
+    // 리뷰 목록 조회
+    public Page<ReviewListResponse> getList(String keyword, int page, int size) {
+        // 빈 검색어는 "검색 안 함" 이다. SQL 이 null 만 그렇게 본다
         String safeKeyword = (keyword == null || keyword.isBlank()) ? null : keyword;
 
+        // offset 과 total_pages 계산은 Paging 이 한다 (common/Paging.java)
         Paging paging = new Paging(page, size);
         paging.setTotal(reviewRepository.countAlive(safeKeyword));
 
@@ -259,12 +266,20 @@ public class ReviewService {
             comments.add(toComment(row, loginUser));
         }
 
+        // 좋아요 기능 추가, 로그인 사용자의 좋아요 여부와 게시글 전체 좋아요 수 조회
+        boolean liked = loginUser != null
+                && isLiked(post.getId(), loginUser.getId());
+        long likeCount = getLikeCount(post.getId());
+
         return new ReviewDetailResponse(
                 post,
                 reviewRepository.findNickname(post.getUserId()),
                 toFile(post),
                 comments,
-                isMine(loginUser, post.getUserId())); // 이쪽은 글쓴이 기준
+                isMine(loginUser, post.getUserId()), // 이쪽은 글쓴이 기준
+                liked,     // (추가) 로그인 사용자의 좋아요 여부
+                likeCount // (추가) 게시글 전체 좋아요 수
+        );
     }
 
     /** 첨부 사진 응답. 없으면 null — 화면은 file 이 없으면 사진 자리를 통째로 안 그린다 */
@@ -294,4 +309,44 @@ public class ReviewService {
 
         fileStore.delete(post.getFilePath(), post.getFileName());
     }
+    // =========================== 좋아요 ===================================
+
+    @Transactional
+    public void toggleLike(Long reviewId, Long userId) {
+
+        // 존재하지 않거나 삭제된 게시글에는 좋아요를 누르지 못하도록 검사(gpt추천)
+        findAlivePost(reviewId);
+
+        // 조회
+        Optional<ReviewLikeEntity> like =
+        reviewLikeRepository.findByUserIdAndReviewId(userId, reviewId);
+
+        // 좋아요 한번 더 클릭시 좋아요 해제
+        if(like.isPresent()) {
+            ReviewLikeEntity entity = like.get();
+            if("Y".equals(entity.getUseYn())){
+                entity.deactivate();
+            } else {
+                entity.activate();
+            }
+        }else {
+            ReviewLikeEntity entity =
+                    ReviewLikeEntity.create(userId, reviewId);
+
+            reviewLikeRepository.save(entity);
+        }
+    }
+    // ============================= 좋아요 조회 =============================
+    public long getLikeCount(Long reviewId) {
+        return reviewLikeRepository.countByReviewIdAndUseYn(reviewId, "Y");
+    }
+
+    public boolean isLiked(Long reviewId, Long userId) {
+        return reviewLikeRepository.existsByUserIdAndReviewIdAndUseYn(userId, reviewId, "Y");
+    }
+    // [인기 레시피] 선택한 기간의 인기 게시글 조회
+    public List<ReviewPopularView> getPopular(String start, String end) {
+        return reviewRepository.findPopular(start, end);
+    }
+
 }

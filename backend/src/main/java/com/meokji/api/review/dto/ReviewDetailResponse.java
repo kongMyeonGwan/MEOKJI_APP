@@ -20,13 +20,26 @@ public class ReviewDetailResponse {
     private final ReviewFileResponse file;        // 첨부가 없으면 null — 화면이 사진 자리를 안 그린다
 
     private final Boolean isMine;
+    // (추가) 좋아요
+    private final boolean liked;
+    private final long likeCount;
 
     private final List<ReviewCommentResponse> comments; // 오래된 순
     private final String createdAt;
     private final String updatedAt;
 
-    public ReviewDetailResponse(ReviewEntity review, String nickname, ReviewFileResponse file,
-                                List<ReviewCommentResponse> comments, boolean isMine){
+
+
+    public ReviewDetailResponse(
+            ReviewEntity review,
+            String nickname,
+            ReviewFileResponse file,
+            List<ReviewCommentResponse> comments,
+            boolean isMine,
+            boolean liked,
+            Long likeCount
+            ) //
+    {
         this.id = review.getId();
         this.title = review.getTitle();
         this.meal_history_id = review.getMeal_history_Id();
@@ -40,5 +53,7 @@ public class ReviewDetailResponse {
         this.comments = comments;
         this.createdAt = Times.toText(review.getCreatedAt());
         this.updatedAt = Times.toText(review.getUpdatedAt());
+        this.liked = liked;
+        this.likeCount = likeCount;
         }
 }
