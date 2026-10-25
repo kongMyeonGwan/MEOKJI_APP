@@ -13,7 +13,7 @@ export default function HistoryPage() {
   const [histories, setHistories] = useState([])
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [stats, setStats] = useState(null) // { count: 총 건수, total_cost: 누적 금액 }
+  const [stats, setStats] = useState(null) // { count: 총 건수, totalCost: 누적 금액 }
   const [openId, setOpenId] = useState(null) // 펼쳐진 기록의 id
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -23,7 +23,7 @@ export default function HistoryPage() {
     try {
       const data = await getHistories({ page: page })
       setHistories(data.items || [])
-      setTotalPages(data.total_pages)
+      setTotalPages(data.totalPages)
     } catch (err) {
       // 서버가 보낸 오류 문장을 그대로 보여준다.
       if (err.response) {
@@ -77,7 +77,7 @@ export default function HistoryPage() {
 
   // 기록 삭제
   const handleDelete = async (item) => {
-    if (!window.confirm(`'${item.food_name}' 기록을 지울까요?`)) {
+    if (!window.confirm(`'${item.foodName}' 기록을 지울까요?`)) {
       return
     }
 
@@ -148,7 +148,7 @@ export default function HistoryPage() {
           </h2>
           {stats && (
             <span className="muted history__summary">
-              총 {stats.count}건 · 누적 {formatPrice(stats.total_cost)}
+              총 {stats.count}건 · 누적 {formatPrice(stats.totalCost)}
             </span>
           )}
         </div>
@@ -157,26 +157,26 @@ export default function HistoryPage() {
           {histories.map((item) => (
             <li key={item.id} className="history__item">
               <button type="button" className="history__row" onClick={() => toggleOpen(item.id)}>
-                <span className="history__date">{formatDate(item.selected_at)}</span>
+                <span className="history__date">{formatDate(item.selectedAt)}</span>
                 <span className="history__names">
-                  <strong>{item.food_name}</strong>
-                  <span className="muted"> · {item.recipe_name}</span>
+                  <strong>{item.foodName}</strong>
+                  <span className="muted"> · {item.recipeName}</span>
                 </span>
-                <span className="history__cost">{formatPrice(item.estimated_cost)}</span>
+                <span className="history__cost">{formatPrice(item.estimatedCost)}</span>
                 <span className="history__arrow">{openId === item.id ? '▲' : '▼'}</span>
               </button>
 
               {openId === item.id && (
                 <div className="history__detail">
                   <RecipeView
-                    recipe={item.recipe_json}
-                    ingredients={item.ingredients_json}
-                    substitutes={item.substitutes_json}
+                    recipe={item.recipeJson}
+                    ingredients={item.ingredientsJson}
+                    substitutes={item.substitutesJson}
                   />
 
                   <p className="muted history__share">
-                    {item.recipe_review_id ? (
-                      <Link to={`/reviews/${item.recipe_review_id}`} className="history__link">
+                    {item.recipeReviewId ? (
+                      <Link to={`/reviews/${item.recipeReviewId}`} className="history__link">
                         레시피 공유한 글 보기 →
                       </Link>
                     ) : (
@@ -187,7 +187,7 @@ export default function HistoryPage() {
                   </p>
 
                   <div className="history__actions">
-                    <Link to={`/recipe/${item.food_name}`} className="btn btn--ghost btn--sm">
+                    <Link to={`/recipe/${item.foodName}`} className="btn btn--ghost btn--sm">
                       이 메뉴 다시 보기
                     </Link>
                     <button

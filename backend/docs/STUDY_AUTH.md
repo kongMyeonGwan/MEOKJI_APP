@@ -85,7 +85,7 @@ App.jsx                       user state 를 들고 props 로 내려줌
                                ③ checkPassword()         틀리면 loginFailed()
                                ④ resetLoginFailCount()   성공하면 0 으로
 4  AuthController.login()      jwtUtil.createToken(user.getId())
-5  TokenVO 로 응답              { access_token, token_type, expires_in, user }
+5  TokenVO 로 응답              { accessToken, tokenType, expiresIn, user }
 6  App.jsx handleLogin()       saveToken / saveUser / setUser
 7  navigate('/')               홈으로
 ```

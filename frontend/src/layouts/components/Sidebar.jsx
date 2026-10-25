@@ -97,12 +97,12 @@ export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify
         </NavLink>
 
         {/* 로그인했을 때만 AI 추천 기록 표시 */}
-        {user && (
+        {/* {user && (
           <NavLink to="/ai-history" className={linkClass} onClick={onNavigate}>
             <Icon name="robot" className="sidebar__icon" />
             <span className="sidebar__label">AI 추천 기록</span>
           </NavLink>
-        )}
+        )} */}
 
         {/* 설정 */}
         <NavLink to="/settings" className={linkClass} onClick={onNavigate}>
@@ -119,15 +119,15 @@ export default function Sidebar({ onNavigate, user, theme, onThemeChange, notify
             <Icon name="gear" size={19} />
           </Link>
 
-          {/* 알림 */}
-          <button
+          {/* 알림 켜기/끄기. 알림을 숨겨둬서 버튼도 숨긴다 (TopBar.jsx 의 SHOW_NOTIFICATIONS) */}
+          {/* <button
             type="button"
             className={notify ? 'sidebar__util is-on' : 'sidebar__util'}
             title={notify ? '알림 켜짐' : '알림 꺼짐'}
             onClick={() => onNotifyChange(!notify)}
           >
             <Icon name="bell" size={19} />
-          </button>
+          </button> */}
 
           {/* 라이트 모드 */}
           <button

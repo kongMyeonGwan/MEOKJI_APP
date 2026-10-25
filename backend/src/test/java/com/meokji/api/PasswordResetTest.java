@@ -186,7 +186,7 @@ class PasswordResetTest {
         // verify 를 부르지 않았으니 used_at 이 NULL 이다.
         MvcResult result = call("password-reset/change",
                 "{\"email\":\"" + MEMBER_EMAIL + "\",\"code\":\"" + code + "\","
-                + "\"new_password\":\"" + MEMBER_PASSWORD + "\"}");
+                + "\"newPassword\":\"" + MEMBER_PASSWORD + "\"}");
 
         assertThat(result.getResponse().getStatus()).isEqualTo(400);
         assertThat(body(result).get("detail").asString())
@@ -247,7 +247,7 @@ class PasswordResetTest {
 
         // 같은 비밀번호로 되돌려 놓는다. 위 클래스 주석 참고.
         String changeJson = "{\"email\":\"" + MEMBER_EMAIL + "\",\"code\":\"" + code + "\","
-                + "\"new_password\":\"" + MEMBER_PASSWORD + "\"}";
+                + "\"newPassword\":\"" + MEMBER_PASSWORD + "\"}";
 
         MvcResult changed = call("password-reset/change", changeJson);
 
@@ -288,7 +288,7 @@ class PasswordResetTest {
 
             MvcResult changed = call("password-reset/change",
                     "{\"email\":\"" + MEMBER_EMAIL + "\",\"code\":\"" + code + "\","
-                    + "\"new_password\":\"" + MEMBER_PASSWORD + "\"}");
+                    + "\"newPassword\":\"" + MEMBER_PASSWORD + "\"}");
 
             assertThat(changed.getResponse().getStatus()).isEqualTo(200);
 

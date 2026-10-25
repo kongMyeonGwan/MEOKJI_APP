@@ -116,15 +116,15 @@ git show e22853f:backend/app/services/post_service.py > post_service.py
 
 ### 상세 `GET /api/reviews/{id}`
 
-- `food_name` · `recipe_json` · `ingredients_json` 은 **복사본이 아니라 원본
+- `foodName` · `recipeJson` · `ingredientsJson` 은 **복사본이 아니라 원본
   `meal_histories` 에서 읽는다.** 기록은 확정한 뒤로 수정하지 않으므로 값이 흔들리지 않는다.
-- `liked` · `is_mine` 은 로그인했을 때만 계산한다. 비로그인이면 둘 다 `false`
+- `liked` · `isMine` 은 로그인했을 때만 계산한다. 비로그인이면 둘 다 `false`
   (컨트롤러가 `authService.findLoginUser(token)` 으로 받아서 넘긴다 — 없으면 `null`).
 - 댓글 표는 `POST_COMMENTS` 이고 **자유게시판과 같이 쓴다.** 모든 문장에
   `board_type = 'R'` 을 걸어야 한다 — 빠뜨리면 자유게시판 댓글이 섞여 나온다.
   (본보기: `resources/mapper/FreeCommentMapper.xml` 이 'F' 로 같은 일을 한다)
 - 댓글은 `created_at, id` **오름차순** (목록과 반대다).
-- 댓글의 `is_mine` 은 "로그인했고 그 댓글을 내가 썼는가".
+- 댓글의 `isMine` 은 "로그인했고 그 댓글을 내가 썼는가".
 
 ### 조회수 `POST /api/reviews/{id}/view`
 

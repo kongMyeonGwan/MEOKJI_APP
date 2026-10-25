@@ -18,15 +18,15 @@ export const getPriceSummary = (prices) => {
 
   prices.forEach((item) => {
     // 가격 계산이 안 된 재료는 건너뛴다
-    if (item.low_cost === null || item.high_cost === null) {
+    if (item.lowCost === null || item.highCost === null) {
       return
     }
 
-    min = min + item.low_cost
-    max = max + item.high_cost
+    min = min + item.lowCost
+    max = max + item.highCost
     counted = counted + 1
 
-    if (item.min_unit) {
+    if (item.minUnit) {
       minUnit = minUnit + 1
     }
   })

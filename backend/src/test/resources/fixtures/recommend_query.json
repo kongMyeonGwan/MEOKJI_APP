@@ -9,57 +9,57 @@
     "condition": "\"얼큰한 국물\"",
     "items": [
       {
-        "food_name": "순두부찌개",
+        "foodName": "순두부찌개",
         "category": "한식",
         "reason": "보드라운 순두부에 얼큰한 국물이 배어드는 찌개",
-        "cook_time_minutes": 20,
+        "cookTimeMinutes": 20,
         "difficulty": "쉬움",
-        "estimated_cost": 4700,
+        "estimatedCost": 4700,
         "tags": [
           "국물",
           "얼큰",
           "한식"
         ],
         "art": "stew",
-        "image_url": "/images/food/순두부찌개.png"
+        "imageUrl": "/images/food/순두부찌개.png"
       },
       {
-        "food_name": "황태해장국",
+        "foodName": "황태해장국",
         "category": "국탕",
         "reason": "황태를 우려 시원하고 칼칼하게 끓인 해장국",
-        "cook_time_minutes": 40,
+        "cookTimeMinutes": 40,
         "difficulty": "보통",
-        "estimated_cost": 5000,
+        "estimatedCost": 5000,
         "tags": [
           "국물",
           "얼큰",
           "국탕"
         ],
         "art": "soup",
-        "image_url": "/images/food/황태해장국.png"
+        "imageUrl": "/images/food/황태해장국.png"
       },
       {
-        "food_name": "꽁치김치찌개",
+        "foodName": "꽁치김치찌개",
         "category": "한식",
         "reason": "꽁치를 넣어 감칠맛이 진해진 김치찌개",
-        "cook_time_minutes": 30,
+        "cookTimeMinutes": 30,
         "difficulty": "쉬움",
-        "estimated_cost": 5200,
+        "estimatedCost": 5200,
         "tags": [
           "국물",
           "얼큰",
           "한식"
         ],
         "art": "stew",
-        "image_url": "/images/food/꽁치김치찌개.png"
+        "imageUrl": "/images/food/꽁치김치찌개.png"
       },
       {
-        "food_name": "명태수육",
+        "foodName": "명태수육",
         "category": "한식",
         "reason": "명태를 미나리와 함께 쪄내 매콤하게 즐기는 수육",
-        "cook_time_minutes": 35,
+        "cookTimeMinutes": 35,
         "difficulty": "보통",
-        "estimated_cost": 6400,
+        "estimatedCost": 6400,
         "tags": [
           "조림",
           "국물",
@@ -67,22 +67,22 @@
           "한식"
         ],
         "art": "stew",
-        "image_url": "/images/food/명태수육.png"
+        "imageUrl": "/images/food/명태수육.png"
       },
       {
-        "food_name": "오징어국",
+        "foodName": "오징어국",
         "category": "국탕",
         "reason": "오징어를 넣어 시원하고 칼칼하게 끓인 국",
-        "cook_time_minutes": 25,
+        "cookTimeMinutes": 25,
         "difficulty": "쉬움",
-        "estimated_cost": 6600,
+        "estimatedCost": 6600,
         "tags": [
           "국물",
           "얼큰",
           "국탕"
         ],
         "art": "soup",
-        "image_url": "/images/food/오징어국.png"
+        "imageUrl": "/images/food/오징어국.png"
       }
     ],
     "weather": null,

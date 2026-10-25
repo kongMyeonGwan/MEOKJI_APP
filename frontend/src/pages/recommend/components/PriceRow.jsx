@@ -5,10 +5,10 @@ import { formatPrice } from '../../../utils/format'
 // item 모양 (서버가 준다)
 //   name       재료 이름
 //   offers     시장별 가격 [{ shop: '○○마트', price: 3000, unit: '1kg', link: '...' }, ...]
-//   low_cost   가장 싼 곳에서 레시피 분량만큼 샀을 때 내는 돈 (계산 못 하면 null)
-//   high_cost  가장 비싼 곳에서 샀을 때 내는 돈 (계산 못 하면 null)
+//   lowCost   가장 싼 곳에서 레시피 분량만큼 샀을 때 내는 돈 (계산 못 하면 null)
+//   highCost  가장 비싼 곳에서 샀을 때 내는 돈 (계산 못 하면 null)
 //   surveyed   false 면 시세 조사 대상이 아닌 재료 (두부, 간장 같은 가공식품)
-//   min_unit   true 면 쪼개 팔지 않아서 필요한 양보다 많이 사야 하는 재료
+//   minUnit   true 면 쪼개 팔지 않아서 필요한 양보다 많이 사야 하는 재료
 //   trend      일주일 전보다 오르내린 비율 { percent: -12 } (없으면 null)
 export default function PriceRow({ item }) {
   const offers = item.offers || []
@@ -38,7 +38,7 @@ export default function PriceRow({ item }) {
   })
 
   // 3. 레시피 분량으로 계산이 됐는지 (단위를 못 맞추면 null 이 온다)
-  const calculated = item.low_cost !== null && item.high_cost !== null
+  const calculated = item.lowCost !== null && item.highCost !== null
 
   // 4. 일주일 전보다 올랐는지 내렸는지
   let trendText = ''
@@ -60,7 +60,7 @@ export default function PriceRow({ item }) {
       <td>
         {item.name}
         {item.trend && <span className={trendClass}>{trendText}</span>}
-        {calculated && item.min_unit && <span className="price-table__minunit">최소단위</span>}
+        {calculated && item.minUnit && <span className="price-table__minunit">최소단위</span>}
       </td>
 
       {/* 최저가 칸 */}
@@ -68,7 +68,7 @@ export default function PriceRow({ item }) {
         {calculated ? (
           <>
             <a href={low.link} target="_blank" rel="noreferrer" className="price-table__best">
-              {formatPrice(item.low_cost)}
+              {formatPrice(item.lowCost)}
             </a>
             <span className="price-table__shop">
               {low.shop} · {low.unit} {formatPrice(low.price)}
@@ -88,7 +88,7 @@ export default function PriceRow({ item }) {
       <td className="num">
         {calculated && offers.length > 1 ? (
           <>
-            <span className="price-table__worst">{formatPrice(item.high_cost)}</span>
+            <span className="price-table__worst">{formatPrice(item.highCost)}</span>
             <span className="price-table__shop">{high.shop}</span>
           </>
         ) : (

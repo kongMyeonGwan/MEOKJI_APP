@@ -97,7 +97,8 @@ export default function GamePromo({ games, variant = 'compact' }) {
         <span className="gpromo__icon">🎮</span>
         <p className="gpromo__question">아직도 뭐 먹을지 고민되세요? 🤔</p>
         <h2 className="gpromo__title">
-          재미있는 게임으로
+          {/* 앱 모드에서는 <br> 을 숨겨 한 줄로 흐른다. 그때 두 말이 붙지 않게 띄어쓰기를 둔다 */}
+          재미있는 게임으로{' '}
           <br />
           오늘 메뉴를 골라보세요!
         </h2>

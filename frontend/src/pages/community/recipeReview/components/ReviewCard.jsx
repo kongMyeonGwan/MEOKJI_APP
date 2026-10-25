@@ -5,20 +5,20 @@ import { formatDate } from '../../../../utils/format'
 export default function ReviewCard({ review }) {
   return (
     <article className="review-card">
-      <Link to={`/community/${review.id}`} className="review-card__link">
+      <Link to={`/reviews/${review.id}`} className="review-card__link">
         <h3 className="review-card__title">
           {review.title}
-          {review.has_file && <span className="review-card__clip" title="사진 있음">📎</span>}
+          {review.hasFile && <span className="review-card__clip" title="사진 있음">📎</span>}
         </h3>
         <p className="muted review-card__excerpt">{review.content}</p>
       </Link>
 
       <footer className="review-card__meta">
-        {review.food_name && <span className="tag">{review.food_name}</span>}
+        {review.foodName && <span className="tag">{review.foodName}</span>}
         <span className="muted">{review.nickname}</span>
-        <span className="muted">{formatDate(review.created_at)}</span>
+        <span className="muted">{formatDate(review.createdAt)}</span>
         <span className="muted review-card__counts">
-          ♥ {review.like_count} · 💬 {review.comment_count} · 조회 {review.view_count}
+          ♥ {review.likeCount} · 💬 {review.commentCount} · 조회 {review.viewCount}
         </span>
       </footer>
     </article>

@@ -3,7 +3,7 @@ import FoodIllustration from './FoodIllustration'
 import { foodImageUrl } from '../../utils/foodImage'
 
 // 음식 썸네일.
-//   1. 서버가 준 사진 주소(image_url)
+//   1. 서버가 준 사진 주소(imageUrl)
 //   2. 없으면 음식 이름으로 만든 주소 (/images/food/김치찌개.png)
 //   3. 그 사진도 없으면 SVG 그림(FoodIllustration)
 //
@@ -14,15 +14,15 @@ export default function FoodThumb({ item, size = 'md' }) {
   const [brokenName, setBrokenName] = useState('')
 
   const className = `thumb thumb--${size}`
-  const src = item.image_url ? item.image_url : foodImageUrl(item.food_name)
+  const src = item.imageUrl ? item.imageUrl : foodImageUrl(item.foodName)
 
-  if (src && brokenName !== item.food_name) {
+  if (src && brokenName !== item.foodName) {
     return (
       <img
         className={className}
         src={src}
-        alt={item.food_name}
-        onError={() => setBrokenName(item.food_name)}
+        alt={item.foodName}
+        onError={() => setBrokenName(item.foodName)}
       />
     )
   }

@@ -51,8 +51,8 @@ public class UserBanVO {
     @JsonIgnore
     private LocalDateTime createdAt;
 
-    /** 화면이 읽는 created_at. 예) "2026-09-11T21:29:42Z" */
-    @JsonProperty("created_at")
+    /** 화면이 읽는 createdAt. 예) "2026-09-11T21:29:42Z" */
+    @JsonProperty("createdAt")
     public String getCreatedAtText() {
         return Times.toText(createdAt);
     }

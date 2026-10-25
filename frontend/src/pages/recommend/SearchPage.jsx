@@ -10,7 +10,7 @@ import { addLog, foodNames } from '../../utils/aiLog'
 
 // 레시피 검색 (/search?q=김치찌개).
 // "8천원 이하 파스타" 같은 문장도 서버(AI)가 알아서 해석해준다.
-export default function SearchPage() {
+export default function SearchPage({ onLikeCountChange }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.get('q') || '' // 주소의 검색어
 
@@ -26,7 +26,7 @@ export default function SearchPage() {
     const load = async () => {
       try {
         const data = await getCatalog()
-        setSuggestions(data.search_suggestions || [])
+        setSuggestions(data.searchSuggestions || [])
       } catch (err) {
         // 예시가 안 보일 뿐이다
       }
@@ -136,7 +136,7 @@ export default function SearchPage() {
       {query && !loading && !error && items.length > 0 && (
         <div className="list-page__cards">
           {items.map((food) => (
-            <FoodCard key={food.food_name} food={food} />
+            <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
           ))}
         </div>
       )}

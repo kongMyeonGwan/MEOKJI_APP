@@ -64,11 +64,11 @@ export default function BargainPick() {
 
       <ul className="bargain__foods">
         {items.map((food) => (
-          <li key={food.food_name}>
-            <Link to={`/recipe/${food.food_name}`} className="bargain__food">
+          <li key={food.foodName}>
+            <Link to={`/recipe/${food.foodName}`} className="bargain__food">
               <FoodThumb item={food} size="sm" />
               <span className="bargain__food-body">
-                <strong className="bargain__food-name">{food.food_name}</strong>
+                <strong className="bargain__food-name">{food.foodName}</strong>
                 <span className="muted bargain__food-reason">{food.reason}</span>
               </span>
             </Link>
