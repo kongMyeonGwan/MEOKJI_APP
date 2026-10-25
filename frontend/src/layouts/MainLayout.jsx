@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
 import BottomNav from './components/BottomNav'
+import ChatbotWidget from './components/ChatbotWidget'
 
 export default function MainLayout({
   user,
@@ -74,6 +75,8 @@ export default function MainLayout({
 
       {/* 모바일 하단 메뉴 */}
       <BottomNav user={user} />
+      {/* 재료 대체 챗봇 (로그인했을 때만 보인다) */}
+      <ChatbotWidget user={user} />
     </div>
   )
 }

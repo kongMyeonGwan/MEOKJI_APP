@@ -40,7 +40,8 @@ import tools.jackson.databind.node.ObjectNode;
 @Component
 public class OpenAiClient {
 
-    private static final String CHAT_URL = "https://api.openai.com/v1/chat/completions";
+    @Value("${app.openai.chat-url:https://api.openai.com/v1/chat/completions}")
+    private String chatUrl;
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
@@ -90,7 +91,7 @@ public class OpenAiClient {
 
         try {
             response = http.send(
-                    HttpRequest.newBuilder(URI.create(CHAT_URL))
+                    HttpRequest.newBuilder(URI.create(chatUrl))
                             // 답변을 만드는 데 몇 초 걸린다. 너무 길게 기다리지는 않는다
                             .timeout(Duration.ofSeconds(30))
                             .header("Content-Type", "application/json")
@@ -110,6 +111,7 @@ public class OpenAiClient {
 
         int status = response.statusCode();
 
+
         if (status != 200) {
             throw failure(status, response.body());
         }
@@ -121,7 +123,7 @@ public class OpenAiClient {
     private String buildBody(String systemPrompt, List<Message> history) {
         ObjectNode root = MAPPER.createObjectNode();
         root.put("model", model);
-        root.put("max_completion_tokens", maxTokens);
+        root.put("max_tokens", maxTokens);
         // 답변을 JSON 객체로 받는다. 서버가 후보를 하나씩 걸러내려면 글이 아니라 구조가 필요하다
         root.putObject("response_format").put("type", "json_object");
 
@@ -158,7 +160,8 @@ public class OpenAiClient {
         try {
             choice = MAPPER.readTree(responseBody).path("choices").path(0);
         } catch (Exception exc) {
-            log.warn("OpenAI 응답이 JSON 이 아닙니다.");
+            log.warn("OpenAI 응답이 JSON 이 아닙니다. url={}, 앞부분={}", chatUrl,
+                    responseBody.substring(0, Math.min(200, responseBody.length())));
             throw ApiException.serviceUnavailable("챗봇 응답을 읽지 못했습니다. 다시 질문해주세요.");
         }
 
