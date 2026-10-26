@@ -101,6 +101,7 @@ public class ChatService {
         lines.add("  (예: 땅콩이 제외 재료면 땅콩버터, 땅콩가루도 넣지 않는다)");
         lines.add("- 대체재는 최대 " + MAX_ALTERNATIVES + "개이고, name 에는 재료 이름만 쓴다.");
         lines.add("- reason 은 맛, 식감, 쓰는 양 중 하나를 한 문장으로 쓴다.");
+        lines.add("- 재료 이름만 들어오면 그 재료를 바꾸려는 것으로 보고 target 으로 삼아 substitute 로 답한다. [제외 재료]에 속하는 재료여도 마찬가지다.");
         lines.add("- 어떤 재료를 바꾸려는지 알 수 없으면 clarify 로 답한다.");
         lines.add("- 반드시 아래 JSON 형식으로만 답한다.");
         lines.add("");

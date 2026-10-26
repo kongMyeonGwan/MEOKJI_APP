@@ -45,6 +45,9 @@ public class OpenAiClient {
 
     private static final JsonMapper MAPPER = JsonMapper.builder().build();
 
+    // 답이 매번 달라지지 않게 낮게 고정한다. 글을 짓는 게 아니라 intent 를 고르는 일이다
+    private static final double TEMPERATURE = 0.2;
+
     @Value("${app.openai.api-key}")
     private String apiKey;
 
@@ -124,6 +127,7 @@ public class OpenAiClient {
         ObjectNode root = MAPPER.createObjectNode();
         root.put("model", model);
         root.put("max_tokens", maxTokens);
+        root.put("temperature", TEMPERATURE);
         // 답변을 JSON 객체로 받는다. 서버가 후보를 하나씩 걸러내려면 글이 아니라 구조가 필요하다
         root.putObject("response_format").put("type", "json_object");
 

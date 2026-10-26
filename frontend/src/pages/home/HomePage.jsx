@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import WeatherPick from './components/WeatherPick'
 import BargainPick from './components/BargainPick'
-import SubstituteFinder from './components/SubstituteFinder'
+// import SubstituteFinder from './components/SubstituteFinder'
 import GamePromo from '../../components/common/GamePromo'
 import FoodFinder from './components/FoodFinder'
 import BudgetPicker from './components/BudgetPicker'
@@ -135,7 +135,8 @@ export default function HomePage({ onLikeCountChange }) {
         <PopularRecipes />
         <BargainPick />
         {/* 싼 재료 → 대체 재료로 이어지는 재료 코너. 바로 아래 팁(AI 참고용)과 짝이다 */}
-        <SubstituteFinder />
+        {/* <SubstituteFinder /> */}
+        {/* 챗봇 테스트 UI 주석 */}
 
         <aside className="dash__tip">
           <span className="dash__tip-icon">💡</span>
