@@ -1,5 +1,6 @@
 package com.meokji.api.review.repository;
 
+import com.meokji.api.history.entity.MealHistoryEntity;
 import com.meokji.api.review.entity.ReviewEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -29,6 +30,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
                    r.title                            AS "title",
                    DBMS_LOB.SUBSTR(r.content, 200, 1) AS "content",
                    u.nickname                         AS "nickname",
+                   m.food_name                        AS "foodName",
                    r.view_count                       AS "viewCount",
                    r.created_at                       AS "createdAt",
                    r.file_yn                          AS "fileYn",
@@ -39,6 +41,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
                        AND c.use_yn = 'Y')            AS "commentCount"
               FROM recipe_reviews r
               JOIN users u ON u.id = r.user_id
+              JOIN meal_histories m ON m.id = r.meal_history_id
              WHERE r.use_yn = 'Y'
                AND (:keyword IS NULL
                     OR LOWER(r.title)   LIKE '%' || LOWER(:keyword) || '%'
@@ -50,6 +53,18 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
             @Param("keyword") String keyword,
             @Param("offset") int offset,
             @Param("size") int size);
+
+    // 후기 한 건에 딸린 식사 기록. 레시피 내용은 RECIPE_REVIEWS 가 아니라 MEAL_HISTORIES 에 있다.
+    //
+    // 인터페이스 프로젝션이 아니라 엔티티로 받는다. RECIPE_JSON 같은 CLOB 칸을
+    // 프로젝션은 String 으로 못 바꾼다 (Cannot project ... Clob to java.lang.String).
+    @Query(value = """
+            SELECT m.*
+              FROM recipe_reviews r
+              JOIN meal_histories m ON m.id = r.meal_history_id
+             WHERE r.id = :reviewId
+            """, nativeQuery = true)
+    MealHistoryEntity findMeal(@Param("reviewId") Long reviewId);
 
     @Query(value = "SELECT nickname FROM users WHERE id = :userId", nativeQuery = true)
     String findNickname(@Param("userId") Long userId);

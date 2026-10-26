@@ -6150,12 +6150,42 @@ a.btn {
   justify-content: flex-end;
 }
 
-/* 고른 사진 미리보기 */
+/* 고른 사진 미리보기. 지우기 버튼을 사진 위에 얹어야 해서 position: relative 인 상자로 감싼다.
+   자유게시판(.free-write__preview-box)과 같은 모양이다 - 두 글쓰기 화면이 블록 이름을 따로 쓴다 */
+.write__preview-box {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 18px;
+}
+
 .write__preview {
   display: block;
   max-height: 200px;
-  margin-top: 10px;
   border-radius: var(--radius-sm);
+}
+
+/* 사진 오른쪽 위의 지우기 버튼. 사진이 밝든 어둡든 보이게 반투명 검정 바탕을 깐다 */
+.write__preview-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.write__preview-remove:hover {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 /* 고른 식사 기록 미리보기 */
@@ -6627,12 +6657,41 @@ a.btn {
   color: var(--color-error);
 }
 
-/* 고른 사진 미리보기 */
+/* 고른 사진 미리보기. 지우기 버튼을 사진 위에 얹어야 해서 position: relative 인 상자로 감싼다 */
+.free-write__preview-box {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 18px;
+}
+
 .free-write__preview {
   display: block;
   max-height: 200px;
-  margin-top: 10px;
   border-radius: var(--radius-sm);
+}
+
+/* 사진 오른쪽 위의 지우기 버튼. 사진이 밝든 어둡든 보이게 반투명 검정 바탕을 깐다 */
+.free-write__preview-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.free-write__preview-remove:hover {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .free-write__actions {

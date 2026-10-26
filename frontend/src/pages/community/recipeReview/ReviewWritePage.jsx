@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../../../components/common/ErrorMessage'
 import Loading from '../../../components/common/Loading'
@@ -75,6 +75,9 @@ export default function ReviewWritePage() {
   const [photoUrl, setPhotoUrl] = useState('') // 고른 사진 미리보기 주소
   const [saving, setSaving] = useState(false)
 
+  // 사진 입력칸. 지우기 버튼이 이 칸의 값도 같이 비워야 한다
+  const fileInputRef = useRef(null)
+
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -98,6 +101,18 @@ export default function ReviewWritePage() {
 
     setFile(picked || null)
     setPhotoUrl(picked ? URL.createObjectURL(picked) : '')
+  }
+
+  // 고른 사진 지우기 (미리보기 오른쪽 위의 X 버튼)
+  const handleFileRemove = () => {
+    setFile(null)
+    setPhotoUrl('') // 주소가 바뀌면 위 useEffect 가 옛 주소를 지워준다
+
+    // 입력칸도 비운다. 안 비우면 같은 사진을 다시 골랐을 때 값이 그대로라
+    // onChange 가 울리지 않아 미리보기가 돌아오지 않는다
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -242,12 +257,32 @@ export default function ReviewWritePage() {
 
           <label className="write__field">
             <span>사진 (선택)</span>
-            <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp" onChange={handleFileChange} />
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".jpg,.jpeg,.png,.gif,.webp"
+              onChange={handleFileChange}
+            />
             <p className="muted write__help">
               한 장까지 올릴 수 있어요. 5MB 이하 이미지.</p>
-            {/* 고른 사진이 이 자리에 보인다. 지금은 가데이터 그림이다 */}
-            {photoUrl && <img className="write__preview" src={photoUrl} alt="올릴 사진 미리보기" />}
           </label>
+
+          {/* 고른 사진 미리보기. label 밖에 둔다 - 안에 두면 지우기 버튼을 눌러도
+              label 이 파일 선택창까지 같이 열어버린다 */}
+          {photoUrl && (
+            <div className="write__preview-box">
+              <img className="write__preview" src={photoUrl} alt="올릴 사진 미리보기" />
+              <button
+                type="button"
+                className="write__preview-remove"
+                onClick={handleFileRemove}
+                title="사진 지우기"
+                aria-label="사진 지우기"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           <ErrorMessage message={error} />
 

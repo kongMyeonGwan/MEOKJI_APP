@@ -226,7 +226,10 @@ export default function FreeDetailPage({ user }) {
     setFileBusy(true)
     try {
       const file = await uploadFreePostFile(postId, picked)
-      setPost({ ...post, file: file })
+
+      // 사진 주소는 바꾸기 전후가 똑같다 (/api/.../file). 주소가 그대로면 브라우저가
+      // 받아둔 옛 사진을 계속 보여주므로, 뒤에 지금 시각을 붙여 새로 받게 한다
+      setPost({ ...post, file: { ...file, url: file.url + '?t=' + Date.now() } })
     } catch (err) {
       setFileError(messageOf(err))
     } finally {
