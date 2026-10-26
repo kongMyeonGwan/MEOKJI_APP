@@ -12,6 +12,10 @@ const MAX_HISTORY = 10
 // 입력칸 아래 예시 질문
 const EXAMPLES = ['버터 대신 뭐 쓸까?', '우유 대신 쓸 수 있는 거 있어?']
 
+// 챗봇이 맨 처음 건네는 말. 모델에게도 같이 보내야 사용자가 "가자미" 처럼
+// 한 단어로 답했을 때 무슨 맥락인지 알 수 있다
+const GREETING = '안녕하세요! 바꾸고 싶은 재료를 물어보세요. 못 먹는 재료는 빼고 알려드릴게요.'
+
 export default function ChatbotWidget({ user }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([]) // [{ role, content }]
@@ -65,7 +69,7 @@ export default function ChatbotWidget({ user }) {
     }
 
     // 이번 질문 이전 대화만 서버에 넘긴다
-    const history = messages.slice(-MAX_HISTORY)
+    const history = [{ role: 'assistant', content: GREETING }, ...messages].slice(-MAX_HISTORY)
 
     setError('')
     setText('')
