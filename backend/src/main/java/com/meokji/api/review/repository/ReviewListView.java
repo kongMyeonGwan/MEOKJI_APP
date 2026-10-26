@@ -22,4 +22,6 @@ public interface ReviewListView {
     String getFileYn();
 
     Integer getCommentCount();
+
+    Long getLikeCount();
 }

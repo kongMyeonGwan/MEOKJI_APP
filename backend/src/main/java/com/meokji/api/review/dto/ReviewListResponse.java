@@ -12,9 +12,11 @@ public class ReviewListResponse {
     private final String nickname;        // 글쓴이 닉네임 (USERS 와 JOIN)
     private final String foodName;        // 무슨 음식인가 (MEAL_HISTORIES 와 JOIN)
     private final Integer viewCount;
+    private final Long likeCount;
     private final Integer commentCount;   // 살아있는 댓글 수
     private final boolean hasFile;        // 제목 옆 클립 표시용
     private final String createdAt;       // "2026-10-04T12:30:00Z" (UTC)
+
 
     // 생성자
     public ReviewListResponse(ReviewListView row) {
@@ -24,6 +26,7 @@ public class ReviewListResponse {
         this.nickname = row.getNickname();
         this.foodName = row.getFoodName();
         this.viewCount = row.getViewCount();
+        this.likeCount = row.getLikeCount();
         this.commentCount = row.getCommentCount();
         this.hasFile = "Y".equals(row.getFileYn()); // 두 값이 같은지 비교하는 메서드
         this.createdAt = Times.toText(row.getCreatedAt()); // 날짜를 문자열로 변환

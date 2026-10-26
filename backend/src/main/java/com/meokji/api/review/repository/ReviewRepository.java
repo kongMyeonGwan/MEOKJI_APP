@@ -34,6 +34,10 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
                    r.view_count                       AS "viewCount",
                    r.created_at                       AS "createdAt",
                    r.file_yn                          AS "fileYn",
+                    (SELECT COUNT(l.id)
+                        FROM review_likes l
+                        WHERE l.review_id = r.id
+                        AND l.use_yn = 'Y') AS "likeCount",
                    (SELECT COUNT(c.id)
                       FROM post_comments c
                      WHERE c.board_type = 'R'
