@@ -2491,26 +2491,58 @@
   margin-bottom: 14px;
 }
 
-.range__input {
+.range__field {
+  display: flex;
   flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
   min-width: 0;
-  padding: 9px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  background: linear-gradient(145deg, var(--color-surface), var(--color-bg));
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.range__field:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-weak);
+}
+
+.range__label {
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.range__input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
   font: inherit;
   font-size: 13px;
+  font-weight: 700;
   color: inherit;
 }
 
-.range__input:focus {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -1px;
-}
-
-.range__tilde {
-  color: var(--color-muted);
-  font-size: 13px;
+.range__separator {
+  display: flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-accent-weak);
+  color: var(--color-accent);
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .range__submit {
@@ -2523,7 +2555,7 @@
   }
 
   /* 좁으면 날짜 두 칸이 윗줄, 검색 버튼이 아랫줄 전체를 쓴다 */
-  .range__input {
+  .range__field {
     flex: 1 1 40%;
   }
 
@@ -2574,9 +2606,12 @@
   flex-wrap: wrap;
 }
 
-.popular .range__input {
+.popular .range__field {
   flex: 1 1 40%;
-  padding: 8px 10px;
+  padding: 7px 9px;
+}
+
+.popular .range__input {
   font-size: 12.5px;
 }
 

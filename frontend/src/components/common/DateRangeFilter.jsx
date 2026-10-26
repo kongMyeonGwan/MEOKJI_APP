@@ -25,21 +25,27 @@ export default function DateRangeFilter({ start, end, onSearch }) {
 
   return (
     <form className="range" onSubmit={handleSubmit}>
-      <input
-        type="date"
-        className="range__input"
-        value={draftStart}
-        max={draftEnd}
-        onChange={(e) => setDraftStart(e.target.value)}
-      />
-      <span className="range__tilde">~</span>
-      <input
-        type="date"
-        className="range__input"
-        value={draftEnd}
-        min={draftStart}
-        onChange={(e) => setDraftEnd(e.target.value)}
-      />
+      <label className="range__field">
+        <span className="range__label">시작일</span>
+        <input
+          type="date"
+          className="range__input"
+          value={draftStart}
+          max={draftEnd}
+          onChange={(e) => setDraftStart(e.target.value)}
+        />
+      </label>
+      <span className="range__separator" aria-hidden="true">→</span>
+      <label className="range__field">
+        <span className="range__label">종료일</span>
+        <input
+          type="date"
+          className="range__input"
+          value={draftEnd}
+          min={draftStart}
+          onChange={(e) => setDraftEnd(e.target.value)}
+        />
+      </label>
       <button type="submit" className="btn btn--ghost btn--sm range__submit">
         검색
       </button>

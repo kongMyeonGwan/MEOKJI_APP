@@ -63,22 +63,32 @@ public class RecommendServiceImpl implements RecommendService {
             exclude = request.getExclude();
         }
 
-        // 4. 점수를 매겨서 고른다
-        List<FoodVO> items = foodScorer.recommend(limit, request.getCategory(),
-                request.getBudgetMin(), request.getBudgetMax(), request.getQuery(),
-                weather, allergies, dislikes, exclude);
-
-        // 5. 하나도 없으면 예산을 3천원 넓혀서 한 번 더 찾는다
-        if (items.isEmpty() && request.getBudgetMax() != null) {
-            items = foodScorer.recommend(limit, request.getCategory(),
-                    request.getBudgetMin(), request.getBudgetMax() + 3000, request.getQuery(),
-                    weather, allergies, dislikes, exclude);
-        }
-
-        // 6. "요즘 싼 재료" 를 달라고 했으면 같이 준다 (첫 화면 카드용)
+        // 4. "요즘 싼 재료" 를 달라고 했으면 메뉴보다 먼저 가져온다.
+        //    화면 위쪽에 칩으로 보여주기도 하고, 아래 메뉴를 고르는 기준으로도 쓴다
         List<BargainVO> bargains = new ArrayList<>();
         if (Boolean.TRUE.equals(request.getUseBargains())) {
             bargains = bargainService.current();
+        }
+
+        // 칩으로 보여주는 그 재료 이름만 넘긴다. 화면에 안 보이는 재료로 고르면
+        //  "왜 이 메뉴가 나왔지" 가 되기 때문이다
+        List<String> bargainNames = new ArrayList<>();
+        for (BargainVO row : bargains) {
+            bargainNames.add(row.getName());
+        }
+
+        // 5. 점수를 매겨서 고른다.
+        //    "지금 싼 재료로" 카드는 날씨도 검색어도 안 보내서 점수가 모두 0 이 된다.
+        //    그래서 정렬의 두 번째 기준인 '싼 순' 이 실제 순서를 정한다
+        List<FoodVO> items = foodScorer.recommend(limit, request.getCategory(),
+                request.getBudgetMin(), request.getBudgetMax(), request.getQuery(),
+                weather, allergies, dislikes, exclude, bargainNames);
+
+        // 6. 하나도 없으면 예산을 3천원 넓혀서 한 번 더 찾는다
+        if (items.isEmpty() && request.getBudgetMax() != null) {
+            items = foodScorer.recommend(limit, request.getCategory(),
+                    request.getBudgetMin(), request.getBudgetMax() + 3000, request.getQuery(),
+                    weather, allergies, dislikes, exclude, bargainNames);
         }
 
         RecommendVO response = new RecommendVO();

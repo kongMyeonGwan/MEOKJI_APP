@@ -50,6 +50,7 @@ public class FoodScorer {
      * @param allergies 알레르기 재료. 들어간 메뉴는 통째로 뺀다
      * @param dislikes  싫어하는 재료. 순위만 뒤로 미룬다
      * @param exclude   이미 보여준 메뉴
+     * @param bargains  값이 내린 재료. 비어 있지 않으면 이 재료를 쓰는 음식만 남긴다
      */
     public List<FoodVO> recommend(
             int limit,
@@ -60,7 +61,8 @@ public class FoodScorer {
             WeatherVO weather,
             List<String> allergies,
             List<String> dislikes,
-            List<String> exclude) {
+            List<String> exclude,
+            List<String> bargains) {
 
         List<Scored> scored = new ArrayList<>();
 
@@ -73,6 +75,12 @@ public class FoodScorer {
 
             // 알레르기 재료가 들어간 메뉴는 후보에서 통째로 뺀다.
             if (usesAny(food, allergies)) {
+                continue;
+            }
+
+            // 첫 화면 "지금 싼 재료로" 카드. 값이 내린 재료를 안 쓰는 음식은 뺀다.
+            // 비어 있으면(다른 화면) 이 줄은 아무 일도 하지 않는다
+            if (bargains != null && !bargains.isEmpty() && !usesAny(food, bargains)) {
                 continue;
             }
 
