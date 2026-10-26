@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ErrorMessage from '../../../components/common/ErrorMessage'
 import useForm from '../../../hooks/useForm'
@@ -24,6 +24,9 @@ export default function FreeWritePage() {
   const [photoUrl, setPhotoUrl] = useState('') // 고른 사진 미리보기 주소
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // 사진 입력칸. 지우기 버튼이 이 칸의 값도 같이 비워야 한다
+  const fileInputRef = useRef(null)
 
   const navigate = useNavigate()
 
@@ -52,6 +55,18 @@ export default function FreeWritePage() {
     setFile(picked || null)
     // 파일이 있으면 브라우저 안에서만 쓰는 임시 주소를 만들어 <img> 로 보여준다
     setPhotoUrl(picked ? URL.createObjectURL(picked) : '')
+  }
+
+  // 고른 사진 지우기 (미리보기 오른쪽 위의 ✕)
+  const handleFileRemove = () => {
+    setFile(null)
+    setPhotoUrl('') // 주소가 바뀌면 위 useEffect 가 옛 주소를 지워준다
+
+    // 입력칸도 비운다. 안 비우면 같은 사진을 다시 골랐을 때 값이 그대로라
+    // onChange 가 울리지 않아 미리보기가 돌아오지 않는다
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   // 등록 버튼
@@ -151,12 +166,33 @@ export default function FreeWritePage() {
 
         <label className="free-write__field">
           <span>사진 (선택)</span>
-          <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp" onChange={handleFileChange} />
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".jpg,.jpeg,.png,.gif,.webp"
+            onChange={handleFileChange}
+          />
           <p className="muted free-write__help">
             {file ? `${file.name} — 등록하면 함께 올라갑니다` : '한 장까지 올릴 수 있어요. 5MB 이하 이미지.'}
           </p>
-          {photoUrl && <img className="free-write__preview" src={photoUrl} alt="올릴 사진 미리보기" />}
         </label>
+
+        {/* 고른 사진 미리보기. label 밖에 둔다 — 안에 두면 ✕ 를 눌러도
+            label 이 파일 선택창까지 같이 열어버린다 */}
+        {photoUrl && (
+          <div className="free-write__preview-box">
+            <img className="free-write__preview" src={photoUrl} alt="올릴 사진 미리보기" />
+            <button
+              type="button"
+              className="free-write__preview-remove"
+              onClick={handleFileRemove}
+              title="사진 지우기"
+              aria-label="사진 지우기"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         <ErrorMessage message={error} />
 

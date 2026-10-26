@@ -10,6 +10,7 @@ public class ReviewListResponse {
     private final String title;
     private final String content;
     private final String nickname;        // 글쓴이 닉네임 (USERS 와 JOIN)
+    private final String foodName;        // 무슨 음식인가 (MEAL_HISTORIES 와 JOIN)
     private final Integer viewCount;
     private final Long likeCount;
     private final Integer commentCount;   // 살아있는 댓글 수
@@ -23,6 +24,7 @@ public class ReviewListResponse {
         this.title = row.getTitle();
         this.content = row.getContent();
         this.nickname = row.getNickname();
+        this.foodName = row.getFoodName();
         this.viewCount = row.getViewCount();
         this.likeCount = row.getLikeCount();
         this.commentCount = row.getCommentCount();

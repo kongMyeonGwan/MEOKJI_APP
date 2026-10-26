@@ -273,6 +273,8 @@ public class ReviewService {
 
         return new ReviewDetailResponse(
                 post,
+                // 레시피 내용은 RECIPE_REVIEWS 에 없다. MEAL_HISTORIES 에서 JOIN 으로 읽는다
+                reviewRepository.findMeal(post.getId()),
                 reviewRepository.findNickname(post.getUserId()),
                 toFile(post),
                 comments,

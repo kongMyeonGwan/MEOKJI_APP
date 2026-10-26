@@ -329,10 +329,10 @@ export default function TopBar({ onToggleNav, user, onLogout, notify, likeCount,
                 <Link to="/history" onClick={closePanel}>
                   History
                 </Link>
-
+                {/* 
                 <Link to="/ai-history" onClick={closePanel}>
                   AI 추천 기록
-                </Link>
+                </Link> */}
 
                 <Link to="/settings" onClick={closePanel}>
                   설정

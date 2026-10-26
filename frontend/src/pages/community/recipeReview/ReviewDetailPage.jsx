@@ -212,7 +212,10 @@ export default function ReviewDetailPage({ user }) {
     setFileBusy(true)
     try {
       const file = await uploadReviewFile(reviewId, picked)
-      setReview({ ...review, file: file })
+
+      // 사진 주소는 바꾸기 전후가 똑같다 (/api/.../file). 주소가 그대로면 브라우저가
+      // 받아둔 옛 사진을 계속 보여주므로, 뒤에 지금 시각을 붙여 새로 받게 한다
+      setReview({ ...review, file: { ...file, url: file.url + '?t=' + Date.now() } })
     } catch (err) {
       setFileError(messageOf(err))
     } finally {
@@ -310,7 +313,11 @@ export default function ReviewDetailPage({ user }) {
         {/* 글쓴이가 먹은 레시피 */}
         {review.recipeJson && (
           <div className="review__recipe">
-            <RecipeView recipe={review.recipeJson} ingredients={review.ingredientsJson} />
+            <RecipeView
+              recipe={review.recipeJson}
+              ingredients={review.ingredientsJson}
+              substitutes={review.substitutesJson}
+            />
           </div>
         )}
 
