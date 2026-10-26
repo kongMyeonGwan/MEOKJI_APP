@@ -31,7 +31,7 @@ export default function ReviewListPage() {
       console.log("API 페이지 정보:", data.page, data.total_pages)
 
       setReviews(data.items)
-      setTotalPages(data.totalPages || 1)
+      setTotalPages(data.totalPages)
       console.log("현재 페이지:", page, "전체 페이지:", data.total_pages)
     }
 
@@ -71,7 +71,7 @@ export default function ReviewListPage() {
         ))}
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} showSingle />
     </div>
   )
 }
