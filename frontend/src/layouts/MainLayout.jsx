@@ -4,8 +4,18 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
 import BottomNav from './components/BottomNav'
+import ChatbotWidget from './components/ChatbotWidget'
 
-export default function MainLayout({ user, onLogout, theme, onThemeChange, notify, onNotifyChange }) {
+export default function MainLayout({
+  user,
+  onLogout,
+  theme,
+  onThemeChange,
+  notify,
+  onNotifyChange,
+  likeCount,
+  onLikeCountChange,
+}) {
   const location = useLocation()
 
   // 사이드바 열기 / 닫기. 웹 모드(1024px 이상)는 연 채로 시작한다
@@ -48,7 +58,14 @@ export default function MainLayout({ user, onLogout, theme, onThemeChange, notif
 
       <div className="shell__body">
         {/* 상단 메뉴 */}
-        <TopBar user={user} notify={notify} onLogout={onLogout} onToggleNav={toggleNav} />
+        <TopBar
+          user={user}
+          notify={notify}
+          onLogout={onLogout}
+          onToggleNav={toggleNav}
+          likeCount={likeCount}
+          onLikeCountChange={onLikeCountChange}
+        />
 
         {/* 페이지가 표시되는 부분 */}
         <main className="shell__main">
@@ -58,6 +75,8 @@ export default function MainLayout({ user, onLogout, theme, onThemeChange, notif
 
       {/* 모바일 하단 메뉴 */}
       <BottomNav user={user} />
+      {/* 재료 대체 챗봇 (로그인했을 때만 보인다) */}
+      <ChatbotWidget user={user} />
     </div>
   )
 }

@@ -8,7 +8,7 @@ import { addLog, foodNames } from '../../utils/aiLog'
 
 // AI 추천 전체 목록 (/recommend).
 // 주소에 ?category=한식 이 붙어 있으면 그 종류만 추천받는다.
-export default function RecommendPage() {
+export default function RecommendPage({ onLikeCountChange }) {
   // useSearchParams: 주소의 ?뒤 값을 읽고 바꾸는 도구
   const [searchParams, setSearchParams] = useSearchParams()
   const category = searchParams.get('category') || ''
@@ -95,7 +95,7 @@ export default function RecommendPage() {
       {!loading && !error && items.length > 0 && (
         <div className="list-page__cards">
           {items.map((food) => (
-            <FoodCard key={food.foodName} food={food} />
+            <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
           ))}
         </div>
       )}

@@ -19,7 +19,7 @@ const PRESETS = [
   { amount: 15000, label: '1만5천원 이하' },
 ]
 
-export default function BudgetPage() {
+export default function BudgetPage({ onLikeCountChange }) {
   const [searchParams, setSearchParams] = useSearchParams()
 
   // 주소에서 금액을 읽는다. 없으면 슬라이더 양 끝 값
@@ -134,7 +134,7 @@ export default function BudgetPage() {
       {!loading && !error && items.length > 0 && (
         <div className="list-page__cards">
           {items.map((food) => (
-            <FoodCard key={food.foodName} food={food} />
+            <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
           ))}
         </div>
       )}

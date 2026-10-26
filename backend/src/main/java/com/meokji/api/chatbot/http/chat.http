@@ -1,0 +1,97 @@
+@host = localhost:8090
+
+### 0. 서버 상태 (기대: 200)
+GET http://{{host}}/api/health
+
+
+### 1. 로그인 없이 질문 (기대: 401)
+POST http://{{host}}/api/chat
+Content-Type: application/json
+
+{ "message": "오이 대신 뭐 쓸까?", "history": [] }
+
+
+### 2. 로그인 (기대: 200, accessToken 발급)
+# @name login
+POST http://{{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "내 이메일",
+  "password": "내 비밀번호"
+}
+
+
+### 3. 제외 재료 등록 - 오이 (기대: 201)
+POST http://{{host}}/api/bans
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{ "ingredientName": "오이", "banType": "DISLIKE" }
+
+
+### 4. 제외 재료 등록 - 땅콩 (기대: 201)
+POST http://{{host}}/api/bans
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{ "ingredientName": "땅콩", "banType": "ALLERGY" }
+
+
+### 5. 제외 목록 확인 (기대: 200, 오이와 땅콩)
+GET http://{{host}}/api/bans
+Authorization: Bearer {{login.response.body.accessToken}}
+
+
+### 6. 제외한 재료를 질문 (기대: 200, 대체재 나오고 오이는 후보에 없음)
+POST http://{{host}}/api/chat
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{ "message": "오이 대신 뭐 쓸까?", "history": [] }
+
+
+### 7. 다른 재료 질문 (기대: 200, 오이·땅콩 계열 없음)
+POST http://{{host}}/api/chat
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{ "message": "깨 대신 고소한 거 뭐 있어?", "history": [] }
+
+
+### 8. 재료와 무관한 질문 (기대: 200, 고정 거절 문구)
+POST http://{{host}}/api/chat
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{ "message": "숙제 좀 도와줘", "history": [] }
+
+
+### 9. 어떤 재료인지 불분명 (기대: 200, 되묻는 문구)
+POST http://{{host}}/api/chat
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{ "message": "바꾸고 싶어", "history": [] }
+
+
+### 10. 빈 질문 (기대: 422)
+POST http://{{host}}/api/chat
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{ "message": "", "history": [] }
+
+
+### 11. 이전 대화와 함께 (기대: 200)
+POST http://{{host}}/api/chat
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.accessToken}}
+
+{
+  "message": "그럼 두 번째 걸로 하면 맛이 어때?",
+  "history": [
+    { "role": "user", "content": "우유 대신 뭐 쓸까?" },
+    { "role": "assistant", "content": "우유 대신 이런 재료를 쓸 수 있어요.\n1. 두유 - 고소하고 비슷한 질감이에요" }
+  ]
+}

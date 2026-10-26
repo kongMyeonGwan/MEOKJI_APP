@@ -18,7 +18,7 @@ import { addLog, foodNames } from '../../utils/aiLog'
 // 첫 화면 (대시보드).
 //   왼쪽 : 날씨 추천 → 싼 재료 추천 → 메뉴 게임 → 검색 → 예산 → 카테고리 → 오늘의 추천
 //   오른쪽 : 인기 레시피
-export default function HomePage() {
+export default function HomePage({ onLikeCountChange }) {
   // 서버에서 받아오는 고정 목록들. 아래 카드들에 props 로 나눠준다.
   const [categories, setCategories] = useState([])
   const [games, setGames] = useState([])
@@ -117,7 +117,7 @@ export default function HomePage() {
             <div className="dash__recs-row">
               <div className="dash__cards">
                 {foods.map((food) => (
-                  <FoodCard key={food.foodName} food={food} />
+                  <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
                 ))}
               </div>
 

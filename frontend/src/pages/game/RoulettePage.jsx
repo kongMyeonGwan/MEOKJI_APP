@@ -13,7 +13,7 @@ export default function RoulettePage() {
   }, [])
 
   return (
-    <div className="list-page list-page--narrow">
+    <div className="list-page list-page--narrow game-screen">
       <Roulette />
     </div>
   )

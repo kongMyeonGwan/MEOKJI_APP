@@ -18,7 +18,7 @@ const PAGE_SIZE = 12
 //
 // 페이징은 화면에서 한다. 서버는 찜 전체를 한 번에 주고(한 사람의 찜은 많아야 수백 개),
 // 검색으로 거른 뒤 지금 페이지 몫만 잘라서 그린다.
-export default function LikedPage() {
+export default function LikedPage({ onLikeCountChange }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [keyword, setKeyword] = useState('') // 검색창에 친 글자
@@ -44,7 +44,8 @@ export default function LikedPage() {
   // 하트를 누르면 찜을 풀고 목록을 다시 받아온다
   const handleUnlike = async (name) => {
     try {
-      await toggleFavorite(name)
+      const result = await toggleFavorite(name)
+      onLikeCountChange(result.count)
       loadLikes()
     } catch (err) {
       alert('찜을 풀지 못했습니다.')

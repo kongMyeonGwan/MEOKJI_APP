@@ -70,6 +70,8 @@ spring:
       connection-init-sql: ALTER SESSION SET TIME_ZONE='+00:00'
 
 
+
+
   # ============================================================
   # ★ JPA 설정
   # ============================================================
@@ -160,6 +162,11 @@ app:
   env: ${APP_ENV:local}
 
   cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:5174}
+
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+    max-tokens: ${OPENAI_MAX_TOKENS:400}
 
 
   # 올린 사진을 저장할 폴더.
