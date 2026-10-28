@@ -124,7 +124,7 @@ export default function WeatherPick() {
                 </Link>
 
                 <div className="wpick__body">
-                  <span className="wpick__badge">AI가 추천했어요! ✨</span>
+                  <span className="wpick__badge">레시피를 추천했어요! ✨</span>
                   <p className="wpick__lead">{weather.pickLead}</p>
                   <h1 className="wpick__name">{food.foodName}</h1>
 

@@ -204,7 +204,7 @@ export default function TopBar({ onToggleNav, user, onLogout, notify, likeCount,
         >
           <span>✨</span>
 
-          <span className="topbar__ai-label">AI 검색 도우미</span>
+          <span className="topbar__ai-label">검색 도우미</span>
         </button>
 
         {/* AI 메뉴가 열렸을 때만 보여준다 */}
