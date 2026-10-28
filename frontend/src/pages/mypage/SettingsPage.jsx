@@ -40,7 +40,7 @@ export default function SettingsPage({
 
   // AI 추천 기록 전체 삭제
   const handleClearLogs = () => {
-    if (window.confirm(`AI 추천 기록 ${logCount}건을 모두 지울까요?`)) {
+    if (window.confirm(`음식 추천 기록 ${logCount}건을 모두 지울까요?`)) {
       clearLogs()
       setLogCount(0)
     }
@@ -132,7 +132,7 @@ export default function SettingsPage({
 
         <div className="settings__row">
           <div>
-            <p className="settings__label">AI 추천 기록 {logCount}건</p>
+            <p className="settings__label">음식 추천 기록 {logCount}건</p>
             <p className="settings__desc muted">
               언제 어떤 조건으로 추천받았는지의 기록이에요. 이 브라우저에만 저장됩니다.
             </p>
