@@ -17,7 +17,11 @@ public class RecommendRequestVO {
 
     @Min(1)
     @Max(12)
-    private Integer limit; // 몇 개 추천받을지 (안 보내면 5개)
+    private Integer limit; // 몇 개 추천받을지 (안 보내면 5개). 페이지를 쓰면 한 페이지 크기
+
+    @Min(1)
+    @Max(1000)
+    private Integer page; // 몇 번째 페이지 (안 보내면 1페이지 = 앞에서 limit 개)
 
     @Size(max = 20)
     private String category; // 한식, 중식 ...

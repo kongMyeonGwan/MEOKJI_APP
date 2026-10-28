@@ -3,29 +3,42 @@ import { useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import FoodCard from '../../components/common/FoodCard'
 import Loading from '../../components/common/Loading'
+import Pagination from '../../components/common/Pagination'
 import { getRecommendations } from '../../api/recommendations'
 import { addLog, foodNames } from '../../utils/aiLog'
 
+const PAGE_SIZE = 12 // 한 페이지에 보여줄 메뉴 수 (서버 최대 12)
+
 // AI 추천 전체 목록 (/recommend).
 // 주소에 ?category=한식 이 붙어 있으면 그 종류만 추천받는다.
+// 주소의 ?page=2 로 페이지를 넘긴다 (새로고침 · 뒤로가기에도 그 페이지가 남는다).
 export default function RecommendPage({ onLikeCountChange }) {
   // useSearchParams: 주소의 ?뒤 값을 읽고 바꾸는 도구
   const [searchParams, setSearchParams] = useSearchParams()
   const category = searchParams.get('category') || ''
 
+  // 주소의 page 는 사람이 고쳐 넣을 수도 있다 (?page=abc, ?page=0).
+  // 서버는 1 미만을 막으므로 여기서 1 로 맞춘다
+  const pageParam = Number(searchParams.get('page'))
+  const page = Number.isInteger(pageParam) && pageParam >= 1 ? pageParam : 1
+
   const [items, setItems] = useState([])
+  const [total, setTotal] = useState(0) // 조건에 맞는 메뉴 전체 개수
+  const [totalPages, setTotalPages] = useState(0)
   const [condition, setCondition] = useState('') // 서버가 알려주는 추천 조건 요약
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // 카테고리가 바뀔 때마다 다시 받아온다
+  // 카테고리나 페이지가 바뀔 때마다 다시 받아온다
   useEffect(() => {
     const load = async () => {
       setLoading(true)
       setError('')
       try {
-        const data = await getRecommendations({ source: '카테고리', limit: 12, category: category })
+        const data = await getRecommendations({ source: '카테고리', limit: PAGE_SIZE, page: page, category: category })
         setItems(data.items || [])
+        setTotal(data.total || 0)
+        setTotalPages(data.totalPages || 0)
         setCondition(data.condition)
         addLog('카테고리', data.condition, foodNames(data.items))
       } catch (err) {
@@ -50,11 +63,24 @@ export default function RecommendPage({ onLikeCountChange }) {
       }
     }
     load()
-  }, [category])
+  }, [category, page])
 
-  // 카테고리 필터 풀기 (주소에서 ?category= 를 지운다)
+  // 카테고리 필터 풀기 (주소에서 ?category= 를 지운다). 페이지도 1 로 돌아간다
   const clearCategory = () => {
     setSearchParams({})
+  }
+
+  // 페이지 넘기기. 카테고리는 그대로 두고 page 만 바꾼다
+  const changePage = (nextPage) => {
+    const next = {}
+    if (category) {
+      next.category = category
+    }
+    if (nextPage > 1) {
+      next.page = nextPage
+    }
+    setSearchParams(next)
+    window.scrollTo(0, 0)
   }
 
   return (
@@ -75,7 +101,7 @@ export default function RecommendPage({ onLikeCountChange }) {
               ×
             </button>
           </span>
-          <span className="muted">{items.length}건</span>
+          <span className="muted">{total}건</span>
         </div>
       )}
 
@@ -93,11 +119,15 @@ export default function RecommendPage({ onLikeCountChange }) {
       )}
 
       {!loading && !error && items.length > 0 && (
-        <div className="list-page__cards">
-          {items.map((food) => (
-            <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
-          ))}
-        </div>
+        <>
+          <div className="list-page__cards">
+            {items.map((food) => (
+              <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
+            ))}
+          </div>
+
+          <Pagination page={page} totalPages={totalPages} onChange={changePage} />
+        </>
       )}
     </div>
   )

@@ -20,9 +20,6 @@ import tools.jackson.databind.JsonNode;
 @Component
 public class FoodScorer {
 
-    /** 한 번에 만들 후보 개수의 상한. 많이 받아봐야 화면에서 다 안 본다. */
-    private static final int MAX_FOODS = 12;
-
     /** 싫어하는 재료가 들어갔을 때 깎는 점수. 빼지는 않는다 — 대체재료를 낼 수 있다. */
     private static final int DISLIKE_PENALTY = 4;
 
@@ -45,15 +42,18 @@ public class FoodScorer {
     }
 
     /**
-     * 조건에 맞는 후보를 골라준다.
+     * 조건에 맞는 후보를 전부 순위대로 돌려준다.
+     *
+     * 몇 개를 보여줄지(페이지)는 부르는 쪽이 자른다. 페이지마다 따로 고르면
+     * 1페이지와 2페이지에 같은 메뉴가 겹치거나 빠질 수 있어서, 한 번 세운
+     * 순위를 잘라 쓴다.
      *
      * @param allergies 알레르기 재료. 들어간 메뉴는 통째로 뺀다
      * @param dislikes  싫어하는 재료. 순위만 뒤로 미룬다
      * @param exclude   이미 보여준 메뉴
      * @param bargains  값이 내린 재료. 비어 있지 않으면 이 재료를 쓰는 음식만 남긴다
      */
-    public List<FoodVO> recommend(
-            int limit,
+    public List<FoodVO> rank(
             String category,
             Integer budgetMin,
             Integer budgetMax,
@@ -115,9 +115,8 @@ public class FoodScorer {
                 .thenComparing(Scored::getName));
 
         List<FoodVO> results = new ArrayList<>();
-        int take = Math.min(Math.max(limit, 1), MAX_FOODS);
 
-        for (Scored row : scored.subList(0, Math.min(take, scored.size()))) {
+        for (Scored row : scored) {
             results.add(toFoodVO(row.getFood()));
         }
 

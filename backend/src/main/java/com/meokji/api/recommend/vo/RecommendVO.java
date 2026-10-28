@@ -30,4 +30,11 @@ public class RecommendVO {
     private WeatherVO weather;
 
     private List<BargainVO> bargains;
+
+    // ---------- 페이지 (게시판 목록과 같은 이름) ----------
+    private int page; // 지금 페이지 (1부터)
+
+    private int total; // 조건에 맞는 메뉴 전체 개수
+
+    private int totalPages; // 전체 페이지 수. 맞는 메뉴가 없으면 0
 }

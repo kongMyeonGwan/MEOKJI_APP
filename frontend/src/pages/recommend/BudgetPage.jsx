@@ -3,13 +3,16 @@ import { useSearchParams } from 'react-router-dom'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import FoodCard from '../../components/common/FoodCard'
 import Loading from '../../components/common/Loading'
+import Pagination from '../../components/common/Pagination'
 import BudgetRange, { BUDGET_MAX, BUDGET_MIN } from '../../components/common/BudgetRange'
 import { getRecommendations } from '../../api/recommendations'
 import { addLog, foodNames } from '../../utils/aiLog'
 import { formatPrice } from '../../utils/format'
 
-// 예산 맞춤 추천 (/budget?min=0&max=10000).
-// 예산을 주소에 두어서 새로고침해도 그대로 남는다.
+// 예산 맞춤 추천 (/budget?min=0&max=10000&page=2).
+// 예산과 페이지를 주소에 두어서 새로고침해도 그대로 남는다.
+
+const PAGE_SIZE = 12 // 한 페이지에 보여줄 메뉴 수 (서버 최대 12)
 
 // 금액 버튼들 (0원 ~ 이 금액)
 const PRESETS = [
@@ -29,7 +32,14 @@ export default function BudgetPage({ onLikeCountChange }) {
   // 슬라이더를 끝까지 밀면 "상한 없음"
   const noLimit = max >= BUDGET_MAX
 
+  // 주소의 page 는 사람이 고쳐 넣을 수도 있다 (?page=abc, ?page=0).
+  // 서버는 1 미만을 막으므로 여기서 1 로 맞춘다
+  const pageParam = Number(searchParams.get('page'))
+  const page = Number.isInteger(pageParam) && pageParam >= 1 ? pageParam : 1
+
   const [items, setItems] = useState([])
+  const [total, setTotal] = useState(0) // 예산에 맞는 메뉴 전체 개수
+  const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -43,11 +53,14 @@ export default function BudgetPage({ onLikeCountChange }) {
       try {
         const data = await getRecommendations({
           source: '예산 추천',
-          limit: 12,
+          limit: PAGE_SIZE,
+          page: page,
           budgetMin: min,
           budgetMax: noLimit ? null : max,
         })
         setItems(data.items || [])
+        setTotal(data.total || 0)
+        setTotalPages(data.totalPages || 0)
         addLog('예산 추천', data.condition, foodNames(data.items))
       } catch (err) {
         // 서버가 보낸 오류 문장을 그대로 보여준다.
@@ -75,11 +88,28 @@ export default function BudgetPage({ onLikeCountChange }) {
 
     // 0.4초 안에 값이 또 바뀌면 앞의 타이머를 취소한다
     return () => clearTimeout(timer)
-  }, [min, max])
+  }, [min, max, page])
 
-  // 예산을 바꾸면 주소를 바꾼다 → min, max 가 바뀌어서 위 useEffect 가 다시 돈다
+  // 예산을 바꾸면 주소를 바꾼다 → min, max 가 바뀌어서 위 useEffect 가 다시 돈다.
+  // page 는 빼서 1페이지로 돌아간다 (범위가 바뀌면 3페이지가 없을 수 있다)
   const changeBudget = (nextMin, nextMax) => {
     setSearchParams({ min: nextMin, max: nextMax })
+  }
+
+  // 페이지 넘기기. 예산은 그대로 두고 page 만 바꾼다
+  const changePage = (nextPage) => {
+    const next = {}
+    if (searchParams.get('min')) {
+      next.min = searchParams.get('min')
+    }
+    if (searchParams.get('max')) {
+      next.max = searchParams.get('max')
+    }
+    if (nextPage > 1) {
+      next.page = nextPage
+    }
+    setSearchParams(next)
+    window.scrollTo(0, 0)
   }
 
   const rangeText = noLimit ? `${formatPrice(min)} 이상` : `${formatPrice(min)} ~ ${formatPrice(max)}`
@@ -116,7 +146,7 @@ export default function BudgetPage({ onLikeCountChange }) {
         </div>
 
         <p className="muted budget-form__hint">
-          {rangeText} {items.length}건
+          {rangeText} {total}건
         </p>
       </div>
 
@@ -132,11 +162,15 @@ export default function BudgetPage({ onLikeCountChange }) {
       )}
 
       {!loading && !error && items.length > 0 && (
-        <div className="list-page__cards">
-          {items.map((food) => (
-            <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
-          ))}
-        </div>
+        <>
+          <div className="list-page__cards">
+            {items.map((food) => (
+              <FoodCard key={food.foodName} food={food} onLikeCountChange={onLikeCountChange} />
+            ))}
+          </div>
+
+          <Pagination page={page} totalPages={totalPages} onChange={changePage} />
+        </>
       )}
     </div>
   )

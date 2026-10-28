@@ -80,20 +80,31 @@ public class RecommendServiceImpl implements RecommendService {
         // 5. 점수를 매겨서 고른다.
         //    "지금 싼 재료로" 카드는 날씨도 검색어도 안 보내서 점수가 모두 0 이 된다.
         //    그래서 정렬의 두 번째 기준인 '싼 순' 이 실제 순서를 정한다
-        List<FoodVO> items = foodScorer.recommend(limit, request.getCategory(),
+        List<FoodVO> ranked = foodScorer.rank(request.getCategory(),
                 request.getBudgetMin(), request.getBudgetMax(), request.getQuery(),
                 weather, allergies, dislikes, exclude, bargainNames);
 
         // 6. 하나도 없으면 예산을 3천원 넓혀서 한 번 더 찾는다
-        if (items.isEmpty() && request.getBudgetMax() != null) {
-            items = foodScorer.recommend(limit, request.getCategory(),
+        if (ranked.isEmpty() && request.getBudgetMax() != null) {
+            ranked = foodScorer.rank(request.getCategory(),
                     request.getBudgetMin(), request.getBudgetMax() + 3000, request.getQuery(),
                     weather, allergies, dislikes, exclude, bargainNames);
         }
 
+        // 7. 순위에서 이번 페이지만 자른다. page 를 안 보내면 1페이지(앞에서 limit 개)
+        int page = 1;
+        if (request.getPage() != null) {
+            page = request.getPage();
+        }
+        int from = Math.min((page - 1) * limit, ranked.size());
+        int to = Math.min(from + limit, ranked.size());
+
         RecommendVO response = new RecommendVO();
         response.setCondition(makeCondition(request, weather, bargains, allergies.size() + dislikes.size()));
-        response.setItems(items);
+        response.setItems(new ArrayList<>(ranked.subList(from, to)));
+        response.setPage(page);
+        response.setTotal(ranked.size());
+        response.setTotalPages((ranked.size() + limit - 1) / limit);
         response.setWeather(weather);
         response.setBargains(bargains);
         return response;
