@@ -1897,6 +1897,12 @@
   background: #fdf6e3;
 }
 
+/* 다크 모드. 글자가 밝아지는데 배경이 연한 그대로면 제목이 안 보인다.
+   같은 색 계열을 어둡게 눌러서 게임마다의 색은 남긴다 (GamePage 카드와 같은 값) */
+[data-theme='dark'] .gpromo__game--orange { background: #35251c; }
+[data-theme='dark'] .gpromo__game--purple { background: #26213a; }
+[data-theme='dark'] .gpromo__game--yellow { background: #312a19; }
+
 .gpromo--full .gpromo__game-emoji {
   font-size: 34px;
 }
@@ -4322,6 +4328,11 @@ a.price-table__best:hover {
 .gpage__game--yellow {
   background: #fdf6e3;
 }
+
+/* 다크 모드. GamePromo 카드와 같은 값이다 */
+[data-theme='dark'] .gpage__game--orange { background: #35251c; }
+[data-theme='dark'] .gpage__game--purple { background: #26213a; }
+[data-theme='dark'] .gpage__game--yellow { background: #312a19; }
 
 .gpage__game-head {
   display: flex;
