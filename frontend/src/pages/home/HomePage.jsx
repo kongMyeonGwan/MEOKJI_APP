@@ -92,8 +92,8 @@ export default function HomePage({ onLikeCountChange }) {
       <div className="dash__left">
         <WeatherPick />
         {/* 날씨 추천을 보고도 못 정했을 때 바로 권한다. 흰 카드 사이에 둬야 살구색 판이 눈에 띈다 */}
-        <GamePromo games={games} />
-        <FoodFinder searchSuggestions={searchSuggestions} />
+        {/* <GamePromo games={games} /> */}
+        {/* <FoodFinder searchSuggestions={searchSuggestions} /> */}
         <BudgetPicker budgetPresets={budgetPresets} />
 
         {/* 카테고리는 아래 추천 목록을 거르는 버튼이라 한 카드에 같이 둔다 */}
