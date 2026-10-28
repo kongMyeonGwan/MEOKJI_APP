@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-// 게임 시작 전에 크기(라운드)를 고르는 화면. 월드컵(64 · 32 · 16강)과 밸런스(16 · 8 · 4강)가 같이 쓴다.
+// 게임 시작 전에 크기(라운드)를 고르는 화면. 월드컵(32 · 16 · 4강)과 밸런스(16 · 8 · 4강)가 같이 쓴다.
 //
 //   위   : 아이콘 + 게임 이름 + 안내 태그
 //   가운데: 라운드 드롭다운 + 안내 문장 + 진행 순서
@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom'
 //   title        : 게임 이름
 //   tags         : 제목 아래 작은 안내들 ['요리 100종', ...]
 //   label        : 드롭다운 위 글자
-//   choices      : [{ value: 64, label: '64강' }, ...]
+//   choices      : [{ value: 32, label: '32강' }, ...]
 //   defaultValue : 처음에 골라져 있을 값
 //   describe     : (value) => 드롭다운 아래 안내 문장
 //   steps        : (value) => 진행 순서 ['32강', '16강', ..., '결승']

@@ -16,12 +16,12 @@ import Confetti from './components/Confetti'
 import HallOfFameButton from './components/HallOfFameButton'
 
 // 음식 이상형 월드컵. 후보를 둘씩 붙여서 하나를 고르면 다음 라운드로 올라간다.
-// 시작 전에 64강 · 32강 · 16강 중 하나를 고른다.
-//   64강(32번 대결) → 32강 → 16강 → 8강 → 4강 → 결승(1번) → 우승
+// 시작 전에 32강 · 16강 · 4강 중 하나를 고른다.
+//   32강(16번 대결) → 16강 → 8강 → 4강 → 결승(1번) → 우승
 //
 // 상태 설명
-//   size    : 고른 대진 크기 (64 · 32 · 16). 아직 안 골랐으면 null → 고르는 화면
-//   round   : 이번 라운드에 남아 있는 메뉴들 (64개 → 32개 → ... → 2개 → 1개)
+//   size    : 고른 대진 크기 (32 · 16 · 4). 아직 안 골랐으면 null → 고르는 화면
+//   round   : 이번 라운드에 남아 있는 메뉴들 (32개 → 16개 → ... → 2개 → 1개)
 //   index   : 지금 대결하는 두 메뉴 중 왼쪽 메뉴의 위치 (0, 2, 4, 6 ...)
 //   winners : 이번 라운드에서 이긴 메뉴들. 라운드가 끝나면 이게 다음 round 가 된다.
 
@@ -33,9 +33,9 @@ const MAX_CANDIDATES = 64
 
 // 고를 수 있는 대진 크기
 const SIZES = [
-  { value: 64, label: '64강' },
   { value: 32, label: '32강' },
   { value: 16, label: '16강' },
+  { value: 4, label: '4강' },
 ]
 
 // 고르는 화면의 안내 문장. 대결 수 = 후보 수 - 1 (한 번 질 때마다 하나씩 떨어진다)
@@ -43,7 +43,7 @@ const describeSize = (value) => {
   return `요리 100종 중 무작위 ${value}개가 대결합니다. 총 ${value - 1}번 고르면 우승 메뉴가 나와요.`
 }
 
-// 고르는 화면의 진행 순서. 64 → ['64강', '32강', ..., '4강', '결승']
+// 고르는 화면의 진행 순서. 32 → ['32강', '16강', '8강', '4강', '결승']
 const sizeSteps = (value) => {
   const steps = []
   for (let n = value; n >= 2; n = n / 2) {
@@ -106,7 +106,7 @@ const fetchCandidates = async () => {
   return { items: items, condition: condition }
 }
 
-// 16강을 골라도 후보는 64개를 다 받아서 그중에서 뽑는다.
+// 4강 · 16강을 골라도 후보는 64개까지 받아서 그중에서 뽑는다.
 // 처음 받은 것만 쓰면 서버가 싼 순으로 주기 때문에 싼 메뉴만 나온다.
 const makeBracket = (items, wantSize) => {
   let size = wantSize
