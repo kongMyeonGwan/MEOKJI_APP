@@ -38,6 +38,15 @@ public interface HistoryDAO {
     /** id 로 하나. 남의 것인지 · 지웠는지 판단은 부르는 쪽이 한다. */
     MealHistoryVO findById(@Param("id") Long id);
 
+    /**
+     * 같은 음식으로 저장해 두고 아직 후기를 안 쓴 기록 수.
+     *
+     * 확정 전에 확인한다. 0 이 아니면 같은 요리가 이미 기록에 있어서 또 넣지 않는다.
+     * 후기를 쓴 기록은 세지 않는다 - 그 요리로 글을 쓴 뒤에는 다시 해 먹고
+     * 새 기록을 남길 수 있어야 한다.
+     */
+    int countUnsharedByFood(@Param("userId") Long userId, @Param("foodName") String foodName);
+
     /** 식사 확정. id · selected_at 은 DB 가 채운다. */
     void insert(MealHistoryVO history);
 

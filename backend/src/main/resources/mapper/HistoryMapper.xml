@@ -59,6 +59,24 @@
          WHERE id = #{id}
     </select>
 
+    <!--
+      지운 기록(use_yn='N')과 후기를 쓴 기록은 세지 않는다.
+      후기는 살아 있는 것(use_yn='Y')만 본다. 글을 지웠으면 다시 "안 쓴 기록" 이 된다.
+    -->
+    <select id="countUnsharedByFood" resultType="int">
+        SELECT COUNT(m.id)
+          FROM meal_histories m
+         WHERE m.user_id = #{userId}
+           AND m.food_name = #{foodName}
+           AND m.use_yn = 'Y'
+           AND NOT EXISTS (
+                SELECT 1
+                  FROM recipe_reviews r
+                 WHERE r.meal_history_id = m.id
+                   AND r.use_yn = 'Y'
+               )
+    </select>
+
     <insert id="insert" parameterType="com.meokji.api.history.vo.MealHistoryVO"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO meal_histories (

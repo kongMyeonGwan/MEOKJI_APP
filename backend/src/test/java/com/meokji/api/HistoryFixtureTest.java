@@ -253,6 +253,70 @@ class HistoryFixtureTest {
         assertThat(body(again).get("detail").asString()).isEqualTo("기록을 찾을 수 없습니다.");
     }
 
+    private MvcResult createHistory() throws Exception {
+        return mvc.perform(post("/api/histories")
+                        .header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CREATE_BODY))
+                .andReturn();
+    }
+
+    private void deleteHistory(long historyId) throws Exception {
+        mvc.perform(delete("/api/histories/" + historyId).header("Authorization", auth))
+                .andReturn();
+    }
+
+    @Test
+    @DisplayName("같은 요리를 또 확정하면 409 다")
+    void duplicateFoodIsRejected() throws Exception {
+        MvcResult first = createHistory();
+        assertThat(first.getResponse().getStatus()).isEqualTo(201);
+        long historyId = body(first).get("id").asLong();
+
+        try {
+            MvcResult second = createHistory();
+
+            assertThat(second.getResponse().getStatus()).isEqualTo(409);
+            assertThat(body(second).get("detail").asString())
+                    .startsWith("이미 History에 저장한 요리입니다.");
+        } finally {
+            deleteHistory(historyId);
+        }
+    }
+
+    @Test
+    @DisplayName("그 기록으로 추천글을 썼으면 같은 요리를 다시 확정할 수 있다")
+    void sharedFoodCanBeSavedAgain() throws Exception {
+        MvcResult first = createHistory();
+        assertThat(first.getResponse().getStatus()).isEqualTo(201);
+        long firstId = body(first).get("id").asLong();
+
+        MvcResult review = mvc.perform(post("/api/reviews")
+                        .header("Authorization", auth)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"meal_history_id\":" + firstId + ","
+                                + "\"title\":\"테스트 후기\",\"content\":\"테스트 본문\"}"))
+                .andReturn();
+        assertThat(review.getResponse().getStatus()).isEqualTo(201);
+        long reviewId = body(review).get("id").asLong();
+
+        Long secondId = null;
+        try {
+            MvcResult second = createHistory();
+
+            assertThat(second.getResponse().getStatus()).isEqualTo(201);
+            secondId = body(second).get("id").asLong();
+        } finally {
+            // 글을 먼저 지워야 첫 기록을 지울 수 있다 (공유한 기록은 409)
+            mvc.perform(delete("/api/reviews/" + reviewId).header("Authorization", auth))
+                    .andReturn();
+            deleteHistory(firstId);
+            if (secondId != null) {
+                deleteHistory(secondId);
+            }
+        }
+    }
+
     @Test
     @DisplayName("빈 음식 이름은 422 다")
     void blankFoodNameIsRejected() throws Exception {

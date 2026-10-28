@@ -75,11 +75,20 @@ public class HistoryServiceImpl implements HistoryService {
     @Override
     @Transactional
     public MealHistoryVO add(UserVO user, MealHistoryVO request) {
+        String foodName = request.getFoodName().trim();
+
+        // 같은 요리가 이미 기록에 있으면 또 넣지 않는다 (409).
+        // 단, 그 기록으로 레시피 추천글을 썼으면 세지 않아서 새로 저장된다
+        if (historyDAO.countUnsharedByFood(user.getId(), foodName) > 0) {
+            throw ApiException.conflict(
+                    "이미 History에 저장한 요리입니다. 이 기록으로 레시피 추천글을 쓰면 다시 저장할 수 있어요.");
+        }
+
         // 화면이 보낸 값이 이미 MealHistoryVO 에 담겨 있다.
         // JSON 세 칸도 setter 가 글자로 바꿔 넣어줬다 (DB 컬럼이 CLOB 글자라서).
         MealHistoryVO history = new MealHistoryVO();
         history.setUserId(user.getId());
-        history.setFoodName(request.getFoodName().trim());
+        history.setFoodName(foodName);
         history.setRecipeName(request.getRecipeName());
         history.setRecipeJson(request.getRecipeJson());
         history.setIngredientsJson(request.getIngredientsJson());
