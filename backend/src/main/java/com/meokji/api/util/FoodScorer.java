@@ -105,6 +105,12 @@ public class FoodScorer {
                 continue;
             }
 
+            // 검색어가 있는데 이름 · 카테고리 · 태그 · 재료 · 이유 어디에도 안 걸리면 뺀다.
+            // 안 빼면 전부 0점이 되어 '싼 순' 으로 아무 음식이나 나온다 ("파스타" → 감자전)
+            if (query != null && !query.isBlank() && scoreQuery(food, query) <= 0) {
+                continue;
+            }
+
             int score = scoreFood(food, query, weather);
 
             if (usesAny(food, dislikes)) {
