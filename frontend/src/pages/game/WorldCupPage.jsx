@@ -16,11 +16,11 @@ import Confetti from './components/Confetti'
 import HallOfFameButton from './components/HallOfFameButton'
 
 // 음식 이상형 월드컵. 후보를 둘씩 붙여서 하나를 고르면 다음 라운드로 올라간다.
-// 시작 전에 32강 · 16강 · 4강 중 하나를 고른다.
+// 시작 전에 32강 · 16강 · 8강 · 4강 중 하나를 고른다.
 //   32강(16번 대결) → 16강 → 8강 → 4강 → 결승(1번) → 우승
 //
 // 상태 설명
-//   size    : 고른 대진 크기 (32 · 16 · 4). 아직 안 골랐으면 null → 고르는 화면
+//   size    : 고른 대진 크기 (32 · 16 · 8 · 4). 아직 안 골랐으면 null → 고르는 화면
 //   round   : 이번 라운드에 남아 있는 메뉴들 (32개 → 16개 → ... → 2개 → 1개)
 //   index   : 지금 대결하는 두 메뉴 중 왼쪽 메뉴의 위치 (0, 2, 4, 6 ...)
 //   winners : 이번 라운드에서 이긴 메뉴들. 라운드가 끝나면 이게 다음 round 가 된다.
@@ -35,6 +35,7 @@ const MAX_CANDIDATES = 64
 const SIZES = [
   { value: 32, label: '32강' },
   { value: 16, label: '16강' },
+  { value: 8, label: '8강' },
   { value: 4, label: '4강' },
 ]
 
@@ -106,7 +107,7 @@ const fetchCandidates = async () => {
   return { items: items, condition: condition }
 }
 
-// 4강 · 16강을 골라도 후보는 64개까지 받아서 그중에서 뽑는다.
+// 4강 · 8강 · 16강을 골라도 후보는 64개까지 받아서 그중에서 뽑는다.
 // 처음 받은 것만 쓰면 서버가 싼 순으로 주기 때문에 싼 메뉴만 나온다.
 const makeBracket = (items, wantSize) => {
   let size = wantSize
