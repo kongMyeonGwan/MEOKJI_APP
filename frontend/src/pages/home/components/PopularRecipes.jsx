@@ -12,6 +12,10 @@ import { getPopular } from '../../../api/reviews'
 //   useEffect 에서 getPopular({ start, end, limit: 8 }) 를 부르고,
 //   의존성 배열에 [start, end] 를 넣어서 기간이 바뀔 때마다 다시 부른다.
 
+// 첫 화면 카드에 보여줄 순위 수. 서버는 /popular 화면용으로 6개까지 주는데
+// 오른쪽 좁은 칸이라 3위까지만 그린다. 나머지는 '전체보기' 로 본다
+const TOP_COUNT = 3
+
 const PRESETS = [
   { key: 'TODAY', label: '오늘', days: 0 },
   { key: 'D7', label: '7일', days: 6 },
@@ -27,9 +31,10 @@ export default function PopularRecipes() {
 
   useEffect(() => {
     const load = async () => {
+      // 서버가 좋아요 많은 순(같으면 먼저 쓴 글 순)으로 준다. 앞에서 3개만 남긴다
       const data = await getPopular({ start, end })
 
-      setItems(data)
+      setItems(data.slice(0, TOP_COUNT))
     }
     load()
   }, [start, end])
