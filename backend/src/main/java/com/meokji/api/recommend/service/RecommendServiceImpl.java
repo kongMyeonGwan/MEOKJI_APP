@@ -91,6 +91,13 @@ public class RecommendServiceImpl implements RecommendService {
                     weather, allergies, dislikes, exclude, bargainNames);
         }
 
+        // 날씨에 맞는 음식이 하나도 없으면 날씨 없이 다시 고른다 (빈 화면 방지)
+        if (ranked.isEmpty() && weather != null) {
+            ranked = foodScorer.rank(request.getCategory(),
+                    request.getBudgetMin(), request.getBudgetMax(), request.getQuery(),
+                    null, allergies, dislikes, exclude, bargainNames);
+        }
+
         // 7. 순위에서 이번 페이지만 자른다. page 를 안 보내면 1페이지(앞에서 limit 개)
         int page = 1;
         if (request.getPage() != null) {

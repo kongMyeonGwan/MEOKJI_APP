@@ -98,6 +98,13 @@ public class FoodScorer {
                 continue;
             }
 
+            // 날씨로 추천할 때는 날씨에 어울리는 음식만 남긴다 (0점 이하는 뺀다).
+            // 검색어가 있으면 날씨를 안 보므로 거르지 않는다
+            if (weather != null && (query == null || query.isBlank())
+                    && scoreWeather(food, weather) <= 0) {
+                continue;
+            }
+
             int score = scoreFood(food, query, weather);
 
             if (usesAny(food, dislikes)) {

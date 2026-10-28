@@ -9,7 +9,7 @@ import { addLog, foodNames } from '../../utils/aiLog'
 
 const PAGE_SIZE = 12 // 한 페이지에 보여줄 메뉴 수 (서버 최대 12)
 
-// AI 추천 전체 목록 (/recommend).
+// 오늘의 추천 (/recommend). 첫 화면 날씨 카드(WeatherPick)처럼 오늘 날씨에 맞는 메뉴만 보여준다.
 // 주소에 ?category=한식 이 붙어 있으면 그 종류만 추천받는다.
 // 주소의 ?page=2 로 페이지를 넘긴다 (새로고침 · 뒤로가기에도 그 페이지가 남는다).
 export default function RecommendPage({ onLikeCountChange }) {
@@ -29,18 +29,44 @@ export default function RecommendPage({ onLikeCountChange }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // 카테고리나 페이지가 바뀔 때마다 다시 받아온다
+  // 내 위치 { lat, lon }. undefined 면 아직 묻는 중, null 이면 거부 · 실패 (서버가 기본 위치로 본다)
+  const [coords, setCoords] = useState(undefined)
+
+  // 처음 한 번, 브라우저에 내 위치를 물어본다 (첫 화면 날씨 카드와 같은 방식)
   useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      // 위치를 받았을 때
+      (position) => setCoords({ lat: position.coords.latitude, lon: position.coords.longitude }),
+      // 위치 권한을 거부했거나 실패했을 때
+      () => setCoords(null),
+      { timeout: 5000 },
+    )
+  }, [])
+
+  // 위치가 정해진 뒤, 카테고리나 페이지가 바뀔 때마다 다시 받아온다
+  useEffect(() => {
+    if (coords === undefined) {
+      return // 위치를 묻는 중이다. 답이 오면 이 useEffect 가 다시 돈다
+    }
+
     const load = async () => {
       setLoading(true)
       setError('')
       try {
-        const data = await getRecommendations({ source: '카테고리', limit: PAGE_SIZE, page: page, category: category })
+        const data = await getRecommendations({
+          source: '날씨 추천',
+          limit: PAGE_SIZE,
+          page: page,
+          category: category,
+          useWeather: true,
+          lat: coords ? coords.lat : null,
+          lon: coords ? coords.lon : null,
+        })
         setItems(data.items || [])
         setTotal(data.total || 0)
         setTotalPages(data.totalPages || 0)
         setCondition(data.condition)
-        addLog('카테고리', data.condition, foodNames(data.items))
+        addLog('날씨 추천', data.condition, foodNames(data.items))
       } catch (err) {
         // 서버가 보낸 오류 문장을 그대로 보여준다.
         if (err.response) {
@@ -63,7 +89,7 @@ export default function RecommendPage({ onLikeCountChange }) {
       }
     }
     load()
-  }, [category, page])
+  }, [category, page, coords])
 
   // 카테고리 필터 풀기 (주소에서 ?category= 를 지운다). 페이지도 1 로 돌아간다
   const clearCategory = () => {
@@ -91,7 +117,7 @@ export default function RecommendPage({ onLikeCountChange }) {
         {condition && <span className="muted section-more">{condition}</span>}
       </div>
 
-      <p className="muted list-page__desc">등록하신 못 먹는 재료를 반영해 AI가 고른 메뉴입니다.</p>
+      <p className="muted list-page__desc">등록하신 못 먹는 재료를 반영해 분석한 메뉴입니다.</p>
 
       {category && (
         <div className="list-page__filter-bar">
