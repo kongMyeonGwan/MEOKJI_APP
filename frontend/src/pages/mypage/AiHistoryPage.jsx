@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { clearLogs, getLogs } from '../../utils/aiLog'
+import { clearLogs, getLogs, removeLog } from '../../utils/aiLog'
 import { formatDateTime } from '../../utils/format'
 
 // AI 추천 기록. 언제, 어떤 조건으로, 무엇을 추천받았는지.
@@ -15,12 +15,18 @@ export default function AiHistoryPage() {
     }
   }
 
+  // 기록 하나 지우기. 지운 뒤 저장된 목록을 다시 읽는다
+  const handleRemove = (id) => {
+    removeLog(id)
+    setLogs(getLogs())
+  }
+
   return (
     <div className="list-page">
       <div className="section-head">
         <h2 className="section-title">AI 추천 기록</h2>
         {logs.length > 0 && (
-          <button type="button" className="section-more" onClick={handleClear}>
+          <button type="button" className="btn btn--ghost btn--sm ailog__clear" onClick={handleClear}>
             전체 지우기
           </button>
         )}
@@ -42,11 +48,21 @@ export default function AiHistoryPage() {
       )}
 
       <ul className="ailog">
-        {logs.map((log) => (
-          <li key={log.id} className="card ailog__item">
+        {logs.map((log, index) => (
+          // id 가 겹칠 수 있어서(aiLog.js 의 removeLog 참고) 순번을 같이 붙인다
+          <li key={`${log.id}-${index}`} className="card ailog__item">
             <div className="ailog__head">
               <span className="tag ailog__source">{log.source}</span>
               <span className="muted ailog__date">{formatDateTime(log.createdAt)}</span>
+              <button
+                type="button"
+                className="ailog__remove"
+                onClick={() => handleRemove(log.id)}
+                aria-label="이 기록 지우기"
+                title="이 기록 지우기"
+              >
+                ×
+              </button>
             </div>
 
             <p className="ailog__condition">{log.condition}</p>

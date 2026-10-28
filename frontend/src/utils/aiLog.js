@@ -47,6 +47,19 @@ export const markPicked = (foodName) => {
   }
 }
 
+// 기록 하나 지우기.
+// id 가 Date.now() 라 같은 순간에 남긴 두 기록이 같은 id 를 가질 수 있다
+// (첫 화면이 날씨 · 카테고리 추천을 동시에 남길 때). 그래서 filter 로 다 지우지 않고
+// 맞는 것 하나만 뺀다.
+export const removeLog = (id) => {
+  const logs = getLogs()
+  const index = logs.findIndex((log) => log.id === id)
+  if (index !== -1) {
+    logs.splice(index, 1)
+    saveLogs(logs)
+  }
+}
+
 // 기록 전부 지우기
 export const clearLogs = () => {
   localStorage.removeItem(STORAGE_KEY)
