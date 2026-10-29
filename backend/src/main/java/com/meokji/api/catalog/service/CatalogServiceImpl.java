@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.meokji.api.common.ApiException;
 import com.meokji.api.util.FoodCatalog;
+import com.meokji.api.util.RegionBoundary;
 import com.meokji.api.util.RegionCatalog;
 
 import tools.jackson.databind.JsonNode;
@@ -36,6 +37,9 @@ public class CatalogServiceImpl implements CatalogService {
     @Autowired
     private RegionCatalog regions;
 
+    @Autowired
+    private RegionBoundary boundaries;
+
     @Override
     public Map<String, JsonNode> getSections() {
         Map<String, JsonNode> body = new LinkedHashMap<>();
@@ -59,7 +63,14 @@ public class CatalogServiceImpl implements CatalogService {
 
     @Override
     public Map<String, String> getNearestRegion(double lat, double lon) {
-        Map<String, String> found = regions.findNearest(lat, lon);
+        // 실제 경계 안에 들어가는 동을 먼저 찾는다.
+        Map<String, String> found = boundaries.find(lat, lon);
+
+        // 바다 위나 국경 밖이면 경계로는 못 찾는다. 그때만 중심점이 가장 가까운
+        // 동으로 떨어뜨린다. 바다에서도 날씨는 보여줘야 하기 때문이다.
+        if (found == null) {
+            found = regions.findNearest(lat, lon);
+        }
 
         if (found == null) {
             throw ApiException.notFound("가까운 지역을 찾지 못했습니다.");

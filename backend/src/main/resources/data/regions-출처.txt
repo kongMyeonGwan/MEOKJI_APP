@@ -10,6 +10,10 @@ Korea SGIS (https://sgis.kostat.go.kr) under KOGL Type 1, modified by
 vuski/admdongkor (https://github.com/vuski/admdongkor), and distributed under
 CC BY 4.0.
 
+같은 자료로 dong-boundaries.json (읍·면·동 경계) 도 만들었다. 좌표가 어느 동
+안에 들어가는지 판정하는 데 쓴다. 꼭짓점을 20m 허용오차로 줄여(75만 -> 26만)
+34MB 를 5MB 로 낮췄다.
+
 - 기준 시점 : 2025-10-01 자 행정동 (ver20251001)
 - 중심점    : 통계청 MDIS 인구용 행정경계중심점 (UTMK/EPSG:5179 → WGS84 로 변환)
 - 담은 범위 : 시·도 17, 시·군·구 252, 읍·면·동 3,531
