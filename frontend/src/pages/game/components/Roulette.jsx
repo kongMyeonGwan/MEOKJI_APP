@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import FoodThumb from '../../../components/common/FoodThumb'
 import Icon from '../../../components/common/Icon'
@@ -66,6 +66,7 @@ export default function Roulette() {
   const [error, setError] = useState('')
   const [popupOpen, setPopupOpen] = useState(false) // 당첨 창이 떠 있는지
   const [confetti, setConfetti] = useState(0) // 바뀔 때마다 폭죽이 한 번 터진다
+  const lastLabel = useRef(null) // 지난번에 당첨된 분류. 다음엔 다른 분류가 나오게 한다
 
   // 당첨 창은 Esc 로도 닫는다
   useEffect(() => {
@@ -118,7 +119,13 @@ export default function Roulette() {
     if (candidates.length === 0) {
       candidates = indexes
     }
+    // 한식 · 국탕이 번갈아 나오게 지난번에 나온 분류는 뺀다 (처음 한 번은 무작위)
+    const others = candidates.filter((i) => slices[i].label !== lastLabel.current)
+    if (others.length > 0) {
+      candidates = others
+    }
     const picked = candidates[Math.floor(Math.random() * candidates.length)]
+    lastLabel.current = slices[picked].label
 
     // 2. 당첨 조각의 가운데가 12시(바늘)에 오려면 얼마나 돌려야 하는지
     const pickedCenter = picked * sliceDeg + sliceDeg / 2
