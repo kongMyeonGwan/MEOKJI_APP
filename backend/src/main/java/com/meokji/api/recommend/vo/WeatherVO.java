@@ -34,4 +34,13 @@ public class WeatherVO {
     private String comment;
 
     private String pickLead;
+
+    /**
+     * 이 날씨가 어느 좌표에서 왔는지. ADDRESS(고른 주소) · GPS(지금 내 위치) ·
+     * DEFAULT(둘 다 없어서 서울).
+     *
+     * 화면이 DEFAULT 를 구분해야 한다. 위치를 못 읽은 사람에게 서울 날씨를
+     * 그려주면 자기 동네 날씨로 믿기 때문이다.
+     */
+    private String locationSource;
 }

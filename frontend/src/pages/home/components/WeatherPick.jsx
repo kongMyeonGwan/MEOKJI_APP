@@ -5,6 +5,7 @@ import FoodThumb from '../../../components/common/FoodThumb'
 import { getRecommendations } from '../../../api/recommendations'
 import { addLog, foodNames } from '../../../utils/aiLog'
 import { formatMinutes, formatPrice, priceBand } from '../../../utils/format'
+import { GEO_OPTIONS, weatherLocationAlert } from '../../../utils/geolocation'
 
 // 첫 화면 맨 위 카드. 왼쪽에 오늘 날씨, 오른쪽에 날씨에 맞는 메뉴 5개.
 // 메뉴 카드는 CSS 애니메이션으로 옆으로 천천히 흐르고, 마우스를 올리면 멈춘다.
@@ -22,8 +23,10 @@ export default function WeatherPick() {
   const [coords, setCoords] = useState(null) // 내 위치 { lat, lon }
   const [shown, setShown] = useState([]) // 이미 보여준 메뉴 이름 (다시 안 나오게)
 
-  // 서버에 날씨 + 메뉴를 요청한다. position 이 null 이면 서버가 기본 위치(서울)로 알려준다.
-  const load = async (position) => {
+  // 서버에 날씨 + 메뉴를 요청한다.
+  //   position : 브라우저로 잡은 내 위치. null 이면 못 읽은 것이다.
+  //   geoCode  : 못 읽은 까닭 (1=권한 거부, 2=실패, 3=시간 초과)
+  const load = async (position, geoCode) => {
     setLoading(true)
     try {
       const data = await getRecommendations({
@@ -34,6 +37,19 @@ export default function WeatherPick() {
         lon: position ? position.lon : null,
         exclude: shown,
       })
+
+      // 위치를 못 읽어서 서버가 기본 자리(종로2가) 날씨를 준 경우다.
+      // 그 날씨를 그대로 보여주되, 내 동네가 아니라는 걸 알림창으로 알린다.
+      // 알리지 않으면 부산에 있는 사람이 종로 날씨를 자기 동네로 믿는다.
+      //
+      // 주소를 골라둔 사람은 여기 안 걸린다. 서버가 ADDRESS 를 주기 때문에
+      // 위치를 못 읽어도 고른 주소의 날씨가 그대로 온다.
+      //
+      // geoCode 가 있을 때만 띄운다. 아래 '다시 뽑기' 버튼도 이 함수를 부르는데,
+      // 그때는 까닭을 안 넘기므로 같은 알림이 누를 때마다 다시 뜨지 않는다.
+      if (geoCode && data.weather && data.weather.locationSource === 'DEFAULT') {
+        alert(weatherLocationAlert(geoCode, data.weather.city))
+      }
 
       if (data.items.length > 0) {
         const names = foodNames(data.items)
@@ -58,9 +74,9 @@ export default function WeatherPick() {
         setCoords(myCoords)
         load(myCoords)
       },
-      // 위치 권한을 거부했거나 실패했을 때
-      () => load(null),
-      { timeout: 5000 },
+      // 위치 권한을 거부했거나 실패했을 때. 까닭(code)을 같이 넘긴다
+      (error) => load(null, error.code),
+      GEO_OPTIONS,
     )
   }, [])
 

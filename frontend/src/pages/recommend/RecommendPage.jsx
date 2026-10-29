@@ -6,6 +6,7 @@ import Loading from '../../components/common/Loading'
 import Pagination from '../../components/common/Pagination'
 import { getRecommendations } from '../../api/recommendations'
 import { addLog, foodNames } from '../../utils/aiLog'
+import { GEO_OPTIONS } from '../../utils/geolocation'
 
 const PAGE_SIZE = 12 // 한 페이지에 보여줄 메뉴 수 (서버 최대 12)
 
@@ -39,7 +40,7 @@ export default function RecommendPage({ onLikeCountChange }) {
       (position) => setCoords({ lat: position.coords.latitude, lon: position.coords.longitude }),
       // 위치 권한을 거부했거나 실패했을 때
       () => setCoords(null),
-      { timeout: 5000 },
+      GEO_OPTIONS,
     )
   }, [])
 

@@ -19,6 +19,7 @@ export const updateProfile = async (form) => {
       addressSido: form.addressSido,
       addressSigungu: form.addressSigungu,
       addressDong: form.addressDong,
+      addressFromGps: form.addressFromGps,
     },
     { headers: authHeader() },
   )

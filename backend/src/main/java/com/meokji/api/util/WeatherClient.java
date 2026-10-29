@@ -160,6 +160,22 @@ public class WeatherClient {
         return weather;
     }
 
+    /**
+     * 캐시에 담아둔 날씨. 10분이 지난 값이라도 돌려준다. 없으면 null.
+     *
+     * 날씨 API 가 실패했을 때 마지막으로 받아둔 값이라도 보여주려고 쓴다.
+     * 그래서 기한을 보지 않는다 - 조금 지난 날씨가 빈 화면보다 낫다.
+     */
+    public Weather cached(double lat, double lon) {
+        Cached found = weatherCache.get(cacheKey(lat, lon));
+
+        if (found == null) {
+            return null;
+        }
+
+        return found.getWeather();
+    }
+
     /** 개발용 가짜 날씨. 언제 불러도 같은 값이 나온다. */
     private static Weather mock() {
         return new Weather("서울특별시", 28, 30, 52, "CLEAR", "맑음");

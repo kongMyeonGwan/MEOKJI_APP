@@ -13,6 +13,7 @@ export const register = async (form) => {
     addressSido: form.addressSido,
     addressSigungu: form.addressSigungu,
     addressDong: form.addressDong,
+    addressFromGps: form.addressFromGps,
   })
   return response.data
 }

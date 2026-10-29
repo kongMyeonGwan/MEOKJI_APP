@@ -42,4 +42,7 @@ public class RegisterVO {
 
     @Size(max = 30)
     private String addressDong;
+
+    /** 주소를 '현재 위치로 채우기' 로 채웠는지. true 면 좌표를 저장하지 않는다. */
+    private Boolean addressFromGps;
 }

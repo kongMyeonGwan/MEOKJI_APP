@@ -129,7 +129,14 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        BigDecimal[] coords = regionCatalog.findCoords(sido, sigungu, dong);
+        // '현재 위치로 채우기' 로 채운 주소는 좌표를 저장하지 않는다. 좌표가 비어
+        // 있어야 날씨가 그때그때 브라우저로 잡은 위치를 쓰고, 그게 "현재 위치" 를
+        // 고른 뜻이다. 드롭다운으로 직접 고른 주소만 좌표까지 박아 위치보다 앞세운다.
+        BigDecimal[] coords = null;
+        if (!Boolean.TRUE.equals(request.getAddressFromGps())) {
+            coords = regionCatalog.findCoords(sido, sigungu, dong);
+        }
+
         BigDecimal latitude = coords == null ? null : coords[0];
         BigDecimal longitude = coords == null ? null : coords[1];
 

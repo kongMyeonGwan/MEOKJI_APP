@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
 import { getRegions, getDongs, getNearestRegion } from '../../api/catalog'
+import { GEO_OPTIONS } from '../../utils/geolocation'
 
 // 주소 고르기. 시/도 → 시/군/구 → 읍/면/동 드롭다운 세 개.
 // 회원가입과 마이페이지에서 쓴다.
-//   <AddressPicker sido={sido} sigungu={sigungu} dong={dong} onChange={(sido, sigungu, dong) => ...} />
+//   <AddressPicker sido={sido} sigungu={sigungu} dong={dong}
+//                  onChange={(sido, sigungu, dong, fromGps) => ...} />
+//
+// onChange 의 fromGps 가 true 면 '현재 위치로 채우기' 로 채운 것이다. 서버가
+// 그때는 좌표를 저장하지 않아서, 날씨가 매번 지금 위치를 다시 잡는다.
 //
 // 시/도 목록 맨 위에 '현재 위치로 채우기'가 있다. 고르면 브라우저에 위치를 물어보고
 // 가장 가까운 동을 서버에서 받아 세 칸을 한 번에 채운다.
@@ -57,7 +62,7 @@ export default function AddressPicker({ sido, sigungu, dong, onChange, disabled 
   const fillByCoords = async (lat, lon) => {
     try {
       const found = await getNearestRegion(lat, lon)
-      onChange(found.sido, found.sigungu, found.dong)
+      onChange(found.sido, found.sigungu, found.dong, true)
     } catch (err) {
       setLocateError('가까운 지역을 찾지 못했습니다. 직접 골라주세요.')
     } finally {
@@ -101,10 +106,7 @@ export default function AddressPicker({ sido, sigungu, dong, onChange, disabled 
         setLocating(false)
         setLocateError(locateErrorText(error.code))
       },
-      // 데스크톱은 와이파이를 훑어 구글에 물어보는 방식이라 느리다. 5초로는 모자라서
-      // 자주 시간 초과가 났다. 정확도는 동 단위면 충분하므로 高정확도는 끄고
-      // (켜면 더 느리다), 1분 안에 받아둔 위치가 있으면 그걸 그대로 쓴다.
-      { timeout: 15000, enableHighAccuracy: false, maximumAge: 60000 },
+      GEO_OPTIONS,
     )
   }
 
@@ -115,7 +117,7 @@ export default function AddressPicker({ sido, sigungu, dong, onChange, disabled 
       return
     }
     // 위를 바꾸면 아래는 비운다 (없는 주소가 만들어지지 않게)
-    onChange(value, '', '')
+    onChange(value, '', '', false)
   }
 
   if (loading) {
@@ -151,7 +153,7 @@ export default function AddressPicker({ sido, sigungu, dong, onChange, disabled 
         <select
           className="address__select"
           value={sigungu || ''}
-          onChange={(e) => onChange(sido, e.target.value, '')}
+          onChange={(e) => onChange(sido, e.target.value, '', false)}
           disabled={disabled || locating || sigunguList.length === 0}
         >
           <option value="">시 · 군 · 구 선택</option>
@@ -165,7 +167,7 @@ export default function AddressPicker({ sido, sigungu, dong, onChange, disabled 
         <select
           className="address__select"
           value={dong || ''}
-          onChange={(e) => onChange(sido, sigungu, e.target.value)}
+          onChange={(e) => onChange(sido, sigungu, e.target.value, false)}
           disabled={disabled || locating || dongs.length === 0}
         >
           <option value="">읍 · 면 · 동 선택</option>

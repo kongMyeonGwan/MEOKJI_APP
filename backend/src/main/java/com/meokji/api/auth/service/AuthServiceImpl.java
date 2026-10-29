@@ -70,9 +70,14 @@ public class AuthServiceImpl implements AuthService {
         user.setAddressSigungu(request.getAddressSigungu());
         user.setAddressDong(request.getAddressDong());
 
-        // 주소를 좌표로 바꿔서 같이 저장한다 (첫 화면 날씨에 쓴다)
-        BigDecimal[] coords = regionCatalog.findCoords(
-                user.getAddressSido(), user.getAddressSigungu(), user.getAddressDong());
+        // 주소를 좌표로 바꿔서 같이 저장한다 (첫 화면 날씨에 쓴다).
+        // 다만 '현재 위치로 채우기' 로 채운 주소는 좌표를 비워둔다 - 그래야
+        // 날씨가 그때그때 브라우저로 잡은 위치를 쓴다 (UserServiceImpl 과 같은 규칙).
+        BigDecimal[] coords = null;
+        if (!Boolean.TRUE.equals(request.getAddressFromGps())) {
+            coords = regionCatalog.findCoords(
+                    user.getAddressSido(), user.getAddressSigungu(), user.getAddressDong());
+        }
         if (coords != null) {
             user.setLatitude(coords[0]);
             user.setLongitude(coords[1]);

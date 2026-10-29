@@ -72,6 +72,10 @@ export default function RegisterPage() {
   const [sigungu, setSigungu] = useState('')
   const [dong, setDong] = useState('')
 
+  // 이 주소를 '현재 위치로 채우기' 로 채웠는지. 서버가 그때는 좌표를 저장하지
+  // 않아서, 날씨가 매번 지금 위치를 다시 잡는다.
+  const [fromGps, setFromGps] = useState(false)
+
   // 사용자가 한 번이라도 건드린 칸. 예) { email: true }
   // 아직 안 건드린 칸에는 처음부터 빨간 글씨를 띄우지 않으려고 쓴다
   const [touched, setTouched] = useState({})
@@ -98,10 +102,11 @@ export default function RegisterPage() {
   }
 
   // 주소를 골랐을 때 (AddressPicker 가 시/도, 시/군/구, 읍/면/동을 같이 알려준다)
-  const changeAddress = (nextSido, nextSigungu, nextDong) => {
+  const changeAddress = (nextSido, nextSigungu, nextDong, nextFromGps) => {
     setSido(nextSido)
     setSigungu(nextSigungu)
     setDong(nextDong)
+    setFromGps(nextFromGps)
   }
 
   const handleSubmit = async (e) => {
@@ -127,6 +132,7 @@ export default function RegisterPage() {
         addressSido: sido || null,
         addressSigungu: sigungu || null,
         addressDong: dong || null,
+        addressFromGps: fromGps,
       })
       setDoneUser(user)
     } catch (err) {

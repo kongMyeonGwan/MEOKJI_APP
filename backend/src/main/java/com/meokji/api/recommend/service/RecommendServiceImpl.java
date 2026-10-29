@@ -125,12 +125,28 @@ public class RecommendServiceImpl implements RecommendService {
     // 떴다. 주소를 안 골랐거나 좌표를 못 찾은 주소면(LATITUDE 가 비어 있다) 위치를 쓴다.
     private WeatherVO getWeather(UserVO loginUser, RecommendRequestVO request) {
         if (loginUser != null && loginUser.getLatitude() != null && loginUser.getLongitude() != null) {
-            return weatherService.current(loginUser.getLatitude().doubleValue(), loginUser.getLongitude().doubleValue());
+            return withSource(weatherService.current(
+                    loginUser.getLatitude().doubleValue(), loginUser.getLongitude().doubleValue()), "ADDRESS");
         }
         if (request.getLat() != null && request.getLon() != null) {
-            return weatherService.current(request.getLat(), request.getLon());
+            return withSource(weatherService.current(request.getLat(), request.getLon()), "GPS");
         }
-        return weatherService.current(null, null); // null 이면 기본 위치(서울)
+
+        // 주소도 좌표도 없다. 기본 자리 날씨를 주되 어디서 온 값인지 같이 알려준다.
+        // 안 알려주면 위치를 못 읽은 사람이 그 날씨를 자기 동네 날씨로 믿는다.
+        return withSource(weatherService.current(null, null), "DEFAULT");
+    }
+
+    // 이 날씨가 어느 좌표에서 왔는지 적는다.
+    //
+    // 날씨 API 가 실패해서 캐시로 대신 채운 경우에는 WeatherService 가 이미
+    // FALLBACK 을 적어뒀다. 그건 덮어쓰지 않는다 - 덮어쓰면 화면이 지난 날씨를
+    // 지금 내 위치 날씨로 믿는다.
+    private WeatherVO withSource(WeatherVO weather, String source) {
+        if (weather.getLocationSource() == null) {
+            weather.setLocationSource(source);
+        }
+        return weather;
     }
 
     // 무슨 조건으로 골랐는지 한 줄로 적는다. 화면이 목록 위에 보여준다.

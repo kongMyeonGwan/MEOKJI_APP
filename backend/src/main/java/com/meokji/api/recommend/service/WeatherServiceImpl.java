@@ -34,12 +34,24 @@ public class WeatherServiceImpl implements WeatherService {
             lon = defaultLon;
         }
 
-        // 날씨 API 부르기. 실패하면 503 에러
+        // 날씨 API 부르기
         WeatherClient.Weather weather;
+        boolean fellBack = false;
+
         try {
             weather = weatherClient.get(lat, lon);
         } catch (IllegalStateException e) {
-            throw ApiException.serviceUnavailable(e.getMessage());
+            // 날씨 API 가 실패했다. 기본 자리(종로2가)로 마지막에 받아둔 날씨가
+            // 캐시에 있으면 그걸 대신 보여준다. 같은 좌표로 다시 불러봐도
+            // API 가 죽어 있으면 똑같이 실패하므로 캐시만 본다.
+            weather = weatherClient.cached(defaultLat, defaultLon);
+
+            if (weather == null) {
+                // 받아둔 것도 없다. 이때는 숨길 것이 없으니 까닭을 그대로 알린다.
+                throw ApiException.serviceUnavailable(e.getMessage());
+            }
+
+            fellBack = true;
         }
 
         WeatherVO response = new WeatherVO();
@@ -51,6 +63,13 @@ public class WeatherServiceImpl implements WeatherService {
         response.setConditionText(weather.getConditionText());
         response.setComment(makeComment(weather.getCondition(), weather.getTemp()));
         response.setPickLead(makePickLead(weather.getCondition(), weather.getTemp()));
+
+        // 실패해서 대신 보여주는 값이면 여기서 표시해둔다. 부르는 쪽이
+        // ADDRESS · GPS 로 덮어쓰지 않아야 화면이 내 동네 날씨로 착각하지 않는다.
+        if (fellBack) {
+            response.setLocationSource("FALLBACK");
+        }
+
         return response;
     }
 
