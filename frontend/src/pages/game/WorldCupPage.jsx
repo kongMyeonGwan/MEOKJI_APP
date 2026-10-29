@@ -36,11 +36,25 @@ const SIZES = [
   { value: 32, label: '32강' },
   { value: 16, label: '16강' },
   { value: 8, label: '8강' },
-  { value: 4, label: '4강' },
+  { value: 4, label: '4강(금일회식메뉴)' },
 ]
+
+// 4강은 요리 100종이 아니라 오늘 회식 후보 4개로 고정한다.
+// 레시피 데이터(recipes.json)에 없는 메뉴라 레시피 보기 · 찜 · 명예의 전당 · 오늘의 게임 결과는 쓰지 않는다.
+// 사진은 public/images/game/worldcup/ 에 있다.
+const HOESIK_SIZE = 4
+const HOESIK_MENU = [
+  { foodName: '얼큰만두뼈전골', reason: '얼큰한 국물에 만두와 뼈다귀를 듬뿍 넣은 전골' },
+  { foodName: '직화뼈구이', reason: '불향 가득 직화로 구워 낸 매콤한 뼈구이' },
+  { foodName: '한가득뼈찜', reason: '살코기 붙은 뼈를 한가득 담아 쪄 낸 뼈찜' },
+  { foodName: '부대감자탕', reason: '진한 감자탕에 부대찌개 재료를 더한 한 냄비' },
+].map((food) => ({ ...food, imageUrl: `/images/game/worldcup/${encodeURIComponent(food.foodName)}.jpg`, hoesik: true }))
 
 // 고르는 화면의 안내 문장. 대결 수 = 후보 수 - 1 (한 번 질 때마다 하나씩 떨어진다)
 const describeSize = (value) => {
+  if (value === HOESIK_SIZE) {
+    return '오늘 회식 후보 4개가 대결합니다. 총 3번 고르면 오늘의 회식 메뉴가 정해져요.'
+  }
   return `요리 100종 중 무작위 ${value}개가 대결합니다. 총 ${value - 1}번 고르면 우승 메뉴가 나와요.`
 }
 
@@ -133,8 +147,17 @@ export default function WorldCupPage({ user, onLikeCountChange }) {
 
   // 후보를 받아와서 고른 크기만큼 대진표를 새로 짠다
   const startGame = async (bracketSize) => {
-    setLoading(true)
     setError('')
+
+    // 4강은 회식 후보 4개를 섞어서 바로 시작한다 (서버를 부르지 않는다)
+    if (bracketSize === HOESIK_SIZE) {
+      setRound(shuffle(HOESIK_MENU))
+      setIndex(0)
+      setWinners([])
+      return
+    }
+
+    setLoading(true)
     try {
       const data = await fetchCandidates()
       const bracket = makeBracket(data.items, bracketSize)
@@ -202,6 +225,11 @@ export default function WorldCupPage({ user, onLikeCountChange }) {
     setIndex(0)
 
     // 우승이 정해졌으면
+    // 회식 메뉴는 레시피 데이터에 없어서 기록 · 찜을 남기지 않는다
+    if (nextWinners.length === 1 && nextWinners[0].hoesik) {
+      return
+    }
+
     if (nextWinners.length === 1) {
       const champion = nextWinners[0].foodName
       markPicked(champion) // AI 추천 기록에 "이걸로 정함" 표시
@@ -304,7 +332,7 @@ export default function WorldCupPage({ user, onLikeCountChange }) {
           </div>
 
           <p className="wc__crown">🏆</p>
-          <p className="wc__round">오늘의 우승 메뉴</p>
+          <p className="wc__round">{champion.hoesik ? '오늘의 회식 메뉴' : '오늘의 우승 메뉴'}</p>
           <h2 className="wc__champion">{champion.foodName}</h2>
 
           <div className="wc__champion-thumb">
@@ -312,18 +340,24 @@ export default function WorldCupPage({ user, onLikeCountChange }) {
           </div>
 
           <p className="muted wc__champion-reason">{champion.reason}</p>
-          <p className="wc__champion-meta">
-            <span className="price">{formatPrice(champion.estimatedCost)}</span> ·{' '}
-            {formatMinutes(champion.cookTimeMinutes)} · 난이도 {champion.difficulty}
-          </p>
+          {!champion.hoesik && (
+            <p className="wc__champion-meta">
+              <span className="price">{formatPrice(champion.estimatedCost)}</span> ·{' '}
+              {formatMinutes(champion.cookTimeMinutes)} · 난이도 {champion.difficulty}
+            </p>
+          )}
 
           <div className="wc__actions">
-            <Link to={`/recipe/${champion.foodName}`} className="btn">
-              레시피 보기
-            </Link>
-            <button type="button" className="btn btn--ghost" onClick={() => handleLike(champion.foodName)}>
-              {liked ? '♥ 찜 해제' : '♡ 찜하기'}
-            </button>
+            {!champion.hoesik && (
+              <>
+                <Link to={`/recipe/${champion.foodName}`} className="btn">
+                  레시피 보기
+                </Link>
+                <button type="button" className="btn btn--ghost" onClick={() => handleLike(champion.foodName)}>
+                  {liked ? '♥ 찜 해제' : '♡ 찜하기'}
+                </button>
+              </>
+            )}
             <button type="button" className="btn btn--ghost game-btn--plain" onClick={backToPicker}>
               <span className="game-icon game-icon--restart" aria-hidden="true" />
               다시 하기
@@ -375,9 +409,11 @@ export default function WorldCupPage({ user, onLikeCountChange }) {
             <FoodThumb item={food} size="lg" />
             <strong className="wc__pick-name">{food.foodName}</strong>
             <span className="muted wc__pick-reason">{food.reason}</span>
-            <span className="wc__pick-meta">
-              <span className="price">{formatPrice(food.estimatedCost)}</span> · {formatMinutes(food.cookTimeMinutes)}
-            </span>
+            {!food.hoesik && (
+              <span className="wc__pick-meta">
+                <span className="price">{formatPrice(food.estimatedCost)}</span> · {formatMinutes(food.cookTimeMinutes)}
+              </span>
+            )}
             {/* 두 카드 사이의 VS 글자 (왼쪽 카드에만 붙인다) */}
             {i === 0 && <span className="wc__vs">VS</span>}
           </button>
