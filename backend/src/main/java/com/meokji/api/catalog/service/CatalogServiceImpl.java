@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.meokji.api.common.ApiException;
 import com.meokji.api.util.FoodCatalog;
 import com.meokji.api.util.RegionCatalog;
 
@@ -49,5 +50,16 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     public List<Map<String, Object>> getRegions() {
         return regions.list();
+    }
+
+    @Override
+    public Map<String, String> getNearestRegion(double lat, double lon) {
+        Map<String, String> found = regions.findNearest(lat, lon);
+
+        if (found == null) {
+            throw ApiException.notFound("가까운 지역을 찾지 못했습니다.");
+        }
+
+        return found;
     }
 }

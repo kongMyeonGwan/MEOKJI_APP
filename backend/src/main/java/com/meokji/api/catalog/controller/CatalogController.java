@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.meokji.api.catalog.service.CatalogService;
@@ -30,5 +31,11 @@ public class CatalogController {
     @GetMapping("/regions")
     public List<Map<String, Object>> regions() {
         return catalogService.getRegions();
+    }
+
+    /** 브라우저가 잡은 내 위치에서 가장 가까운 시·군·구. 주소 드롭다운을 채울 때 쓴다. */
+    @GetMapping("/regions/nearest")
+    public Map<String, String> nearestRegion(@RequestParam double lat, @RequestParam double lon) {
+        return catalogService.getNearestRegion(lat, lon);
     }
 }

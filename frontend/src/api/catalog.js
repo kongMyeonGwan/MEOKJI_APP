@@ -13,3 +13,9 @@ export const getRegions = async () => {
   const response = await client.get('/api/catalog/regions')
   return response.data
 }
+
+// 내 위치(위도, 경도)에서 가장 가까운 시/도, 시/군/구. { sido, sigungu } 가 온다.
+export const getNearestRegion = async (lat, lon) => {
+  const response = await client.get('/api/catalog/regions/nearest', { params: { lat: lat, lon: lon } })
+  return response.data
+}

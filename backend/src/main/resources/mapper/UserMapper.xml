@@ -110,6 +110,17 @@
          WHERE id = #{id}
     </update>
 
+    <!-- 사는 곳 비우기. 주소를 지우면 좌표도 같이 지워야 날씨가 GPS 위치를 쓴다. -->
+    <update id="clearAddress">
+        UPDATE users
+           SET address_sido = NULL,
+               address_sigungu = NULL,
+               latitude = NULL,
+               longitude = NULL,
+               updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
+         WHERE id = #{id}
+    </update>
+
     <update id="updatePassword">
         UPDATE users
            SET password_hash = #{passwordHash},

@@ -52,10 +52,11 @@ export default function ProfileForm({ profile, onSaved }) {
     try {
       await updateProfile({
         nickname: values.nickname.trim(),
-        // 선택 안 한 항목(빈 글자)은 null 로 보내야 서버에서도 비워진다
         gender: values.gender,
-        addressSido: sido || null,
-        addressSigungu: sigungu || null,
+        // 사는 곳은 빈 글자 그대로 보낸다. 서버가 빈 글자를 "비워달라" 로 읽고
+        // 주소와 좌표를 지운다 (좌표가 없어야 날씨가 지금 내 위치를 쓴다)
+        addressSido: sido,
+        addressSigungu: sigungu,
       })
       setDone(true)
       onSaved({
@@ -88,7 +89,8 @@ export default function ProfileForm({ profile, onSaved }) {
     <section className="card">
       <h2 className="section-title">정보 수정</h2>
       <p className="muted mypage__desc">
-        이메일은 로그인 아이디라 바꿀 수 없습니다. 사는 곳을 골라두면 그 지역 날씨로 메뉴를 추천해드려요.
+        이메일은 로그인 아이디라 바꿀 수 없습니다. 사는 곳을 골라두면 그 지역 날씨로 메뉴를
+        추천해드려요. 비워두면 지금 접속한 곳의 날씨로 추천합니다.
       </p>
 
       <form className="mypage__profile" onSubmit={handleSubmit}>

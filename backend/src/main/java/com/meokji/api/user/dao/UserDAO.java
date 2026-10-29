@@ -67,6 +67,14 @@ public interface UserDAO {
      */
     void updateProfile(UserVO user);
 
+    /**
+     * 사는 곳을 비운다. 주소 두 칸과 좌표 두 칸을 한꺼번에 NULL 로 만든다.
+     *
+     * updateProfile 은 null 인 칸을 건너뛰도록 되어 있어서 "비우기" 를 못 시킨다.
+     * 좌표가 남아 있으면 날씨가 계속 그 자리로 나오므로 지우는 길을 따로 둔다.
+     */
+    void clearAddress(@Param("id") Long id);
+
     /** 비밀번호만 바꾼다. */
     void updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
 

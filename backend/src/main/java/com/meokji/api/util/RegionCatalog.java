@@ -86,6 +86,50 @@ public class RegionCatalog {
         return result;
     }
 
+    /**
+     * 좌표에서 가장 가까운 시·군·구를 찾는다. 찾지 못하면 null.
+     *
+     * 바깥 API 를 부르지 않고 regions.json 에 있는 중심 좌표들과 거리를 재서 고른다.
+     * 위도 1도와 경도 1도는 길이가 다르지만(우리나라에서 경도 쪽이 약 0.8배 짧다)
+     * 가장 가까운 하나만 고르면 되는 자리라 그대로 비교해도 결과가 같다.
+     */
+    public Map<String, String> findNearest(double lat, double lon) {
+        String nearestSido = null;
+        String nearestSigungu = null;
+        double nearestGap = Double.MAX_VALUE;
+
+        for (Map.Entry<String, Sido> sido : byName.entrySet()) {
+            for (Map.Entry<String, BigDecimal[]> sigungu : sido.getValue().getSigungu().entrySet()) {
+                BigDecimal[] coords = sigungu.getValue();
+
+                if (coords[0] == null || coords[1] == null) {
+                    continue;
+                }
+
+                double latGap = coords[0].doubleValue() - lat;
+                double lonGap = coords[1].doubleValue() - lon;
+                // 제곱근을 씌우지 않는다. 어느 쪽이 가까운지만 보면 되기 때문이다.
+                double gap = latGap * latGap + lonGap * lonGap;
+
+                if (gap < nearestGap) {
+                    nearestGap = gap;
+                    nearestSido = sido.getKey();
+                    nearestSigungu = sigungu.getKey();
+                }
+            }
+        }
+
+        if (nearestSido == null) {
+            return null;
+        }
+
+        Map<String, String> result = new LinkedHashMap<>();
+        result.put("sido", nearestSido);
+        result.put("sigungu", nearestSigungu);
+
+        return result;
+    }
+
     /** 주소를 좌표로 바꾼다. 찾지 못하면 null. */
     public BigDecimal[] findCoords(String sido, String sigungu) {
         if (sido == null || sido.isBlank()) {

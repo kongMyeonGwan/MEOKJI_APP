@@ -231,6 +231,7 @@ export default function RegisterPage() {
 
         <p className="muted register__optional">
           아래는 선택 항목이에요. 사는 곳을 골라두면 그 지역 날씨로 메뉴를 추천해드립니다.
+          안 고르면 접속한 곳의 날씨로 추천합니다.
         </p>
 
         <label className="register__field">

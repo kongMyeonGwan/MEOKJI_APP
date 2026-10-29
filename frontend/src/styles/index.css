@@ -3342,12 +3342,29 @@
    ========================================================== */
 
 /* ----- AddressPicker ----- */
+/* 드롭다운 두 개 + 그 아래 안내 한 줄. */
+.address {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* 시·도 + 시·군·구 드롭다운 두 개.
    좁은 화면에서는 세로로 쌓이도록 wrap 을 켜둔다. */
-.address {
+.address__row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.address__hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.address__hint--error {
+  color: var(--color-error);
 }
 
 .address__select {

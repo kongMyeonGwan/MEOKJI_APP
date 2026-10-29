@@ -118,8 +118,20 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
 
+        // 사는 곳을 "선택 안 함" 으로 되돌렸으면 주소와 좌표를 지운다.
+        // updateProfile 은 null 인 칸을 건너뛰어서 비우기가 안 되고, 좌표가 남아 있으면
+        // 날씨가 계속 그 자리로 나온다 (좌표가 없어야 브라우저가 잡은 내 위치를 쓴다).
+        if (isBlank(request.getAddressSido()) && isBlank(request.getAddressSigungu())) {
+            userDAO.clearAddress(user.getId());
+        }
+
         // 바뀐 정보를 다시 읽어서 돌려준다
         return getProfile(userDAO.findById(user.getId()));
+    }
+
+    // 보냈는데 빈 글자("", "  ")면 "비워달라" 는 뜻이다. 아예 안 보냈으면(null) 아니다.
+    private boolean isBlank(String value) {
+        return value != null && value.trim().isEmpty();
     }
 
     // 빈 글자("", "  ")는 null 로 바꾼다
