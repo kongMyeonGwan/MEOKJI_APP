@@ -43,8 +43,12 @@ public class WeatherClient {
     private static final String NOMINATIM_URL =
             "https://nominatim.openstreetmap.org/reverse";
 
-    /** Nominatim 은 User-Agent 를 안 보내면 요청을 거부한다. */
-    private static final String NOMINATIM_USER_AGENT = "meokji-app-weather/1.0";
+    /**
+     * Nominatim 은 User-Agent 를 안 보내면 요청을 거부한다.
+     * 연락처가 없는 User-Agent 도 차단 대상이라 이메일을 적어둔다.
+     */
+    private static final String NOMINATIM_USER_AGENT =
+            "meokji-app-weather/1.0 (kmg8585@gmail.com)";
 
     /** OpenWeatherMap 의 weather[0].main 을 화면 배경 코드로 바꾸는 표. */
     private static final Map<String, String> CONDITION_CODES = Map.of(
@@ -233,7 +237,7 @@ public class WeatherClient {
                 first.path("description").asString(""));
     }
 
-    /** 좌표를 "시 구 동" 한글 주소로. 못 구하면 null. */
+    /** 좌표를 "시 구 동" 한글 주소로. 못 구하면 null, 캐시에 담아둔 실패는 빈 문자열. */
     private String koreanAddress(double lat, double lon) {
         String key = cacheKey(lat, lon);
 
@@ -246,8 +250,13 @@ public class WeatherClient {
         if (addressCache.size() > CACHE_MAX_ENTRIES) {
             addressCache.clear();
         }
-        // null 도 넣어둔다. 못 구하는 자리를 매번 다시 물어볼 이유가 없다.
-        addressCache.put(key, address);
+        // 못 구한 자리도 넣어둔다. 매번 다시 물어볼 이유가 없다.
+        // ConcurrentHashMap 은 null 을 받지 못해서 빈 문자열로 대신 넣는다.
+        if (address == null) {
+            addressCache.put(key, "");
+        } else {
+            addressCache.put(key, address);
+        }
 
         return address;
     }
