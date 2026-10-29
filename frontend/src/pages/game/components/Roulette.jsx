@@ -33,6 +33,14 @@ const SPIN_TIME = 3000 // 도는 시간 (3초)
 // 요리 100종이 거의 한식 · 국탕이라 나머지가 걸리면 추천이 텅 빈다. 그래서 바늘은 이 둘에만 멈춘다.
 const WINNABLE = ['한식', '국탕']
 
+// 분류마다 '오늘의 한 끼' 로 뽑힐 메뉴. 이 중 하나를 무작위로 고른다.
+// 추천 API 는 같은 조건이면 늘 같은 순서(싼 순)로 주기 때문에, 맨 앞만 쓰면
+// 한식은 늘 감자전, 국탕은 늘 황태해장국이 나온다. 그래서 후보를 둘씩 둔다.
+const PICKS = {
+  한식: ['감자전', '부추전'],
+  국탕: ['황태해장국', '북엇국'],
+}
+
 // 조각 이름 위에 붙는 그림. 서버가 모르는 분류를 보내면 그림 없이 이름만 나온다
 const EMOJI = {
   한식: '🍚',
@@ -144,8 +152,16 @@ export default function Roulette() {
 
     setLoading(true)
     try {
-      const data = await getRecommendations({ source: '메뉴 게임', limit: 3, category: label })
-      const items = data.items || []
+      // 후보 메뉴가 들어 있도록 넉넉히 받는다 (못 먹는 재료로 빠지면 목록에 없을 수 있다)
+      const data = await getRecommendations({ source: '메뉴 게임', limit: 6, category: label })
+      const list = data.items || []
+
+      // 오늘의 한 끼: 이 분류의 후보 중 목록에 있는 것을 무작위로. 없으면 목록 맨 앞
+      const picks = list.filter((food) => (PICKS[label] || []).includes(food.foodName))
+      const main = picks.length > 0 ? picks[Math.floor(Math.random() * picks.length)] : list[0]
+
+      // [오늘의 한 끼, 다른 추천 2개] 순서로 둔다. 화면은 첫 번째를 크게, 나머지를 작게 그린다
+      const items = main ? [main, ...list.filter((food) => food !== main).slice(0, 2)] : []
       setFoods(items)
       addLog('음식 룰렛', label, foodNames(items))
 
