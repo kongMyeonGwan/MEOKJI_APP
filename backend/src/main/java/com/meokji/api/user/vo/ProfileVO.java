@@ -12,7 +12,7 @@ import lombok.Data;
  * 한 클래스로 합치면 로그인 응답에도 "요리 0회" 가 따라 나간다.
  *
  * 나가는 모양: { "id", "email", "nickname", "created_at", "gender",
- *               "address_sido", "address_sigungu", "latitude", "longitude",
+ *               "address_sido", "address_sigungu", "address_dong", "latitude", "longitude",
  *               "streak_days", "cook_count" }
  */
 @Data
@@ -25,6 +25,8 @@ public class ProfileVO {
     private String gender;
     private String addressSido;
     private String addressSigungu;
+
+    private String addressDong;
 
     /** 위도 · 경도 */
     private BigDecimal latitude;

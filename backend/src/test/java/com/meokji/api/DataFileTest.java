@@ -206,6 +206,7 @@ class DataFileTest {
         assertThat(regions).as("시·도").hasSize(17);
 
         int sigunguCount = 0;
+        int dongCount = 0;
         List<String> broken = new ArrayList<>();
 
         for (JsonNode sido : regions) {
@@ -217,23 +218,36 @@ class DataFileTest {
 
             for (JsonNode sigungu : sido.path("sigungu")) {
                 sigunguCount++;
+                String where = name + " " + sigungu.path("name").asString();
+                checkCoords(broken, where, sigungu);
 
-                double lat = sigungu.path("lat").asDouble(0);
-                double lon = sigungu.path("lon").asDouble(0);
-
-                // 위도 · 경도가 뒤바뀌거나 부호가 빠지면 "다른 동네 날씨" 가 나온다.
-                // 값이 없는 것도 아니고 에러도 안 나서 찾기 어렵다.
-                if (lat < 33 || lat > 39) {
-                    broken.add(name + " " + sigungu.path("name").asString() + ": 위도 " + lat);
-                }
-                if (lon < 124 || lon > 132) {
-                    broken.add(name + " " + sigungu.path("name").asString() + ": 경도 " + lon);
+                for (JsonNode dong : sigungu.path("dong")) {
+                    dongCount++;
+                    checkCoords(broken, where + " " + dong.path("name").asString(), dong);
                 }
             }
         }
 
         assertThat(broken).as("한국 밖 좌표").isEmpty();
-        assertThat(sigunguCount).as("시·군·구").isEqualTo(228);
+        // 세종특별자치시는 시·군·구가 없어서 읍·면·동 24개가 이 자리에 들어가 있다
+        assertThat(sigunguCount).as("시·군·구").isEqualTo(252);
+        assertThat(dongCount).as("읍·면·동").isEqualTo(3531);
+    }
+
+    /**
+     * 위도 · 경도가 뒤바뀌거나 부호가 빠지면 "다른 동네 날씨" 가 나온다.
+     * 값이 없는 것도 아니고 에러도 안 나서 찾기 어렵다.
+     */
+    private void checkCoords(List<String> broken, String where, JsonNode node) {
+        double lat = node.path("lat").asDouble(0);
+        double lon = node.path("lon").asDouble(0);
+
+        if (lat < 33 || lat > 39) {
+            broken.add(where + ": 위도 " + lat);
+        }
+        if (lon < 124 || lon > 132) {
+            broken.add(where + ": 경도 " + lon);
+        }
     }
 
     // --------------------------------------------------- ingredient-rules.json

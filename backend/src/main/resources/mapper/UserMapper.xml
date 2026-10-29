@@ -21,7 +21,7 @@
     -->
     <sql id="columns">
         id, email, password_hash, nickname, user_level, gender,
-        gender, address_sido, address_sigungu, latitude, longitude,
+        address_sido, address_sigungu, address_dong, latitude, longitude,
         login_fail_count, is_locked, locked_at, use_yn, created_at, updated_at
     </sql>
 
@@ -63,10 +63,11 @@
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO users (
             email, password_hash, nickname,
-            gender, address_sido, address_sigungu, latitude, longitude
+            gender, address_sido, address_sigungu, address_dong, latitude, longitude
         ) VALUES (
             #{email}, #{passwordHash}, #{nickname},
-            #{gender}, #{addressSido}, #{addressSigungu}, #{latitude}, #{longitude}
+            #{gender}, #{addressSido}, #{addressSigungu}, #{addressDong},
+            #{latitude}, #{longitude}
         )
     </insert>
 
@@ -96,27 +97,27 @@
     <!--
       PATCH 라서 보내지 않은 칸은 건드리지 않아야 한다. 서비스가 "무엇을 보냈는지"
       를 판단해서 바꿀 칸만 채워 넘기고, 여기서는 그 칸만 SET 에 넣는다.
-      주소를 바꿨으면 좌표도 같이 오므로 latitude/longitude 를 짝으로 본다.
+      사는 곳은 세 칸이 한 덩어리라 아래 updateAddress 가 따로 맡는다.
     -->
     <update id="updateProfile" parameterType="com.meokji.api.user.vo.UserVO">
         UPDATE users
            SET updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
                <if test="nickname != null">, nickname = #{nickname}</if>
                <if test="gender != null">, gender = #{gender}</if>
-               <if test="addressSido != null">, address_sido = #{addressSido}</if>
-               <if test="addressSigungu != null">, address_sigungu = #{addressSigungu}</if>
-               <if test="latitude != null">, latitude = #{latitude}</if>
-               <if test="longitude != null">, longitude = #{longitude}</if>
          WHERE id = #{id}
     </update>
 
-    <!-- 사는 곳 비우기. 주소를 지우면 좌표도 같이 지워야 날씨가 GPS 위치를 쓴다. -->
-    <update id="clearAddress">
+    <!--
+      사는 곳 통째로 쓰기. 위 updateProfile 과 달리 null 을 건너뛰지 않는다.
+      주소를 비우면 좌표도 NULL 이 되어야 날씨가 브라우저로 잡은 위치를 쓴다.
+    -->
+    <update id="updateAddress">
         UPDATE users
-           SET address_sido = NULL,
-               address_sigungu = NULL,
-               latitude = NULL,
-               longitude = NULL,
+           SET address_sido = #{addressSido},
+               address_sigungu = #{addressSigungu},
+               address_dong = #{addressDong},
+               latitude = #{latitude},
+               longitude = #{longitude},
                updated_at = SYS_EXTRACT_UTC(SYSTIMESTAMP)
          WHERE id = #{id}
     </update>

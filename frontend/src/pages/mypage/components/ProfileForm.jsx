@@ -23,18 +23,20 @@ export default function ProfileForm({ profile, onSaved }) {
     gender: profile.gender || '',
   })
 
-  // 사는 곳. AddressPicker 가 두 값을 같이 바꿔서 따로 둔다
+  // 사는 곳. AddressPicker 가 세 값을 같이 바꿔서 따로 둔다
   const [sido, setSido] = useState(profile.addressSido || '')
   const [sigungu, setSigungu] = useState(profile.addressSigungu || '')
+  const [dong, setDong] = useState(profile.addressDong || '')
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false) // 저장 완료 문구를 보여줄지
 
-  // 주소를 골랐을 때 (AddressPicker 가 시/도, 시/군/구를 같이 알려준다)
-  const changeAddress = (nextSido, nextSigungu) => {
+  // 주소를 골랐을 때 (AddressPicker 가 시/도, 시/군/구, 읍/면/동을 같이 알려준다)
+  const changeAddress = (nextSido, nextSigungu, nextDong) => {
     setSido(nextSido)
     setSigungu(nextSigungu)
+    setDong(nextDong)
   }
 
   const handleSubmit = async (e) => {
@@ -57,6 +59,7 @@ export default function ProfileForm({ profile, onSaved }) {
         // 주소와 좌표를 지운다 (좌표가 없어야 날씨가 지금 내 위치를 쓴다)
         addressSido: sido,
         addressSigungu: sigungu,
+        addressDong: dong,
       })
       setDone(true)
       onSaved({
@@ -112,7 +115,13 @@ export default function ProfileForm({ profile, onSaved }) {
 
         <div className="mypage__field">
           <span>사는 곳</span>
-          <AddressPicker sido={sido} sigungu={sigungu} onChange={changeAddress} disabled={saving} />
+          <AddressPicker
+            sido={sido}
+            sigungu={sigungu}
+            dong={dong}
+            onChange={changeAddress}
+            disabled={saving}
+          />
         </div>
 
         <div className="mypage__field-actions">

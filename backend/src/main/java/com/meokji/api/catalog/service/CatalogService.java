@@ -14,6 +14,9 @@ public interface CatalogService {
     /** 주소 드롭다운이 쓰는 시·도 · 시·군·구 목록 */
     List<Map<String, Object>> getRegions();
 
-    /** 좌표에서 가장 가까운 시·군·구 ({ sido, sigungu }) */
+    /** 고른 시·군·구에 딸린 읍·면·동 목록 */
+    List<String> getDongs(String sido, String sigungu);
+
+    /** 좌표에서 가장 가까운 읍·면·동 ({ sido, sigungu, dong }) */
     Map<String, String> getNearestRegion(double lat, double lon);
 }

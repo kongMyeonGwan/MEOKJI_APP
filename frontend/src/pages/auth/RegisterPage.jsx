@@ -67,9 +67,10 @@ export default function RegisterPage() {
     gender: '',
   })
 
-  // 사는 곳(선택). AddressPicker 가 두 값을 같이 바꿔서 따로 둔다
+  // 사는 곳(선택). AddressPicker 가 세 값을 같이 바꿔서 따로 둔다
   const [sido, setSido] = useState('')
   const [sigungu, setSigungu] = useState('')
+  const [dong, setDong] = useState('')
 
   // 사용자가 한 번이라도 건드린 칸. 예) { email: true }
   // 아직 안 건드린 칸에는 처음부터 빨간 글씨를 띄우지 않으려고 쓴다
@@ -96,10 +97,11 @@ export default function RegisterPage() {
     return touched[name] ? errors[name] : ''
   }
 
-  // 주소를 골랐을 때 (AddressPicker 가 시/도, 시/군/구를 같이 알려준다)
-  const changeAddress = (nextSido, nextSigungu) => {
+  // 주소를 골랐을 때 (AddressPicker 가 시/도, 시/군/구, 읍/면/동을 같이 알려준다)
+  const changeAddress = (nextSido, nextSigungu, nextDong) => {
     setSido(nextSido)
     setSigungu(nextSigungu)
+    setDong(nextDong)
   }
 
   const handleSubmit = async (e) => {
@@ -124,6 +126,7 @@ export default function RegisterPage() {
         gender: values.gender || null,
         addressSido: sido || null,
         addressSigungu: sigungu || null,
+        addressDong: dong || null,
       })
       setDoneUser(user)
     } catch (err) {
@@ -247,7 +250,7 @@ export default function RegisterPage() {
 
         <div className="register__field">
           <span>사는 곳 (선택)</span>
-          <AddressPicker sido={sido} sigungu={sigungu} onChange={changeAddress} />
+          <AddressPicker sido={sido} sigungu={sigungu} dong={dong} onChange={changeAddress} />
         </div>
 
         <ErrorMessage message={error} />

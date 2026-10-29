@@ -18,6 +18,7 @@ export const updateProfile = async (form) => {
       gender: form.gender,
       addressSido: form.addressSido,
       addressSigungu: form.addressSigungu,
+      addressDong: form.addressDong,
     },
     { headers: authHeader() },
   )

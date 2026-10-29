@@ -39,4 +39,7 @@ public class RegisterVO {
 
     @Size(max = 30)
     private String addressSigungu;
+
+    @Size(max = 30)
+    private String addressDong;
 }

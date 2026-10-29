@@ -1,0 +1,20 @@
+regions.json 의 읍·면·동 좌표 출처
+===================================
+
+본 데이터는 통계청 통계지리정보서비스(SGIS, https://sgis.kostat.go.kr)에서
+공공누리 제1유형으로 개방한 행정동 경계를 가공한 것이며(가공: vuski/admdongkor,
+https://github.com/vuski/admdongkor), CC BY 4.0 으로 배포됩니다.
+
+This data is derived from administrative-dong boundaries released by Statistics
+Korea SGIS (https://sgis.kostat.go.kr) under KOGL Type 1, modified by
+vuski/admdongkor (https://github.com/vuski/admdongkor), and distributed under
+CC BY 4.0.
+
+- 기준 시점 : 2025-10-01 자 행정동 (ver20251001)
+- 중심점    : 통계청 MDIS 인구용 행정경계중심점 (UTMK/EPSG:5179 → WGS84 로 변환)
+- 담은 범위 : 시·도 17, 시·군·구 252, 읍·면·동 3,531
+
+시·도 와 시·군·구 의 좌표는 이 프로젝트가 원래 쓰던 값을 그대로 두었다.
+
+세종특별자치시는 시·군·구 가 없는 단층제라, 읍·면·동 을 시·군·구 자리에 넣었다.
+수원시처럼 일반구가 있는 시는 동 이름 앞에 구를 붙였다 ("장안구 파장동").

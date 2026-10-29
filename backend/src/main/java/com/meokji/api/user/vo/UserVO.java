@@ -24,7 +24,7 @@ import lombok.Data;
  * 칸을 새로 넣을 때 화면에 보여도 되는 값인지 먼저 따져야 한다.
  *
  * 나가는 모양: { "id", "email", "nickname", "created_at", "gender",
- *               "address_sido", "address_sigungu", "is_admin" }
+ *               "address_sido", "address_sigungu", "address_dong", "is_admin" }
  */
 @Data
 public class UserVO {
@@ -45,6 +45,8 @@ public class UserVO {
     private String gender;
     private String addressSido;
     private String addressSigungu;
+
+    private String addressDong;
 
     /**
      * 위도 · 경도. 날씨 API 를 실제로 부르는 값이다.

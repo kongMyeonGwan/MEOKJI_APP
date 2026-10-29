@@ -17,6 +17,7 @@
       "gender": "FEMALE",
       "addressSido": "서울특별시",
       "addressSigungu": "마포구",
+      "addressDong": null,
       "isAdmin": false
     }
   }

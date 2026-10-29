@@ -53,6 +53,11 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     @Override
+    public List<String> getDongs(String sido, String sigungu) {
+        return regions.listDong(sido, sigungu);
+    }
+
+    @Override
     public Map<String, String> getNearestRegion(double lat, double lon) {
         Map<String, String> found = regions.findNearest(lat, lon);
 

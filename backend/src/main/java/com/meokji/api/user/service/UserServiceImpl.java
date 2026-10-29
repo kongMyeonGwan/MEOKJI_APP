@@ -70,6 +70,7 @@ public class UserServiceImpl implements UserService {
         profile.setGender(user.getGender());
         profile.setAddressSido(user.getAddressSido());
         profile.setAddressSigungu(user.getAddressSigungu());
+        profile.setAddressDong(user.getAddressDong());
         profile.setLatitude(user.getLatitude());
         profile.setLongitude(user.getLongitude());
         profile.setStreakDays(streakDays);
@@ -82,32 +83,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public ProfileVO updateProfile(UserVO user, ProfileUpdateVO request) {
-        // 바꿀 값만 담는다. null 인 칸은 XML 에서 건너뛴다 (UserMapper.xml 의 updateProfile)
+        // 닉네임과 성별만 담는다. null 인 칸은 XML 에서 건너뛴다 (UserMapper.xml 의 updateProfile)
         UserVO changes = new UserVO();
         changes.setId(user.getId());
         changes.setNickname(blankToNull(request.getNickname()));
         changes.setGender(request.getGender());
-        changes.setAddressSido(blankToNull(request.getAddressSido()));
-        changes.setAddressSigungu(blankToNull(request.getAddressSigungu()));
-
-        // 주소를 바꿨으면 좌표도 다시 계산한다 (날씨 추천에 쓴다)
-        if (request.getAddressSido() != null || request.getAddressSigungu() != null) {
-            // 한쪽만 보냈으면 나머지는 지금 값을 쓴다
-            String sido = changes.getAddressSido();
-            if (sido == null) {
-                sido = user.getAddressSido();
-            }
-            String sigungu = changes.getAddressSigungu();
-            if (sigungu == null) {
-                sigungu = user.getAddressSigungu();
-            }
-
-            BigDecimal[] coords = regionCatalog.findCoords(sido, sigungu);
-            if (coords != null) {
-                changes.setLatitude(coords[0]);
-                changes.setLongitude(coords[1]);
-            }
-        }
 
         try {
             userDAO.updateProfile(changes);
@@ -118,20 +98,58 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
 
-        // 사는 곳을 "선택 안 함" 으로 되돌렸으면 주소와 좌표를 지운다.
-        // updateProfile 은 null 인 칸을 건너뛰어서 비우기가 안 되고, 좌표가 남아 있으면
-        // 날씨가 계속 그 자리로 나온다 (좌표가 없어야 브라우저가 잡은 내 위치를 쓴다).
-        if (isBlank(request.getAddressSido()) && isBlank(request.getAddressSigungu())) {
-            userDAO.clearAddress(user.getId());
+        // 사는 곳은 세 칸이 한 덩어리라 따로 저장한다.
+        //
+        // 한 칸만 고칠 수가 없기 때문이다. 시·군·구를 바꾸면 그 아래 동은 더 이상
+        // 맞지 않고, 동을 비우면 좌표가 시·군·구 중심으로 돌아가야 한다. 그래서
+        // 주소를 하나라도 보냈으면 세 칸과 좌표를 통째로 다시 쓴다.
+        if (request.getAddressSido() != null || request.getAddressSigungu() != null
+                || request.getAddressDong() != null) {
+            saveAddress(user, request);
         }
 
         // 바뀐 정보를 다시 읽어서 돌려준다
         return getProfile(userDAO.findById(user.getId()));
     }
 
-    // 보냈는데 빈 글자("", "  ")면 "비워달라" 는 뜻이다. 아예 안 보냈으면(null) 아니다.
-    private boolean isBlank(String value) {
-        return value != null && value.trim().isEmpty();
+    // 주소 세 칸과 좌표를 통째로 다시 쓴다.
+    //   - 안 보낸 칸(null)  : 지금 값을 그대로 둔다
+    //   - 빈 글자로 보낸 칸 : 비운다
+    // 좌표를 못 찾으면(주소를 다 비웠을 때) NULL 이 들어간다. 그래야 날씨가
+    // 브라우저로 잡은 지금 내 위치를 쓴다.
+    private void saveAddress(UserVO user, ProfileUpdateVO request) {
+        String sido = keepOrChange(user.getAddressSido(), request.getAddressSido());
+        String sigungu = keepOrChange(user.getAddressSigungu(), request.getAddressSigungu());
+        String dong = keepOrChange(user.getAddressDong(), request.getAddressDong());
+
+        // 위가 바뀌면 아래는 버린다. "강남구 사직동" 같은 없는 주소가 남지 않게.
+        if (!same(sido, user.getAddressSido()) || !same(sigungu, user.getAddressSigungu())) {
+            if (request.getAddressDong() == null) {
+                dong = null;
+            }
+        }
+
+        BigDecimal[] coords = regionCatalog.findCoords(sido, sigungu, dong);
+        BigDecimal latitude = coords == null ? null : coords[0];
+        BigDecimal longitude = coords == null ? null : coords[1];
+
+        userDAO.updateAddress(user.getId(), sido, sigungu, dong, latitude, longitude);
+    }
+
+    // 두 값이 같은지. 둘 다 null 인 것도 같은 것으로 본다.
+    private boolean same(String one, String other) {
+        if (one == null) {
+            return other == null;
+        }
+        return one.equals(other);
+    }
+
+    // 안 보냈으면(null) 지금 값, 보냈으면 그 값. 빈 글자는 null 로 바꿔서 비운다.
+    private String keepOrChange(String now, String sent) {
+        if (sent == null) {
+            return now;
+        }
+        return blankToNull(sent);
     }
 
     // 빈 글자("", "  ")는 null 로 바꾼다

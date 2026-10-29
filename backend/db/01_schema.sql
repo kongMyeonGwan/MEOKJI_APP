@@ -90,6 +90,7 @@ CREATE TABLE users (
     gender            VARCHAR2(10 CHAR),                                            -- MALE / FEMALE / OTHER. NULL = "선택 안 함" (필수 입력 아님)
     address_sido      VARCHAR2(30 CHAR),                                            -- 시·도 표시용. "서울특별시" — 화면 출력에만 쓴다
     address_sigungu   VARCHAR2(30 CHAR),                                            -- 시·군·구 표시용. "강남구" — 화면 출력에만 쓴다
+    address_dong      VARCHAR2(30 CHAR),                                            -- 읍·면·동 표시용. "사직동" — 화면 출력에만 쓴다
     latitude          NUMBER(9,6),                                                  -- 위도. 날씨 API 를 실제로 호출하는 값 (가입 시 주소에서 변환)
     longitude         NUMBER(9,6),                                                  -- 경도. latitude 와 한 쌍으로만 의미가 있다
     login_fail_count  NUMBER(3)           DEFAULT 0 NOT NULL,                       -- 연속 로그인 실패 횟수. 로그인에 성공하면 0 으로 초기화

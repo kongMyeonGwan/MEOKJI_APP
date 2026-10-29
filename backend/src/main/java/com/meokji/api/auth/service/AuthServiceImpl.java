@@ -68,9 +68,11 @@ public class AuthServiceImpl implements AuthService {
         user.setGender(request.getGender());
         user.setAddressSido(request.getAddressSido());
         user.setAddressSigungu(request.getAddressSigungu());
+        user.setAddressDong(request.getAddressDong());
 
         // 주소를 좌표로 바꿔서 같이 저장한다 (첫 화면 날씨에 쓴다)
-        BigDecimal[] coords = regionCatalog.findCoords(user.getAddressSido(), user.getAddressSigungu());
+        BigDecimal[] coords = regionCatalog.findCoords(
+                user.getAddressSido(), user.getAddressSigungu(), user.getAddressDong());
         if (coords != null) {
             user.setLatitude(coords[0]);
             user.setLongitude(coords[1]);

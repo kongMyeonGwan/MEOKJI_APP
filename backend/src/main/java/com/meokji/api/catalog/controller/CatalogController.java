@@ -33,7 +33,17 @@ public class CatalogController {
         return catalogService.getRegions();
     }
 
-    /** 브라우저가 잡은 내 위치에서 가장 가까운 시·군·구. 주소 드롭다운을 채울 때 쓴다. */
+    /**
+     * 고른 시·군·구에 딸린 읍·면·동 목록.
+     *
+     * 전국 동을 한 번에 내려주면 400KB 가 넘어서, 시·군·구를 고른 뒤에 따로 받아간다.
+     */
+    @GetMapping("/regions/dong")
+    public List<String> dongs(@RequestParam String sido, @RequestParam String sigungu) {
+        return catalogService.getDongs(sido, sigungu);
+    }
+
+    /** 브라우저가 잡은 내 위치에서 가장 가까운 읍·면·동. 주소 드롭다운을 채울 때 쓴다. */
     @GetMapping("/regions/nearest")
     public Map<String, String> nearestRegion(@RequestParam double lat, @RequestParam double lon) {
         return catalogService.getNearestRegion(lat, lon);
