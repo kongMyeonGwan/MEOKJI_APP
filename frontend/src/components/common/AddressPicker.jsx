@@ -65,6 +65,22 @@ export default function AddressPicker({ sido, sigungu, dong, onChange, disabled 
     }
   }
 
+  // 위치 찾기가 실패한 까닭을 문장으로 바꾼다.
+  // 브라우저가 주는 code 는 1=권한 거부, 2=위치를 못 구함, 3=시간 초과 다.
+  // 셋을 "위치를 못 가져왔습니다" 하나로 뭉치면 뭘 고쳐야 할지 알 수가 없다.
+  const locateErrorText = (code) => {
+    if (code === 1) {
+      return '위치 권한이 꺼져 있습니다. 주소창 왼쪽 자물쇠에서 위치를 허용해주세요.'
+    }
+    if (code === 2) {
+      return '위치를 확인할 수 없습니다. 윈도우 설정에서 위치 서비스가 켜져 있는지 봐주세요.'
+    }
+    if (code === 3) {
+      return '위치를 찾는 데 너무 오래 걸립니다. 잠시 뒤 다시 시도해주세요.'
+    }
+    return '위치를 가져오지 못했습니다. 직접 골라주세요.'
+  }
+
   // '현재 위치로 채우기'를 골랐을 때. 브라우저가 위치를 알려주면 fillByCoords 로 넘긴다
   const findMyLocation = () => {
     if (!navigator.geolocation) {
@@ -81,11 +97,14 @@ export default function AddressPicker({ sido, sigungu, dong, onChange, disabled 
         fillByCoords(position.coords.latitude, position.coords.longitude)
       },
       // 위치 권한을 거부했거나 실패했을 때
-      () => {
+      (error) => {
         setLocating(false)
-        setLocateError('위치를 가져오지 못했습니다. 직접 골라주세요.')
+        setLocateError(locateErrorText(error.code))
       },
-      { timeout: 5000 },
+      // 데스크톱은 와이파이를 훑어 구글에 물어보는 방식이라 느리다. 5초로는 모자라서
+      // 자주 시간 초과가 났다. 정확도는 동 단위면 충분하므로 高정확도는 끄고
+      // (켜면 더 느리다), 1분 안에 받아둔 위치가 있으면 그걸 그대로 쓴다.
+      { timeout: 15000, enableHighAccuracy: false, maximumAge: 60000 },
     )
   }
 
